@@ -12,8 +12,7 @@ MARCH=`uname -m`
 
 : ${CA_TAG:="$MARCH-$VERSION"}
 : ${FABRIC_TAG:="$MARCH-$VERSION"}
-script="$(readlink -f ${BASH_SOURCE})"
-CURRENT="$(dirname $script)"
+CURRENT="$(dirname $(readlink -f ${BASH_SOURCE}))"
 Parent=$(dirname $CURRENT)
 echo parentDir $Parent
 cd $Parent

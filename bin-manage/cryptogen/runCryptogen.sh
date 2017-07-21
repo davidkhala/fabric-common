@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-CURRENT="$(dirname $0)"
+CURRENT="$(dirname $(readlink -f ${BASH_SOURCE}))"
 CONFIG_OUTPUT=$CURRENT/crypto-config
 CONFIG_INPUT=$CURRENT/cryptogen.yaml
 # clear existing

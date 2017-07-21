@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-CURRENT=$PWD
+CURRENT="$(dirname $(readlink -f ${BASH_SOURCE}))"
 
-BIN_PATH="../../bin"
-export FABRIC_CFG_PATH=$PWD
+BIN_PATH="$CURRENT/../../bin"
+export FABRIC_CFG_PATH=$CURRENT
 inputDir=$CURRENT/
 outputDir=$CURRENT/ # if not set, output file will be created in BIN_PATH
 
