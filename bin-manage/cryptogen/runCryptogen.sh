@@ -5,11 +5,6 @@ CONFIG_INPUT=$CURRENT/crypto-config.yaml
 
 BIN_PATH="$CURRENT/../../bin"
 
-
-function clearOutput() {
-    echo "clear CONFIG_OUTPUT $CONFIG_OUTPUT"
-	rm -rf $CONFIG_OUTPUT
-}
 remain_params=""
 for (( i = 1; i <= $#; i ++ )); do
     j=${!i}
@@ -17,11 +12,8 @@ for (( i = 1; i <= $#; i ++ )); do
 done
 
 
-while getopts "ci:o:" shortname $remain_params; do
+while getopts "i:o:" shortname $remain_params; do
     case $shortname in
-        c)
-            clearOutput
-        ;;
         i)
             echo "set crypto-config.yaml --config $OPTARG"
             CONFIG_INPUT="$OPTARG"
@@ -38,6 +30,9 @@ while getopts "ci:o:" shortname $remain_params; do
 done
 
 
+
+echo "clear CONFIG_OUTPUT $CONFIG_OUTPUT"
+rm -rf $CONFIG_OUTPUT
 # gen
 cd $BIN_PATH
 
