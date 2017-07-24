@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 CURRENT="$(dirname $(readlink -f ${BASH_SOURCE}))"
 CONFIG_OUTPUT=$CURRENT/crypto-config
-CONFIG_INPUT=$CURRENT/cryptogen.yaml
+CONFIG_INPUT=$CURRENT/crypto-config.yaml
 
 BIN_PATH="$CURRENT/../../bin"
 
@@ -23,7 +23,7 @@ while getopts "ci:o:" shortname $remain_params; do
             clearOutput
         ;;
         i)
-            echo "set cryptogen.yaml --config $OPTARG"
+            echo "set crypto-config.yaml --config $OPTARG"
             CONFIG_INPUT="$OPTARG"
         ;;
         o)
