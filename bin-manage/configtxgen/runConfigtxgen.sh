@@ -81,7 +81,7 @@ for (( i = 4; i <= $#; i ++ )); do
 done
 
 
-while getopts "ai:t:p:c:v" shortname $remain_params; do
+while getopts "ap:c:t:vi:" shortname $remain_params; do
     case $shortname in
         a)
             echo "using Absolute path or default BIN_PATH:$BIN_PATH  "
