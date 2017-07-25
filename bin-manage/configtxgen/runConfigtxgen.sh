@@ -37,7 +37,7 @@ function viewBlock() {
     if [ -z "$VIEW_LOG" ]; then
         $CMD
     elif [ "$VIEW_LOG" == "default" ]; then
-        $CMD >"$FABRIC_CFG_PATH/$1.block.config"
+        $CMD >"$FABRIC_CFG_PATH/$PARAM_profile.block.config"
     else
         $CMD >"$VIEW_LOG"
     fi
@@ -49,7 +49,7 @@ function viewChannel() {
     if [ -z "$VIEW_LOG" ]; then
         $CMD
     elif [ "$VIEW_LOG" == "default" ]; then
-        $CMD >"$FABRIC_CFG_PATH/$1.channel.config"
+        $CMD >"$FABRIC_CFG_PATH/$PARAM_profile.channel.config"
     else
         $CMD >"$VIEW_LOG"
     fi
