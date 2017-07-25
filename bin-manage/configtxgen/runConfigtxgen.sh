@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
+# for integration most path is absolute path
+
 CURRENT="$(dirname $(readlink -f ${BASH_SOURCE}))"
 
 BIN_PATH="$CURRENT/../../bin"
 export FABRIC_CFG_PATH=$CURRENT
-inputDir=$CURRENT/
-outputDir=$CURRENT/ # if not set, output file will be created in BIN_PATH
 
 PROFILE_DEFAULT_CHANNEL="SampleEmptyInsecureChannel"
 PROFILE_DEFAULT_BLOCK="SampleInsecureSolo"
@@ -32,31 +32,31 @@ function usage() {
 
 
 function viewBlock() {
-    local CMD="./configtxgen -inspectBlock $inputDir$1 $MORE_PARAMS"
+    local CMD="./configtxgen -inspectBlock $1 $MORE_PARAMS"
     echo CMD $CMD
     if [ -z "$VIEW_LOG" ]; then
         $CMD
     elif [ "$VIEW_LOG" == "default" ]; then
-        $CMD >"$outputDir$1.block.config"
+        $CMD >"$FABRIC_CFG_PATH/$1.block.config"
     else
         $CMD >"$VIEW_LOG"
     fi
 }
 
 function viewChannel() {
-    local CMD="./configtxgen -inspectChannelCreateTx $inputDir$1 $MORE_PARAMS"
+    local CMD="./configtxgen -inspectChannelCreateTx $1 $MORE_PARAMS"
     echo CMD $CMD
     if [ -z "$VIEW_LOG" ]; then
         $CMD
     elif [ "$VIEW_LOG" == "default" ]; then
-        $CMD >"$outputDir$1.channel.config"
+        $CMD >"$FABRIC_CFG_PATH/$1.channel.config"
     else
         $CMD >"$VIEW_LOG"
     fi
 }
 
 function genBlock() {
-    local CMD="./configtxgen -outputBlock $outputDir$1 $MORE_PARAMS"
+    local CMD="./configtxgen -outputBlock $1 $MORE_PARAMS"
     if [ -z "$PARAM_profile" ]; then
         CMD="$CMD -profile $PROFILE_DEFAULT_BLOCK"
     fi
@@ -66,7 +66,7 @@ function genBlock() {
 
 function genChannel() {
     # Cannot define a new channel with no Application section
-    local CMD="./configtxgen -outputCreateChannelTx $outputDir$1 $MORE_PARAMS"
+    local CMD="./configtxgen -outputCreateChannelTx $1 $MORE_PARAMS"
     if [ -z "$PARAM_profile" ]; then
         CMD="$CMD -profile $PROFILE_DEFAULT_CHANNEL"
     fi
@@ -81,14 +81,8 @@ for (( i = 4; i <= $#; i ++ )); do
 done
 
 
-while getopts "ap:c:t:vi:" shortname $remain_params; do
+while getopts "p:c:t:vi:" shortname $remain_params; do
     case $shortname in
-        a)
-            echo "using Absolute path or default BIN_PATH:$BIN_PATH  "
-            echo "  as inputDir and outputDir"
-            outputDir=""
-            inputDir=""
-        ;;
         p)
             echo "profile $OPTARG"
             PARAM_profile=" -profile $OPTARG"
@@ -103,6 +97,8 @@ while getopts "ap:c:t:vi:" shortname $remain_params; do
         ;;
         v)
             echo "saving view output to default"
+            echo " block ==> \$FABRIC_CFG_PATH/$1.block.config"
+            echo " channel ==> \$FABRIC_CFG_PATH/$1.channel.config"
             VIEW_LOG="default"
         ;;
 
