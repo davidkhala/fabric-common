@@ -88,25 +88,23 @@ while getopts "p:c:t:vi:" shortname $remain_params; do
             PARAM_profile=" -profile $OPTARG"
         ;;
         c)
-            echo "channelID $OPTARG"
+            echo "(TYPE channel only)channelID $OPTARG"
             PARAM_channelID=" -channelID $OPTARG"
         ;;
         t)
-            echo "saving view output: $OPTARG"
+            echo "(ACTION view only) saving view output: $OPTARG"
             VIEW_LOG=$OPTARG
         ;;
         v)
-            echo "saving view output to default"
-            echo " block ==> \$FABRIC_CFG_PATH/$1.block.config"
-            echo " channel ==> \$FABRIC_CFG_PATH/$1.channel.config"
+            echo "(ACTION view only) saving view output to default"
+            echo " block ==> \$FABRIC_CFG_PATH/$PARAM_profile.block.config"
+            echo " channel ==> \$FABRIC_CFG_PATH/$PARAM_profile.channel.config"
             VIEW_LOG="default"
         ;;
-
         i)
-
-            echo "set parent directory of configtx.yaml: $OPTARG "
-            echo " !!! value will be set to env var FABRIC_CFG_PATH"
-            echo " please make sure '\$FABRIC_CFG_PATH/configtx.yaml' exist"
+            echo "set to env var FABRIC_CFG_PATH: $OPTARG "
+            echo "  >ACTION create: as parent directory of configtx.yaml "
+            echo "  >ACTION view:   as default parent directory of log file"
             export FABRIC_CFG_PATH=$OPTARG
         ;;
         ?) #当有不认识的选项的时候arg为?
