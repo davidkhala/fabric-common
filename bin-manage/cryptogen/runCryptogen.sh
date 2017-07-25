@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 CURRENT="$(dirname $(readlink -f ${BASH_SOURCE}))"
-CONFIG_OUTPUT=$CURRENT/crypto-config
+CONFIG_OUTPUT=$CURRENT/crypto-config/
 CONFIG_INPUT=$CURRENT/crypto-config.yaml
 
 BIN_PATH="$CURRENT/../../bin"
@@ -15,11 +15,11 @@ done
 while getopts "i:o:" shortname $remain_params; do
     case $shortname in
         i)
-            echo "set crypto-config.yaml --config $OPTARG"
+            echo "set crypto config yaml file (default: crypto-config.yaml) --config $OPTARG"
             CONFIG_INPUT="$OPTARG"
         ;;
         o)
-            echo "set crypto-config/ folder --output $OPTARG"
+            echo "set crypto output directory (default: /crypto-config/)  --output $OPTARG"
             CONFIG_OUTPUT="$OPTARG"
         ;;
         ?) #当有不认识的选项的时候arg为?
