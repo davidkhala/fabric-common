@@ -11,10 +11,9 @@ PROFILE_DEFAULT_CHANNEL="SampleEmptyInsecureChannel"
 PROFILE_DEFAULT_BLOCK="SampleInsecureSolo"
 
 
-MORE_PARAMS=""
-PARAM_profile=""
-PARAM_channelID=""
-PARAM_asOrg=""
+PARAM_PROFILE=""
+PARAM_CHANNEL_ID=""
+
 
 function usage() {
     echo "usage: ./runConfigtxgen.sh block|channel view|create <target_file>"
@@ -32,44 +31,38 @@ function usage() {
 
 
 function viewBlock() {
-    local CMD="./configtxgen -inspectBlock $1 $MORE_PARAMS"
+    local CMD="./configtxgen -inspectBlock $1 $PARAM_PROFILE"
     echo CMD $CMD
     if [ -z "$VIEW_LOG" ]; then
         $CMD
     elif [ "$VIEW_LOG" == "default" ]; then
-        $CMD >"$FABRIC_CFG_PATH/$PARAM_profile.block.config"
+        $CMD >"$FABRIC_CFG_PATH/$(basename $1).block.config"
     else
         $CMD >"$VIEW_LOG"
     fi
 }
 
 function viewChannel() {
-    local CMD="./configtxgen -inspectChannelCreateTx $1 $MORE_PARAMS"
+    local CMD="./configtxgen -inspectChannelCreateTx $1 $PARAM_PROFILE"
     echo CMD $CMD
     if [ -z "$VIEW_LOG" ]; then
         $CMD
     elif [ "$VIEW_LOG" == "default" ]; then
-        $CMD >"$FABRIC_CFG_PATH/$PARAM_profile.channel.config"
+        $CMD >"$FABRIC_CFG_PATH/$(basename $1).channel.config"
     else
         $CMD >"$VIEW_LOG"
     fi
 }
 
 function genBlock() {
-    local CMD="./configtxgen -outputBlock $1 $MORE_PARAMS"
-    if [ -z "$PARAM_profile" ]; then
-        CMD="$CMD -profile $PROFILE_DEFAULT_BLOCK"
-    fi
+    local CMD="./configtxgen -outputBlock $1 $PARAM_PROFILE"
     echo CMD $CMD
     $CMD
 }
 
 function genChannel() {
     # Cannot define a new channel with no Application section
-    local CMD="./configtxgen -outputCreateChannelTx $1 $MORE_PARAMS"
-    if [ -z "$PARAM_profile" ]; then
-        CMD="$CMD -profile $PROFILE_DEFAULT_CHANNEL"
-    fi
+    local CMD="./configtxgen -outputCreateChannelTx $1 $PARAM_PROFILE $PARAM_CHANNEL_ID"
     echo CMD $CMD
     $CMD
 }
@@ -85,11 +78,14 @@ while getopts "p:c:t:vi:" shortname $remain_params; do
     case $shortname in
         p)
             echo "profile $OPTARG"
-            PARAM_profile=" -profile $OPTARG"
+            PARAM_PROFILE="-profile $OPTARG"
         ;;
         c)
-            echo "(TYPE channel only)channelID $OPTARG"
-            PARAM_channelID=" -channelID $OPTARG"
+            echo "(channel create only) channelID $OPTARG (default: testchainid)"
+            echo " bug exist in v1.0.0: if create block with channelID, then create channel later will fail "
+            echo "  symptom: (in orderer container) Rejecting CONFIG_UPDATE because: Error authorizing update: Error validating ReadSet: Existing config does not contain element for [Groups] /Channel/Application but was in the read set"
+
+            PARAM_CHANNEL_ID="-channelID $OPTARG"
         ;;
         t)
             echo "(ACTION view only) saving view output: $OPTARG"
@@ -97,8 +93,8 @@ while getopts "p:c:t:vi:" shortname $remain_params; do
         ;;
         v)
             echo "(ACTION view only) saving view output to default"
-            echo " block ==> \$FABRIC_CFG_PATH/$PARAM_profile.block.config"
-            echo " channel ==> \$FABRIC_CFG_PATH/$PARAM_profile.channel.config"
+            echo " block ==> \$FABRIC_CFG_PATH/$PARAM_PROFILE.block.config"
+            echo " channel ==> \$FABRIC_CFG_PATH/$PARAM_PROFILE.channel.config"
             VIEW_LOG="default"
         ;;
         i)
@@ -114,12 +110,13 @@ while getopts "p:c:t:vi:" shortname $remain_params; do
     esac
 done
 
-MORE_PARAMS=$PARAM_profile$PARAM_channelID$PARAM_asOrg
-
 
 
 cd $BIN_PATH
 if [ "$1" == "block" ]; then
+    if [ -z "$PARAM_PROFILE" ]; then
+        PARAM_PROFILE="-profile $PROFILE_DEFAULT_BLOCK"
+    fi
     if [ "$2" == "view" ]; then
         viewBlock $3
     elif [ "$2" == "create" ]; then
@@ -129,6 +126,9 @@ if [ "$1" == "block" ]; then
         usage
     fi
 elif [ "$1" == "channel" ]; then
+    if [ -z "$PARAM_PROFILE" ]; then
+        PARAM_PROFILE="-profile $PROFILE_DEFAULT_CHANNEL"
+    fi
     if [ "$2" == "view" ]; then
         viewChannel $3
     elif [ "$2" == "create" ]; then
