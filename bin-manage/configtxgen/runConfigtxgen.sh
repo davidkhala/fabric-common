@@ -55,7 +55,7 @@ function viewChannel() {
 }
 
 function genBlock() {
-    local CMD="./configtxgen -outputBlock $1 $PARAM_PROFILE"
+    local CMD="./configtxgen -outputBlock $1 $PARAM_PROFILE $PARAM_CHANNEL_ID"
     echo CMD $CMD
     $CMD
 }
@@ -81,10 +81,7 @@ while getopts "p:c:t:vi:" shortname $remain_params; do
             PARAM_PROFILE="-profile $OPTARG"
         ;;
         c)
-            echo "(channel create only) channelID $OPTARG (default: testchainid)"
-            echo " bug exist in v1.0.0: if create block with channelID, then create channel later will fail "
-            echo "  symptom: (in orderer container) Rejecting CONFIG_UPDATE because: Error authorizing update: Error validating ReadSet: Existing config does not contain element for [Groups] /Channel/Application but was in the read set"
-
+            echo "(ACTION create only) channelID $OPTARG (default: testchainid)"
             PARAM_CHANNEL_ID="-channelID $OPTARG"
         ;;
         t)
