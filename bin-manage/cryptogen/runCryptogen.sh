@@ -22,7 +22,7 @@ while getopts "i:o:" shortname $remain_params; do
             echo "set crypto output directory (default: /crypto-config/)  --output $OPTARG"
             CONFIG_OUTPUT="$OPTARG"
         ;;
-        ?) #当有不认识的选项的时候arg为?
+        ?)
             echo "unknown argument"
             exit 1
         ;;

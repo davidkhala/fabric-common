@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# for integration most path is absolute path
+# For integration most path is absolute path
 
 CURRENT="$(dirname $(readlink -f ${BASH_SOURCE}))"
 
@@ -16,7 +16,7 @@ PARAM_CHANNEL_ID=""
 
 
 function usage() {
-    echo "usage: ./runConfigtxgen.sh block|channel view|create <target_file>"
+    echo "usage: ./runConfigtxgen.sh block|channel|update view|create <target_file>"
     echo " configtx.yaml will be indexed under env var: FABRIC_CFG_PATH "
 
     echo
@@ -28,8 +28,16 @@ function usage() {
     echo "          channel view-->"
 }
 
+function updateChannel(){
+# TODO: configtxgen -profile OneOrgChannel -outputAnchorPeersUpdate ./config/Org1MSPanchors.tx -channelID $CHANNEL_NAME -asOrg Org1MSP
+    # not visible
+#    configtxgen -profile delphiChannel -inspectChannelCreateTx  BUMPSanchors.tx >update.config
+# INFO 001 Loading configuration
+#doInspectChannelCreateTx -> INFO 002 Inspecting transaction
+#doInspectChannelCreateTx -> INFO 003 Parsing transaction
+#main -> CRIT 004 Error on inspectChannelCreateTx: Error parsing config: Policy cannot be nil
 
-
+}
 function viewBlock() {
     local CMD="./configtxgen -inspectBlock $1 $PARAM_PROFILE"
     echo CMD $CMD
@@ -100,7 +108,7 @@ while getopts "p:c:t:vi:" shortname $remain_params; do
             echo "  >ACTION view:   as default parent directory of log file"
             export FABRIC_CFG_PATH=$OPTARG
         ;;
-        ?) #当有不认识的选项的时候arg为?
+        ?)
             echo "unknown argument"
             exit 1
         ;;
@@ -130,6 +138,8 @@ elif [ "$1" == "channel" ]; then
         viewChannel $3
     elif [ "$2" == "create" ]; then
         genChannel $3
+    elif [ "$2" == "update" ]; then
+        updateChannel $3
     else
         echo "invalid arg2: $2";
         usage
