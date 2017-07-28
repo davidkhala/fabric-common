@@ -36,7 +36,7 @@ function updateChannel(){
 #doInspectChannelCreateTx -> INFO 002 Inspecting transaction
 #doInspectChannelCreateTx -> INFO 003 Parsing transaction
 #main -> CRIT 004 Error on inspectChannelCreateTx: Error parsing config: Policy cannot be nil
-
+    echo TBC
 }
 function viewBlock() {
     local CMD="./configtxgen -inspectBlock $1 $PARAM_PROFILE"
