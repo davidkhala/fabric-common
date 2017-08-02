@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 CURRENT="$(dirname $(readlink -f ${BASH_SOURCE}))"
-CONFIG_OUTPUT=$CURRENT/crypto-config/
-CONFIG_INPUT=$CURRENT/crypto-config.yaml
+CRYPTO_CONFIG_DIR=$CURRENT/crypto-config/
+CRYPTO_CONFIG_FILE=$CURRENT/crypto-config.yaml
 
 BIN_PATH="$CURRENT/../../bin"
 
@@ -15,12 +15,12 @@ done
 while getopts "i:o:" shortname $remain_params; do
     case $shortname in
         i)
-            echo "set crypto config yaml file (default: crypto-config.yaml) --config $OPTARG"
-            CONFIG_INPUT="$OPTARG"
+            echo "set crypto config yaml file (default: $CRYPTO_CONFIG_FILE) --config $OPTARG"
+            CRYPTO_CONFIG_FILE="$OPTARG"
         ;;
         o)
-            echo "set crypto output directory (default: /crypto-config/)  --output $OPTARG"
-            CONFIG_OUTPUT="$OPTARG"
+            echo "set crypto output directory (default: $CRYPTO_CONFIG_DIR)  --output $OPTARG"
+            CRYPTO_CONFIG_DIR="$OPTARG"
         ;;
         ?)
             echo "unknown argument"
@@ -31,11 +31,11 @@ done
 
 
 
-echo "clear CONFIG_OUTPUT $CONFIG_OUTPUT"
-rm -rf $CONFIG_OUTPUT
+echo "clear CRYPTO_CONFIG_DIR $CRYPTO_CONFIG_DIR"
+rm -rf $CRYPTO_CONFIG_DIR
 # gen
 cd $BIN_PATH
 
-./cryptogen generate --config="$CONFIG_INPUT" --output="$CONFIG_OUTPUT"
+./cryptogen generate --config="$CRYPTO_CONFIG_FILE" --output="$CRYPTO_CONFIG_DIR"
 
 cd -
