@@ -1,11 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
+#NOTE This script only work for 1.0.0-rc1 or above
 #
-# Copyright IBM Corp. All Rights Reserved.
-#
-# SPDX-License-Identifier: Apache-2.0
-#
+CURRENT="$(dirname $(readlink -f ${BASH_SOURCE}))"
+Parent=$(dirname $CURRENT)
 
-VERSION=1.0.1
+VERSION="1.0.0"
+ARCH=$(echo "$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/mingw64_nt.*/windows/')-$(uname -m | sed 's/x86_64/amd64/g')" | awk '{print tolower($0)}')
 for ((i = 1; i <= $#; i++)); do
 	j=${!i}
 	remain_params="$remain_params $j"
@@ -22,14 +22,19 @@ while getopts "v:" shortname $remain_params; do
 		;;
 	esac
 done
-ARCH=$(echo "$(uname -s|tr '[:upper:]' '[:lower:]'|sed 's/mingw64_nt.*/windows/')-$(uname -m | sed 's/x86_64/amd64/g')" | awk '{print tolower($0)}')
+# auto-skip when version matching...
+# NOTE peer binary cannot be used inside shell file
+configtxlatorFile=$Parent/bin/configtxlator
+if [ -f $configtxlatorFile ]; then
+	binVersion=$($configtxlatorFile version | grep Version | awk '{print $2}')
+	if [ "$binVersion" == "$VERSION" ]; then
+		echo Current Version $binVersion matched, skipped
+		exit 0
+	fi
+fi
 
-CURRENT="$(dirname $(readlink -f ${BASH_SOURCE}))"
-Parent=$(dirname $CURRENT)
+
 cd $Parent
 
 echo "===> Downloading platform binaries: version: $ARCH $VERSION"
 curl https://nexus.hyperledger.org/content/repositories/releases/org/hyperledger/fabric/hyperledger-fabric/${ARCH}-${VERSION}/hyperledger-fabric-${ARCH}-${VERSION}.tar.gz | tar xz
-
-
-
