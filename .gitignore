@@ -1,1 +1,3 @@
 /.idea/*
+/bin-manage/cryptogen/crypto-config.yaml
+/bin-manage/configtxgen/configtx.yaml
