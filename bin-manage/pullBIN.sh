@@ -30,6 +30,8 @@ if [ -f $configtxlatorFile ]; then
 	if [ "$binVersion" == "$VERSION" ]; then
 		echo Current Version $binVersion matched, skipped
 		exit 0
+    else
+        echo Current Version $binVersion mismatch with $VERSION
 	fi
 fi
 
