@@ -13,5 +13,7 @@ if [ "$ACTION" == "start" ]; then
 	fi
 elif [ "$ACTION" == "down" ]; then
 	pid=$(netstat -pant | grep '7059' | grep 'LISTEN' | awk '{split($7, a, "/");print a[1]}')
-	kill $pid
+	if [ -n "$pid" ]; then
+		kill $pid # kill with no arguments: kill: usage: kill [-s sigspec | -n signum | -sigspec] pid | jobspec ... or kill -l [sigspec]
+	fi
 fi
