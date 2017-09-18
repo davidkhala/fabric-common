@@ -42,7 +42,7 @@ function viewBlock() {
 	if [ -z "$VIEW_LOG" ]; then
 		$CMD
 	elif [ "$VIEW_LOG" == "default" ]; then
-		mkdir "$FABRIC_CFG_PATH/logs/"
+		mkdir -p "$FABRIC_CFG_PATH/logs/"
 		$CMD >"$FABRIC_CFG_PATH/logs/$(basename $1).block.config"
 	else
 		$CMD >"$VIEW_LOG"
@@ -55,7 +55,7 @@ function viewChannel() {
 	if [ -z "$VIEW_LOG" ]; then
 		$CMD
 	elif [ "$VIEW_LOG" == "default" ]; then
-		mkdir "$FABRIC_CFG_PATH/logs/"
+		mkdir -p "$FABRIC_CFG_PATH/logs/"
 		$CMD >"$FABRIC_CFG_PATH/logs/$(basename $1).channel.config"
 	else
 		$CMD >"$VIEW_LOG"
