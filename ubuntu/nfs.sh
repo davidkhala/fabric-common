@@ -5,7 +5,7 @@ for ((i = 2; i <= "$#"; i++)); do
 	j=${!i}
 	remain_params="$remain_params $j"
 done
-setting="nfs rsize=8192,wsize=8192,timeo=14,intr"
+setting="nfs rsize=8192,wsize=8192,timeo=14,intr,user" # https://askubuntu.com/questions/546176/nfs-partition-not-mounted-automatically-at-boot-time-anymore
 fstab="/etc/fstab"
 hostExports="/etc/exports"
 function mount() {
