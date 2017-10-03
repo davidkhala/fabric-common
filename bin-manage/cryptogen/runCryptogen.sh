@@ -35,7 +35,7 @@ done
 
 if [ "$isAPPEND" == "false" ]; then
 	echo "clear CRYPTO_CONFIG_DIR $CRYPTO_CONFIG_DIR"
-	rm -rf $CRYPTO_CONFIG_DIR
+	rm -rf ${CRYPTO_CONFIG_DIR}* # keep folder itself (for work as nfs server)
 fi
 
 # gen
