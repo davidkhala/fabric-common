@@ -5,6 +5,9 @@ for ((i = 2; i <= "$#"; i++)); do
 	j=${!i}
 	remain_params="$remain_params $j"
 done
+function get(){
+	hostname
+}
 function change() {
 
 	local oldHostName=$(hostname)
