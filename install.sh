@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 CURRENT="$(dirname $(readlink -f ${BASH_SOURCE}))"
 
-$CURRENT/docker/nodejs/install.sh
 $CURRENT/docker/install.sh
+$CURRENT/docker/nodejs/install.sh
 
 function golang() {
 	# install golang
