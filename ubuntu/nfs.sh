@@ -34,10 +34,10 @@ function update() {
 	mount $remain_params
 }
 function installHost() {
-	apt install nfs-kernel-server
+	apt install -y nfs-kernel-server
 }
 function installClient() {
-	apt install nfs-common
+	apt install -y nfs-common
 }
 function exposeHost() {
 	local localDIR=$1
