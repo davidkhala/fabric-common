@@ -1,3 +1,9 @@
 /.idea/*
 /bin-manage/cryptogen/crypto-config.yaml
 /bin-manage/configtxgen/configtx.yaml
+/java/.gradle
+/java/.idea
+/java/gradlew
+/java/gradlew.bat
+/java/gradle
+/java/out
