@@ -15,10 +15,10 @@ public class Chaincode {
 
 
     public static class ProposalResultWrapper {
-        Collection<ProposalResponse> proposalResponses;
+        public Collection<ProposalResponse> proposalResponses;
 
-        Collection<ProposalResponse> successResponses;
-        Collection<ProposalResponse> failureResponses;
+        public Collection<ProposalResponse> successResponses;
+        public Collection<ProposalResponse> failureResponses;
 
         public CompletableFuture<BlockEvent.TransactionEvent> future;
 
