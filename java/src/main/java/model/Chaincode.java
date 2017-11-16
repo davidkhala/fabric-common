@@ -1,14 +1,10 @@
 package model;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import org.hyperledger.fabric.sdk.*;
 import org.hyperledger.fabric.sdk.exception.InvalidArgumentException;
 import org.hyperledger.fabric.sdk.exception.ProposalException;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
