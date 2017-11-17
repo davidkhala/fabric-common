@@ -4,7 +4,7 @@
 
 CURRENT="$(dirname $(readlink -f ${BASH_SOURCE}))"
 
-BIN_PATH="$CURRENT/../../bin"
+BIN_PATH="$(dirname $(dirname $CURRENT))/bin"
 export FABRIC_CFG_PATH=$CURRENT
 
 PROFILE_DEFAULT_CHANNEL="SampleEmptyInsecureChannel"
@@ -37,7 +37,7 @@ function updateChannel() {
 	echo TBC
 }
 function viewBlock() {
-	local CMD="./configtxgen -inspectBlock $1 $PARAM_PROFILE"
+	local CMD="$BIN_PATH/configtxgen -inspectBlock $1 $PARAM_PROFILE"
 	echo CMD $CMD
 	if [ -z "$VIEW_LOG" ]; then
 		$CMD
@@ -50,7 +50,7 @@ function viewBlock() {
 }
 
 function viewChannel() {
-	local CMD="./configtxgen -inspectChannelCreateTx $1 $PARAM_PROFILE"
+	local CMD="$BIN_PATH/configtxgen -inspectChannelCreateTx $1 $PARAM_PROFILE"
 	echo CMD $CMD
 	if [ -z "$VIEW_LOG" ]; then
 		$CMD
@@ -63,14 +63,14 @@ function viewChannel() {
 }
 
 function genBlock() {
-	local CMD="./configtxgen -outputBlock $1 $PARAM_PROFILE $PARAM_CHANNEL_ID"
+	local CMD="$BIN_PATH/configtxgen -outputBlock $1 $PARAM_PROFILE $PARAM_CHANNEL_ID"
 	echo CMD $CMD
 	$CMD
 }
 
 function genChannel() {
 	# Cannot define a new channel with no Application section
-	local CMD="./configtxgen -outputCreateChannelTx $1 $PARAM_PROFILE $PARAM_CHANNEL_ID"
+	local CMD="$BIN_PATH/configtxgen -outputCreateChannelTx $1 $PARAM_PROFILE $PARAM_CHANNEL_ID"
 	echo CMD $CMD
 	$CMD
 }

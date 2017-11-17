@@ -3,8 +3,7 @@ CURRENT="$(dirname $(readlink -f ${BASH_SOURCE}))"
 CRYPTO_CONFIG_DIR=$CURRENT/crypto-config/
 CRYPTO_CONFIG_FILE=$CURRENT/crypto-config.yaml
 
-BIN_PATH="$CURRENT/../../bin"
-
+BIN_PATH="$(dirname $(dirname $CURRENT))/bin"
 remain_params=""
 for ((i = 1; i <= $#; i++)); do
 	j=${!i}
@@ -39,6 +38,4 @@ if [ "$isAPPEND" == "false" ]; then
 fi
 
 # gen
-echo BIN_PATH $BIN_PATH
-
 $BIN_PATH/cryptogen generate --config="$CRYPTO_CONFIG_FILE" --output="$CRYPTO_CONFIG_DIR"
