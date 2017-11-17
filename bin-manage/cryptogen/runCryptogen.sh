@@ -39,8 +39,6 @@ if [ "$isAPPEND" == "false" ]; then
 fi
 
 # gen
-cd $BIN_PATH
+echo BIN_PATH $BIN_PATH
 
-./cryptogen generate --config="$CRYPTO_CONFIG_FILE" --output="$CRYPTO_CONFIG_DIR"
-
-cd -
+$BIN_PATH/cryptogen generate --config="$CRYPTO_CONFIG_FILE" --output="$CRYPTO_CONFIG_DIR"
