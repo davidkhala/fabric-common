@@ -11,7 +11,7 @@ function golang() {
 	tar -C /usr/local -xzf ${goTar}
 	# write path ( not go path )
 	if ! grep "/usr/local/go/bin" $systemProfile; then
-		echo "export PATH=\$PATH:/usr/local/go/bin" | sudo tee -a $systemProfile
+		echo "export PATH=\$PATH:/usr/local/go/bin" | tee -a $systemProfile
 	fi
 	# delete install pack
 	rm -f ${goTar}
@@ -20,6 +20,10 @@ function golang-uninstall() {
 	:
 	#    TODO  To remove an existing Go installation from your system delete the go directory. This is usually /usr/local/go under Linux, Mac OS X, and FreeBSD or c:\Go under Windows.
 	# You should also remove the Go bin directory from your PATH environment variable. Under Linux and FreeBSD you should edit /etc/profile or $HOME/.profile. If you installed Go with the Mac OS X package then you should remove the /etc/paths.d/go file. Windows users should read the section about setting environment variables under Windows.
+}
+function cn(){
+  	$CURRENT/docker/install.sh cn
+  	$CURRENT/docker/nodejs/install.sh cn
 }
 if [ -n "$fcn" ]; then
 	$fcn
