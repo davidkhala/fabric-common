@@ -65,7 +65,7 @@ public class Chaincode {
         instantiateProposalRequest.setChaincodeID(chaincodeMetaData);
         instantiateProposalRequest.setFcn("init");
         instantiateProposalRequest.setArgs(args);
-        instantiateProposalRequest.setTransientMap(new HashMap<>());// FIXME: Transient map may not be null
+        instantiateProposalRequest.setTransientMap(new HashMap<String, byte[]>());// FIXME: Transient map may not be null
         Collection<ProposalResponse> responses = channel.sendInstantiationProposal(instantiateProposalRequest, peers);
 
         return new ProposalResultWrapper(responses);
@@ -77,7 +77,7 @@ public class Chaincode {
         txProposal.setChaincodeID(chaincodeMetaData);
         txProposal.setFcn("invoke");
         txProposal.setArgs(args);
-        txProposal.setTransientMap(new HashMap<>());
+        txProposal.setTransientMap(new HashMap<String, byte[]>());
         return new ProposalResultWrapper(channel.sendTransactionProposal(txProposal, peers));
     }
 

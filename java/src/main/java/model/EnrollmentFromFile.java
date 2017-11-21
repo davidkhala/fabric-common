@@ -4,6 +4,7 @@ import org.apache.commons.io.IOUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -18,7 +19,12 @@ public class EnrollmentFromFile extends AbstractEnrollment {
     }
     public static File findFileSk(File directory) {
 
-        File[] matches = directory.listFiles((dir, name) -> name.endsWith("_sk"));
+        File[] matches = directory.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.endsWith("_sk");
+            }
+        });
 
         if (null == matches) {
             throw new RuntimeException(format("Matches returned null does %s directory exist?", directory.getAbsoluteFile().getName()));
