@@ -12,7 +12,11 @@ function mountClient() {
 	local localDIR=$1
 	local nfsIP=$2
 	local nfsDIR=$3
-	sed -i "\|${localDIR}|c $nfsIP:$nfsDIR $localDIR $setting" $fstab
+	if grep "$nfsIP:$nfsDIR" $fstab;then
+	    sed -i "\|${localDIR}|c $nfsIP:$nfsDIR $localDIR $setting" $fstab
+    else
+        echo "$nfsIP:$nfsDIR $localDIR $setting" >> $fstab
+	fi
 }
 function rmMountedClient() {
 	local localDIR=$1
