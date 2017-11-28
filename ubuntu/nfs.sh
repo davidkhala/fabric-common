@@ -8,15 +8,15 @@ done
 setting="nfs rsize=8192,wsize=8192,timeo=14,intr,user" # https://askubuntu.com/questions/546176/nfs-partition-not-mounted-automatically-at-boot-time-anymore
 fstab="/etc/fstab"
 hostExports="/etc/exports"
-function mount() {
+function mountClient() {
 	local localDIR=$1
 	local nfsIP=$2
 	local nfsDIR=$3
 	sed -i "\|${localDIR}|c $nfsIP:$nfsDIR $localDIR $setting" $fstab
 }
-function rm() {
+function rmMountedClient() {
 	local localDIR=$1
-	read -p " Continue with sed pattern \"${localDIR}\" ? (y/n)" choice
+	read -p " Continue with sed pattern \"${localDIR}\" on $fstab ? (y/n)" choice
 	case "$choice" in
 	y | Y) sed -i "/${localDIR}/d" $fstab ;;
 	n | N)
@@ -29,9 +29,9 @@ function rm() {
 		;;
 	esac
 }
-function update() {
-	rm $remain_params
-	mount $remain_params
+function updateMountedClient() {
+	rmMountedClient $remain_params
+	mountClient $remain_params
 }
 function installHost() {
 	apt install -y nfs-kernel-server
@@ -44,6 +44,21 @@ function exposeHost() {
 	if ! grep $localDIR $hostExports; then
 		echo "$localDIR	*(ro,sync,no_root_squash)" | sudo tee -a $hostExports
 	fi
+}
+function rmExposedHost() {
+	local localDIR=$1
+	read -p " Continue with sed pattern \"${localDIR}\" on $hostExports ? (y/n)" choice
+	case "$choice" in
+	y | Y) sed -i "/${localDIR}/d" $hostExports ;;
+	n | N)
+		echo Abort...
+		exit 1
+		;;
+	*)
+		echo invalid input \"$choice\"
+		exit 1
+		;;
+	esac
 }
 function startHost() {
 	systemctl start nfs-kernel-server.service

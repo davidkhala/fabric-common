@@ -26,16 +26,6 @@ function usage() {
 	echo "          channel view-->"
 }
 
-function updateChannel() {
-	# TODO: configtxgen -profile OneOrgChannel -outputAnchorPeersUpdate ./config/Org1MSPanchors.tx -channelID $CHANNEL_NAME -asOrg Org1MSP
-	# not visible
-	#    configtxgen -profile delphiChannel -inspectChannelCreateTx  BUMPSanchors.tx >update.config
-	# INFO 001 Loading configuration
-	#doInspectChannelCreateTx -> INFO 002 Inspecting transaction
-	#doInspectChannelCreateTx -> INFO 003 Parsing transaction
-	#main -> CRIT 004 Error on inspectChannelCreateTx: Error parsing config: Policy cannot be nil
-	echo TBC
-}
 function viewBlock() {
 	local CMD="$BIN_PATH/configtxgen -inspectBlock $1 $PARAM_PROFILE"
 	echo CMD $CMD
@@ -114,7 +104,6 @@ while getopts "p:c:t:vi:" shortname $remain_params; do
 	esac
 done
 
-cd $BIN_PATH
 if [ "$1" == "block" ]; then
 	if [ -z "$PARAM_PROFILE" ]; then
 		PARAM_PROFILE="-profile $PROFILE_DEFAULT_BLOCK"
@@ -145,4 +134,3 @@ else
 	echo "invalid arg1: $1"
 	usage
 fi
-cd -
