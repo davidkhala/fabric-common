@@ -1,4 +1,4 @@
-package chaincode_common
+package chaincode
 
 import (
 	"bytes"
