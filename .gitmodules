@@ -1,3 +1,6 @@
 [submodule "docker"]
 	path = docker
 	url = https://github.com/davidkhala/docker-manager.git
+[submodule "chaincode"]
+	path = chaincode
+	url = ../fabric-common-chaincode.git
