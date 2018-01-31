@@ -5,11 +5,25 @@ CURRENT="$(dirname $(readlink -f ${BASH_SOURCE}))"
 fcn=$1
 
 systemProfile="/etc/profile"
-goTar=go1.7.6.linux-amd64.tar.gz
+remain_params=""
+for ((i = 2; i <= ${#}; i++)); do
+	j=${!i}
+	remain_params="$remain_params $j"
+done
+
 function golang() {
+    goTar=go1.9.2.linux-amd64.tar.gz
+    if go version >/dev/null;then
+        echo ... to overwrite exiting golang at GOROOT: $(go env GOROOT)
+        sudo rm -rf $(go env GOROOT)
+    fi
 	# install golang
+	if docker version >/dev/null ;then
+        goTar=$(docker version | grep -m1 go| awk '{print($3)}').linux-amd64.tar.gz
+        echo ... to use docker inline go version :[${goTar}]
+    fi
 	wget https://redirector.gvt1.com/edgedl/go/${goTar}
-	tar -C /usr/local -xzf ${goTar}
+	sudo tar -C /usr/local -xzf ${goTar}
 	# write path ( not go path )
 	if ! grep "/usr/local/go/bin" $systemProfile; then
 		echo "export PATH=\$PATH:/usr/local/go/bin" | tee -a $systemProfile
@@ -31,7 +45,7 @@ function cn(){
   	$CURRENT/docker/nodejs/install.sh cn
 }
 if [ -n "$fcn" ]; then
-	$fcn
+	$fcn $remain_params
 else
 	$CURRENT/docker/install.sh
 	$CURRENT/docker/nodejs/install.sh
