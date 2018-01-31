@@ -39,10 +39,10 @@ function updateMountedClient() {
 	mountClient $remain_params
 }
 function installHost() {
-	apt install -y nfs-kernel-server
+	sudo apt install -y nfs-kernel-server
 }
 function installClient() {
-	apt install -y nfs-common
+	sudo apt install -y nfs-common
 }
 function exposeHost() {
 	local localDIR=$1
