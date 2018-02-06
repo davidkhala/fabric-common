@@ -24,9 +24,14 @@ function golang() {
     fi
 	wget https://redirector.gvt1.com/edgedl/go/${goTar}
 	sudo tar -C /usr/local -xzf ${goTar}
-	# write path ( not go path )
+	# write path to 'go' command
 	if ! grep "/usr/local/go/bin" $systemProfile; then
-		echo "export PATH=\$PATH:/usr/local/go/bin" | tee -a $systemProfile
+		echo "export PATH=\$PATH:/usr/local/go/bin" | sudo tee -a $systemProfile
+	fi
+	# write path to $GOPATH/bin
+	GOPATH=$(go env GOPATH)
+	if ! grep "$GOPATH/bin" $systemProfile; then
+		echo "export PATH=\$PATH:$GOPATH/bin" | sudo tee -a $systemProfile
 	fi
 	# delete install pack
 	rm -f ${goTar}
