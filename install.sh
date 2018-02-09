@@ -43,7 +43,6 @@ function golang-uninstall() {
 }
 function govendor(){
     go get -u github.com/kardianos/govendor
-    cp $(go env GOPATH)/bin/govendor $CURRENT/bin
 }
 function cn(){
   	$CURRENT/docker/install.sh cn
