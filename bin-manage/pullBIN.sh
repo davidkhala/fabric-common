@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #NOTE This script only work for 1.0.0-rc1 or above
 #
-CURRENT="$(dirname $(readlink -f ${BASH_SOURCE}))"
+CURRENT=$(cd $(dirname ${BASH_SOURCE}); pwd)
 Parent=$(dirname $CURRENT)
 
 VERSION="1.0.0"

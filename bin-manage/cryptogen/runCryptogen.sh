@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-CURRENT="$(dirname $(readlink -f ${BASH_SOURCE}))"
+CURRENT=$(cd $(dirname ${BASH_SOURCE}); pwd)
 CRYPTO_CONFIG_DIR=$CURRENT/crypto-config/
 CRYPTO_CONFIG_FILE=$CURRENT/crypto-config.yaml
 

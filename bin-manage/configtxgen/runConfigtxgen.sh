@@ -2,7 +2,7 @@
 
 # For integration most path is absolute path
 
-CURRENT="$(dirname $(readlink -f ${BASH_SOURCE}))"
+CURRENT=$(cd $(dirname ${BASH_SOURCE}); pwd)
 
 BIN_PATH="$(dirname $(dirname $CURRENT))/bin"
 export FABRIC_CFG_PATH=$CURRENT

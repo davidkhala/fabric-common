@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-CURRENT="$(dirname $(readlink -f ${BASH_SOURCE}))"
+CURRENT=$(cd $(dirname ${BASH_SOURCE}); pwd)
 
 BIN_PATH="$(dirname $(dirname $CURRENT))/bin"
 ACTION=$1
