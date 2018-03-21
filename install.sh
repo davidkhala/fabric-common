@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -e
-CURRENT="$(dirname $(readlink -f ${BASH_SOURCE}))"
+CURRENT=$(cd $(dirname ${BASH_SOURCE}); pwd)
 
 fcn=$1
 
@@ -51,6 +51,10 @@ function golang-uninstall() {
 }
 function govendor() {
 	go get -u github.com/kardianos/govendor
+}
+function golang_dep(){
+    export GOPATH=$(go env GOPATH)
+    curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
 }
 function cn() {
 	$CURRENT/docker/install.sh cn
