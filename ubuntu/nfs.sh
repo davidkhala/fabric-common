@@ -19,7 +19,7 @@ function mountClient() {
 		y | Y) sed -i "\|${localDIR}|c $nfsIP:$nfsDIR $localDIR $setting" $fstab ;;
 		n | N)
 			echo Abort...
-			exit 1
+			exit 0
 			;;
 		*)
 			echo invalid input \"$choice\"
