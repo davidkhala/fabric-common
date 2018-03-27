@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -e
 CURRENT=$(cd $(dirname ${BASH_SOURCE}); pwd)
 CRYPTO_CONFIG_DIR=$CURRENT/crypto-config/
 CRYPTO_CONFIG_FILE=$CURRENT/crypto-config.yaml
@@ -35,7 +36,10 @@ done
 if [ "$isAPPEND" == "false" ]; then
 	echo "clear CRYPTO_CONFIG_DIR $CRYPTO_CONFIG_DIR"
 	sudo rm -rf ${CRYPTO_CONFIG_DIR}* # keep folder itself (for work as nfs server)
+	sudo chmod 777 ${CRYPTO_CONFIG_DIR}
 fi
 
 # gen
+
 $BIN_PATH/cryptogen generate --config="$CRYPTO_CONFIG_FILE" --output="$CRYPTO_CONFIG_DIR"
+echo [finish] cryptogen generate --config="$CRYPTO_CONFIG_FILE" --output="$CRYPTO_CONFIG_DIR"

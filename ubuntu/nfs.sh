@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 fcn=$1
 remain_params=""
-for ((i = 2; i <= "$#"; i++)); do
+for ((i = 2; i <= $#; i++)); do
 	j=${!i}
 	remain_params="$remain_params $j"
 done
@@ -13,10 +13,21 @@ function mountClient() {
 	local localDIR=$1
 	local nfsIP=$2
 	local nfsDIR=$3
-	if grep "$nfsIP:$nfsDIR" $fstab;then
-	    sed -i "\|${localDIR}|c $nfsIP:$nfsDIR $localDIR $setting" $fstab
-    else
-        echo "$nfsIP:$nfsDIR $localDIR $setting" >> $fstab
+	if grep "$nfsIP:$nfsDIR" $fstab; then
+		read -p " found $nfsIP:$nfsDIR on $fstab , Do you want to replace with <$nfsIP:$nfsDIR $localDIR $setting>? (y/n)" choice
+		case "$choice" in
+		y | Y) sed -i "\|${localDIR}|c $nfsIP:$nfsDIR $localDIR $setting" $fstab ;;
+		n | N)
+			echo Abort...
+			exit 1
+			;;
+		*)
+			echo invalid input \"$choice\"
+			exit 1
+			;;
+		esac
+	else
+		echo "$nfsIP:$nfsDIR $localDIR $setting" >>$fstab
 	fi
 }
 function rmMountedClient() {
@@ -66,7 +77,7 @@ function rmExposedHost() {
 	esac
 }
 function startHost() {
-#	systemctl start nfs-kernel-server.service? 
-    /etc/init.d/nfs-kernel-server restart
+	#	systemctl start nfs-kernel-server.service?
+	/etc/init.d/nfs-kernel-server restart
 }
 $fcn $remain_params

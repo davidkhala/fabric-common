@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 fcn="$1"
 remain_params=""
-for ((i = 2; i <= "$#"; i++)); do
+for ((i = 2; i <= $#; i++)); do
 	j=${!i}
 	remain_params="$remain_params $j"
 done
