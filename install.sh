@@ -14,7 +14,7 @@ done
 function golang() {
 	goVersion=go1.9.2
 	if docker version >/dev/null; then
-		goVesion=$(docker version | grep -m1 go | awk '{print($3)}')
+		goVersion=$(docker version | grep -m1 go | awk '{print($3)}')
 		echo ... to use docker inline go version :[${goVersion}]
 	fi
 
