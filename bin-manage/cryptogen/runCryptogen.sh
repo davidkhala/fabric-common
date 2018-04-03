@@ -36,6 +36,7 @@ done
 if [ "$isAPPEND" == "false" ]; then
 	echo "clear CRYPTO_CONFIG_DIR $CRYPTO_CONFIG_DIR"
 	sudo rm -rf ${CRYPTO_CONFIG_DIR}* # keep folder itself (for work as nfs server)
+	mkdir -p ${CRYPTO_CONFIG_DIR}
 	sudo chmod 777 ${CRYPTO_CONFIG_DIR}
 fi
 
