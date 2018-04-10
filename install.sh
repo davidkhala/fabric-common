@@ -63,6 +63,8 @@ function cn() {
 if [ -n "$fcn" ]; then
 	$fcn $remain_params
 else
+	sudo apt-get install -y linux-image-extra-$(uname -r) linux-image-extra-virtual
+    sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
 	$CURRENT/docker/install.sh
 	$CURRENT/docker/nodejs/install.sh
 fi
