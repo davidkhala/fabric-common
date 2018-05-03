@@ -4,7 +4,7 @@
 
 CURRENT=$(cd $(dirname ${BASH_SOURCE}); pwd)
 
-BIN_PATH="$(dirname $(dirname $CURRENT))/bin"
+BIN_PATH="$(dirname $CURRENT)/bin"
 export FABRIC_CFG_PATH=$CURRENT
 
 PROFILE_DEFAULT_CHANNEL="SampleEmptyInsecureChannel"

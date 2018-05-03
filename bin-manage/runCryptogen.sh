@@ -4,7 +4,7 @@ CURRENT=$(cd $(dirname ${BASH_SOURCE}); pwd)
 CRYPTO_CONFIG_DIR=$CURRENT/crypto-config/
 CRYPTO_CONFIG_FILE=$CURRENT/crypto-config.yaml
 
-BIN_PATH="$(dirname $(dirname $CURRENT))/bin"
+BIN_PATH="$(dirname $CURRENT)/bin"
 remain_params=""
 for ((i = 1; i <= $#; i++)); do
 	j=${!i}
