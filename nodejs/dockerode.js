@@ -5,11 +5,13 @@ const docker = new Docker();
 const logger = require('./logger').new('dockerode');
 const peerUtil = require('./peer');
 const caUtil = require('./ca');
+const kafkaUtil = require('./kafka');
 const ordererUtil = require('./orderer');
+const zookeeperUtil = require('./zookeeper');
 
 exports.runNewCA = ({
-	container_name, port, network, imageTag,admin="Admin",adminpw="passwd"
-}) => {
+						container_name, port, network, imageTag, admin = 'Admin', adminpw = 'passwd'
+					}) => {
 	const createOptions = {
 		name: container_name,
 		Env: caUtil.envBuilder(),
@@ -22,7 +24,7 @@ exports.runNewCA = ({
 			PortBindings: {
 				'7054': [
 					{
-						'HostPort': `${port}`
+						HostPort: port
 					}
 				]
 			},
@@ -31,7 +33,7 @@ exports.runNewCA = ({
 	};
 	return dockerUtil.containerStart(createOptions);
 };
-exports.deployNewCA = ({Name, network, imageTag, Constraints, port, admin="Admin",adminpw="passwd"}) => {
+exports.deployNewCA = ({Name, network, imageTag, Constraints, port, admin = 'Admin', adminpw = 'passwd'}) => {
 	return dockerUtil.serviceExist({Name}).then((info) => {
 		if (info) return info;
 		return dockerUtil.serviceCreate({
@@ -43,7 +45,35 @@ exports.deployNewCA = ({Name, network, imageTag, Constraints, port, admin="Admin
 	});
 };
 
+exports.runNewKafka = ({container_name, port, network, imageTag, BROKER_ID}, zookeepers, {N, M}) => {
 
+	const createOptions = {
+		name: container_name,
+		Env: kafkaUtil.envBuilder({N, M, BROKER_ID}, zookeepers),
+		ExposedPorts: {
+			'9092': {}
+		},
+		Image: `hyperledger/fabric-kafka:${imageTag}`,
+		Hostconfig: {
+			NetworkMode: network
+		}
+	};
+	return dockerUtil.containerStart(createOptions);
+};
+exports.runNewZookeeper = ({container_name, network, imageTag, MY_ID},allIDs) => {
+	const createOptions = {
+		name: container_name,
+		Env: zookeeperUtil.envBuilder(MY_ID,allIDs),
+		ExposedPorts: {
+			'2888': {}, '3888': {}, '2181': {}
+		},
+		Image: `hyperledger/fabric-zookeeper:${imageTag}`,
+		Hostconfig: {
+			NetworkMode: network
+		}
+	};
+	return dockerUtil.containerStart(createOptions);
+};
 exports.uninstallChaincode = ({container_name, chaincodeId, chaincodeVersion}) => {
 	const container = docker.getContainer(container_name);
 	const options = {
@@ -85,7 +115,7 @@ exports.runNewOrderer = ({container_name, imageTag, port, network, BLOCK_FILE, C
 			PortBindings: {
 				'7050': [
 					{
-						'HostPort': `${port}`
+						HostPort: port
 					}
 				]
 			},
@@ -96,9 +126,9 @@ exports.runNewOrderer = ({container_name, imageTag, port, network, BLOCK_FILE, C
 };
 
 exports.deployNewOrderer = ({
-	Name, network, imageTag, Constraints, port,
-	msp: {volumeName, configPath, id}, CONFIGTXVolume, BLOCK_FILE, kafkas, tls
-}) => {
+								Name, network, imageTag, Constraints, port,
+								msp: {volumeName, configPath, id}, CONFIGTXVolume, BLOCK_FILE, kafkas, tls
+							}) => {
 	return dockerUtil.serviceExist({Name}).then((info) => {
 		if (info) return info;
 		const Env = ordererUtil.envBuilder({BLOCK_FILE, msp: {configPath, id}, kafkas, tls});
@@ -115,9 +145,9 @@ exports.deployNewOrderer = ({
 	});
 };
 exports.deployNewPeer = ({
-	Name, network, imageTag, Constraints, port, eventHubPort,
-	msp: {volumeName, configPath, id}, peer_hostName_full, tls
-}) => {
+							 Name, network, imageTag, Constraints, port, eventHubPort,
+							 msp: {volumeName, configPath, id}, peer_hostName_full, tls
+						 }) => {
 	return dockerUtil.serviceExist({Name}).then((info) => {
 		if (info) return info;
 		const Env = peerUtil.envBuilder({
@@ -132,7 +162,7 @@ exports.deployNewPeer = ({
 			Name, network, Constraints, volumes: [{
 				volumeName, volume: peerUtil.container.MSPROOT
 			}, {
-				Type:'bind',volumeName: peerUtil.host.dockerSock, volume: peerUtil.container.dockerSock
+				Type: 'bind', volumeName: peerUtil.host.dockerSock, volume: peerUtil.container.dockerSock
 			}], ports: [
 				{host: port, container: 7051},
 				{host: eventHubPort, container: 7053}
@@ -142,12 +172,12 @@ exports.deployNewPeer = ({
 	});
 };
 exports.runNewPeer = ({
-	container_name, port, eventHubPort, network, imageTag,
-	msp: {
-		id, volumeName,
-		configPath
-	}, peer_hostName_full, tls
-}) => {
+						  container_name, port, eventHubPort, network, imageTag,
+						  msp: {
+							  id, volumeName,
+							  configPath
+						  }, peer_hostName_full, tls
+					  }) => {
 	const Image = `hyperledger/fabric-peer:${imageTag}`;
 	const Cmd = ['peer', 'node', 'start'];
 	const Env = peerUtil.envBuilder({
@@ -176,12 +206,12 @@ exports.runNewPeer = ({
 			PortBindings: {
 				'7051': [
 					{
-						'HostPort': `${port}`
+						HostPort: port
 					}
 				],
 				'7053': [
 					{
-						'HostPort': `${eventHubPort}`
+						HostPort: eventHubPort
 					}
 				]
 			},
