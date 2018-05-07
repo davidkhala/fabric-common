@@ -1,7 +1,5 @@
-const Docker = require('dockerode');
 
 const dockerUtil = require('../docker/nodejs/dockerode-util');
-const docker = new Docker();
 const logger = require('./logger').new('dockerode');
 const peerUtil = require('./peer');
 const caUtil = require('./ca');
@@ -10,8 +8,8 @@ const ordererUtil = require('./orderer');
 const zookeeperUtil = require('./zookeeper');
 
 exports.runCA = ({
-						container_name, port, network, imageTag, admin = 'Admin', adminpw = 'passwd'
-					}) => {
+					 container_name, port, network, imageTag, admin = 'Admin', adminpw = 'passwd'
+				 }) => {
 	const createOptions = {
 		name: container_name,
 		Env: caUtil.envBuilder(),
@@ -63,7 +61,7 @@ exports.runKafka = ({container_name, network, imageTag, BROKER_ID}, zookeepers, 
 exports.runZookeeper = ({container_name, network, imageTag, MY_ID}, allIDs) => {
 	const createOptions = {
 		name: container_name,
-		Env: zookeeperUtil.envBuilder(MY_ID,allIDs),
+		Env: zookeeperUtil.envBuilder(MY_ID, allIDs),
 		ExposedPorts: {
 			'2888': {}, '3888': {}, '2181': {}
 		},
@@ -75,16 +73,14 @@ exports.runZookeeper = ({container_name, network, imageTag, MY_ID}, allIDs) => {
 	return dockerUtil.containerStart(createOptions);
 };
 exports.uninstallChaincode = ({container_name, chaincodeId, chaincodeVersion}) => {
-	const container = docker.getContainer(container_name);
-	const options = {
-		Cmd: ['rm', '-rf', `/var/hyperledger/production/chaincodes/${chaincodeId}.${chaincodeVersion}`]
-	};
-
-	return container.exec(options).then(exec =>
-		exec.start().then(() => exec.inspect())
-	);
+	const Cmd = ['rm', '-rf', `/var/hyperledger/production/chaincodes/${chaincodeId}.${chaincodeVersion}`];
+	return dockerUtil.containerExec({container_name,Cmd});
 
 // 	docker exec $PEER_CONTAINER rm -rf /var/hyperledger/production/chaincodes/$CHAINCODE_NAME.$VERSION
+};
+exports.chaincodeContainerList = () => {
+	//TODO not implement yet
+	return dockerUtil.containerList();
 };
 exports.runOrderer = ({container_name, imageTag, port, network, BLOCK_FILE, CONFIGTXVolume, msp: {id, configPath, volumeName}, kafkas, tls}) => {
 	const Image = `hyperledger/fabric-orderer:${imageTag}`;
@@ -126,9 +122,9 @@ exports.runOrderer = ({container_name, imageTag, port, network, BLOCK_FILE, CONF
 };
 
 exports.deployOrderer = ({
-								Name, network, imageTag, Constraints, port,
-								msp: {volumeName, configPath, id}, CONFIGTXVolume, BLOCK_FILE, kafkas, tls
-							}) => {
+							 Name, network, imageTag, Constraints, port,
+							 msp: {volumeName, configPath, id}, CONFIGTXVolume, BLOCK_FILE, kafkas, tls
+						 }) => {
 	return dockerUtil.serviceExist({Name}).then((info) => {
 		if (info) return info;
 		const Env = ordererUtil.envBuilder({BLOCK_FILE, msp: {configPath, id}, kafkas, tls});
@@ -145,9 +141,9 @@ exports.deployOrderer = ({
 	});
 };
 exports.deployPeer = ({
-							 Name, network, imageTag, Constraints, port, eventHubPort,
-							 msp: {volumeName, configPath, id}, peer_hostName_full, tls
-						 }) => {
+						  Name, network, imageTag, Constraints, port, eventHubPort,
+						  msp: {volumeName, configPath, id}, peer_hostName_full, tls
+					  }) => {
 	return dockerUtil.serviceExist({Name}).then((info) => {
 		if (info) return info;
 		const Env = peerUtil.envBuilder({
@@ -172,12 +168,12 @@ exports.deployPeer = ({
 	});
 };
 exports.runPeer = ({
-						  container_name, port, eventHubPort, network, imageTag,
-						  msp: {
-							  id, volumeName,
-							  configPath
-						  }, peer_hostName_full, tls
-					  }) => {
+					   container_name, port, eventHubPort, network, imageTag,
+					   msp: {
+						   id, volumeName,
+						   configPath
+					   }, peer_hostName_full, tls
+				   }) => {
 	const Image = `hyperledger/fabric-peer:${imageTag}`;
 	const Cmd = ['peer', 'node', 'start'];
 	const Env = peerUtil.envBuilder({
@@ -245,11 +241,17 @@ exports.findTask = ({service, node, state}) => {
 		}
 	});
 };
-exports.networkCreateIfNotExist = ({Name},swarm)=>{
-	return dockerUtil.networkInspect({Name}).catch(err=>{
-		if(err.toString().includes('no such network')){
-			return dockerUtil.networkCreate({Name},swarm)
+exports.networkCreateIfNotExist = ({Name}, swarm) => {
+	return dockerUtil.networkInspect({Name}).then(status => {
+		logger.info(Name, 'exist', status);
+		return status;
+	}).catch(err => {
+		if (err.toString().includes('no such network')) {
+			return dockerUtil.networkCreate({Name}, swarm);
 		}
 		throw err;
-	})
+	});
+};
+exports.networkReCreate = ({Name}, swarm) => {
+	return dockerUtil.networkRemove({Name}).then(() => dockerUtil.networkCreate({Name}, swarm));
 };
