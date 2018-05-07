@@ -74,13 +74,24 @@ exports.runZookeeper = ({container_name, network, imageTag, MY_ID}, allIDs) => {
 };
 exports.uninstallChaincode = ({container_name, chaincodeId, chaincodeVersion}) => {
 	const Cmd = ['rm', '-rf', `/var/hyperledger/production/chaincodes/${chaincodeId}.${chaincodeVersion}`];
-	return dockerUtil.containerExec({container_name,Cmd});
+	return dockerUtil.containerExec({container_name, Cmd});
 
 // 	docker exec $PEER_CONTAINER rm -rf /var/hyperledger/production/chaincodes/$CHAINCODE_NAME.$VERSION
 };
 exports.chaincodeContainerList = () => {
-	//TODO not implement yet
-	return dockerUtil.containerList();
+	return dockerUtil.containerList().then(containers =>
+		containers.filter(container => container.Names.find(name => name.startsWith('/dev-')))
+	);
+};
+exports.chaincodeContainerClean = () => {
+	return module.exports.chaincodeContainerList().then(containers => {
+		containers.forEach(container => {
+			return dockerUtil.containerDelete(container.Id)
+				.then(() => dockerUtil.imageDelete(container.Image));
+
+		});
+		return containers;
+	});
 };
 exports.runOrderer = ({container_name, imageTag, port, network, BLOCK_FILE, CONFIGTXVolume, msp: {id, configPath, volumeName}, kafkas, tls}) => {
 	const Image = `hyperledger/fabric-orderer:${imageTag}`;
