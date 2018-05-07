@@ -24,7 +24,7 @@ exports.runNewCA = ({
 			PortBindings: {
 				'7054': [
 					{
-						HostPort: port
+						HostPort: port.toString()
 					}
 				]
 			},
@@ -45,7 +45,7 @@ exports.deployNewCA = ({Name, network, imageTag, Constraints, port, admin = 'Adm
 	});
 };
 
-exports.runNewKafka = ({container_name, port, network, imageTag, BROKER_ID}, zookeepers, {N, M}) => {
+exports.runNewKafka = ({container_name, network, imageTag, BROKER_ID}, zookeepers, {N, M}) => {
 
 	const createOptions = {
 		name: container_name,
@@ -115,7 +115,7 @@ exports.runNewOrderer = ({container_name, imageTag, port, network, BLOCK_FILE, C
 			PortBindings: {
 				'7050': [
 					{
-						HostPort: port
+						HostPort: port.toString()
 					}
 				]
 			},
@@ -206,12 +206,12 @@ exports.runNewPeer = ({
 			PortBindings: {
 				'7051': [
 					{
-						HostPort: port
+						HostPort: port.toString()
 					}
 				],
 				'7053': [
 					{
-						HostPort: eventHubPort
+						HostPort: eventHubPort.toString()
 					}
 				]
 			},
