@@ -1,4 +1,3 @@
-
 const dockerUtil = require('../docker/nodejs/dockerode-util');
 const logger = require('./logger').new('dockerode');
 const peerUtil = require('./peer');
@@ -222,7 +221,13 @@ exports.runPeer = ({
 					}
 				]
 			},
-			NetworkMode: network
+		},
+		NetworkingConfig: {
+			EndpointsConfig:{
+				[network]: {
+					Aliases: [peer_hostName_full]
+				}
+			}
 		}
 	};
 	return dockerUtil.containerStart(createOptions);
