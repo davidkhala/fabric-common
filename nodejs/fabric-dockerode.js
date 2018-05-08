@@ -6,6 +6,9 @@ const kafkaUtil = require('./kafka');
 const ordererUtil = require('./orderer');
 const zookeeperUtil = require('./zookeeper');
 
+exports.imagePullCCENV = (imageTag)=>{
+	return dockerUtil.imagePull(`hyperledger/fabric-ccenv:${imageTag}`);
+};
 exports.runCA = ({
 					 container_name, port, network, imageTag, admin = 'Admin', adminpw = 'passwd'
 				 }) => {
@@ -235,9 +238,6 @@ exports.runPeer = ({
 
 exports.volumeReCreate = ({Name, path}) => {
 	return dockerUtil.volumeRemove({Name}).then(() => dockerUtil.volumeCreateIfNotExist({Name, path}));
-};
-exports.volumeCreateIfNotExist = ({Name, path}) => {
-	return dockerUtil.volumeCreateIfNotExist({Name, path});
 };
 /**
  * service=<service name>
