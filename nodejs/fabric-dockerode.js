@@ -6,7 +6,7 @@ const kafkaUtil = require('./kafka');
 const ordererUtil = require('./orderer');
 const zookeeperUtil = require('./zookeeper');
 
-exports.imagePullCCENV = (imageTag)=>{
+exports.imagePullCCENV = (imageTag) => {
 	return dockerUtil.imagePull(`hyperledger/fabric-ccenv:${imageTag}`);
 };
 exports.runCA = ({
@@ -33,18 +33,40 @@ exports.runCA = ({
 	};
 	return dockerUtil.containerStart(createOptions);
 };
-exports.deployCA = ({Name, network, imageTag, Constraints, port, admin = 'Admin', adminpw = 'passwd'}) => {
-	return dockerUtil.serviceExist({Name}).then((info) => {
-		if (info) return info;
-		return dockerUtil.serviceCreate({
-			Image: `hyperledger/fabric-ca:${imageTag}`,
-			Name,
-			Cmd: ['fabric-ca-server', 'start', '-d', '-b', `${admin}:${adminpw}`],
-			network, Constraints, volumes: [], ports: [{host: port, container: 7054}]
-		});
+exports.deployZookeeper = ({Name, network, imageTag, Constraints, MY_ID}, allIDs) => {
+	return dockerUtil.serviceCreateIfNotExist({
+		Image: `hyperledger/fabric-zookeeper:${imageTag}`,
+		Name,
+		network,
+		Constraints,
+		ports: [{container: 2888}, {container: 3888}, {container: 2181}],
+		Env: zookeeperUtil.envBuilder(MY_ID, allIDs),
+	});
+};
+exports.deployKafka = ({Name, network, imageTag, Constraints, BROKER_ID}, zookeepers, {N, M}) => {
+	return dockerUtil.serviceCreateIfNotExist({
+		Name,
+		Image: `hyperledger/fabric-kafka:${imageTag}`,
+		network,
+		Constraints,
+		ports: [{container: 9092}],
+		Env: kafkaUtil.envBuilder({N, M, BROKER_ID}, zookeepers),
 	});
 };
 
+exports.deployCA = ({Name, network, imageTag, Constraints, port, admin = 'Admin', adminpw = 'passwd'}) => {
+	const serviceName = dockerUtil.swarmServiceName(Name);
+	return dockerUtil.serviceCreateIfNotExist({
+		Image: `hyperledger/fabric-ca:${imageTag}`,
+		Name: serviceName,
+		Cmd: ['fabric-ca-server', 'start', '-d', '-b', `${admin}:${adminpw}`],
+		network,
+		Constraints,
+		ports: [{host: port, container: 7054}],
+		Env: caUtil.envBuilder(),
+		Aliases: [Name],
+	});
+};
 exports.runKafka = ({container_name, network, imageTag, BROKER_ID}, zookeepers, {N, M}) => {
 
 	const createOptions = {
@@ -80,20 +102,20 @@ exports.uninstallChaincode = ({container_name, chaincodeId, chaincodeVersion}) =
 
 // 	docker exec $PEER_CONTAINER rm -rf /var/hyperledger/production/chaincodes/$CHAINCODE_NAME.$VERSION
 };
-exports.chaincodeContainerList = () => {
-	return dockerUtil.containerList().then(containers =>
-		containers.filter(container => container.Names.find(name => name.startsWith('/dev-')))
-	);
+exports.chaincodeImageList = async () => {
+	const images = await dockerUtil.imageList();
+	return images.filter(image => image.RepoTags.find(name => name.startsWith('dev-')));
 };
-exports.chaincodeContainerClean = () => {
-	return module.exports.chaincodeContainerList().then(containers => {
-		containers.forEach(container => {
-			return dockerUtil.containerDelete(container.Id)
-				.then(() => dockerUtil.imageDelete(container.Image));
-
-		});
-		return containers;
-	});
+exports.chaincodeContainerList = async () => {
+	const containers = await dockerUtil.containerList();
+	return containers.filter(container => container.Names.find(name => name.startsWith('/dev-')));
+};
+exports.chaincodeClean = async () => {
+	const containers = await module.exports.chaincodeContainerList();
+	await Promise.all(containers.map(container => {
+		return dockerUtil.containerDelete(container.Id)
+			.then(() => dockerUtil.imageDelete(container.Image));
+	}));
 };
 exports.runOrderer = ({container_name, imageTag, port, network, BLOCK_FILE, CONFIGTXVolume, msp: {id, configPath, volumeName}, kafkas, tls}) => {
 	const Image = `hyperledger/fabric-orderer:${imageTag}`;
@@ -138,46 +160,38 @@ exports.deployOrderer = ({
 							 Name, network, imageTag, Constraints, port,
 							 msp: {volumeName, configPath, id}, CONFIGTXVolume, BLOCK_FILE, kafkas, tls
 						 }) => {
-	return dockerUtil.serviceExist({Name}).then((info) => {
-		if (info) return info;
-		const Env = ordererUtil.envBuilder({BLOCK_FILE, msp: {configPath, id}, kafkas, tls});
-		return dockerUtil.serviceCreate({
-			Cmd: ['orderer'],
-			Image: `hyperledger/fabric-orderer:${imageTag}`
-			, Name, network, Constraints, volumes: [{
-				volumeName, volume: peerUtil.container.MSPROOT
-			}, {
-				volumeName: CONFIGTXVolume, volume: ordererUtil.container.CONFIGTX
-			}], ports: [{host: port, container: 7050}],
-			Env
-		});
+	const serviceName = dockerUtil.swarmServiceName(Name);
+	return dockerUtil.serviceCreateIfNotExist({
+		Cmd: ['orderer'],
+		Image: `hyperledger/fabric-orderer:${imageTag}`,
+		Name: serviceName, network, Constraints,
+		volumes: [{volumeName, volume: peerUtil.container.MSPROOT},
+			{volumeName: CONFIGTXVolume, volume: ordererUtil.container.CONFIGTX}],
+		ports: [{host: port, container: 7050}],
+		Env: ordererUtil.envBuilder({BLOCK_FILE, msp: {configPath, id}, kafkas, tls}),
+		Aliases: [Name]
 	});
 };
 exports.deployPeer = ({
 						  Name, network, imageTag, Constraints, port, eventHubPort,
 						  msp: {volumeName, configPath, id}, peer_hostName_full, tls
 					  }) => {
-	return dockerUtil.serviceExist({Name}).then((info) => {
-		if (info) return info;
-		const Env = peerUtil.envBuilder({
-			network, msp: {
-				configPath, id, peer_hostName_full
-			}, tls
-		});
+	const serviceName = dockerUtil.swarmServiceName(Name);
 
-		return dockerUtil.serviceCreate({
-			Image: `hyperledger/fabric-peer:${imageTag}`,
-			Cmd: ['peer', 'node', 'start'],
-			Name, network, Constraints, volumes: [{
-				volumeName, volume: peerUtil.container.MSPROOT
-			}, {
-				Type: 'bind', volumeName: peerUtil.host.dockerSock, volume: peerUtil.container.dockerSock
-			}], ports: [
-				{host: port, container: 7051},
-				{host: eventHubPort, container: 7053}
-			],
-			Env
-		});
+	return dockerUtil.serviceCreateIfNotExist({
+		Image: `hyperledger/fabric-peer:${imageTag}`,
+		Cmd: ['peer', 'node', 'start'],
+		Name: serviceName, network, Constraints, volumes: [{
+			volumeName, volume: peerUtil.container.MSPROOT
+		}, {
+			Type: 'bind', volumeName: peerUtil.host.dockerSock, volume: peerUtil.container.dockerSock
+		}],
+		ports: [
+			{host: port, container: 7051},
+			{host: eventHubPort, container: 7053}
+		],
+		Env: peerUtil.envBuilder({network, msp: {configPath, id, peer_hostName_full}, tls}),
+		Aliases: [Name],
 	});
 };
 exports.runPeer = ({
@@ -226,7 +240,7 @@ exports.runPeer = ({
 			},
 		},
 		NetworkingConfig: {
-			EndpointsConfig:{
+			EndpointsConfig: {
 				[network]: {
 					Aliases: [peer_hostName_full]
 				}
