@@ -7,17 +7,6 @@ const kafkaUtil = require('./kafka');
 const ordererUtil = require('./orderer');
 const zookeeperUtil = require('./zookeeper');
 
-exports.nodeSelf = async (pretty) => {
-	const info = await dockerCmdUtil.nodeInspect('self');
-	if (pretty) {
-		const {
-			ID, Status, ManagerStatus,
-			Description: {Hostname, Platform, Engine: {EngineVersion}},
-		} = info;
-		return {ID, Hostname, Platform, EngineVersion, Status, ManagerStatus};
-	}
-	return info;
-};
 exports.imagePullCCENV = (imageTag) => {
 	return dockerUtil.imagePull(`hyperledger/fabric-ccenv:${imageTag}`);
 };
@@ -66,9 +55,9 @@ exports.deployKafka = ({Name, network, imageTag, Constraints, BROKER_ID}, zookee
 	});
 };
 
-exports.deployCA = async ({Name, network, imageTag, Constraints, port, admin = 'Admin', adminpw = 'passwd'}) => {
+exports.deployCA = ({Name, network, imageTag, Constraints, port, admin = 'Admin', adminpw = 'passwd'}) => {
 	const serviceName = dockerUtil.swarmServiceName(Name);
-	const service = await dockerUtil.serviceCreateIfNotExist({
+	return dockerUtil.serviceCreateIfNotExist({
 		Image: `hyperledger/fabric-ca:${imageTag}`,
 		Name: serviceName,
 		Cmd: ['fabric-ca-server', 'start', '-d', '-b', `${admin}:${adminpw}`],
@@ -78,16 +67,6 @@ exports.deployCA = async ({Name, network, imageTag, Constraints, port, admin = '
 		Env: caUtil.envBuilder(),
 		Aliases: [Name],
 	});
-	const Sleep = require('sleep');
-	const taskLooper = () => exports.findRunningTask({service: service.ID}).then(task => {
-		if (task) {
-			return task;
-		}
-		Sleep.msleep(1000);
-		logger.warn('taskLooper');
-		return taskLooper();
-	});
-	return await taskLooper();
 };
 exports.runKafka = ({container_name, network, imageTag, BROKER_ID}, zookeepers, {N, M}) => {
 
@@ -272,29 +251,11 @@ exports.runPeer = ({
 	return dockerUtil.containerStart(createOptions);
 };
 
-exports.volumeReCreate = ({Name, path}) => {
-	return dockerUtil.volumeRemove({Name}).then(() => dockerUtil.volumeCreateIfNotExist({Name, path}));
-};
-/**
- * service=<service name>, not ID
- node=<node id or name>
- https://docs.docker.com/engine/swarm/how-swarm-mode-works/swarm-task-states/
- */
-exports.findRunningTask = ({service, node} = {}) => {
-	return dockerUtil.findTask({service, node, state: 'running'});
+exports.volumeReCreate = async ({Name, path}) => {
+	await dockerUtil.volumeRemove(Name);
+	return await dockerUtil.volumeCreateIfNotExist({Name, path});
 };
 
-exports.networkCreateIfNotExist = ({Name}, swarm) => {
-	return dockerUtil.networkInspect({Name}).then(status => {
-		logger.info(Name, 'exist', status);
-		return status;
-	}).catch(err => {
-		if (err.toString().includes('no such network')) {
-			return dockerUtil.networkCreate({Name}, swarm);
-		}
-		throw err;
-	});
-};
 exports.networkReCreate = ({Name}, swarm) => {
-	return dockerUtil.networkRemove({Name}).then(() => dockerUtil.networkCreate({Name}, swarm));
+	return dockerUtil.networkRemove(Name).then(() => dockerUtil.networkCreate({Name}, swarm));
 };
