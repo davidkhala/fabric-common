@@ -29,19 +29,25 @@ exports.runCA = ({
 					}
 				]
 			},
-			NetworkMode: network
+		},
+		NetworkingConfig: {
+			EndpointsConfig: {
+				[network]: {
+					Aliases: [container_name]
+				}
+			}
 		}
 	};
 	return dockerUtil.containerStart(createOptions);
 };
-exports.deployZookeeper = ({Name, network, imageTag, Constraints, MY_ID}, allIDs) => {
+exports.deployZookeeper = ({Name, network, imageTag, Constraints, MY_ID}, zookeepersConfig) => {
 	return dockerUtil.serviceCreateIfNotExist({
 		Image: `hyperledger/fabric-zookeeper:${imageTag}`,
 		Name,
 		network,
 		Constraints,
 		ports: [{container: 2888}, {container: 3888}, {container: 2181}],
-		Env: zookeeperUtil.envBuilder(MY_ID, allIDs),
+		Env: zookeeperUtil.envBuilder(MY_ID, zookeepersConfig,true),
 	});
 };
 exports.deployKafka = ({Name, network, imageTag, Constraints, BROKER_ID}, zookeepers, {N, M}) => {
@@ -73,27 +79,35 @@ exports.runKafka = ({container_name, network, imageTag, BROKER_ID}, zookeepers, 
 	const createOptions = {
 		name: container_name,
 		Env: kafkaUtil.envBuilder({N, M, BROKER_ID}, zookeepers),
-		ExposedPorts: {
-			'9092': {}
-		},
 		Image: `hyperledger/fabric-kafka:${imageTag}`,
+		NetworkingConfig: {
+			EndpointsConfig: {
+				[network]: {
+					Aliases: [container_name]
+				}
+			}
+		},
 		Hostconfig: {
-			NetworkMode: network
-		}
+			PublishAllPorts:true
+		},
 	};
 	return dockerUtil.containerStart(createOptions);
 };
-exports.runZookeeper = ({container_name, network, imageTag, MY_ID}, allIDs) => {
+exports.runZookeeper = ({container_name, network, imageTag, MY_ID}, zookeepersConfig) => {
 	const createOptions = {
 		name: container_name,
-		Env: zookeeperUtil.envBuilder(MY_ID, allIDs),
-		ExposedPorts: {
-			'2888': {}, '3888': {}, '2181': {}
-		},
+		Env: zookeeperUtil.envBuilder(MY_ID, zookeepersConfig),
 		Image: `hyperledger/fabric-zookeeper:${imageTag}`,
+		NetworkingConfig: {
+			EndpointsConfig: {
+				[network]: {
+					Aliases: [container_name]
+				}
+			}
+		},
 		Hostconfig: {
-			NetworkMode: network
-		}
+			PublishAllPorts:true
+		},
 	};
 	return dockerUtil.containerStart(createOptions);
 };
@@ -151,7 +165,13 @@ exports.runOrderer = ({container_name, imageTag, port, network, BLOCK_FILE, CONF
 					}
 				]
 			},
-			NetworkMode: network
+		},
+		NetworkingConfig: {
+			EndpointsConfig: {
+				[network]: {
+					Aliases: [container_name]
+				}
+			}
 		}
 	};
 	return dockerUtil.containerStart(createOptions);
