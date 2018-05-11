@@ -212,7 +212,7 @@ exports.deployPeer = ({
 			{host: eventHubPort, container: 7053}
 		],
 		Env: peerUtil.envBuilder({network, msp: {configPath, id, peer_hostName_full}, tls}),
-		Aliases: [Name],
+		Aliases: [Name,peer_hostName_full],
 	});
 };
 exports.runPeer = ({
