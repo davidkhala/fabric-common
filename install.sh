@@ -52,9 +52,9 @@ function golang-uninstall() {
 function govendor() {
 	go get -u github.com/kardianos/govendor
 }
-function golang_dep(){
-    export GOPATH=$(go env GOPATH)
-    curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+function golang_dep() {
+	export GOPATH=$(go env GOPATH)
+	curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
 }
 function cn() {
 	$CURRENT/docker/install.sh cn
@@ -64,7 +64,7 @@ if [ -n "$fcn" ]; then
 	$fcn $remain_params
 else
 	sudo apt-get install -y linux-image-extra-$(uname -r) linux-image-extra-virtual
-    sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+	sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
 	$CURRENT/docker/install.sh
 	$CURRENT/docker/nodejs/install.sh
 fi
