@@ -4,8 +4,9 @@
   "dependencies": {
     "fabric-ca-client": "1.1.0",
     "fabric-client": "1.1.0",
-    "log4js": "^2.4.1",
+    "fs-extra": "^6.0.1",
     "request": "^2.85.0",
-    "fs-extra": "^6.0.0"
+    "log4js": "^2.6.0",
+    "long": "^4.0.0"
   }
 }

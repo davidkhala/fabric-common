@@ -32,42 +32,31 @@ exports.new = (client, {eventHubPort, tls_cacerts, pem, peer_hostName_full, host
 	//FIXME: bug design in fabric, if onError callback is set in registerBlockEvent, the register action will reconnect EventHub automatically
 	return eventHub;
 };
-exports.blockEventPromise = (eventHub, {eventWaitTime, timeOutErr}, validator) => {
+exports.blockEvent = (eventHub, validator = ({block}) => {
+	return {valid: block.data.data.length === 1, interrupt: true};
+}, onSuccess, onError = (err) => {
+	throw err;
+}) => {
 
-	const _validator = validator ? validator : ({block}) => {
-		return {valid: block.data.data.length === 1, interrupt: true};
-	};
-	return new Promise((resolve, reject) => {
-
-		// eventHub.connect(); //JSDOC  If the connection fails to get established, the application will be notified via the error callbacks from the registerXXXEvent() methods.
-		const timerID = setTimeout(() => {
-			logger.error({timeOutErr});
+	const block_registration_number = eventHub.registerBlockEvent((block) => {
+		const {valid, interrupt} = validator({block});
+		if (interrupt) {
 			eventHub.unregisterBlockEvent(block_registration_number);
 			eventHub.disconnect();
-			reject(timeOutErr);
-		}, eventWaitTime);
-
-
-		const block_registration_number = eventHub.registerBlockEvent((block) => {
-			const {valid, interrupt} = _validator({block});
-			if (interrupt) {
-				clearTimeout(timerID);
-				eventHub.unregisterBlockEvent(block_registration_number);
-				eventHub.disconnect();
-			}
-			if (valid) {
-				resolve({block});
-			} else {
-				reject({block});
-			}
-		}, (err) => {
-			logger.error(err);
-			eventHub.unregisterBlockEvent(block_registration_number);
-			eventHub.disconnect();
-			reject(err);
-		});
-
+		}
+		if (valid) {
+			onSuccess({block, interrupt});
+		} else {
+			onError({block, interrupt});
+		}
+	}, (err) => {
+		logger.error(err);
+		eventHub.unregisterBlockEvent(block_registration_number);
+		eventHub.disconnect();
+		onError({err, interrupt: true});
 	});
+
+	return block_registration_number;
 };
 exports.txEventPromise = (eventHub, {txId, eventWaitTime, timeOutErr}, validator) => {
 	const _validator = validator ? validator : ({tx, code}) => {
