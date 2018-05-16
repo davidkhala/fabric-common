@@ -4,9 +4,12 @@ const fsExtra = require('fs-extra');
 const logger = require('./logger').new('ca-core');
 const CAClient = require('fabric-ca-client/lib/FabricCAClientImpl');
 
+const FABRIC_CA_HOME = '/etc/hyperledger/fabric-ca-server';
 exports.container = {
-	FABRIC_CA_HOME: '/etc/hyperledger/fabric-ca-server',
-	CONFIG: '/etc/hyperledger/fabric-ca-server/fabric-ca-server-config.yaml',
+	FABRIC_CA_HOME,
+	CONFIG: path.resolve(FABRIC_CA_HOME, 'fabric-ca-server-config.yaml'),
+	caKey: path.resolve(FABRIC_CA_HOME, 'ca-key.pem'),
+	caCert: path.resolve(FABRIC_CA_HOME, 'ca-cert.pem'),
 };
 exports.user = {
 	register: (caService, {username, affiliation}, adminUser) =>
@@ -78,10 +81,6 @@ const registerIfNotExist = async (caService, {enrollmentID, enrollmentSecret, af
 		}
 	}
 };
-const revoke = (caService, {enrollmentID}, adminUser) => {
-	// [[{"code":10002,"message":"Identity 'CAadmin' does not have attribute 'hf.Revoker'"}]]
-	return caService.revoke({enrollmentID}, adminUser);
-};
 const pkcs11_key = {
 	generate: (cryptoSuite) => cryptoSuite.generateKey({ephemeral: !cryptoSuite._cryptoKeyStore}),
 	toKeystore: (pkcs11_key, dirName) => {
@@ -142,8 +141,7 @@ exports.new = (caUrl, trustedRoots = []) => {
 	return new CAClient(caUrl, tlsOptions);
 };
 exports.envBuilder = () => {
-	const env = [
+	return [
 		'GODEBUG=netdns=go',
 	];
-	return env;
 };

@@ -1,5 +1,8 @@
 const Peer = require('fabric-client/lib/Peer');
 const fs = require('fs-extra');
+const fsExtra = require('fs-extra');
+const path = require('path');
+const pathUtil = require('./path');
 exports.new = ({peerPort, peer_hostName_full, tls_cacerts, pem, host}) => {
 	const Host = host ? host : 'localhost';
 	let peerUrl = `grpcs://${Host}:${peerPort}`;
@@ -22,9 +25,6 @@ exports.new = ({peerPort, peer_hostName_full, tls_cacerts, pem, host}) => {
 		return new Peer(peerUrl);
 	}
 };
-const fsExtra = require('fs-extra');
-const path = require('path');
-const pathUtil = require('./path');
 exports.cryptoExistLocal = (peerMspRoot, {peer_hostName_full}) => {
 	fsExtra.ensureDirSync(peerMspRoot);
 
