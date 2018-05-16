@@ -6,22 +6,77 @@ const caUtil = require('./ca');
 const kafkaUtil = require('./kafka');
 const ordererUtil = require('./orderer');
 const zookeeperUtil = require('./zookeeper');
+const yaml = require('js-yaml');
+const fs = require('fs');
+const path = require('path');
 
 exports.imagePullCCENV = (imageTag) => {
 	return dockerUtil.imagePull(`hyperledger/fabric-ccenv:${imageTag}`);
 };
+// CN=ca.example.com,O=example.com,L=San Francisco,ST=California,C=US
 exports.runCA = ({
-					 container_name, port, network, imageTag, admin = 'Admin', adminpw = 'passwd'
+					 container_name, port, network, imageTag,
+					 fabricCaServerConfig,
+					 admin = 'Admin', adminpw = 'passwd',
+					 tls, csr = {OU:'',O:'',C: 'US', ST: 'California', L: 'San Francisco',},
 				 }) => {
+	const caKey = path.resolve(caUtil.container.FABRIC_CA_HOME, 'ca-key.pem');
+	const caCert = path.resolve(caUtil.container.FABRIC_CA_HOME, 'ca-cert.pem');
+	let Cmd = ['sh', '-c', `rm ${caKey};rm ${caCert};fabric-ca-server start -d`];
+	//TLS enabled but no certificate or key provided, automatically generate TLS credentials
+	//FIXME TLS CSR: {CN:example.com Names:[{C:US ST:North Carolina L: O:Hyperledger OU:Fabric SerialNumber:}] Hosts:[02cf209b65fb localhost] KeyRequest:<nil> CA:<nil> SerialNumber:}
+
+
+	const configYaml = {
+		csr: {
+			cn: container_name,
+			// hosts: [container_name],
+		},
+		tls: {
+			enabled: tls,
+			certfile: caCert,
+			keyfile: caKey,
+		},
+		registry: {
+			maxenrollments: -1,
+			identities: [{
+				name: admin,
+				pass: adminpw,
+				type: 'client',
+				affiliation: '',
+				attrs: {
+					['hf.Registrar.Roles']: 'peer,orderer,client,user',
+					['hf.Registrar.DelegateRoles']: 'peer,orderer,client,user',
+					['hf.Revoker']: true,
+					['hf.IntermediateCA']: true,
+					['hf.GenCRL']: true,
+					['hf.Registrar.Attributes']: '*',
+					['hf.AffiliationMgr']: true
+				}
+			}]
+		}
+	};
+	if (csr) {
+		configYaml.csr.names = [csr];
+	}
+	fs.writeFileSync(fabricCaServerConfig, yaml.safeDump(configYaml, {lineWidth: 180}));
+
+	const mountConfigFile = caUtil.container.CONFIG;
 	const createOptions = {
 		name: container_name,
 		Env: caUtil.envBuilder(),
 		ExposedPorts: {
 			'7054': {}
 		},
-		Cmd: ['fabric-ca-server', 'start', '-d', '-b', `${admin}:${adminpw}`],
+		Cmd,
+		Volumes: {
+			[mountConfigFile]: {},
+		},
 		Image: `hyperledger/fabric-ca:${imageTag}`,
 		Hostconfig: {
+			Binds: [
+				`${fabricCaServerConfig}:${mountConfigFile}`,
+			],
 			PortBindings: {
 				'7054': [
 					{
@@ -47,7 +102,7 @@ exports.deployZookeeper = ({Name, network, imageTag, Constraints, MY_ID}, zookee
 		network,
 		Constraints,
 		ports: [{container: 2888}, {container: 3888}, {container: 2181}],
-		Env: zookeeperUtil.envBuilder(MY_ID, zookeepersConfig,true),
+		Env: zookeeperUtil.envBuilder(MY_ID, zookeepersConfig, true),
 	});
 };
 exports.deployKafka = ({Name, network, imageTag, Constraints, BROKER_ID}, zookeepers, {N, M}) => {
@@ -61,7 +116,7 @@ exports.deployKafka = ({Name, network, imageTag, Constraints, BROKER_ID}, zookee
 	});
 };
 
-exports.deployCA = ({Name, network, imageTag, Constraints, port, admin = 'Admin', adminpw = 'passwd'}) => {
+exports.deployCA = ({Name, network, imageTag, Constraints, port, admin = 'Admin', adminpw = 'passwd', tls}) => {
 	const serviceName = dockerUtil.swarmServiceName(Name);
 	return dockerUtil.serviceCreateIfNotExist({
 		Image: `hyperledger/fabric-ca:${imageTag}`,
@@ -88,7 +143,7 @@ exports.runKafka = ({container_name, network, imageTag, BROKER_ID}, zookeepers, 
 			}
 		},
 		Hostconfig: {
-			PublishAllPorts:true
+			PublishAllPorts: true
 		},
 	};
 	return dockerUtil.containerStart(createOptions);
@@ -106,7 +161,7 @@ exports.runZookeeper = ({container_name, network, imageTag, MY_ID}, zookeepersCo
 			}
 		},
 		Hostconfig: {
-			PublishAllPorts:true
+			PublishAllPorts: true
 		},
 	};
 	return dockerUtil.containerStart(createOptions);
@@ -212,7 +267,7 @@ exports.deployPeer = ({
 			{host: eventHubPort, container: 7053}
 		],
 		Env: peerUtil.envBuilder({network, msp: {configPath, id, peer_hostName_full}, tls}),
-		Aliases: [Name,peer_hostName_full],
+		Aliases: [Name, peer_hostName_full],
 	});
 };
 exports.runPeer = ({
