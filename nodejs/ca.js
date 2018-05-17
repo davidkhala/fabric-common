@@ -10,6 +10,7 @@ exports.container = {
 	CONFIG: path.resolve(FABRIC_CA_HOME, 'fabric-ca-server-config.yaml'),
 	caKey: path.resolve(FABRIC_CA_HOME, 'ca-key.pem'),
 	caCert: path.resolve(FABRIC_CA_HOME, 'ca-cert.pem'),
+	tlsCert: path.resolve(FABRIC_CA_HOME,'tls-cert.pem'),
 };
 exports.user = {
 	register: (caService, {username, affiliation}, adminUser) =>

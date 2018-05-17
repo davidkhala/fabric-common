@@ -30,12 +30,14 @@ exports.runCA = ({
 	const configYaml = {
 		csr: {
 			cn: container_name,
-			// hosts: [container_name],
+			hosts: [container_name],
+		},
+		ca:{
+			keyfile:caUtil.container.caKey,
+			certfile:caUtil.container.caCert,
 		},
 		tls: {
 			enabled: tls,
-			certfile: caCert,
-			keyfile: caKey,
 		},
 		registry: {
 			maxenrollments: -1,
