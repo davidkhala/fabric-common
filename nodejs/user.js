@@ -47,9 +47,10 @@ exports.loadFromLocal = (userMSPRoot, cryptoSuite, {username, domain, mspId}) =>
 	return user.setEnrollment(privateKey, readFile(signcertFile), mspId)
 		.then(() => user);
 };
-exports.build = (username, {key, certificate}, MSPID) => {
+exports.build = async (username, {key, certificate}, MSPID) => {
 	const user = new User(username);
-	return user.setEnrollment(key, certificate, MSPID).then(() => user);
+	await user.setEnrollment(key, certificate, MSPID);
+	return user;
 };
 exports.getCertificate = (user) => {
 	return user.getSigningIdentity()._certificate;

@@ -1,4 +1,5 @@
 const logger = require('./logger').new('eventHub');
+const fs = require('fs');
 exports.unRegisterAllEvents = (eventHub) => {
 	eventHub._chaincodeRegistrants = {};
 	eventHub._blockOnEvents = {};
@@ -9,23 +10,24 @@ exports.unRegisterAllEvents = (eventHub) => {
 };
 
 // state-ful client
-exports.new = (client, {eventHubPort, tls_cacerts, pem, peer_hostName_full, host}) => {
+exports.new = (client, {eventHubPort, tls_cacerts, pem, peerHostName, host}) => {
 
 	const Host = host ? host : 'localhost';
 	const eventHub = client.newEventHub();// NOTE newEventHub binds to clientContext
 	if (pem) {
 		eventHub.setPeerAddr(`grpcs://${Host}:${eventHubPort}`, {
 			pem,
-			'ssl-target-name-override': peer_hostName_full
+			'ssl-target-name-override': peerHostName
 		});
 	} else if (tls_cacerts) {
 		eventHub.setPeerAddr(`grpcs://${Host}:${eventHubPort}`, {
 			pem: fs.readFileSync(tls_cacerts).toString(),
-			'ssl-target-name-override': peer_hostName_full
+			'ssl-target-name-override': peerHostName
 		});
 	}
 	else {
 		//non tls
+		//FIXME node-sdk jsdoc update
 		eventHub.setPeerAddr(`grpc://${Host}:${eventHubPort}`);
 	}
 	// eventHub._force_reconnect = false; //see Bug design in registration and eventHub

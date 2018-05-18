@@ -9,23 +9,35 @@ exports.findKeyfiles = (dir) => {
 	const files = fs.readdirSync(dir);
 	return files.filter((fileName) => fileName.endsWith('_sk')).map((fileName) => path.resolve(dir, fileName));
 };
+/**
+ * @type {CryptoPath}
+ */
 exports.CryptoPath = class {
 	constructor(rootPath, {orderer, peer, user, react} = {}) {
 		if (orderer) {
 			this.ordererOrgName = orderer.org;
+			this.ordererName = orderer.name;
 			if (orderer.name && orderer.org) {
-				this.ordererName = `${orderer.name}.${orderer.org}`;
+				this.ordererHostName = `${orderer.name}.${orderer.org}`;
 			}
 		}
 		if (peer) {
 			this.peerOrgName = peer.org;
+			this.peerName = peer.name;
 			if (peer.name && peer.org) {
-				this.peerName = `${peer.name}.${peer.org}`;
+				this.peerHostName = `${peer.name}.${peer.org}`;
 			}
 		}
 		if (user) {
 			this.userName = user.name;
+			if (this.ordererOrgName) {
+				this.ordererUserHostName = `${this.userName}@${this.ordererOrgName}`;
+			}
+			if (this.peerOrgName) {
+				this.peerUserHostName = `${this.userName}@${this.peerOrgName}`;
+			}
 		}
+
 		this.root = rootPath;
 		this.react = react;
 	}
@@ -38,15 +50,15 @@ exports.CryptoPath = class {
 		const result = path.resolve(...tokens);
 		const dir = path.dirname(result);
 		switch (this.react) {
-		case 'throw':
-			if (!fs.existsSync(dir)) {
-				throw new Error(`${dir} not exist`);
-			}
-			break;
-		case 'mkdir':
-			fsExtra.ensureDirSync(result);
-			break;
-		default:
+			case 'throw':
+				if (!fs.existsSync(dir)) {
+					throw new Error(`${dir} not exist`);
+				}
+				break;
+			case 'mkdir':
+				fsExtra.ensureDirSync(result);
+				break;
+			default:
 		}
 		return result;
 	}
@@ -75,16 +87,22 @@ exports.CryptoPath = class {
 		return this.resolve(this.peerOrg(), 'users');
 	}
 
-	ordererMSP() {
-		return this.resolve(this.orderers(), `${this.ordererName}.${this.ordererOrgName}`, 'msp');
+
+	peerTLS() {
+		return this.resolve(this.peers(), this.peerHostName, 'tls');
 	}
 
-	ordererMSPSigncert() {
-		return this.resolve(this.ordererMSP(), 'signcerts', `${this.ordererName}.${this.ordererOrgName}-cert.pem`);
+	ordererTLS() {
+		return this.resolve(this.orderers(), this.ordererHostName, 'tls');
 	}
 
-	peerMSP() {
-		return this.resolve(this.peers(), `${this.peerName}.${this.peerOrgName}`, 'msp');
+	peerTLSFile() {
+		const tlsDIR = this.peerTLS();
+		return {
+			caCert: this.resolve(tlsDIR, 'ca.crt'),
+			cert: this.resolve(tlsDIR, 'server.crt'),
+			key: this.resolve(tlsDIR, 'server.key')
+		};
 	}
 
 	peerCacerts() {
@@ -95,23 +113,25 @@ exports.CryptoPath = class {
 		return this.resolve(this.ordererOrg(), 'msp', 'cacerts', `ca.${this.ordererOrgName}-cert.pem`);
 	}
 
-	peerMSPSigncert() {
-		return this.resolve(this.peerMSP(), 'signcerts', `${this.peerName}.${this.peerOrgName}-cert.pem`);
+
+	MSPKeystore(type) {
+		const dir = this.resolve(this.MSP(type), 'keystore');
+		return {dir, file: exports.findKeyfiles(dir)[0]};
 	}
 
-	ordererUserMSP() {
-		return this.resolve(this.ordererUsers(), `${this.userName}@${this.ordererOrgName}`, 'msp');
+	MSP(type) {
+		return this.resolve(this[`${type}s`](), this[`${type}HostName`], 'msp');
 	}
 
-	ordererUserMSPSigncert() {
-		return this.resolve(this.ordererUserMSP(), 'signcerts', `${this.userName}@${this.ordererOrgName}-cert.pem`);
+	MSPSigncert(type) {
+		return this.resolve(this.MSP(type), 'signcerts', `${this[`${type}HostName`]}-cert.pem`);
 	}
 
-	peerUserMSP() {
-		return this.resolve(this.peerUsers(), `${this.userName}@${this.peerOrgName}`, 'msp');
-	}
-
-	peerUserMSPSigncert() {
-		return this.resolve(this.peerUserMSP(), 'signcerts', `${this.userName}@${this.peerOrgName}-cert.pem`);
+	cryptoExistLocal(type) {
+		const signcertFile = this.MSPSigncert(type);
+		if (!fs.existsSync(signcertFile)) return;
+		const keyFile = this.MSPKeystore(type).file;
+		if (!fs.existsSync(keyFile)) return;
+		return signcertFile;
 	}
 };

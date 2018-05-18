@@ -1,9 +1,6 @@
 const Peer = require('fabric-client/lib/Peer');
 const fs = require('fs-extra');
-const fsExtra = require('fs-extra');
-const path = require('path');
-const pathUtil = require('./path');
-exports.new = ({peerPort, peer_hostName_full, tls_cacerts, pem, host}) => {
+exports.new = ({peerPort, peerHostName, tls_cacerts, pem, host}) => {
 	const Host = host ? host : 'localhost';
 	let peerUrl = `grpcs://${Host}:${peerPort}`;
 	if (!pem) {
@@ -15,7 +12,7 @@ exports.new = ({peerPort, peer_hostName_full, tls_cacerts, pem, host}) => {
 		//tls enabled
 		const peer = new Peer(peerUrl, {
 			pem,
-			'ssl-target-name-override': peer_hostName_full
+			'ssl-target-name-override': peerHostName
 		});
 		peer.pem = pem;
 		return peer;
@@ -24,30 +21,6 @@ exports.new = ({peerPort, peer_hostName_full, tls_cacerts, pem, host}) => {
 		peerUrl = `grpc://${Host}:${peerPort}`;
 		return new Peer(peerUrl);
 	}
-};
-exports.cryptoExistLocal = (peerMspRoot, {peer_hostName_full}) => {
-	fsExtra.ensureDirSync(peerMspRoot);
-
-	const keystoreDir = path.resolve(peerMspRoot, 'keystore');
-	const signcertsDir = path.resolve(peerMspRoot, 'signcerts');
-
-	const fileName = `${peer_hostName_full}-cert.pem`;
-	const signcertFile = path.resolve(signcertsDir, fileName);
-
-	if (!fs.existsSync(keystoreDir)) return;
-	const keyFile = pathUtil.findKeyfiles(keystoreDir)[0];
-
-	if (!fs.existsSync(keyFile)) return;
-	if (!fs.existsSync(signcertFile)) return;
-	return {signcertFile};
-};
-exports.loadFromLocal = (peerMspRoot, {peer_hostName_full, peerPort}) => {
-	const exist = module.exports.cryptoExistLocal(peerMspRoot, {peer_hostName_full});
-	if (exist) {
-		const {signcertFile} = exist;
-		return module.exports.new({peerPort, tls_cacerts: signcertFile, peer_hostName_full});
-	}
-
 };
 exports.formatPeerName = (peerName, domain) => `${peerName}.${domain}`;
 

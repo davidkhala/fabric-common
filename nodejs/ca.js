@@ -117,7 +117,7 @@ const _toMSP = ({key, certificate, rootCertificate}, mspDirName, {name, delimite
 	}
 };
 exports.org = {
-	toMSP: ({certificate, rootCertificate}, mspDir, {name, domain}) => {
+	saveAdmin: ({certificate, rootCertificate}, mspDir, {name, domain}) => {
 		const cacertsDir = path.resolve(mspDir, 'cacerts');
 		const admincertsDir = path.resolve(mspDir, 'admincerts');
 		fsExtra.ensureDirSync(cacertsDir);
