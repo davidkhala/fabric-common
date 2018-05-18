@@ -1,14 +1,10 @@
 const dockerUtil = require('../docker/nodejs/dockerode-util');
-const dockerCmdUtil = require('../docker/nodejs/dockerCmd');
 const logger = require('./logger').new('dockerode');
 const peerUtil = require('./peer');
 const caUtil = require('./ca');
 const kafkaUtil = require('./kafka');
 const ordererUtil = require('./orderer');
 const zookeeperUtil = require('./zookeeper');
-const yaml = require('js-yaml');
-const fs = require('fs');
-const path = require('path');
 
 exports.imagePullCCENV = (imageTag) => {
 	return dockerUtil.imagePull(`hyperledger/fabric-ccenv:${imageTag}`);
@@ -16,54 +12,15 @@ exports.imagePullCCENV = (imageTag) => {
 // CN=ca.example.com,O=example.com,L=San Francisco,ST=California,C=US
 exports.runCA = ({
 					 container_name, port, network, imageTag,
-					 fabricCaServerConfig,
 					 admin = 'Admin', adminpw = 'passwd',
-					 tls, csr = {OU:'',O:'',C: 'US', ST: 'California', L: 'San Francisco',},
+					 TLS,
 				 }) => {
-	const caKey = path.resolve(caUtil.container.FABRIC_CA_HOME, 'ca-key.pem');
-	const caCert = path.resolve(caUtil.container.FABRIC_CA_HOME, 'ca-cert.pem');
-	let Cmd = ['sh', '-c', `rm ${caKey};rm ${caCert};fabric-ca-server start -d`];
+
+	const tlsOptions = TLS? `--tls.enabled`:'';
+	const Cmd = ['sh', '-c',
+		`fabric-ca-server start -d -b ${admin}:${adminpw} ${tlsOptions} --csr.cn=${container_name}`];
 	//TLS enabled but no certificate or key provided, automatically generate TLS credentials
-	//FIXME TLS CSR: {CN:example.com Names:[{C:US ST:North Carolina L: O:Hyperledger OU:Fabric SerialNumber:}] Hosts:[02cf209b65fb localhost] KeyRequest:<nil> CA:<nil> SerialNumber:}
 
-
-	const configYaml = {
-		csr: {
-			cn: container_name,
-			hosts: [container_name],
-		},
-		ca:{
-			keyfile:caUtil.container.caKey,
-			certfile:caUtil.container.caCert,
-		},
-		tls: {
-			enabled: tls,
-		},
-		registry: {
-			maxenrollments: -1,
-			identities: [{
-				name: admin,
-				pass: adminpw,
-				type: 'client',
-				affiliation: '',
-				attrs: {
-					['hf.Registrar.Roles']: 'peer,orderer,client,user',
-					['hf.Registrar.DelegateRoles']: 'peer,orderer,client,user',
-					['hf.Revoker']: true,
-					['hf.IntermediateCA']: true,
-					['hf.GenCRL']: true,
-					['hf.Registrar.Attributes']: '*',
-					['hf.AffiliationMgr']: true
-				}
-			}]
-		}
-	};
-	if (csr) {
-		configYaml.csr.names = [csr];
-	}
-	fs.writeFileSync(fabricCaServerConfig, yaml.safeDump(configYaml, {lineWidth: 180}));
-
-	const mountConfigFile = caUtil.container.CONFIG;
 	const createOptions = {
 		name: container_name,
 		Env: caUtil.envBuilder(),
@@ -71,14 +28,8 @@ exports.runCA = ({
 			'7054': {}
 		},
 		Cmd,
-		Volumes: {
-			[mountConfigFile]: {},
-		},
 		Image: `hyperledger/fabric-ca:${imageTag}`,
 		Hostconfig: {
-			Binds: [
-				`${fabricCaServerConfig}:${mountConfigFile}`,
-			],
 			PortBindings: {
 				'7054': [
 					{
@@ -118,7 +69,7 @@ exports.deployKafka = ({Name, network, imageTag, Constraints, BROKER_ID}, zookee
 	});
 };
 
-exports.deployCA = ({Name, network, imageTag, Constraints, port, admin = 'Admin', adminpw = 'passwd', tls}) => {
+exports.deployCA = ({Name, network, imageTag, Constraints, port, admin = 'Admin', adminpw = 'passwd', TLS}) => {
 	const serviceName = dockerUtil.swarmServiceName(Name);
 	return dockerUtil.serviceCreateIfNotExist({
 		Image: `hyperledger/fabric-ca:${imageTag}`,
@@ -333,6 +284,7 @@ exports.volumeReCreate = async ({Name, path}) => {
 	return await dockerUtil.volumeCreateIfNotExist({Name, path});
 };
 
-exports.networkReCreate = ({Name}, swarm) => {
-	return dockerUtil.networkRemove(Name).then(() => dockerUtil.networkCreate({Name}, swarm));
+exports.networkReCreate = async ({Name}, swarm) => {
+	await dockerUtil.networkRemove(Name);
+	await dockerUtil.networkCreate({Name}, swarm);
 };
