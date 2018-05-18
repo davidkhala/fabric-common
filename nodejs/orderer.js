@@ -70,7 +70,7 @@ exports.envBuilder = ({BLOCK_FILE,msp: {configPath, id}, kafkas,tls}) => {
 	const tlsParams = tls ? [
 		`ORDERER_GENERAL_TLS_PRIVATEKEY=${tls.serverKey}`,
 		`ORDERER_GENERAL_TLS_CERTIFICATE=${tls.serverCrt}`,
-		`ORDERER_GENERAL_TLS_ROOTCAS=${tls.caCrt}`] : [];
+		`ORDERER_GENERAL_TLS_ROOTCAS=[${tls.caCrt}]`] : [];
 	const kafkaEnv = kafkas ? ['ORDERER_KAFKA_RETRY_SHORTINTERVAL=1s',
 		'ORDERER_KAFKA_RETRY_SHORTTOTAL=30s',
 		'ORDERER_KAFKA_VERBOSE=true'] : [];

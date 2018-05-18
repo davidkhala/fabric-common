@@ -20,9 +20,9 @@ exports.user = {
 	},
 	admin: {
 		toMSP: ({key, certificate, rootCertificate}, mspDir, {adminName, domain}) => {
-			const admincerts = path.join(mspDir, 'admincerts');
+			const admincerts = path.resolve(mspDir, 'admincerts');
 			fsExtra.ensureDirSync(admincerts);
-			fs.writeFileSync(path.join(admincerts, `${adminName}@${domain}-cert.pem`), certificate);
+			fs.writeFileSync(path.resolve(admincerts, `${adminName}@${domain}-cert.pem`), certificate);
 			exports.user.toMSP({key, certificate, rootCertificate}, mspDir, {username: adminName, domain});
 		}
 	},
@@ -86,13 +86,13 @@ const pkcs11_key = {
 	generate: (cryptoSuite) => cryptoSuite.generateKey({ephemeral: !cryptoSuite._cryptoKeyStore}),
 	toKeystore: (pkcs11_key, dirName) => {
 		const filename = `${pkcs11_key._key.prvKeyHex}_sk`;
-		const absolutePath = path.join(dirName, filename);
+		const absolutePath = path.resolve(dirName, filename);
 		fs.writeFileSync(absolutePath, pkcs11_key.toBytes());
 		return absolutePath;
 	},
 	toServerKey: (pkcs11_key, dirName) => {
 		const filename = 'server.key';
-		const absolutePath = path.join(dirName, filename);
+		const absolutePath = path.resolve(dirName, filename);
 		fs.writeFileSync(absolutePath, pkcs11_key.toBytes());
 		return absolutePath;
 	}
@@ -129,8 +129,8 @@ exports.org = {
 exports.toTLS = ({key, certificate, rootCertificate}, tlsDir) => {
 	fsExtra.ensureDirSync(tlsDir);
 	pkcs11_key.toServerKey(key, tlsDir);
-	fs.writeFileSync(path.join(tlsDir, 'server.crt'), certificate);
-	fs.writeFileSync(path.join(tlsDir, 'ca.crt'), rootCertificate);
+	fs.writeFileSync(path.resolve(tlsDir, 'server.crt'), certificate);
+	fs.writeFileSync(path.resolve(tlsDir, 'ca.crt'), rootCertificate);
 };
 
 exports.register = registerIfNotExist;

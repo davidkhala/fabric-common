@@ -17,7 +17,7 @@ exports.runCA = ({
 				 }) => {
 
 	const {caKey, caCert} = caUtil.container;
-	const tlsOptions = TLS ? `--tls.enabled` : '';
+	const tlsOptions = TLS ? '--tls.enabled' : '';
 	const Cmd = ['sh', '-c', `rm ${caKey}; rm ${caCert};fabric-ca-server start -d -b ${admin}:${adminpw} ${tlsOptions} --csr.cn=${container_name}`];
 	//TLS enabled but no certificate or key provided, automatically generate TLS credentials
 
@@ -71,7 +71,9 @@ exports.deployKafka = ({Name, network, imageTag, Constraints, BROKER_ID}, zookee
 
 exports.deployCA = ({Name, network, imageTag, Constraints, port, admin = 'Admin', adminpw = 'passwd', TLS}) => {
 	const serviceName = dockerUtil.swarmServiceName(Name);
-	const tlsOptions = TLS ? `--tls.enabled` : '';
+	const tlsOptions = TLS ? '--tls.enabled' : '';
+
+	const {caKey, caCert} = caUtil.container;
 
 	const Cmd = ['sh', '-c', `rm ${caKey}; rm ${caCert}; fabric-ca-server start -d -b ${admin}:${adminpw} ${tlsOptions}  --csr.cn=${Name}`];
 	return dockerUtil.serviceCreateIfNotExist({
@@ -227,12 +229,12 @@ exports.deployPeer = ({
 	});
 };
 exports.runPeer = ({
-					   container_name, port, eventHubPort, network, imageTag,
-					   msp: {
-						   id, volumeName,
-						   configPath
-					   }, peer_hostName_full, tls
-				   }) => {
+	container_name, port, eventHubPort, network, imageTag,
+	msp: {
+		id, volumeName,
+		configPath
+	}, peer_hostName_full, tls
+}) => {
 	const Image = `hyperledger/fabric-peer:${imageTag}`;
 	const Cmd = ['peer', 'node', 'start'];
 	const Env = peerUtil.envBuilder({
@@ -285,9 +287,4 @@ exports.runPeer = ({
 exports.volumeReCreate = async ({Name, path}) => {
 	await dockerUtil.volumeRemove(Name);
 	return await dockerUtil.volumeCreateIfNotExist({Name, path});
-};
-
-exports.networkReCreate = async ({Name}, swarm) => {
-	await dockerUtil.networkRemove(Name);
-	await dockerUtil.networkCreate({Name}, swarm);
 };
