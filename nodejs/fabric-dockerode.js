@@ -208,7 +208,7 @@ exports.deployOrderer = ({
 };
 exports.deployPeer = ({
 						  Name, network, imageTag, Constraints, port, eventHubPort,
-						  msp: {volumeName, configPath, id}, peer_hostName_full, tls
+						  msp: {volumeName, configPath, id}, peerHostName, tls
 					  }) => {
 	const serviceName = dockerUtil.swarmServiceName(Name);
 
@@ -224,8 +224,8 @@ exports.deployPeer = ({
 			{host: port, container: 7051},
 			{host: eventHubPort, container: 7053}
 		],
-		Env: peerUtil.envBuilder({network, msp: {configPath, id, peer_hostName_full}, tls}),
-		Aliases: [Name, peer_hostName_full],
+		Env: peerUtil.envBuilder({network, msp: {configPath, id, peerHostName}, tls}),
+		Aliases: [Name, peerHostName],
 	});
 };
 exports.runPeer = ({
@@ -233,13 +233,13 @@ exports.runPeer = ({
 	msp: {
 		id, volumeName,
 		configPath
-	}, peer_hostName_full, tls
+	}, peerHostName, tls
 }) => {
 	const Image = `hyperledger/fabric-peer:${imageTag}`;
 	const Cmd = ['peer', 'node', 'start'];
 	const Env = peerUtil.envBuilder({
 		network, msp: {
-			configPath, id, peer_hostName_full
+			configPath, id, peerHostName
 		}, tls
 	});
 
@@ -276,7 +276,7 @@ exports.runPeer = ({
 		NetworkingConfig: {
 			EndpointsConfig: {
 				[network]: {
-					Aliases: [peer_hostName_full]
+					Aliases: [peerHostName]
 				}
 			}
 		}

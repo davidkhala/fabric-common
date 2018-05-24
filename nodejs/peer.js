@@ -33,11 +33,11 @@ exports.host = {
 	dockerSock:'/run/docker.sock'
 };
 
-exports.envBuilder = ({network, msp: {configPath, id, peer_hostName_full}, tls}) => {
+exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls}) => {
 	const tlsParams = tls ? [
-		`CORE_PEER_TLS_KEY_FILE=${tls.serverKey}`,
-		`CORE_PEER_TLS_CERT_FILE=${tls.serverCrt}`,
-		`CORE_PEER_TLS_ROOTCERT_FILE=${tls.caCrt}`] : [];
+		`CORE_PEER_TLS_KEY_FILE=${tls.key}`,
+		`CORE_PEER_TLS_CERT_FILE=${tls.cert}`,
+		`CORE_PEER_TLS_ROOTCERT_FILE=${tls.caCert}`] : [];
 	const environment =
 		[
 			`CORE_VM_ENDPOINT=unix://${module.exports.container.dockerSock}`,
@@ -46,12 +46,12 @@ exports.envBuilder = ({network, msp: {configPath, id, peer_hostName_full}, tls})
 			'CORE_LEDGER_HISTORY_ENABLEHISTORYDATABASE=true',
 			'CORE_PEER_GOSSIP_USELEADERELECTION=true',
 			'CORE_PEER_GOSSIP_ORGLEADER=false',
-			`CORE_PEER_GOSSIP_EXTERNALENDPOINT=${peer_hostName_full}:7051`, // FIXME take care!
+			`CORE_PEER_GOSSIP_EXTERNALENDPOINT=${peerHostName}:7051`, // FIXME take care!
 			`CORE_PEER_LOCALMSPID=${id}`,
 			`CORE_PEER_MSPCONFIGPATH=${configPath}`,
 			`CORE_PEER_TLS_ENABLED=${!!tls}`,
-			`CORE_PEER_ID=${peer_hostName_full}`,
-			`CORE_PEER_ADDRESS=${peer_hostName_full}:7051`,
+			`CORE_PEER_ID=${peerHostName}`,
+			`CORE_PEER_ADDRESS=${peerHostName}:7051`,
 			'CORE_CHAINCODE_EXECUTETIMEOUT=180s',
 			'CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052',//for swarm mode
 			'GODEBUG=netdns=go'//NOTE aliyun only

@@ -40,9 +40,9 @@ exports.container = {CONFIGTX: '/etc/hyperledger/configtx'};
  */
 exports.envBuilder = ({BLOCK_FILE,msp: {configPath, id}, kafkas,tls}) => {
 	const tlsParams = tls ? [
-		`ORDERER_GENERAL_TLS_PRIVATEKEY=${tls.serverKey}`,
-		`ORDERER_GENERAL_TLS_CERTIFICATE=${tls.serverCrt}`,
-		`ORDERER_GENERAL_TLS_ROOTCAS=[${tls.caCrt}]`] : [];
+		`ORDERER_GENERAL_TLS_PRIVATEKEY=${tls.key}`,
+		`ORDERER_GENERAL_TLS_CERTIFICATE=${tls.cert}`,
+		`ORDERER_GENERAL_TLS_ROOTCAS=[${tls.caCert}]`
 	const kafkaEnv = kafkas ? ['ORDERER_KAFKA_RETRY_SHORTINTERVAL=1s',
 		'ORDERER_KAFKA_RETRY_SHORTTOTAL=30s',
 		'ORDERER_KAFKA_VERBOSE=true'] : [];
@@ -51,7 +51,7 @@ exports.envBuilder = ({BLOCK_FILE,msp: {configPath, id}, kafkas,tls}) => {
 		'ORDERER_GENERAL_LISTENADDRESS=0.0.0.0',// TODO useless checking
 		`ORDERER_GENERAL_TLS_ENABLED=${!!tls}`,
 		'ORDERER_GENERAL_GENESISMETHOD=file',
-		`ORDERER_GENERAL_GENESISFILE=${module.exports.container.CONFIGTX}/${BLOCK_FILE}`,
+		`ORDERER_GENERAL_GENESISFILE=${exports.container.CONFIGTX}/${BLOCK_FILE}`,
 		`ORDERER_GENERAL_LOCALMSPID=${id}`,
 		`ORDERER_GENERAL_LOCALMSPDIR=${configPath}`,
 		'GODEBUG=netdns=go' // aliyun only

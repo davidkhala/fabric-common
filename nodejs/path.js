@@ -66,9 +66,15 @@ exports.CryptoPath = class {
 	ordererOrg() {
 		return this.resolve(this.root, 'ordererOrganizations', this.ordererOrgName);
 	}
+	ordererOrgMSP() {
+		return this.resolve(this.ordererOrg(),'msp');
+	}
 
 	peerOrg() {
 		return this.resolve(this.root, 'peerOrganizations', this.peerOrgName);
+	}
+	peerOrgMSP() {
+		return this.resolve(this.peerOrg(),'msp');
 	}
 
 	orderers() {
@@ -104,13 +110,21 @@ exports.CryptoPath = class {
 			key: this.resolve(tlsDIR, 'server.key')
 		};
 	}
+	ordererTLSFile() {
+		const tlsDIR = this.ordererTLS();
+		return {
+			caCert: this.resolve(tlsDIR, 'ca.crt'),
+			cert: this.resolve(tlsDIR, 'server.crt'),
+			key: this.resolve(tlsDIR, 'server.key')
+		};
+	}
 
 	peerCacerts() {
-		return this.resolve(this.peerOrg(), 'msp', 'cacerts', `ca.${this.peerOrgName}-cert.pem`);
+		return this.resolve(this.peerOrgMSP(), 'cacerts', `ca.${this.peerOrgName}-cert.pem`);
 	}
 
 	ordererCacerts() {
-		return this.resolve(this.ordererOrg(), 'msp', 'cacerts', `ca.${this.ordererOrgName}-cert.pem`);
+		return this.resolve(this.ordererOrgMSP(), 'cacerts', `ca.${this.ordererOrgName}-cert.pem`);
 	}
 
 
