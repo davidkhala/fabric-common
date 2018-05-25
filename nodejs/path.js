@@ -66,15 +66,25 @@ exports.CryptoPath = class {
 	ordererOrg() {
 		return this.resolve(this.root, 'ordererOrganizations', this.ordererOrgName);
 	}
+
 	ordererOrgMSP() {
-		return this.resolve(this.ordererOrg(),'msp');
+		return this.resolve(this.ordererOrg(), 'msp');
+	}
+
+	peerOrgTLSCACert() {
+		return this.resolve(this.peerOrg(), 'tlsca', `tlsca.${this.peerOrgName}-cert.pem`);
+	}
+
+	ordererOrgTLSCACert() {
+		return this.resolve(this.ordererOrg(), 'tlsca', `tlsca.${this.ordererOrgName}-cert.pem`);
 	}
 
 	peerOrg() {
 		return this.resolve(this.root, 'peerOrganizations', this.peerOrgName);
 	}
+
 	peerOrgMSP() {
-		return this.resolve(this.peerOrg(),'msp');
+		return this.resolve(this.peerOrg(), 'msp');
 	}
 
 	orderers() {
@@ -110,6 +120,7 @@ exports.CryptoPath = class {
 			key: this.resolve(tlsDIR, 'server.key')
 		};
 	}
+
 	ordererTLSFile() {
 		const tlsDIR = this.ordererTLS();
 		return {

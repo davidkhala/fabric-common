@@ -3,12 +3,12 @@ exports.find = ({orderers, ordererUrl}) => {
 };
 const Orderer = require('fabric-client/lib/Orderer');
 const fs = require('fs');
-exports.new = ({ordererPort, tls_cacerts, pem, ordererHostName, host}) => {
+exports.new = ({ordererPort, cert, pem, ordererHostName, host}) => {
 	const Host = host ? host : 'localhost';
 	let orderer_url = `grpcs://${Host}:${ordererPort}`;
 	if (!pem) {
-		if (fs.existsSync(tls_cacerts)) {
-			pem = fs.readFileSync(tls_cacerts).toString();
+		if (fs.existsSync(cert)) {
+			pem = fs.readFileSync(cert).toString();
 		}
 	}
 	if (pem) {
@@ -38,11 +38,16 @@ exports.container = {CONFIGTX: '/etc/hyperledger/configtx'};
  * @param kafkas
  * @returns {string[]}
  */
-exports.envBuilder = ({BLOCK_FILE,msp: {configPath, id}, kafkas,tls}) => {
+exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, kafkas, tls}) => {
+	let rootCAs = [];
+	rootCAs.push(tls.caCert);
+	if (Array.isArray(tls.rootCAs)) {
+		rootCAs = rootCAs.concat(tls.rootCAs);
+	}
 	const tlsParams = tls ? [
 		`ORDERER_GENERAL_TLS_PRIVATEKEY=${tls.key}`,
 		`ORDERER_GENERAL_TLS_CERTIFICATE=${tls.cert}`,
-		`ORDERER_GENERAL_TLS_ROOTCAS=[${tls.caCert}]`
+		`ORDERER_GENERAL_TLS_ROOTCAS=[${rootCAs.join(',')}]`] : [];
 	const kafkaEnv = kafkas ? ['ORDERER_KAFKA_RETRY_SHORTINTERVAL=1s',
 		'ORDERER_KAFKA_RETRY_SHORTTOTAL=30s',
 		'ORDERER_KAFKA_VERBOSE=true'] : [];

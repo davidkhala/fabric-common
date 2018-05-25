@@ -10,7 +10,7 @@ exports.container = {
 	CONFIG: path.resolve(FABRIC_CA_HOME, 'fabric-ca-server-config.yaml'),
 	caKey: path.resolve(FABRIC_CA_HOME, 'ca-key.pem'),
 	caCert: path.resolve(FABRIC_CA_HOME, 'ca-cert.pem'),
-	tlsCert: path.resolve(FABRIC_CA_HOME,'tls-cert.pem'),
+	tlsCert: path.resolve(FABRIC_CA_HOME, 'tls-cert.pem'),
 };
 exports.user = {
 	register: (caService, {username, affiliation}, adminUser) =>
@@ -133,6 +133,11 @@ exports.toTLS = ({key, certificate, rootCertificate}, tlsDir) => {
 	fs.writeFileSync(path.resolve(tlsDir, 'ca.crt'), rootCertificate);
 };
 
+exports.toTLSCACert = ({rootCertificate}, cryptoPath, type) => {
+	const file = cryptoPath[`${type}OrgTLSCACert`]();
+	fsExtra.ensureDirSync(path.dirname(file));
+	fs.writeFileSync(file, rootCertificate);
+};
 exports.register = registerIfNotExist;
 exports.new = (caUrl, trustedRoots = []) => {
 	const tlsOptions = {

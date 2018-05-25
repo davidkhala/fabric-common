@@ -9,8 +9,7 @@ exports.unRegisterAllEvents = (eventHub) => {
 	eventHub._transactionOnErrors = {};
 };
 
-// state-ful client
-exports.new = (client, {eventHubPort, tls_cacerts, pem, peerHostName, host}) => {
+exports.new = (client, {eventHubPort, cert, pem, peerHostName, host}) => {
 
 	const Host = host ? host : 'localhost';
 	const eventHub = client.newEventHub();// NOTE newEventHub binds to clientContext
@@ -19,9 +18,9 @@ exports.new = (client, {eventHubPort, tls_cacerts, pem, peerHostName, host}) => 
 			pem,
 			'ssl-target-name-override': peerHostName
 		});
-	} else if (tls_cacerts) {
+	} else if (cert) {
 		eventHub.setPeerAddr(`grpcs://${Host}:${eventHubPort}`, {
-			pem: fs.readFileSync(tls_cacerts).toString(),
+			pem: fs.readFileSync(cert).toString(),
 			'ssl-target-name-override': peerHostName
 		});
 	}
@@ -60,11 +59,10 @@ exports.blockEvent = (eventHub, validator = ({block}) => {
 
 	return block_registration_number;
 };
-exports.txEventPromise = (eventHub, {txId, eventWaitTime, timeOutErr}, validator) => {
-	const _validator = validator ? validator : ({tx, code}) => {
+exports.txEventPromise = (eventHub, {txId, eventWaitTime, timeOutErr}, validator = ({tx, code}) => {
 
-		return {valid: code === 'VALID', interrupt: true};
-	};
+	return {valid: code === 'VALID', interrupt: true};
+}) => {
 	const transactionID = txId.getTransactionID();
 	return new Promise((resolve, reject) => {
 		// eventHub.connect();//FIXME bug design in fabric. JSDOC  If the connection fails to get established, the application will be notified via the error callbacks from the registerXXXEvent() methods.
@@ -75,7 +73,7 @@ exports.txEventPromise = (eventHub, {txId, eventWaitTime, timeOutErr}, validator
 		}, eventWaitTime);
 
 		eventHub.registerTxEvent(transactionID, (tx, code) => {
-			const {valid, interrupt} = _validator({tx, code});
+			const {valid, interrupt} = validator({tx, code});
 			if (interrupt) {
 				clearTimeout(timerID);
 				eventHub.unregisterTxEvent(transactionID);
