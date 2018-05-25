@@ -6,9 +6,14 @@ const OrdererUtil = require('./orderer');
 const EventHubUtil = require('./eventHub');
 
 
+exports.deleteMSP = (original_config, {MSPName}) => {
+	const newConfig = JSON.parse(original_config);
+	delete newConfig.channel_group.groups.Application.groups[MSPName];
+	return JSON.stringify(newConfig);
+};
 exports.newPeerOrg = (original_config, MSPName, MSPID, {admins = [], root_certs = [], tls_root_certs = []} = {}) => {
-	const update_config = Object.assign({}, original_config);
-	update_config.channel_group.groups.Application.groups[MSPName] = {
+	const newConfig = JSON.parse(original_config);
+	newConfig.channel_group.groups.Application.groups[MSPName] = {
 		'mod_policy': 'Admins',
 		'policies': {
 			'Admins': {
@@ -112,28 +117,37 @@ exports.newPeerOrg = (original_config, MSPName, MSPID, {admins = [], root_certs 
 			}
 		}
 	};
-	return update_config;
-};
-exports.deleteMSP = (update_config, {MSPName}) => {
-	delete update_config.channel_group.groups.Application.groups[MSPName];
-	return update_config;
+	return JSON.stringify(newConfig);
 };
 
-// This test case requires that the 'configtxlator' tool be running locally and on port 7059
-// fixme :run configtxlator.server with nodejs child_process, program will hang and no callback or stdout
+exports.updateKafkaBrokers = (update_config, {brokers}) => {
+	const newConfig = JSON.parse(update_config);
+	newConfig.channel_group.groups.Orderer.values.KafkaBrokers.value.brokers = brokers;
+	return JSON.stringify(newConfig);
+};
+exports.updateOrdererAddresses = (update_config, {addresses}) => {
+	const newConfig = JSON.parse(update_config);
+	newConfig.channel_group.values.OrdererAddresses.value.addresses = addresses;
+	return JSON.stringify(newConfig);
+};
 
-const getChannelConfigReadable = async (channel) => {
+
+/**
+ * This requires 'configtxlator' tool be running locally and on port 7059
+ * fixme :run configtxlator.server with nodejs child_process, program will hang and no callback or stdout
+ * @param channel
+ * @returns {Promise<{original_config_proto: Buffer, original_config: *}>}
+ */
+exports.getChannelConfigReadable = async (channel) => {
 	const configEnvelope = await channel.getChannelConfig();
 	//NOTE JSON.stringify(data ) :TypeError: Converting circular structure to JSON
 	const original_config_proto = configEnvelope.config.toBuffer();
 	channel.loadConfigEnvelope(configEnvelope);//TODO redundant?
 
-	// lets get the config converted into JSON, so we can edit JSON to
-	// make our changes
 	const {body} = await agent.decode.config(original_config_proto);
 	return {
 		original_config_proto,
-		original_config: JSON.parse(body)
+		original_config: body,
 	};
 };
 exports.channelUpdate = async (channel, mspCB, signatureCollectCB, eventHub, client = channel._clientContext, {ordererUrl} = {}) => {
@@ -142,14 +156,13 @@ exports.channelUpdate = async (channel, mspCB, signatureCollectCB, eventHub, cli
 	eventHub._clientContext = client;
 
 	const ERROR_NO_UPDATE = 'No update to original_config';
-	const {original_config_proto, original_config} = await getChannelConfigReadable(channel);
-	logger.debug(original_config.channel_group.groups.Application.groups);
-	const update_config = await mspCB(original_config);
-	if (update_config === original_config) {
+	const {original_config_proto, original_config} = await exports.getChannelConfigReadable(channel);
+	const update_configJSONString = await mspCB(original_config);
+	if (update_configJSONString === original_config) {
 		logger.warn(ERROR_NO_UPDATE);
 		return {err: ERROR_NO_UPDATE, original_config};
 	}
-	const {body} = await agent.encode.config(JSON.stringify(update_config));
+	const {body} = await agent.encode.config(update_configJSONString);
 	//NOTE: after delete MSP, deleted peer retry to connect to previous channel
 	// PMContainerName.delphi.com       | 2017-08-24 03:02:55.815 UTC [blocksProvider] DeliverBlocks -> ERRO 2ea [delphichannel] Got error &{FORBIDDEN}
 	// orderContainerName.delphi.com    | 2017-08-24 03:02:55.814 UTC [cauthdsl] func1 -> DEBU ea5 0xc420028c50 gate 1503543775814648321 evaluation fails
@@ -196,16 +209,6 @@ exports.channelUpdate = async (channel, mspCB, signatureCollectCB, eventHub, cli
 	});
 	logger.info('new Block', block);
 	return block;
-};
-
-
-exports.updateKafkaBrokers = (update_config, {brokers}) => {
-	update_config.channel_group.groups.Orderer.values.KafkaBrokers.value.brokers = brokers;
-	return update_config;
-};
-exports.updateOrdererAddresses = (update_config, {addresses}) => {
-	update_config.channel_group.values.OrdererAddresses.value.addresses = addresses;
-	return update_config;
 };
 
 

@@ -56,7 +56,7 @@ exports.CryptoPath = class {
 				}
 				break;
 			case 'mkdir':
-				fsExtra.ensureDirSync(result);
+				fsExtra.ensureDirSync(dir);
 				break;
 			default:
 		}
@@ -71,16 +71,44 @@ exports.CryptoPath = class {
 		return this.resolve(this.ordererOrg(), 'msp');
 	}
 
-	peerOrgTLSCACert() {
-		return this.resolve(this.peerOrg(), 'tlsca', `tlsca.${this.peerOrgName}-cert.pem`);
-	}
-
-	ordererOrgTLSCACert() {
-		return this.resolve(this.ordererOrg(), 'tlsca', `tlsca.${this.ordererOrgName}-cert.pem`);
-	}
-
 	peerOrg() {
 		return this.resolve(this.root, 'peerOrganizations', this.peerOrgName);
+	}
+
+	OrgFile(nodeType) {
+		const dir = this[`${nodeType}Org`]();
+		const mspDir = this.resolve(dir, 'msp');
+		const caCertBaseName = `ca.${this[`${nodeType}OrgName`]}-cert.pem`;
+		const tlscaCertBaseName = `tls${caCertBaseName}`;
+		return {
+			ca: this.resolve(dir, 'ca', caCertBaseName),
+			msp: {
+				admincerts: this.resolve(mspDir, 'admincerts', `${this[`${nodeType}UserHostName`]}-cert.pem`),
+				cacerts: this.resolve(mspDir, 'cacerts', caCertBaseName),
+				tlscacerts: this.resolve(mspDir, 'tlscacerts', tlscaCertBaseName)
+			},
+			peers: this.resolve(dir, 'peers'),
+			tlsca: this.resolve(dir, 'tlsca', tlscaCertBaseName),
+			users: this.resolve(dir, 'users')
+		};
+	}
+
+	static getNodeType(type){
+		return type.includes('orderer')?'orderer':'peer';
+	}
+	MSPFile(type) {
+		const nodeType = this.constructor.getNodeType(type);
+		const mspDir = this.MSP(type);
+		const caCertBaseName = `ca.${this[`${nodeType}OrgName`]}-cert.pem`;
+		const tlscaCertBaseName = `tls${caCertBaseName}`;
+
+		return {
+			admincerts: this.resolve(mspDir, 'admincerts', `${this[`${nodeType}UserHostName`]}-cert.pem`),
+			cacerts: this.resolve(mspDir, 'cacerts', caCertBaseName),
+			tlscacerts: this.resolve(mspDir, 'tlscacerts', tlscaCertBaseName),
+			keystore: this.resolve(mspDir, 'keystore'),
+			signcerts: this.resolve(mspDir, 'signcerts', `${this[`${type}HostName`]}-cert.pem`),
+		};
 	}
 
 	peerOrgMSP() {
@@ -112,8 +140,8 @@ exports.CryptoPath = class {
 		return this.resolve(this.orderers(), this.ordererHostName, 'tls');
 	}
 
-	peerTLSFile() {
-		const tlsDIR = this.peerTLS();
+	TLSFile(type) {
+		const tlsDIR = this[`${type}TLS`]();
 		return {
 			caCert: this.resolve(tlsDIR, 'ca.crt'),
 			cert: this.resolve(tlsDIR, 'server.crt'),
@@ -121,14 +149,6 @@ exports.CryptoPath = class {
 		};
 	}
 
-	ordererTLSFile() {
-		const tlsDIR = this.ordererTLS();
-		return {
-			caCert: this.resolve(tlsDIR, 'ca.crt'),
-			cert: this.resolve(tlsDIR, 'server.crt'),
-			key: this.resolve(tlsDIR, 'server.key')
-		};
-	}
 
 	peerCacerts() {
 		return this.resolve(this.peerOrgMSP(), 'cacerts', `ca.${this.peerOrgName}-cert.pem`);
@@ -140,23 +160,26 @@ exports.CryptoPath = class {
 
 
 	MSPKeystore(type) {
-		const dir = this.resolve(this.MSP(type), 'keystore');
-		return {dir, file: exports.findKeyfiles(dir)[0]};
+		const dir = this.MSPFile(type).keystore;
+		const files = exports.findKeyfiles(dir);
+		if (files.length > 0) return files[0];
 	}
 
 	MSP(type) {
 		return this.resolve(this[`${type}s`](), this[`${type}HostName`], 'msp');
 	}
 
-	MSPSigncert(type) {
-		return this.resolve(this.MSP(type), 'signcerts', `${this[`${type}HostName`]}-cert.pem`);
+	cryptoExistLocal(type) {
+		const signcerts = this.MSPFile(type).signcerts;
+		if (!fs.existsSync(signcerts)) return;
+		const keystore = this.MSPKeystore(type);
+		if (!fs.existsSync(keystore)) return;
+		return {keystore,signcerts};
 	}
 
-	cryptoExistLocal(type) {
-		const signcertFile = this.MSPSigncert(type);
-		if (!fs.existsSync(signcertFile)) return;
-		const keyFile = this.MSPKeystore(type).file;
-		if (!fs.existsSync(keyFile)) return;
-		return signcertFile;
+	static writeFileSync(filePath, data) {
+		const dir = path.dirname(filePath);
+		fsExtra.ensureDirSync(dir);
+		fs.writeFileSync(filePath, data);
 	}
 };

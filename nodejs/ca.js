@@ -3,7 +3,7 @@ const path = require('path');
 const fsExtra = require('fs-extra');
 const logger = require('./logger').new('ca-core');
 const CAClient = require('fabric-ca-client/lib/FabricCAClientImpl');
-
+const {CryptoPath} = require('./path');
 const FABRIC_CA_HOME = '/etc/hyperledger/fabric-ca-server';
 exports.container = {
 	FABRIC_CA_HOME,
@@ -15,37 +15,12 @@ exports.container = {
 exports.user = {
 	register: (caService, {username, affiliation}, adminUser) =>
 		registerIfNotExist(caService, {enrollmentID: username, affiliation, role: 'user'}, adminUser),
-	toMSP: ({key, certificate, rootCertificate}, mspDir, {username, domain}) => {
-		_toMSP({key, certificate, rootCertificate}, mspDir, {name: username, delimiter: '@', domain});
-	},
-	admin: {
-		toMSP: ({key, certificate, rootCertificate}, mspDir, {adminName, domain}) => {
-			const admincerts = path.resolve(mspDir, 'admincerts');
-			fsExtra.ensureDirSync(admincerts);
-			fs.writeFileSync(path.resolve(admincerts, `${adminName}@${domain}-cert.pem`), certificate);
-			exports.user.toMSP({key, certificate, rootCertificate}, mspDir, {username: adminName, domain});
-		}
-	},
-
 };
 exports.peer = {
-	/**
-	 *
-	 * @param key
-	 * @param certificate
-	 * @param rootCertificate
-	 * @param mspDir
-	 * @param peerName
-	 * @param domain
-	 */
-	toMSP: ({key, certificate, rootCertificate}, mspDir, {peerName, domain}) => {
-		_toMSP({key, certificate, rootCertificate}, mspDir, {name: peerName, delimiter: '.', domain});
+	toAdminCerts: ({certificate}, cryptoPath, nodeType) => {
+		const {admincerts} = cryptoPath.MSPFile(nodeType);
+		CryptoPath.writeFileSync(admincerts, certificate);
 	},
-	toadmincerts: ({certificate}, mspDir, {username, domain}) => {
-		const admincerts = path.resolve(mspDir, 'admincerts');
-		fsExtra.ensureDirSync(admincerts);
-		fs.writeFileSync(path.resolve(admincerts, `${username}@${domain}-cert.pem`), certificate);
-	}
 };
 exports.intermediateCA = {
 	register: (caService, {enrollmentID, affiliation}, adminUser) => {
@@ -82,62 +57,48 @@ const registerIfNotExist = async (caService, {enrollmentID, enrollmentSecret, af
 		}
 	}
 };
-const pkcs11_key = {
+exports.pkcs11_key = {
 	generate: (cryptoSuite) => cryptoSuite.generateKey({ephemeral: !cryptoSuite._cryptoKeyStore}),
-	toKeystore: (pkcs11_key, dirName) => {
-		const filename = `${pkcs11_key._key.prvKeyHex}_sk`;
+	toKeystore: (key, dirName) => {
+		const filename = `${key._key.prvKeyHex}_sk`;
 		const absolutePath = path.resolve(dirName, filename);
-		fs.writeFileSync(absolutePath, pkcs11_key.toBytes());
-		return absolutePath;
+		exports.pkcs11_key.save(absolutePath, key);
 	},
-	toServerKey: (pkcs11_key, dirName) => {
-		const filename = 'server.key';
-		const absolutePath = path.resolve(dirName, filename);
-		fs.writeFileSync(absolutePath, pkcs11_key.toBytes());
-		return absolutePath;
+	save: (path, key) => {
+		CryptoPath.writeFileSync(path, key.toBytes());
 	}
 
 };
 
-const _toMSP = ({key, certificate, rootCertificate}, mspDirName, {name, delimiter, domain}) => {
-	if (certificate) {
-		const signcertsDir = path.resolve(mspDirName, 'signcerts');
-		fsExtra.ensureDirSync(signcertsDir);
-		fs.writeFileSync(path.resolve(signcertsDir, `${name}${delimiter}${domain}-cert.pem`), certificate);
-	}
-	if (key) {
-		const keystoreDir = path.resolve(mspDirName, 'keystore');
-		fsExtra.ensureDirSync(keystoreDir);
-		pkcs11_key.toKeystore(key, keystoreDir);
-	}
-	if (rootCertificate) {
-		const cacertsDir = path.resolve(mspDirName, 'cacerts');
-		fsExtra.ensureDirSync(cacertsDir);
-		fs.writeFileSync(path.resolve(cacertsDir, `ca.${domain}-cert.pem`), rootCertificate);
-	}
+exports.toMSP = ({key, certificate, rootCertificate}, cryptoPath, type) => {
+	const {cacerts, keystore, signcerts} = cryptoPath.MSPFile(type);
+	CryptoPath.writeFileSync(signcerts, certificate);
+	exports.pkcs11_key.toKeystore(key, keystore);
+	CryptoPath.writeFileSync(cacerts, rootCertificate);
 };
 exports.org = {
-	saveAdmin: ({certificate, rootCertificate}, mspDir, {name, domain}) => {
-		const cacertsDir = path.resolve(mspDir, 'cacerts');
-		const admincertsDir = path.resolve(mspDir, 'admincerts');
-		fsExtra.ensureDirSync(cacertsDir);
-		fsExtra.ensureDirSync(admincertsDir);
-		fs.writeFileSync(path.resolve(cacertsDir, `ca.${domain}-cert.pem`), rootCertificate);
-		fs.writeFileSync(path.resolve(admincertsDir, `${name}@${domain}-cert.pem`), certificate);
+	saveAdmin: ({certificate, rootCertificate}, cryptoPath, nodeType) => {
+		const {ca, msp: {admincerts, cacerts}} = cryptoPath.OrgFile(nodeType);
+
+		CryptoPath.writeFileSync(cacerts, rootCertificate);
+		CryptoPath.writeFileSync(ca, rootCertificate);
+		CryptoPath.writeFileSync(admincerts, certificate);
+	},
+	saveTLS: ({rootCertificate}, cryptoPath, nodeType) => {
+		const {msp: {tlscacerts}, tlsca} = cryptoPath.OrgFile(nodeType);
+		CryptoPath.writeFileSync(tlsca, rootCertificate);
+		CryptoPath.writeFileSync(tlscacerts, rootCertificate);
 	}
 };
-exports.toTLS = ({key, certificate, rootCertificate}, tlsDir) => {
-	fsExtra.ensureDirSync(tlsDir);
-	pkcs11_key.toServerKey(key, tlsDir);
-	fs.writeFileSync(path.resolve(tlsDir, 'server.crt'), certificate);
-	fs.writeFileSync(path.resolve(tlsDir, 'ca.crt'), rootCertificate);
+exports.toTLS = ({key, certificate, rootCertificate}, cryptoPath, type) => {
+	const {caCert, cert, key: serverKey} = cryptoPath.TLSFile(type);
+	const {tlscacerts} = cryptoPath.MSPFile(type);//TLS in msp folder
+	exports.pkcs11_key.save(serverKey, key);
+	CryptoPath.writeFileSync(cert, certificate);
+	CryptoPath.writeFileSync(caCert, rootCertificate);
+	CryptoPath.writeFileSync(tlscacerts,rootCertificate);
 };
 
-exports.toTLSCACert = ({rootCertificate}, cryptoPath, type) => {
-	const file = cryptoPath[`${type}OrgTLSCACert`]();
-	fsExtra.ensureDirSync(path.dirname(file));
-	fs.writeFileSync(file, rootCertificate);
-};
 exports.register = registerIfNotExist;
 exports.new = (caUrl, trustedRoots = []) => {
 	const tlsOptions = {

@@ -9,46 +9,32 @@ const User = require('fabric-client/lib/User');
 /**
  *
  * @param userMSPRoot
+ * @param cryptoPath
+ * @param nodeType
  * @param cryptoSuite
- * @param username
- * @param domain: with orgName like orgName.domain
- * @param mspid
  * @returns {Promise|*|Promise<User>}
  */
-exports.loadFromLocal = (userMSPRoot, cryptoSuite, {username, domain, mspId}) => {
-	fsExtra.ensureDirSync(userMSPRoot);
+exports.loadFromLocal = async (cryptoPath, nodeType, {mspId}, cryptoSuite) => {
 
-	const keystoreDir = path.resolve(userMSPRoot, 'keystore');
-	const signcertsDir = path.resolve(userMSPRoot, 'signcerts');
 
-	if (!cryptoSuite) {
-		cryptoSuite = clientUtil.newCryptoSuite();
-	}
-	const fileName = `${module.exports.formatUsername(username, domain)}-cert.pem`;
-	const signcertFile = path.resolve(signcertsDir, fileName);
+	const username = cryptoPath.userName;
+	const exist = cryptoPath.cryptoExistLocal(`${nodeType}User`);
+	if (!exist) return;
+	const {keystore, signcerts} = exist;
 
-	if (!fs.existsSync(keystoreDir)) return Promise.resolve();
-	const keyFile = pathUtil.findKeyfiles(keystoreDir)[0];
 	// NOTE:(jsdoc) This allows applications to use pre-existing crypto materials (private keys and certificates) to construct user objects with signing capabilities
 	// NOTE In client.createUser option, two types of cryptoContent is supported:
 	// 1. cryptoContent: {		privateKey: keyFilePath,signedCert: certFilePath}
 	// 2. cryptoContent: {		privateKeyPEM: keyFileContent,signedCertPEM: certFileContent}
 
-	const readFile = (path) => fs.readFileSync(path, 'utf8');
+	const user = await exports.build(username, {key: fs.readFileSync(keystore), certificate: fs.readFileSync(signcerts)}, mspId, cryptoSuite);
 
-	if (!fs.existsSync(keyFile)) return Promise.resolve();
-	if (!fs.existsSync(signcertFile)) return Promise.resolve();
-
+	return user;
+};
+exports.build = async (username, {key, certificate}, MSPID, cryptoSuite) => {
 	const user = new User(username);
 	user.setCryptoSuite(cryptoSuite);
-
 	//FIXME: importKey.then is not function in some case;
-	const privateKey = cryptoSuite.importKey(readFile(keyFile).toString(), {ephemeral: true});
-	return user.setEnrollment(privateKey, readFile(signcertFile), mspId)
-		.then(() => user);
-};
-exports.build = async (username, {key, certificate}, MSPID) => {
-	const user = new User(username);
 	await user.setEnrollment(key, certificate, MSPID);
 	return user;
 };

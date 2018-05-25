@@ -6,23 +6,107 @@ const kafkaUtil = require('./kafka');
 const ordererUtil = require('./orderer');
 const zookeeperUtil = require('./zookeeper');
 
+const fs = require('fs');
+const yaml = require('js-yaml');
+const path = require('path');
+
 exports.imagePullCCENV = (imageTag) => {
 	return dockerUtil.imagePull(`hyperledger/fabric-ccenv:${imageTag}`);
 };
-// CN=ca.example.com,O=example.com,L=San Francisco,ST=California,C=US
+/**
+ * TODO try to use command-base
+ * @param container_name
+ * @param port
+ * @param network
+ * @param imageTag
+ * @param admin
+ * @param adminpw
+ * @param TLS
+ * @returns {Promise<*>}
+ */
 exports.runCA = ({
 					 container_name, port, network, imageTag,
 					 admin = 'Admin', adminpw = 'passwd',
 					 TLS,
-				 }) => {
+				 },configFile) => {
 
 	const {caKey, caCert} = caUtil.container;
 	const tlsOptions = TLS ? '--tls.enabled' : '';
-	const Cmd = ['sh', '-c', `rm ${caKey}; rm ${caCert};fabric-ca-server start -d -b ${admin}:${adminpw} ${tlsOptions} --csr.cn=${container_name}`];
+	const Cmd = ['sh', '-c', `rm ${caKey}; rm ${caCert};fabric-ca-server start`];
 	//TLS enabled but no certificate or key provided, automatically generate TLS credentials
+
+	const config = {
+		debug: true,
+		csr: {
+			cn: container_name,
+			names: [{
+				C: 'HKSAR',
+				ST: 'NT',
+				L: 'HKSTP',
+				O: 'ASTRI',
+				OU: '',
+			}],
+
+			hosts: [
+				'localhost', container_name
+			],
+		},
+		tls: {
+			enabled: !!TLS
+
+		},
+
+		registry: {
+			identities: [{
+				name: admin,
+				pass: adminpw,
+				type: 'client',
+				affiliation: '',
+				attrs: {
+					['hf.Registrar.Roles']: 'peer,orderer,client,user',
+					['hf.Registrar.DelegateRoles']: 'peer,orderer,client,user',
+					['hf.Revoker']: true,
+					['hf.IntermediateCA']: true,
+					['hf.GenCRL']: true,
+					['hf.Registrar.Attributes']: '*',
+					['hf.AffiliationMgr']: true
+				}
+			}]
+		},
+		signing: {
+			default: {
+				usage:
+					[
+						'digital signature',
+					],
+				expiry: '8760h',
+			},
+
+			profiles:
+				{
+					tls: {
+						usage: [
+							'server auth',//Extended key usage
+							'client auth',//Extended key usage
+							// 'signing',
+							'digital signature',
+							'key encipherment',
+							'key agreement'
+						],
+						expiry: '8760h',
+					},
+				}
+		},
+
+	};
+	const configFile = path.resolve(`${container_name}.yaml`);
+	fs.writeFileSync(configFile, yaml.safeDump(config, {lineWidth: 180}));
 
 	const createOptions = {
 		name: container_name,
+		Volumes: {
+			[caUtil.container.CONFIG]: {},
+		},
 		Env: caUtil.envBuilder(),
 		ExposedPorts: {
 			'7054': {}
@@ -37,6 +121,9 @@ exports.runCA = ({
 					}
 				]
 			},
+			Binds: [
+				`${configFile}:${caUtil.container.CONFIG}`,
+			],
 		},
 		NetworkingConfig: {
 			EndpointsConfig: {
@@ -47,7 +134,8 @@ exports.runCA = ({
 		}
 	};
 	return dockerUtil.containerStart(createOptions);
-};
+}
+;
 exports.deployZookeeper = ({Name, network, imageTag, Constraints, MY_ID}, zookeepersConfig) => {
 	return dockerUtil.serviceCreateIfNotExist({
 		Image: `hyperledger/fabric-zookeeper:${imageTag}`,
@@ -139,7 +227,7 @@ exports.chaincodeContainerList = async () => {
 	return containers.filter(container => container.Names.find(name => name.startsWith('/dev-')));
 };
 exports.chaincodeClean = async () => {
-	const containers = await module.exports.chaincodeContainerList();
+	const containers = await exports.chaincodeContainerList();
 	await Promise.all(containers.map(container => {
 		return dockerUtil.containerDelete(container.Id)
 			.then(() => dockerUtil.imageDelete(container.Image));
@@ -229,12 +317,12 @@ exports.deployPeer = ({
 	});
 };
 exports.runPeer = ({
-	container_name, port, eventHubPort, network, imageTag,
-	msp: {
-		id, volumeName,
-		configPath
-	}, peerHostName, tls
-}) => {
+					   container_name, port, eventHubPort, network, imageTag,
+					   msp: {
+						   id, volumeName,
+						   configPath
+					   }, peerHostName, tls
+				   }) => {
 	const Image = `hyperledger/fabric-peer:${imageTag}`;
 	const Cmd = ['peer', 'node', 'start'];
 	const Env = peerUtil.envBuilder({
@@ -288,3 +376,4 @@ exports.volumeReCreate = async ({Name, path}) => {
 	await dockerUtil.volumeRemove(Name);
 	return await dockerUtil.volumeCreateIfNotExist({Name, path});
 };
+
