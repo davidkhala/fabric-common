@@ -14,7 +14,7 @@ const User = require('fabric-client/lib/User');
  * @param cryptoSuite
  * @returns {Promise|*|Promise<User>}
  */
-exports.loadFromLocal = async (cryptoPath, nodeType, {mspId}, cryptoSuite) => {
+exports.loadFromLocal = async (cryptoPath, nodeType, {mspId}, cryptoSuite=clientUtil.newCryptoSuite()) => {
 
 
 	const username = cryptoPath.userName;
@@ -22,20 +22,16 @@ exports.loadFromLocal = async (cryptoPath, nodeType, {mspId}, cryptoSuite) => {
 	if (!exist) return;
 	const {keystore, signcerts} = exist;
 
-	// NOTE:(jsdoc) This allows applications to use pre-existing crypto materials (private keys and certificates) to construct user objects with signing capabilities
-	// NOTE In client.createUser option, two types of cryptoContent is supported:
-	// 1. cryptoContent: {		privateKey: keyFilePath,signedCert: certFilePath}
-	// 2. cryptoContent: {		privateKeyPEM: keyFileContent,signedCertPEM: certFileContent}
-
-	const user = await exports.build(username, {key: fs.readFileSync(keystore), certificate: fs.readFileSync(signcerts)}, mspId, cryptoSuite);
+	const user = await exports.build(username, {key:fs.readFileSync(keystore), certificate: fs.readFileSync(signcerts)}, mspId, cryptoSuite);
 
 	return user;
 };
 exports.build = async (username, {key, certificate}, MSPID, cryptoSuite) => {
 	const user = new User(username);
-	user.setCryptoSuite(cryptoSuite);
 	//FIXME: importKey.then is not function in some case;
-	await user.setEnrollment(key, certificate, MSPID);
+	const privateKey = await cryptoSuite.importKey(key, {ephemeral: true});
+	user.setCryptoSuite(cryptoSuite);
+	await user.setEnrollment(privateKey, certificate, MSPID);
 	return user;
 };
 exports.getCertificate = (user) => {

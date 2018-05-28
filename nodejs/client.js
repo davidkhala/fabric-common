@@ -8,7 +8,7 @@ const cryptoKeyStorePath = path.join(path.dirname(__dirname), 'cryptoKeyStore');
 
 exports.new = () => {
 	const client = new Client();
-	const newCryptoSuite = module.exports.newCryptoSuite({path:cryptoKeyStorePath});
+	const newCryptoSuite = exports.newCryptoSuite({path:cryptoKeyStorePath});
 	client.setCryptoSuite(newCryptoSuite);
 	return client;
 };

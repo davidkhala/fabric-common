@@ -1,6 +1,4 @@
-const fs = require('fs');
 const path = require('path');
-const fsExtra = require('fs-extra');
 const logger = require('./logger').new('ca-core');
 const CAClient = require('fabric-ca-client/lib/FabricCAClientImpl');
 const {CryptoPath} = require('./path');

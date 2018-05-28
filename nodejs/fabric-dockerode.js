@@ -5,7 +5,7 @@ const caUtil = require('./ca');
 const kafkaUtil = require('./kafka');
 const ordererUtil = require('./orderer');
 const zookeeperUtil = require('./zookeeper');
-
+const {CryptoPath} = require('./path');
 const fs = require('fs');
 const yaml = require('js-yaml');
 const path = require('path');
@@ -14,6 +14,7 @@ exports.imagePullCCENV = (imageTag) => {
 	return dockerUtil.imagePull(`hyperledger/fabric-ccenv:${imageTag}`);
 };
 /**
+ * TLS enabled but no certificate or key provided, automatically generate TLS credentials
  * TODO try to use command-base
  * @param container_name
  * @param port
@@ -25,88 +26,17 @@ exports.imagePullCCENV = (imageTag) => {
  * @returns {Promise<*>}
  */
 exports.runCA = ({
-					 container_name, port, network, imageTag,
-					 admin = 'Admin', adminpw = 'passwd',
-					 TLS,
-				 },configFile) => {
+	container_name, port, network, imageTag,
+	admin = 'Admin', adminpw = 'passwd',
+	TLS,
+}, configFile) => {
 
 	const {caKey, caCert} = caUtil.container;
-	const tlsOptions = TLS ? '--tls.enabled' : '';
-	const Cmd = ['sh', '-c', `rm ${caKey}; rm ${caCert};fabric-ca-server start`];
-	//TLS enabled but no certificate or key provided, automatically generate TLS credentials
-
-	const config = {
-		debug: true,
-		csr: {
-			cn: container_name,
-			names: [{
-				C: 'HKSAR',
-				ST: 'NT',
-				L: 'HKSTP',
-				O: 'ASTRI',
-				OU: '',
-			}],
-
-			hosts: [
-				'localhost', container_name
-			],
-		},
-		tls: {
-			enabled: !!TLS
-
-		},
-
-		registry: {
-			identities: [{
-				name: admin,
-				pass: adminpw,
-				type: 'client',
-				affiliation: '',
-				attrs: {
-					['hf.Registrar.Roles']: 'peer,orderer,client,user',
-					['hf.Registrar.DelegateRoles']: 'peer,orderer,client,user',
-					['hf.Revoker']: true,
-					['hf.IntermediateCA']: true,
-					['hf.GenCRL']: true,
-					['hf.Registrar.Attributes']: '*',
-					['hf.AffiliationMgr']: true
-				}
-			}]
-		},
-		signing: {
-			default: {
-				usage:
-					[
-						'digital signature',
-					],
-				expiry: '8760h',
-			},
-
-			profiles:
-				{
-					tls: {
-						usage: [
-							'server auth',//Extended key usage
-							'client auth',//Extended key usage
-							// 'signing',
-							'digital signature',
-							'key encipherment',
-							'key agreement'
-						],
-						expiry: '8760h',
-					},
-				}
-		},
-
-	};
-	const configFile = path.resolve(`${container_name}.yaml`);
-	fs.writeFileSync(configFile, yaml.safeDump(config, {lineWidth: 180}));
+	const cmdAppend = configFile ? '' : `-d -b ${admin}:${adminpw} ${TLS ? '--tls.enabled' : ''} --csr.cn=${container_name}`;
+	const Cmd = ['sh', '-c', `rm ${caKey}; rm ${caCert};fabric-ca-server start ${cmdAppend}`];
 
 	const createOptions = {
 		name: container_name,
-		Volumes: {
-			[caUtil.container.CONFIG]: {},
-		},
 		Env: caUtil.envBuilder(),
 		ExposedPorts: {
 			'7054': {}
@@ -121,9 +51,7 @@ exports.runCA = ({
 					}
 				]
 			},
-			Binds: [
-				`${configFile}:${caUtil.container.CONFIG}`,
-			],
+
 		},
 		NetworkingConfig: {
 			EndpointsConfig: {
@@ -133,6 +61,80 @@ exports.runCA = ({
 			}
 		}
 	};
+	if (configFile) {
+		const config = {
+			debug: true,
+			csr: {
+				cn: container_name,
+				names: [{
+					C: 'HKSAR',
+					ST: 'NT',
+					L: 'HKSTP',
+					O: 'ASTRI',
+					OU: '',
+				}],
+
+				hosts: [
+					'localhost', container_name
+				],
+			},
+			tls: {
+				enabled: !!TLS
+
+			},
+
+			registry: {
+				identities: [{
+					name: admin,
+					pass: adminpw,
+					type: 'client',
+					affiliation: '',
+					attrs: {
+						['hf.Registrar.Roles']: 'peer,orderer,client,user',
+						['hf.Registrar.DelegateRoles']: 'peer,orderer,client,user',
+						['hf.Revoker']: true,
+						['hf.IntermediateCA']: true,
+						['hf.GenCRL']: true,
+						['hf.Registrar.Attributes']: '*',
+						['hf.AffiliationMgr']: true
+					}
+				}]
+			},
+			signing: {
+				default: {
+					usage:
+						[
+							'digital signature',
+						],
+					expiry: '8760h',
+				},
+
+				profiles:
+					{
+						tls: {
+							usage: [
+								'server auth',//Extended key usage
+								'client auth',//Extended key usage
+								// 'signing',
+								'digital signature',
+								'key encipherment',
+								'key agreement'
+							],
+							expiry: '8760h',
+						},
+					}
+			},
+
+		};
+		CryptoPath.writeFileSync(configFile, yaml.safeDump(config, {lineWidth: 180}));
+
+		createOptions.Volumes = {
+			[caUtil.container.CONFIG]: {},
+		};
+		createOptions.Hostconfig.Binds = [
+			`${configFile}:${caUtil.container.CONFIG}`,
+		];
+	}
 	return dockerUtil.containerStart(createOptions);
 }
 ;
@@ -279,9 +281,9 @@ exports.runOrderer = ({container_name, imageTag, port, network, BLOCK_FILE, CONF
 };
 
 exports.deployOrderer = ({
-							 Name, network, imageTag, Constraints, port,
-							 msp: {volumeName, configPath, id}, CONFIGTXVolume, BLOCK_FILE, kafkas, tls
-						 }) => {
+	Name, network, imageTag, Constraints, port,
+	msp: {volumeName, configPath, id}, CONFIGTXVolume, BLOCK_FILE, kafkas, tls
+}) => {
 	const serviceName = dockerUtil.swarmServiceName(Name);
 	return dockerUtil.serviceCreateIfNotExist({
 		Cmd: ['orderer'],
@@ -295,9 +297,9 @@ exports.deployOrderer = ({
 	});
 };
 exports.deployPeer = ({
-						  Name, network, imageTag, Constraints, port, eventHubPort,
-						  msp: {volumeName, configPath, id}, peerHostName, tls
-					  }) => {
+	Name, network, imageTag, Constraints, port, eventHubPort,
+	msp: {volumeName, configPath, id}, peerHostName, tls
+}) => {
 	const serviceName = dockerUtil.swarmServiceName(Name);
 
 	return dockerUtil.serviceCreateIfNotExist({
@@ -317,12 +319,12 @@ exports.deployPeer = ({
 	});
 };
 exports.runPeer = ({
-					   container_name, port, eventHubPort, network, imageTag,
-					   msp: {
-						   id, volumeName,
-						   configPath
-					   }, peerHostName, tls
-				   }) => {
+	container_name, port, eventHubPort, network, imageTag,
+	msp: {
+		id, volumeName,
+		configPath
+	}, peerHostName, tls
+}) => {
 	const Image = `hyperledger/fabric-peer:${imageTag}`;
 	const Cmd = ['peer', 'node', 'start'];
 	const Env = peerUtil.envBuilder({
