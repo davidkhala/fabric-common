@@ -159,13 +159,14 @@ exports.deployKafka = ({Name, network, imageTag, Constraints, BROKER_ID}, zookee
 	});
 };
 
-exports.deployCA = ({Name, network, imageTag, Constraints, port, admin = 'Admin', adminpw = 'passwd', TLS}) => {
+exports.deployCA = async ({Name, network, imageTag, Constraints, port, admin = 'Admin', adminpw = 'passwd', TLS}) => {
 	const serviceName = dockerUtil.swarmServiceName(Name);
 	const tlsOptions = TLS ? '--tls.enabled' : '';
 
 	const {caKey, caCert} = caUtil.container;
 
 	const Cmd = ['sh', '-c', `rm ${caKey}; rm ${caCert}; fabric-ca-server start -d -b ${admin}:${adminpw} ${tlsOptions}  --csr.cn=${Name}`];
+	if(!Constraints) Constraints = await dockerUtil.constraintSelf();
 	return dockerUtil.serviceCreateIfNotExist({
 		Image: `hyperledger/fabric-ca:${imageTag}`,
 		Name: serviceName,
