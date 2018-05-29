@@ -15,9 +15,7 @@ const User = require('fabric-client/lib/User');
  * @param cryptoSuite
  * @returns {Promise|*|Promise<User>}
  */
-exports.loadFromLocal = async (cryptoPath, nodeType, {mspId}, cryptoSuite = clientUtil.newCryptoSuite()) => {
-
-
+exports.loadFromLocal = async (cryptoPath, nodeType, mspId, cryptoSuite = clientUtil.newCryptoSuite()) => {
 	const username = cryptoPath.userName;
 	const exist = cryptoPath.cryptoExistLocal(`${nodeType}User`);
 	if (!exist) return;

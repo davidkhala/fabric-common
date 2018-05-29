@@ -10,7 +10,7 @@ exports.findKeyfiles = (dir) => {
 	return files.filter((fileName) => fileName.endsWith('_sk')).map((fileName) => path.resolve(dir, fileName));
 };
 /**
- * @type {CryptoPath}
+ * @class
  */
 exports.CryptoPath = class {
 	constructor(rootPath, {orderer, peer, user, react} = {}) {
