@@ -2,8 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const fsExtra = require('fs-extra');
 const os = require('os');
-exports.home = () => {
-	return os.homedir();
+exports.homeResolve = (relativePath) => {
+	return path.resolve(os.homedir(),relativePath);
 };
 exports.findKeyfiles = (dir) => {
 	const files = fs.readdirSync(dir);
