@@ -40,7 +40,7 @@ exports.initAdmin = async (caService, cryptoPath, nodeType, mspId) => {
  * @returns {Promise<*>}
  */
 exports.init = async (caService, cryptoPath, nodeType, mspId, {affiliationRoot} = {}) => {
-	logger.debug('init', {mspId,}, cryptoPath, nodeType);
+	logger.debug('init', {mspId, nodeType}, cryptoPath);
 	const {[`${nodeType}OrgName`]: domain} = cryptoPath;
 	if (!affiliationRoot) affiliationRoot = domain;
 	const affiliationService = caService.newAffiliationService();
@@ -48,9 +48,11 @@ exports.init = async (caService, cryptoPath, nodeType, mspId, {affiliationRoot} 
 
 
 	const adminUser = await exports.initAdmin(caService, cryptoPath, nodeType, mspId,);
-	const promises = [affiliationUtil.creatIfNotExist(affiliationService, {name: `${affiliationRoot}.user`, force}, adminUser),
+	const promises = [
+		affiliationUtil.creatIfNotExist(affiliationService, {name: `${affiliationRoot}.user`, force}, adminUser),
 		affiliationUtil.creatIfNotExist(affiliationService, {name: `${affiliationRoot}.peer`, force}, adminUser),
-		affiliationUtil.creatIfNotExist(affiliationService, {name: `${affiliationRoot}.orderer`, force}, adminUser)];
+		affiliationUtil.creatIfNotExist(affiliationService, {name: `${affiliationRoot}.orderer`, force}, adminUser)
+	];
 	await Promise.all(promises);
 	return adminUser;
 
