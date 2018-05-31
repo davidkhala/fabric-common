@@ -167,7 +167,7 @@ exports.deployCA = async ({Name, network, imageTag, Constraints, port, admin = '
 
 	const Cmd = ['sh', '-c', `rm ${caKey}; rm ${caCert}; fabric-ca-server start -d -b ${admin}:${adminpw} ${tlsOptions}  --csr.cn=${Name}`];
 	if(!Constraints) Constraints = await dockerUtil.constraintSelf();
-	return dockerUtil.serviceCreateIfNotExist({
+	return await dockerUtil.serviceCreateIfNotExist({
 		Image: `hyperledger/fabric-ca:${imageTag}`,
 		Name: serviceName,
 		Cmd,
@@ -281,12 +281,14 @@ exports.runOrderer = ({container_name, imageTag, port, network, BLOCK_FILE, CONF
 	return dockerUtil.containerStart(createOptions);
 };
 
-exports.deployOrderer = ({
+exports.deployOrderer = async ({
 	Name, network, imageTag, Constraints, port,
 	msp: {volumeName, configPath, id}, CONFIGTXVolume, BLOCK_FILE, kafkas, tls
 }) => {
 	const serviceName = dockerUtil.swarmServiceName(Name);
-	return dockerUtil.serviceCreateIfNotExist({
+	if(!Constraints) Constraints = await dockerUtil.constraintSelf();
+
+	return await dockerUtil.serviceCreateIfNotExist({
 		Cmd: ['orderer'],
 		Image: `hyperledger/fabric-orderer:${imageTag}`,
 		Name: serviceName, network, Constraints,
@@ -297,13 +299,13 @@ exports.deployOrderer = ({
 		Aliases: [Name]
 	});
 };
-exports.deployPeer = ({
+exports.deployPeer = async ({
 	Name, network, imageTag, Constraints, port, eventHubPort,
 	msp: {volumeName, configPath, id}, peerHostName, tls
 }) => {
 	const serviceName = dockerUtil.swarmServiceName(Name);
-
-	return dockerUtil.serviceCreateIfNotExist({
+	if(!Constraints) Constraints = await dockerUtil.constraintSelf();
+	return await dockerUtil.serviceCreateIfNotExist({
 		Image: `hyperledger/fabric-peer:${imageTag}`,
 		Cmd: ['peer', 'node', 'start'],
 		Name: serviceName, network, Constraints, volumes: [{
