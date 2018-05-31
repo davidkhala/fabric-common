@@ -3,7 +3,14 @@ const caUtil = require('./ca');
 const userUtil = require('./user');
 const logger = require('./logger').new('ca-crypto-gen');
 const affiliationUtil = require('./affiliationService');
-
+/**
+ *
+ * @param {FabricCAServices} caService
+ * @param {CryptoPath} cryptoPath
+ * @param {string} nodeType
+ * @param {string} mspId
+ * @returns {Promise<*>}
+ */
 exports.initAdmin = async (caService, cryptoPath, nodeType, mspId) => {
 	const enrollmentID = cryptoPath.userName;
 	const enrollmentSecret = 'passwd';
@@ -25,11 +32,11 @@ exports.initAdmin = async (caService, cryptoPath, nodeType, mspId) => {
 	return await userUtil.build(userFull, result, mspId);
 };
 /**
- * @param caService
- * @param cryptoPath
- * @param nodeType
- * @param mspId
- * @param affiliationRoot
+ * @param {FabricCAServices} caService
+ * @param {CryptoPath} cryptoPath
+ * @param {string} nodeType
+ * @param {string} mspId
+ * @param {string} affiliationRoot
  * @returns {Promise<*>}
  */
 exports.init = async (caService, cryptoPath, nodeType, mspId, {affiliationRoot} = {}) => {
@@ -49,10 +56,10 @@ exports.init = async (caService, cryptoPath, nodeType, mspId, {affiliationRoot} 
 
 };
 /**
- * @param caService
+ * @param {FabricCAServices} caService
  * @param {CryptoPath} cryptoPath
- * @param admin
- * @param affiliationRoot
+ * @param {User} admin
+ * @param {string} affiliationRoot
  * @returns {Promise<*>}
  */
 exports.genOrderer = async (caService, cryptoPath, admin, {TLS, affiliationRoot} = {}) => {
@@ -91,10 +98,10 @@ exports.genOrderer = async (caService, cryptoPath, admin, {TLS, affiliationRoot}
 };
 /**
  *
- * @param caService
+ * @param {FabricCAServices} caService
  * @param {CryptoPath} cryptoPath
- * @param affiliationRoot
- * @param admin
+ * @param {string} affiliationRoot
+ * @param {User} admin
  * @returns {*}
  */
 exports.genPeer = async (caService, cryptoPath, admin, {TLS, affiliationRoot} = {}) => {

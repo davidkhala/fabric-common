@@ -9,9 +9,9 @@ exports.formatUsername = (username, domain) => `${username}@${domain}`;
 const User = require('fabric-client/lib/User');
 /**
  *
- * @param userMSPRoot
  * @param cryptoPath
  * @param nodeType
+ * @param mspId
  * @param cryptoSuite
  * @returns {Promise|*|Promise<User>}
  */

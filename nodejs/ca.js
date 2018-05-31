@@ -98,6 +98,12 @@ exports.toTLS = ({key, certificate, rootCertificate}, cryptoPath, type) => {
 };
 
 exports.register = registerIfNotExist;
+/**
+ *
+ * @param {string} caUrl
+ * @param {string[]} trustedRoots
+ * @returns {FabricCAServices}
+ */
 exports.new = (caUrl, trustedRoots = []) => {
 	const tlsOptions = {
 		trustedRoots,
