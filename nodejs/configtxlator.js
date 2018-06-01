@@ -11,6 +11,42 @@ exports.deleteMSP = (original_config, {MSPName}) => {
 	delete newConfig.channel_group.groups.Application.groups[MSPName];
 	return JSON.stringify(newConfig);
 };
+
+exports.Dictator = (original_config, MSPID, nodeType) => {
+	const newConfig = JSON.parse(original_config);
+	let target;
+	if (nodeType === 'orderer') target = 'Orderer';
+	if (nodeType === 'peer') target = 'Application';
+	if (!target) throw `invalid nodeType ${nodeType}`;
+
+	newConfig.channel_group.groups[target].policies.Admins.policy = {
+		type: 1,
+		value: {
+			identities: [
+				{
+					principal: {
+						msp_identifier: MSPID,
+						role: 'ADMIN'
+					},
+					principal_classification: 'ROLE'
+				}
+			],
+			rule: {
+				n_out_of: {
+					n: 1,
+					rules: [
+						{
+							signed_by: 0
+						}
+					]
+				}
+			},
+			version: 0
+		}
+	};
+	return JSON.stringify(newConfig);
+
+};
 exports.newPeerOrg = (original_config, MSPName, MSPID, {admins = [], root_certs = [], tls_root_certs = []} = {}) => {
 	const newConfig = JSON.parse(original_config);
 	newConfig.channel_group.groups.Application.groups[MSPName] = {
