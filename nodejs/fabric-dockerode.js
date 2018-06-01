@@ -26,10 +26,10 @@ exports.imagePullCCENV = (imageTag) => {
  * @returns {Promise<*>}
  */
 exports.runCA = ({
-	container_name, port, network, imageTag,
-	admin = 'Admin', adminpw = 'passwd',
-	TLS,
-}, configFile) => {
+					 container_name, port, network, imageTag,
+					 admin = 'Admin', adminpw = 'passwd',
+					 TLS,
+				 }, configFile) => {
 
 	const {caKey, caCert} = caUtil.container;
 	const cmdAppend = configFile ? '' : `-d -b ${admin}:${adminpw} ${TLS ? '--tls.enabled' : ''} --csr.cn=${container_name}`;
@@ -166,7 +166,7 @@ exports.deployCA = async ({Name, network, imageTag, Constraints, port, admin = '
 	const {caKey, caCert} = caUtil.container;
 
 	const Cmd = ['sh', '-c', `rm ${caKey}; rm ${caCert}; fabric-ca-server start -d -b ${admin}:${adminpw} ${tlsOptions}  --csr.cn=${Name}`];
-	if(!Constraints) Constraints = await dockerUtil.constraintSelf();
+	if (!Constraints) Constraints = await dockerUtil.constraintSelf();
 	return await dockerUtil.serviceCreateIfNotExist({
 		Image: `hyperledger/fabric-ca:${imageTag}`,
 		Name: serviceName,
@@ -282,11 +282,11 @@ exports.runOrderer = ({container_name, imageTag, port, network, BLOCK_FILE, CONF
 };
 
 exports.deployOrderer = async ({
-	Name, network, imageTag, Constraints, port,
-	msp: {volumeName, configPath, id}, CONFIGTXVolume, BLOCK_FILE, kafkas, tls
-}) => {
+								   Name, network, imageTag, Constraints, port,
+								   msp: {volumeName, configPath, id}, CONFIGTXVolume, BLOCK_FILE, kafkas, tls
+							   }) => {
 	const serviceName = dockerUtil.swarmServiceName(Name);
-	if(!Constraints) Constraints = await dockerUtil.constraintSelf();
+	if (!Constraints) Constraints = await dockerUtil.constraintSelf();
 
 	return await dockerUtil.serviceCreateIfNotExist({
 		Cmd: ['orderer'],
@@ -300,11 +300,11 @@ exports.deployOrderer = async ({
 	});
 };
 exports.deployPeer = async ({
-	Name, network, imageTag, Constraints, port, eventHubPort,
-	msp: {volumeName, configPath, id}, peerHostName, tls
-}) => {
+								Name, network, imageTag, Constraints, port, eventHubPort,
+								msp: {volumeName, configPath, id}, peerHostName, tls
+							}) => {
 	const serviceName = dockerUtil.swarmServiceName(Name);
-	if(!Constraints) Constraints = await dockerUtil.constraintSelf();
+	if (!Constraints) Constraints = await dockerUtil.constraintSelf();
 	return await dockerUtil.serviceCreateIfNotExist({
 		Image: `hyperledger/fabric-peer:${imageTag}`,
 		Cmd: ['peer', 'node', 'start'],
@@ -322,12 +322,12 @@ exports.deployPeer = async ({
 	});
 };
 exports.runPeer = ({
-	container_name, port, eventHubPort, network, imageTag,
-	msp: {
-		id, volumeName,
-		configPath
-	}, peerHostName, tls
-}) => {
+					   container_name, port, eventHubPort, network, imageTag,
+					   msp: {
+						   id, volumeName,
+						   configPath
+					   }, peerHostName, tls
+				   }) => {
 	const Image = `hyperledger/fabric-peer:${imageTag}`;
 	const Cmd = ['peer', 'node', 'start'];
 	const Env = peerUtil.envBuilder({
@@ -381,4 +381,21 @@ exports.volumeReCreate = async ({Name, path}) => {
 	await dockerUtil.volumeRemove(Name);
 	return await dockerUtil.volumeCreateIfNotExist({Name, path});
 };
+/**
+ * @param {string[]} services service names
+ * @param nodes
+ * @returns {Promise<any>}
+ */
+exports.tasksWaitUntilDead = async ({nodes, services} = {}) => {
+	const tasks = await dockerUtil.taskList({nodes, services});
 
+	logger.debug('tasksWaitUtilDead', tasks.length);
+	for (const task of tasks) {
+		await dockerUtil.taskDeadWaiter(task);
+	}
+};
+exports.tasksWaitUntilLive = async (services) => {
+	for (const service of services) {
+		await dockerUtil.taskLiveWaiter(service);
+	}
+};
