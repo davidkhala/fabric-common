@@ -5,166 +5,197 @@ const agent = require('./agent2configtxlator');
 const OrdererUtil = require('./orderer');
 const EventHubUtil = require('./eventHub');
 
+exports.ConfigFactory = class {
+	constructor(original_config) {
+		this.newConfig = JSON.parse(original_config);
+	}
 
-exports.deleteMSP = (original_config, {MSPName}) => {
-	const newConfig = JSON.parse(original_config);
-	delete newConfig.channel_group.groups.Application.groups[MSPName];
-	return JSON.stringify(newConfig);
-};
+	deleteMSP(MSPName, nodeType) {
+		const target = this._getTarget(nodeType);
+		delete this.newConfig.channel_group.groups[target].groups[MSPName];
+		return this;
+	}
 
-exports.Dictator = (original_config, MSPID, nodeType) => {
-	const newConfig = JSON.parse(original_config);
-	let target;
-	if (nodeType === 'orderer') target = 'Orderer';
-	if (nodeType === 'peer') target = 'Application';
-	if (!target) throw `invalid nodeType ${nodeType}`;
+	_getTarget(nodeType) {
+		let target;
+		if (nodeType === 'orderer') target = 'Orderer';
+		if (nodeType === 'peer') target = 'Application';
+		if (!target) throw `invalid nodeType ${nodeType}`;
+		return target;
+	}
 
-	newConfig.channel_group.groups[target].policies.Admins.policy = {
-		type: 1,
-		value: {
-			identities: [
-				{
-					principal: {
-						msp_identifier: MSPID,
-						role: 'ADMIN'
-					},
-					principal_classification: 'ROLE'
-				}
-			],
-			rule: {
-				n_out_of: {
-					n: 1,
-					rules: [
-						{
-							signed_by: 0
-						}
-					]
-				}
-			},
-			version: 0
-		}
-	};
-	return JSON.stringify(newConfig);
-
-};
-exports.newPeerOrg = (original_config, MSPName, MSPID, {admins = [], root_certs = [], tls_root_certs = []} = {}) => {
-	const newConfig = JSON.parse(original_config);
-	newConfig.channel_group.groups.Application.groups[MSPName] = {
-		'mod_policy': 'Admins',
-		'policies': {
-			'Admins': {
-				'mod_policy': 'Admins',
-				'policy': {
-					'type': 1,
-					'value': {
-						'identities': [
-							{
-								'principal': {
-									'msp_identifier': MSPID,
-									'role': 'ADMIN'
-								}
-							}
-						],
-						'rule': {
-							'n_out_of': {
-								'n': 1,
-								'rules': [
-									{
-										'signed_by': 0
-									}
-								]
-							}
-						}
-					}
-				}
-			},
-			'Readers': {
-				'mod_policy': 'Admins',
-				'policy': {
-					'type': 1,
-					'value': {
-						'identities': [
-							{
-								'principal': {
-									'msp_identifier': MSPID
-								}
-							}
-						],
-						'rule': {
-							'n_out_of': {
-								'n': 1,
-								'rules': [
-									{
-										'signed_by': 0
-									}
-								]
-							}
-						}
-					}
-				}
-			},
-			'Writers': {
-				'mod_policy': 'Admins',
-				'policy': {
-					'type': 1,
-					'value': {
-						'identities': [
-							{
-								'principal': {
-									'msp_identifier': MSPID
-								}
-							}
-						],
-						'rule': {
-							'n_out_of': {
-								'n': 1,
-								'rules': [
-									{
-										'signed_by': 0
-									}
-								]
-							}
-						}
-					}
-				}
-			}
-		},
-		'values': {
-			'MSP': {
-				'mod_policy': 'Admins',
-				'value': {
-					'config': {
-						'admins': admins.map(admin => {
-							return fs.readFileSync(admin).toString('base64');
-						}),
-						'crypto_config': {
-							'identity_identifier_hash_function': 'SHA256',
-							'signature_hash_family': 'SHA2'
+	assignDictator(MSPID, nodeType) {
+		const target = this._getTarget(nodeType);
+		this.newConfig.channel_group.groups[target].policies.Admins.policy = {
+			type: 1,
+			value: {
+				identities: [
+					{
+						principal: {
+							msp_identifier: MSPID,
+							role: 'ADMIN'
 						},
-						'name': MSPID,
-						'root_certs': root_certs.map(rootCert => {
-							return fs.readFileSync(rootCert).toString('base64');
-						}),
-						'tls_root_certs': tls_root_certs.map(tlsRootCert => {
-							return fs.readFileSync(tlsRootCert).toString('base64');
-						})
+						principal_classification: 'ROLE'
+					}
+				],
+				rule: {
+					n_out_of: {
+						n: 1,
+						rules: [
+							{
+								signed_by: 0
+							}
+						]
+					}
+				},
+			}
+		};
+	}
+
+	/**
+	 * TODO something update for 1.1
+	 * @param MSPName
+	 * @param MSPID
+	 * @param nodeType
+	 * @param admins
+	 * @param root_certs
+	 * @param tls_root_certs
+	 */
+	newOrg(MSPName, MSPID, nodeType, {admins = [], root_certs = [], tls_root_certs = []} = {}) {
+		const target = this._getTarget(nodeType);
+		this.newConfig.channel_group.groups[target].groups[MSPName] = {
+			'mod_policy': 'Admins',
+			'policies': {
+				'Admins': {
+					'mod_policy': 'Admins',
+					'policy': {
+						'type': 1,
+						'value': {
+							'identities': [
+								{
+									'principal': {
+										'msp_identifier': MSPID,
+										role: 'ADMIN'
+									},
+									principal_classification: 'ROLE'
+								}
+							],
+							'rule': {
+								'n_out_of': {
+									'n': 1,
+									'rules': [
+										{
+											'signed_by': 0
+										}
+									]
+								}
+							},
+						}
+					}
+				},
+				'Readers': {
+					'mod_policy': 'Admins',
+					'policy': {
+						'type': 1,
+						'value': {
+							'identities': [
+								{
+									'principal': {
+										'msp_identifier': MSPID,
+										role: 'MEMBER'
+									},
+									principal_classification: 'ROLE'
+								}
+							],
+							'rule': {
+								'n_out_of': {
+									'n': 1,
+									'rules': [
+										{
+											'signed_by': 0
+										}
+									]
+								}
+							},
+						}
+					}
+				},
+				'Writers': {
+					'mod_policy': 'Admins',
+					'policy': {
+						'type': 1,
+						'value': {
+							'identities': [
+								{
+									'principal': {
+										'msp_identifier': MSPID,
+										role: 'MEMBER'
+									},
+									principal_classification: 'ROLE'
+								}
+							],
+							'rule': {
+								'n_out_of': {
+									'n': 1,
+									'rules': [
+										{
+											'signed_by': 0
+										}
+									]
+								}
+							},
+						}
 					}
 				}
-			}
-		}
-	};
-	return JSON.stringify(newConfig);
-};
+			},
+			'values': {
+				'MSP': {
+					'mod_policy': 'Admins',
+					'value': {
+						'config': {
+							'admins': admins.map(admin => {
+								return fs.readFileSync(admin).toString('base64');
+							}),
+							'crypto_config': {
+								'identity_identifier_hash_function': 'SHA256',
+								'signature_hash_family': 'SHA2'
+							},
+							'name': MSPID,
+							'root_certs': root_certs.map(rootCert => {
+								return fs.readFileSync(rootCert).toString('base64');
+							}),
+							'tls_root_certs': tls_root_certs.map(tlsRootCert => {
+								return fs.readFileSync(tlsRootCert).toString('base64');
+							})
+						},
+						type: 0
+					},
+				}
+			},
 
-exports.updateKafkaBrokers = (update_config, {brokers}) => {
-	const newConfig = JSON.parse(update_config);
-	newConfig.channel_group.groups.Orderer.values.KafkaBrokers.value.brokers = brokers;
-	return JSON.stringify(newConfig);
-};
-exports.updateOrdererAddresses = (update_config, {addresses}) => {
-	const newConfig = JSON.parse(update_config);
-	newConfig.channel_group.values.OrdererAddresses.value.addresses = addresses;
-	return JSON.stringify(newConfig);
+		};
+	}
+
+	getOrdererAddresses() {
+		return this.newConfig.channel_group.values.OrdererAddresses.value.addresses;
+	}
+
+	setOrdererAddresses(addresses) {
+		this.newConfig.channel_group.values.OrdererAddresses.value.addresses = addresses;
+	}
+
+	getKafkaBrokers() {
+		return this.newConfig.channel_group.groups.Orderer.values.KafkaBrokers.value.brokers;
+	}
+
+	setKafkaBrokers(brokers) {
+		this.newConfig.channel_group.groups.Orderer.values.KafkaBrokers.value.brokers = brokers;
+	}
+
+
+	build() {
+		return JSON.stringify(this.newConfig);
+	}
 };
 
 
