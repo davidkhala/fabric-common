@@ -2,11 +2,14 @@
   "name": "nodejs",
   "version": "0.0.1",
   "dependencies": {
+    "body-parser": "^1.18.3",
+    "cors": "^2.8.4",
+    "express": "^4.16.3",
     "fabric-ca-client": "1.1.0",
     "fabric-client": "1.1.0",
     "fs-extra": "^6.0.1",
-    "request": "^2.85.0",
     "log4js": "^2.6.0",
-    "long": "^4.0.0"
+    "long": "^4.0.0",
+    "request": "^2.85.0"
   }
 }
