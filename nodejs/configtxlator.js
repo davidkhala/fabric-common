@@ -50,6 +50,7 @@ exports.ConfigFactory = class {
 				},
 			}
 		};
+		return this;
 	}
 
 	/**
@@ -174,6 +175,7 @@ exports.ConfigFactory = class {
 			},
 
 		};
+		return this;
 	}
 
 	getOrdererAddresses() {
@@ -182,6 +184,7 @@ exports.ConfigFactory = class {
 
 	setOrdererAddresses(addresses) {
 		this.newConfig.channel_group.values.OrdererAddresses.value.addresses = addresses;
+		return this;
 	}
 
 	getKafkaBrokers() {
@@ -190,6 +193,7 @@ exports.ConfigFactory = class {
 
 	setKafkaBrokers(brokers) {
 		this.newConfig.channel_group.groups.Orderer.values.KafkaBrokers.value.brokers = brokers;
+		return this;
 	}
 
 
