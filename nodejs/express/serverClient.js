@@ -1,7 +1,7 @@
 const logger = require('../logger').new('ServerClient');
 const {sha2_256} = require('fabric-client/lib/hash');
 const fs = require('fs');
-const path = require('../../nodejs/path');
+const path = require('path');
 const fsExtra = require('fs-extra');
 const requestBuilder = ({uri, body}) => {
 	return {
