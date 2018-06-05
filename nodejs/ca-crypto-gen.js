@@ -1,5 +1,4 @@
 const caUtil = require('./ca');
-
 const userUtil = require('./user');
 const logger = require('./logger').new('ca-crypto-gen');
 const affiliationUtil = require('./affiliationService');
@@ -12,8 +11,8 @@ const affiliationUtil = require('./affiliationService');
  * @returns {Promise<*>}
  */
 exports.initAdmin = async (caService, cryptoPath, nodeType, mspId) => {
-	const enrollmentID = cryptoPath.userName;
-	const enrollmentSecret = 'passwd';
+	const enrollmentID = userUtil.adminName;
+	const enrollmentSecret = userUtil.adminPwd;
 
 	const {[`${nodeType}OrgName`]: domain} = cryptoPath;
 
@@ -47,7 +46,7 @@ exports.init = async (caService, cryptoPath, nodeType, mspId, {affiliationRoot} 
 	const force = true;//true to create recursively
 
 
-	const adminUser = await exports.initAdmin(caService, cryptoPath, nodeType, mspId,);
+	const adminUser = await exports.initAdmin(caService, cryptoPath, nodeType, mspId);
 	const promises = [
 		affiliationUtil.creatIfNotExist(affiliationService, {name: `${affiliationRoot}.user`, force}, adminUser),
 		affiliationUtil.creatIfNotExist(affiliationService, {name: `${affiliationRoot}.peer`, force}, adminUser),
@@ -78,7 +77,7 @@ exports.genOrderer = async (caService, cryptoPath, admin, {TLS, affiliationRoot}
 	}
 
 	const enrollmentID = ordererHostName;
-	const enrollmentSecret = 'passwd';
+	const enrollmentSecret = cryptoPath.password;
 	const certificate = userUtil.getCertificate(admin);
 	caUtil.peer.toAdminCerts({certificate}, cryptoPath, type);
 	await caUtil.register(caService, {
@@ -120,7 +119,7 @@ exports.genPeer = async (caService, cryptoPath, admin, {TLS, affiliationRoot} = 
 	}
 
 	const enrollmentID = peerHostName;
-	const enrollmentSecret = 'passwd';
+	const enrollmentSecret = cryptoPath.password;
 	const certificate = userUtil.getCertificate(admin);
 	caUtil.peer.toAdminCerts({certificate}, cryptoPath, type);
 	await caUtil.register(caService, {

@@ -39,3 +39,4 @@ exports.getCertificate = (user) => {
 	return user.getSigningIdentity()._certificate;
 };
 exports.adminName = 'Admin';
+exports.adminPwd = 'passwd';

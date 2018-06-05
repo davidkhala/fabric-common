@@ -6,9 +6,8 @@ const kafkaUtil = require('./kafka');
 const ordererUtil = require('./orderer');
 const zookeeperUtil = require('./zookeeper');
 const {CryptoPath} = require('./path');
-const fs = require('fs');
+const userUtil = require('./user');
 const yaml = require('js-yaml');
-const path = require('path');
 
 exports.imagePullCCENV = (imageTag) => {
 	return dockerUtil.imagePull(`hyperledger/fabric-ccenv:${imageTag}`);
@@ -26,10 +25,10 @@ exports.imagePullCCENV = (imageTag) => {
  * @returns {Promise<*>}
  */
 exports.runCA = ({
-					 container_name, port, network, imageTag,
-					 admin = 'Admin', adminpw = 'passwd',
-					 TLS,
-				 }, configFile) => {
+	container_name, port, network, imageTag,
+	admin = userUtil.adminName, adminpw = userUtil.adminPwd,
+	TLS,
+}, configFile) => {
 
 	const {caKey, caCert} = caUtil.container;
 	const cmdAppend = configFile ? '' : `-d -b ${admin}:${adminpw} ${TLS ? '--tls.enabled' : ''} --csr.cn=${container_name}`;
@@ -159,7 +158,7 @@ exports.deployKafka = ({Name, network, imageTag, Constraints, BROKER_ID}, zookee
 	});
 };
 
-exports.deployCA = async ({Name, network, imageTag, Constraints, port, admin = 'Admin', adminpw = 'passwd', TLS}) => {
+exports.deployCA = async ({Name, network, imageTag, Constraints, port, admin = userUtil.adminName, adminpw = userUtil.adminPwd, TLS}) => {
 	const serviceName = dockerUtil.swarmServiceName(Name);
 	const tlsOptions = TLS ? '--tls.enabled' : '';
 

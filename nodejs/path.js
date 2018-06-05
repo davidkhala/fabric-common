@@ -3,14 +3,15 @@ const path = require('path');
 const fsExtra = require('fs-extra');
 const os = require('os');
 exports.homeResolve = (relativePath) => {
-	return path.resolve(os.homedir(),relativePath);
+	return path.resolve(os.homedir(), relativePath);
 };
 exports.findKeyfiles = (dir) => {
 	const files = fs.readdirSync(dir);
 	return files.filter((fileName) => fileName.endsWith('_sk')).map((fileName) => path.resolve(dir, fileName));
 };
 exports.CryptoPath = class {
-	constructor(rootPath, {orderer, peer, user, react} = {}) {
+	constructor(rootPath, {orderer, peer, user, password} = {}) {
+		this.password = password;
 		if (orderer) {
 			this.ordererOrgName = orderer.org;
 			this.ordererName = orderer.name;
@@ -36,26 +37,26 @@ exports.CryptoPath = class {
 		}
 
 		this.root = rootPath;
-		this.react = react;
 	}
 
 	setReact(react) {
 		this.react = react;
+		return this;
 	}
 
 	resolve(...tokens) {
 		const result = path.resolve(...tokens);
 		const dir = path.dirname(result);
 		switch (this.react) {
-			case 'throw':
-				if (!fs.existsSync(dir)) {
-					throw new Error(`${dir} not exist`);
-				}
-				break;
-			case 'mkdir':
-				fsExtra.ensureDirSync(dir);
-				break;
-			default:
+		case 'throw':
+			if (!fs.existsSync(dir)) {
+				throw new Error(`${dir} not exist`);
+			}
+			break;
+		case 'mkdir':
+			fsExtra.ensureDirSync(dir);
+			break;
+		default:
 		}
 		return result;
 	}
@@ -90,9 +91,10 @@ exports.CryptoPath = class {
 		};
 	}
 
-	static getNodeType(type){
-		return type.includes('orderer')?'orderer':'peer';
+	static getNodeType(type) {
+		return type.includes('orderer') ? 'orderer' : 'peer';
 	}
+
 	MSPFile(type) {
 		const nodeType = this.constructor.getNodeType(type);
 		const mspDir = this.MSP(type);
@@ -171,7 +173,7 @@ exports.CryptoPath = class {
 		if (!fs.existsSync(signcerts)) return;
 		const keystore = this.MSPKeystore(type);
 		if (!fs.existsSync(keystore)) return;
-		return {keystore,signcerts};
+		return {keystore, signcerts};
 	}
 
 	static writeFileSync(filePath, data) {
