@@ -1,10 +1,7 @@
-const fsExtra = require('fs-extra');
 const fs = require('fs');
-const path = require('path');
-const pathUtil = require('./path');
 const clientUtil = require('./client');
 const logger = require('./logger').new('userUtil');
-const ECDSA_KEY = require('fabric-client/lib/impl/ecdsa/key')
+const ECDSA_KEY = require('fabric-client/lib/impl/ecdsa/key');
 exports.formatUsername = (username, domain) => `${username}@${domain}`;
 const User = require('fabric-client/lib/User');
 /**
@@ -41,3 +38,4 @@ exports.build = async (username, {key, certificate}, MSPID, cryptoSuite = client
 exports.getCertificate = (user) => {
 	return user.getSigningIdentity()._certificate;
 };
+exports.adminName = 'Admin';
