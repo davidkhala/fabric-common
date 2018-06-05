@@ -85,8 +85,20 @@ exports.getSignatures = (serverBaseUrl, protoPath) => {
 			proto: fs.createReadStream(protoPath)
 		};
 		//TODO signServerPort might be different
-		Request.post({url: serverBaseUrl, formData}, errHandler(resolve, reject));
+		Request.post({url: `${serverBaseUrl}/`, formData}, errHandler(resolve, reject));
 	});
 };
 
+exports.newOrg = (serverBaseUrl, channelName, MSPID, MSPName, nodeType, {admins, root_certs, tls_root_certs}) => {
+
+	const formData = {
+		channelName, MSPID, MSPName, nodeType,
+		admins: admins.map(path => fs.createReadStream(path)),
+		root_certs: root_certs.map(path => fs.createReadStream(path)),
+		tls_root_certs: tls_root_certs.map(path => fs.createReadStream(path)),
+	};
+	return new Promise((resolve, reject) => {
+		Request.post({url: `${serverBaseUrl}/channel/newOrg`, formData}, errHandler(resolve, reject));
+	});
+};
 

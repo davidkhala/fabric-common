@@ -58,9 +58,9 @@ exports.ConfigFactory = class {
 	 * @param MSPName
 	 * @param MSPID
 	 * @param nodeType
-	 * @param admins
-	 * @param root_certs
-	 * @param tls_root_certs
+	 * @param {string[]} admins pem file path array
+	 * @param {string[]} root_certs pem file path array
+	 * @param {string[]} tls_root_certs pem file path array
 	 */
 	newOrg(MSPName, MSPID, nodeType, {admins = [], root_certs = [], tls_root_certs = []} = {}) {
 		const target = this._getTarget(nodeType);
@@ -161,7 +161,7 @@ exports.ConfigFactory = class {
 								'identity_identifier_hash_function': 'SHA256',
 								'signature_hash_family': 'SHA2'
 							},
-							'name': MSPID,
+							name: MSPID,
 							'root_certs': root_certs.map(rootCert => {
 								return fs.readFileSync(rootCert).toString('base64');
 							}),
@@ -221,6 +221,15 @@ exports.getChannelConfigReadable = async (channel) => {
 		original_config: body,
 	};
 };
+/**
+ * @param channel
+ * @param mspCB
+ * @param {function} signatureCollectCB input: {string|json} original_config, output {string|json} update_config
+ * @param eventHub
+ * @param client
+ * @param ordererUrl
+ * @returns {Promise<{err: string, original_config: *}>}
+ */
 exports.channelUpdate = async (channel, mspCB, signatureCollectCB, eventHub, client = channel._clientContext, {ordererUrl} = {}) => {
 	const orderer = OrdererUtil.find({orderers: channel.getOrderers(), ordererUrl});
 
