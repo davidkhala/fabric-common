@@ -381,12 +381,17 @@ exports.volumeReCreate = async ({Name, path}) => {
 	return await dockerUtil.volumeCreateIfNotExist({Name, path});
 };
 /**
- * @param {string[]} services service names
+ * if service is deleted, taskList could not find legacy task
+ * @param {Service[]} services service info array
  * @param nodes
  * @returns {Promise<any>}
  */
 exports.tasksWaitUntilDead = async ({nodes, services} = {}) => {
-	const tasks = await dockerUtil.taskList({nodes, services});
+	const ids = services.map(service => service.ID);
+	const tasks = (await dockerUtil.taskList({nodes})).filter(task => {
+		const {ServiceID} = task;
+		return ids.find(id => id === ServiceID);
+	});
 
 	logger.debug('tasksWaitUtilDead', tasks.length);
 	for (const task of tasks) {
