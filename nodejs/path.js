@@ -2,8 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const fsExtra = require('fs-extra');
 const os = require('os');
-exports.homeResolve = (relativePath) => {
-	return path.resolve(os.homedir(), relativePath);
+exports.homeResolve = (relativePath, ...tokens) => {
+	return path.resolve(os.homedir(), relativePath, ...tokens);
 };
 exports.findKeyfiles = (dir) => {
 	const files = fs.readdirSync(dir);
@@ -48,15 +48,15 @@ exports.CryptoPath = class {
 		const result = path.resolve(...tokens);
 		const dir = path.dirname(result);
 		switch (this.react) {
-		case 'throw':
-			if (!fs.existsSync(dir)) {
-				throw new Error(`${dir} not exist`);
-			}
-			break;
-		case 'mkdir':
-			fsExtra.ensureDirSync(dir);
-			break;
-		default:
+			case 'throw':
+				if (!fs.existsSync(dir)) {
+					throw new Error(`${dir} not exist`);
+				}
+				break;
+			case 'mkdir':
+				fsExtra.ensureDirSync(dir);
+				break;
+			default:
 		}
 		return result;
 	}
