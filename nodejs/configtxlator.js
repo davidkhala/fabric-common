@@ -4,7 +4,7 @@ const fs = require('fs');
 const agent = require('./agent2configtxlator');
 const OrdererUtil = require('./orderer');
 const EventHubUtil = require('./eventHub');
-
+const {JSONEqual} = require('./helper');
 exports.ConfigFactory = class {
 	constructor(original_config) {
 		this.newConfig = JSON.parse(original_config);
@@ -54,7 +54,7 @@ exports.ConfigFactory = class {
 	}
 
 	/**
-	 * TODO something update for 1.1
+	 * because we will not change the 'version' property, so it will never be totally identical
 	 * @param MSPName
 	 * @param MSPID
 	 * @param nodeType
@@ -64,6 +64,10 @@ exports.ConfigFactory = class {
 	 */
 	newOrg(MSPName, MSPID, nodeType, {admins = [], root_certs = [], tls_root_certs = []} = {}) {
 		const target = this._getTarget(nodeType);
+		if (this.newConfig.channel_group.groups[target].groups[MSPName]) {
+			logger.info(MSPName, 'exist, adding skipped');
+			return this;
+		}
 		this.newConfig.channel_group.groups[target].groups[MSPName] = {
 			'mod_policy': 'Admins',
 			'policies': {
@@ -178,6 +182,13 @@ exports.ConfigFactory = class {
 		return this;
 	}
 
+	addOrdererAddress(newAddr) {
+		if (!this.newConfig.channel_group.values.OrdererAddresses.value.addresses.includes(newAddr)) {
+			this.newConfig.channel_group.values.OrdererAddresses.value.addresses.push(newAddr);
+		}
+		return this;
+	}
+
 	getOrdererAddresses() {
 		return this.newConfig.channel_group.values.OrdererAddresses.value.addresses;
 	}
@@ -223,8 +234,8 @@ exports.getChannelConfigReadable = async (channel) => {
 };
 /**
  * @param channel
- * @param mspCB
- * @param {function} signatureCollectCB input: {string|json} original_config, output {string|json} update_config
+ * @param {function} mspCB input: {string|json} original_config, output {string|json} update_config
+ * @param {function} signatureCollectCB input: {Buffer<binary>} proto, output {{signatures:string[]}} signatures
  * @param eventHub
  * @param client
  * @param ordererUrl
@@ -238,7 +249,7 @@ exports.channelUpdate = async (channel, mspCB, signatureCollectCB, eventHub, cli
 	const ERROR_NO_UPDATE = 'No update to original_config';
 	const {original_config_proto, original_config} = await exports.getChannelConfigReadable(channel);
 	const update_configJSONString = await mspCB(original_config);
-	if (update_configJSONString === original_config) {
+	if (JSONEqual(update_configJSONString, original_config)) {
 		logger.warn(ERROR_NO_UPDATE);
 		return {err: ERROR_NO_UPDATE, original_config};
 	}
@@ -270,7 +281,8 @@ exports.channelUpdate = async (channel, mspCB, signatureCollectCB, eventHub, cli
 		}
 	};
 	const {body: body2} = await agent.compute.updateFromConfigs(formData);
-	const {signatures, proto} = await signatureCollectCB(new Buffer(body2, 'binary'));
+	const proto = new Buffer(body2, 'binary');
+	const {signatures} = await signatureCollectCB(proto);
 
 	const request = {
 		config: proto,

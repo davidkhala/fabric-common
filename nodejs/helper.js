@@ -5,6 +5,9 @@ exports.randomKeyOf = (obj) => {
 	return keys[keyIndex];
 };
 exports.JSONReadable = (data) => JSON.stringify(data, null, 2);
+exports.JSONEqual = (json1, json2) => {
+	return JSON.stringify(JSON.parse(json1)) === JSON.stringify(JSON.parse(json2));
+};
 exports.ip = () => {
 	const allInterfaces = os.networkInterfaces();
 	const ips = [];
