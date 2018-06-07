@@ -17,10 +17,26 @@ const errHandler = (resolve, reject) => (err, resp, body) => {
 };
 const Request = require('request');
 //TODO have not cover all API yet
-exports.ping = (serverBaseUrl) => {
-	return new Promise((resolve, reject) => {
-		Request.get(`${serverBaseUrl}/`, errHandler(resolve, reject));
+exports.ping = async (serverBaseUrl) => {
+	const retryMax = 5;
+	let retryCounter = 0;
+	const aTry = () => new Promise((resolve, reject) => {
+		Request.get(`${serverBaseUrl}/`, (err, resp, body) => {
+			if (err) {
+				if (err.code === 'ECONNREFUSED' && retryCounter < retryMax) {
+					logger.warn('ping retry', retryCounter);
+					setTimeout(() => {
+						retryCounter++;
+						resolve(aTry());
+					}, 100);
+				} else reject(err);
+			} else {
+				resolve(body);
+			}
+		});
 	});
+	return aTry();
+
 };
 exports.manager = {
 	join: (serverBaseUrl, {ip, hostname}) => {
