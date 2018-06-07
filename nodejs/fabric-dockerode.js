@@ -9,12 +9,20 @@ const {CryptoPath} = require('./path');
 const userUtil = require('./user');
 const yaml = require('js-yaml');
 
-exports.imagePullCCENV = (imageTag) => {
-	return dockerUtil.imagePull(`hyperledger/fabric-ccenv:${imageTag}`);
+exports.imagePull = async ({fabricTag,thirdPartyTag,arch}) =>{
+	if(fabricTag){
+		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-ccenv:${arch}-${fabricTag}`);
+		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-orderer:${arch}-${fabricTag}`);
+		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-peer:${arch}-${fabricTag}`);
+		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-ca:${arch}-${fabricTag}`);
+	}
+	if(thirdPartyTag){
+		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-kafka:${arch}-${thirdPartyTag}`);
+		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-zookeeper:${arch}-${thirdPartyTag}`);
+	}
 };
 /**
  * TLS enabled but no certificate or key provided, automatically generate TLS credentials
- * TODO try to use command-base
  * @param container_name
  * @param port
  * @param network

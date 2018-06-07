@@ -11,8 +11,10 @@ const requestBuilder = ({uri, body}) => {
 		json: true
 	};
 };
-const errHandler = (resolve, reject) => (err, resp, body) => {
+
+const errHandler = (resolve, reject, parse) => (err, resp, body) => {
 	if (err) reject(err);
+	if (parse) body = JSON.parse(body);
 	resolve(body);
 };
 const Request = require('request');
@@ -74,7 +76,7 @@ exports.leader = {
 	},
 	info: (serverBaseUrl) => {
 		return new Promise((resolve, reject) => {
-			Request.get(`${serverBaseUrl}/leader`, errHandler(resolve, reject));
+			Request.get(`${serverBaseUrl}/leader`, errHandler(resolve, reject, true));
 		});
 	},
 };
@@ -117,4 +119,4 @@ exports.newOrg = (serverBaseUrl, channelName, MSPID, MSPName, nodeType, {admins,
 		Request.post({url: `${serverBaseUrl}/channel/newOrg`, formData}, errHandler(resolve, reject));
 	});
 };
-
+exports.errHandler = errHandler;
