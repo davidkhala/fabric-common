@@ -293,6 +293,9 @@ exports.channelUpdate = async (channel, mspCB, signatureCollectCB, eventHub, cli
 	};
 
 	const updateChannelResp = await client.updateChannel(request);
+	if (updateChannelResp.status !== 'SUCCESS') {
+		throw JSON.stringify(updateChannelResp);
+	}
 	logger.info('updateChannel', updateChannelResp);
 	const {block} = await new Promise((resolve, reject) => {
 		const onSucc = (_) => resolve(_);
