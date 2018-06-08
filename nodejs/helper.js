@@ -22,4 +22,4 @@ exports.ip = () => {
 	}
 	return ips;
 };
-exports.hostname = os.hostname();
+exports.hostname = os.hostname;
