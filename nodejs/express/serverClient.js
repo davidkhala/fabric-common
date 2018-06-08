@@ -40,31 +40,6 @@ exports.ping = async (serverBaseUrl) => {
 	return aTry();
 
 };
-exports.manager = {
-	join: (serverBaseUrl, {ip, hostname}) => {
-		logger.info('managerJoin', {serverBaseUrl, ip, hostname});
-		return new Promise((resolve, reject) => {
-			Request(requestBuilder({
-				uri: `${serverBaseUrl}/manager/join`,
-				body: {ip, hostname}
-			}), errHandler(resolve, reject));
-		});
-	},
-	leave: (serverBaseUrl, {ip}) => {
-		logger.info('managerLeave', {serverBaseUrl, ip});
-		return new Promise((resolve, reject) => {
-			Request(requestBuilder({
-				uri: `${serverBaseUrl}/manager/leave`,
-				body: {ip}
-			}), errHandler(resolve, reject));
-		});
-	},
-	info: (serverBaseUrl) => {
-		return new Promise((resolve, reject) => {
-			Request.get(`${serverBaseUrl}/manager`, errHandler(resolve, reject));
-		});
-	},
-};
 exports.leader = {
 	update: (serverBaseUrl, {ip, hostname, managerToken}) => {
 		return new Promise((resolve, reject) => {
