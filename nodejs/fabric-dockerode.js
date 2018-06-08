@@ -8,8 +8,21 @@ const zookeeperUtil = require('./zookeeper');
 const {CryptoPath} = require('./path');
 const userUtil = require('./user');
 const yaml = require('js-yaml');
-
-exports.imagePull = async ({fabricTag, thirdPartyTag, arch}) => {
+const commonHelper = require('./helper');
+exports.swarmIPInit = async (AdvertiseAddr) => {
+	if (!AdvertiseAddr) {
+		const ips = commonHelper.ip();
+		if (ips.length === 1) {
+			AdvertiseAddr = ips[0];
+		} else if (ips.length > 1) {
+			throw `choose AdvertiseAddr among ip: ${ips}`;
+		} else {
+			throw 'no ip found';
+		}
+	}
+	return await dockerUtil.swarmInit({AdvertiseAddr});
+};
+exports.fabricImagePull = async ({fabricTag, thirdPartyTag, arch}) => {
 	if (fabricTag) {
 		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-ccenv:${arch}-${fabricTag}`);
 		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-orderer:${arch}-${fabricTag}`);
