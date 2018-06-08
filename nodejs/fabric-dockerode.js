@@ -9,14 +9,14 @@ const {CryptoPath} = require('./path');
 const userUtil = require('./user');
 const yaml = require('js-yaml');
 
-exports.imagePull = async ({fabricTag,thirdPartyTag,arch}) =>{
-	if(fabricTag){
+exports.imagePull = async ({fabricTag, thirdPartyTag, arch}) => {
+	if (fabricTag) {
 		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-ccenv:${arch}-${fabricTag}`);
 		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-orderer:${arch}-${fabricTag}`);
 		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-peer:${arch}-${fabricTag}`);
 		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-ca:${arch}-${fabricTag}`);
 	}
-	if(thirdPartyTag){
+	if (thirdPartyTag) {
 		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-kafka:${arch}-${thirdPartyTag}`);
 		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-zookeeper:${arch}-${thirdPartyTag}`);
 	}
@@ -238,9 +238,9 @@ exports.chaincodeContainerList = async () => {
 };
 exports.chaincodeClean = async () => {
 	const containers = await exports.chaincodeContainerList();
-	await Promise.all(containers.map(container => {
-		return dockerUtil.containerDelete(container.Id)
-			.then(() => dockerUtil.imageDelete(container.Image));
+	await Promise.all(containers.map(async (container) => {
+		await dockerUtil.containerDelete(container.Id);
+		await dockerUtil.imageDelete(container.Image);
 	}));
 };
 exports.runOrderer = ({container_name, imageTag, port, network, BLOCK_FILE, CONFIGTXVolume, msp: {id, configPath, volumeName}, kafkas, tls}) => {
