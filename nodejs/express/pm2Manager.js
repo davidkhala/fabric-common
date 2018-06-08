@@ -1,5 +1,6 @@
 const pm2 = require('pm2');
 const logger = require('../logger').new('pm2 Manager');
+const fs = require('fs');
 exports.PM2 = class {
 	constructor() {
 
@@ -24,6 +25,7 @@ exports.PM2 = class {
 		if (process) {
 			logger.warn(`process ${name} exist`);
 		} else {
+			if(!fs.existsSync(script)) throw `invalid script path ${script}`;
 			process = await new Promise((resolve, reject) => {
 				pm2.start({name, script, env}, (err, process) => {
 					if (err) {
@@ -33,7 +35,7 @@ exports.PM2 = class {
 					resolve(process);
 				});
 			});
-			logger.info(`process ${name} started`);
+			logger.info(`process ${name} started`, script);
 		}
 		return process;
 	}
