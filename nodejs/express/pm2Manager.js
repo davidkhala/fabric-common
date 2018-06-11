@@ -51,6 +51,7 @@ exports.PM2 = class {
 					resolve();
 				});
 			});
+			logger.info(`process ${name} deleted`);
 		}
 		return process;
 	}
