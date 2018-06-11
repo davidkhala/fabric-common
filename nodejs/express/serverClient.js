@@ -30,7 +30,7 @@ exports.ping = async (serverBaseUrl) => {
 					setTimeout(() => {
 						retryCounter++;
 						resolve(aTry());
-					}, 100);
+					}, 200);
 				} else reject(err);
 			} else {
 				resolve(body);

@@ -9,17 +9,31 @@ const {CryptoPath} = require('./path');
 const userUtil = require('./user');
 const yaml = require('js-yaml');
 const commonHelper = require('./helper');
+/**
+ * TODO not mature
+ * @returns {Promise<void>}
+ */
+exports.swarmRenew = async () => {
+	const {result, reason} = await dockerUtil.swarmTouch();
+	if (!result) {
+		if (reason === 'consensus') {
+			await dockerUtil.swarmLeave();
+			await exports.swarmIPInit();
+		}
+	}
+};
 exports.swarmIPInit = async (AdvertiseAddr) => {
 	if (!AdvertiseAddr) {
 		const ips = commonHelper.ip();
 		if (ips.length === 1) {
-			AdvertiseAddr = ips[0];
+			AdvertiseAddr = `${ips[0]}:2377`;
 		} else if (ips.length > 1) {
 			throw `choose AdvertiseAddr among ip: ${ips}`;
 		} else {
 			throw 'no ip found';
 		}
 	}
+	logger.debug('swarmIPInit', AdvertiseAddr);
 	return await dockerUtil.swarmInit({AdvertiseAddr});
 };
 exports.fabricImagePull = async ({fabricTag, thirdPartyTag, arch}) => {
@@ -46,10 +60,10 @@ exports.fabricImagePull = async ({fabricTag, thirdPartyTag, arch}) => {
  * @returns {Promise<*>}
  */
 exports.runCA = ({
-	container_name, port, network, imageTag,
-	admin = userUtil.adminName, adminpw = userUtil.adminPwd,
-	TLS,
-}, configFile) => {
+					 container_name, port, network, imageTag,
+					 admin = userUtil.adminName, adminpw = userUtil.adminPwd,
+					 TLS,
+				 }, configFile) => {
 
 	const {caKey, caCert} = caUtil.container;
 	const cmdAppend = configFile ? '' : `-d -b ${admin}:${adminpw} ${TLS ? '--tls.enabled' : ''} --csr.cn=${container_name}`;
@@ -302,9 +316,9 @@ exports.runOrderer = ({container_name, imageTag, port, network, BLOCK_FILE, CONF
 };
 
 exports.deployOrderer = async ({
-	Name, network, imageTag, Constraints, port,
-	msp: {volumeName, configPath, id}, CONFIGTXVolume, BLOCK_FILE, kafkas, tls
-}) => {
+								   Name, network, imageTag, Constraints, port,
+								   msp: {volumeName, configPath, id}, CONFIGTXVolume, BLOCK_FILE, kafkas, tls
+							   }) => {
 	const serviceName = dockerUtil.swarmServiceName(Name);
 	if (!Constraints) Constraints = await dockerUtil.constraintSelf();
 
@@ -320,9 +334,9 @@ exports.deployOrderer = async ({
 	});
 };
 exports.deployPeer = async ({
-	Name, network, imageTag, Constraints, port, eventHubPort,
-	msp: {volumeName, configPath, id}, peerHostName, tls
-}) => {
+								Name, network, imageTag, Constraints, port, eventHubPort,
+								msp: {volumeName, configPath, id}, peerHostName, tls
+							}) => {
 	const serviceName = dockerUtil.swarmServiceName(Name);
 	if (!Constraints) Constraints = await dockerUtil.constraintSelf();
 	return await dockerUtil.serviceCreateIfNotExist({
@@ -342,12 +356,12 @@ exports.deployPeer = async ({
 	});
 };
 exports.runPeer = ({
-	container_name, port, eventHubPort, network, imageTag,
-	msp: {
-		id, volumeName,
-		configPath
-	}, peerHostName, tls
-}) => {
+					   container_name, port, eventHubPort, network, imageTag,
+					   msp: {
+						   id, volumeName,
+						   configPath
+					   }, peerHostName, tls
+				   }) => {
 	const Image = `hyperledger/fabric-peer:${imageTag}`;
 	const Cmd = ['peer', 'node', 'start'];
 	const Env = peerUtil.envBuilder({
