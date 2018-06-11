@@ -13,3 +13,4 @@ exports.nameMatcher = (channelName, toThrow) => {
 	}
 	return result;
 };
+exports.genesis = 'testchainid';
