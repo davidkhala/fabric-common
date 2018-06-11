@@ -218,10 +218,17 @@ exports.ConfigFactory = class {
  * This requires 'configtxlator' tool be running locally and on port 7059
  * fixme :run configtxlator.server with nodejs child_process, program will hang and no callback or stdout
  * @param channel
+ * @param nodeType
  * @returns {Promise<{original_config_proto: Buffer, original_config: *}>}
  */
-exports.getChannelConfigReadable = async (channel) => {
-	const configEnvelope = await channel.getChannelConfig();
+exports.getChannelConfigReadable = async (channel, nodeType = 'peer') => {
+	let configEnvelope;
+	if (nodeType === 'peer') {
+		configEnvelope = await channel.getChannelConfig();
+	} else {
+		configEnvelope = await channel.getChannelConfigFromOrderer();
+	}
+
 	//NOTE JSON.stringify(data ) :TypeError: Converting circular structure to JSON
 	const original_config_proto = configEnvelope.config.toBuffer();
 	channel.loadConfigEnvelope(configEnvelope);//TODO redundant?

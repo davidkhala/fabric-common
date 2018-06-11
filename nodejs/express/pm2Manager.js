@@ -25,7 +25,7 @@ exports.PM2 = class {
 		if (process) {
 			logger.warn(`process ${name} exist`);
 		} else {
-			if(!fs.existsSync(script)) throw `invalid script path ${script}`;
+			if (!fs.existsSync(script)) throw `invalid script path ${script}`;
 			process = await new Promise((resolve, reject) => {
 				pm2.start({name, script, env}, (err, process) => {
 					if (err) {
@@ -38,6 +38,11 @@ exports.PM2 = class {
 			logger.info(`process ${name} started`, script);
 		}
 		return process;
+	}
+
+	async reRun({name, script, env}) {
+		await this.delete({name});
+		return await this.run({name, script, env});
 	}
 
 	async delete({name}) {
