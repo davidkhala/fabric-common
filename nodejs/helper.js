@@ -8,7 +8,7 @@ exports.JSONReadable = (data) => JSON.stringify(data, null, 2);
 exports.JSONEqual = (json1, json2) => {
 	return JSON.stringify(JSON.parse(json1)) === JSON.stringify(JSON.parse(json2));
 };
-exports.ip = () => {
+exports.ips = () => {
 	const allInterfaces = os.networkInterfaces();
 	const ips = [];
 	for (const interfaceName in allInterfaces) {
@@ -21,5 +21,15 @@ exports.ip = () => {
 		}
 	}
 	return ips;
+};
+exports.ip = () => {
+	const ips = exports.ips();
+	if (ips.length === 1) {
+		return ips[0];
+	} else if (ips.length > 1) {
+		throw `multiple ip found ${ips}`;
+	} else {
+		throw 'no ip found';
+	}
 };
 exports.hostname = os.hostname;

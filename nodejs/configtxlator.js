@@ -216,27 +216,26 @@ exports.ConfigFactory = class {
 
 /**
  * This requires 'configtxlator' tool be running locally and on port 7059
- * fixme :run configtxlator.server with nodejs child_process, program will hang and no callback or stdout
  * @param channel
  * @param nodeType
  * @returns {Promise<{original_config_proto: Buffer, original_config: *}>}
  */
-exports.getChannelConfigReadable = async (channel, nodeType = 'peer') => {
+exports.getChannelConfigReadable = async (channel, nodeType = 'peer', peer) => {
 	let configEnvelope;
 	if (nodeType === 'peer') {
-		configEnvelope = await channel.getChannelConfig();
+		configEnvelope = await channel.getChannelConfig(peer);
 	} else {
 		configEnvelope = await channel.getChannelConfigFromOrderer();
 	}
 
-	//NOTE JSON.stringify(data ) :TypeError: Converting circular structure to JSON
+	//NOTE JSON.stringify(data) :TypeError: Converting circular structure to JSON
 	const original_config_proto = configEnvelope.config.toBuffer();
-	channel.loadConfigEnvelope(configEnvelope);//TODO redundant?
 
 	const {body} = await agent.decode.config(original_config_proto);
+
 	return {
 		original_config_proto,
-		original_config: body,
+		original_config: JSON.stringify(JSON.parse(body)),//body is a Buffer,
 	};
 };
 /**
@@ -244,17 +243,19 @@ exports.getChannelConfigReadable = async (channel, nodeType = 'peer') => {
  * @param {function} mspCB input: {string|json} original_config, output {string|json} update_config
  * @param {function} signatureCollectCB input: {Buffer<binary>} proto, output {{signatures:string[]}} signatures
  * @param eventHub
+ * @param {string} nodeType
+ * @param {Peer} peer
  * @param client
  * @param ordererUrl
  * @returns {Promise<{err: string, original_config: *}>}
  */
-exports.channelUpdate = async (channel, mspCB, signatureCollectCB, eventHub, client = channel._clientContext, {ordererUrl} = {}) => {
+exports.channelUpdate = async (
+	channel, mspCB, signatureCollectCB, eventHub,
+	{nodeType, peer}, client = channel._clientContext, {ordererUrl} = {}) => {
 	const orderer = OrdererUtil.find({orderers: channel.getOrderers(), ordererUrl});
 
-	eventHub._clientContext = client;
-
 	const ERROR_NO_UPDATE = 'No update to original_config';
-	const {original_config_proto, original_config} = await exports.getChannelConfigReadable(channel);
+	const {original_config_proto, original_config} = await exports.getChannelConfigReadable(channel, nodeType, peer);
 	const update_configJSONString = await mspCB(original_config);
 	if (JSONEqual(update_configJSONString, original_config)) {
 		logger.warn(ERROR_NO_UPDATE);
