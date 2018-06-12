@@ -3,7 +3,8 @@ exports.signs = async (clientSwitchPromises, proto) => {
 	const signatures = [];
 	for (const promise of clientSwitchPromises) {
 		const client = await promise;
-		logger.debug('signature identity', client.getUserContext().getName());
+		const inlineUser = client.getUserContext();
+		logger.debug('signature identity', inlineUser.getName(), inlineUser._mspId);
 		signatures.push(client.signChannelConfig(proto));
 	}
 	return {signatures, proto};

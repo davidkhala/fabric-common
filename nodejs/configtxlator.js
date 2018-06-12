@@ -11,12 +11,12 @@ exports.ConfigFactory = class {
 	}
 
 	deleteMSP(MSPName, nodeType) {
-		const target = this._getTarget(nodeType);
+		const target = this.constructor.getTarget(nodeType);
 		delete this.newConfig.channel_group.groups[target].groups[MSPName];
 		return this;
 	}
 
-	_getTarget(nodeType) {
+	static getTarget(nodeType) {
 		let target;
 		if (nodeType === 'orderer') target = 'Orderer';
 		if (nodeType === 'peer') target = 'Application';
@@ -25,7 +25,7 @@ exports.ConfigFactory = class {
 	}
 
 	assignDictator(MSPID, nodeType) {
-		const target = this._getTarget(nodeType);
+		const target = this.constructor.getTarget(nodeType);
 		this.newConfig.channel_group.groups[target].policies.Admins.policy = {
 			type: 1,
 			value: {
@@ -63,7 +63,7 @@ exports.ConfigFactory = class {
 	 * @param {string[]} tls_root_certs pem file path array
 	 */
 	newOrg(MSPName, MSPID, nodeType, {admins = [], root_certs = [], tls_root_certs = []} = {}) {
-		const target = this._getTarget(nodeType);
+		const target = this.constructor.getTarget(nodeType);
 		if (this.newConfig.channel_group.groups[target].groups[MSPName]) {
 			logger.info(MSPName, 'exist, adding skipped');
 			return this;
@@ -262,15 +262,6 @@ exports.channelUpdate = async (
 		return {err: ERROR_NO_UPDATE, original_config};
 	}
 	const {body} = await agent.encode.config(update_configJSONString);
-	//NOTE: after delete MSP, deleted peer retry to connect to previous channel
-	// PMContainerName.delphi.com       | 2017-08-24 03:02:55.815 UTC [blocksProvider] DeliverBlocks -> ERRO 2ea [delphichannel] Got error &{FORBIDDEN}
-	// orderContainerName.delphi.com    | 2017-08-24 03:02:55.814 UTC [cauthdsl] func1 -> DEBU ea5 0xc420028c50 gate 1503543775814648321 evaluation fails
-	// orderContainerName.delphi.com    | 2017-08-24 03:02:55.814 UTC [orderer/common/deliver] Handle -> WARN ea6 [channel: delphichannel] Received unauthorized deliver request
-	// orderContainerName.delphi.com    | 2017-08-24 03:02:55.814 UTC [cauthdsl] func2 -> ERRO e9d Principal deserialization failure (MSP PMMSP is unknown)
-
-	// PMContainerName.delphi.com       | 2017-08-24 03:03:15.823 UTC [deliveryClient] RequestBlocks -> DEBU 2ed Starting deliver with block [1] for channel delphichannel
-	// PMContainerName.delphi.com       | 2017-08-24 03:03:15.824 UTC [blocksProvider] DeliverBlocks -> ERRO 2ee [delphichannel] Got error &{FORBIDDEN}
-	// PMContainerName.delphi.com       | 2017-08-24 03:03:15.824 UTC [blocksProvider] DeliverBlocks -> CRIT 2ef [delphichannel] Wrong statuses threshold passed, stopping block provider
 	const formData = {
 		channel: channel.getName(),
 		original: {
@@ -305,13 +296,16 @@ exports.channelUpdate = async (
 		throw JSON.stringify(updateChannelResp);
 	}
 	logger.info('updateChannel', updateChannelResp);
-	const {block} = await new Promise((resolve, reject) => {
-		const onSucc = (_) => resolve(_);
-		const onErr = (e) => reject(e);
-		EventHubUtil.blockEvent(eventHub, undefined, onSucc, onErr);
-	});
-	logger.info('new Block', block);
-	return block;
+	if(nodeType==='orderer'){
+		logger.error('orderer update will not trigger block event');
+	}else {
+		const {block} = await new Promise((resolve, reject) => {
+			const onSucc = (_) => resolve(_);
+			const onErr = (e) => reject(e);
+			EventHubUtil.blockEvent(eventHub, undefined, onSucc, onErr);
+		});
+		logger.info('new Block', block);
+	}
 };
 
 

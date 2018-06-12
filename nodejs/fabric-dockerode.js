@@ -19,6 +19,8 @@ exports.swarmRenew = async () => {
 		if (reason === 'consensus') {
 			await dockerUtil.swarmLeave();
 			await exports.swarmIPInit();
+		}else if(reason ==='noexist'){
+			await exports.swarmIPInit();
 		}
 	}
 };
