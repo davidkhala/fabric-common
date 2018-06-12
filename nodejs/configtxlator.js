@@ -11,12 +11,12 @@ exports.ConfigFactory = class {
 	}
 
 	deleteMSP(MSPName, nodeType) {
-		const target = this.constructor.getTarget(nodeType);
+		const target = this._getTarget(nodeType);
 		delete this.newConfig.channel_group.groups[target].groups[MSPName];
 		return this;
 	}
 
-	static getTarget(nodeType) {
+	_getTarget(nodeType) {
 		let target;
 		if (nodeType === 'orderer') target = 'Orderer';
 		if (nodeType === 'peer') target = 'Application';
@@ -25,7 +25,7 @@ exports.ConfigFactory = class {
 	}
 
 	assignDictator(MSPID, nodeType) {
-		const target = this.constructor.getTarget(nodeType);
+		const target = this._getTarget(nodeType);
 		this.newConfig.channel_group.groups[target].policies.Admins.policy = {
 			type: 1,
 			value: {
@@ -53,6 +53,11 @@ exports.ConfigFactory = class {
 		return this;
 	}
 
+	getOrg(MSPName, nodeType) {
+		const target = this._getTarget(nodeType);
+		return this.newConfig.channel_group.groups[target].groups[MSPName];
+	}
+
 	/**
 	 * because we will not change the 'version' property, so it will never be totally identical
 	 * @param MSPName
@@ -63,11 +68,11 @@ exports.ConfigFactory = class {
 	 * @param {string[]} tls_root_certs pem file path array
 	 */
 	newOrg(MSPName, MSPID, nodeType, {admins = [], root_certs = [], tls_root_certs = []} = {}) {
-		const target = this.constructor.getTarget(nodeType);
-		if (this.newConfig.channel_group.groups[target].groups[MSPName]) {
+		if (this.getOrg(MSPName,nodeType)) {
 			logger.info(MSPName, 'exist, adding skipped');
 			return this;
 		}
+		const target = this._getTarget(nodeType);
 		this.newConfig.channel_group.groups[target].groups[MSPName] = {
 			'mod_policy': 'Admins',
 			'policies': {
@@ -193,18 +198,9 @@ exports.ConfigFactory = class {
 		return this.newConfig.channel_group.values.OrdererAddresses.value.addresses;
 	}
 
-	setOrdererAddresses(addresses) {
-		this.newConfig.channel_group.values.OrdererAddresses.value.addresses = addresses;
-		return this;
-	}
 
 	getKafkaBrokers() {
 		return this.newConfig.channel_group.groups.Orderer.values.KafkaBrokers.value.brokers;
-	}
-
-	setKafkaBrokers(brokers) {
-		this.newConfig.channel_group.groups.Orderer.values.KafkaBrokers.value.brokers = brokers;
-		return this;
 	}
 
 
@@ -296,9 +292,9 @@ exports.channelUpdate = async (
 		throw JSON.stringify(updateChannelResp);
 	}
 	logger.info('updateChannel', updateChannelResp);
-	if(nodeType==='orderer'){
+	if (nodeType === 'orderer') {
 		logger.error('orderer update will not trigger block event');
-	}else {
+	} else {
 		const {block} = await new Promise((resolve, reject) => {
 			const onSucc = (_) => resolve(_);
 			const onErr = (e) => reject(e);
