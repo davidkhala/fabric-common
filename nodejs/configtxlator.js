@@ -69,7 +69,7 @@ exports.ConfigFactory = class {
 	 */
 	newOrg(MSPName, MSPID, nodeType, {admins = [], root_certs = [], tls_root_certs = []} = {}) {
 		if (this.getOrg(MSPName,nodeType)) {
-			logger.info(MSPName, 'exist, adding skipped');
+			logger.info(MSPName, 'exist, newOrg skipped');
 			return this;
 		}
 		const target = this._getTarget(nodeType);
@@ -190,6 +190,8 @@ exports.ConfigFactory = class {
 	addOrdererAddress(newAddr) {
 		if (!this.newConfig.channel_group.values.OrdererAddresses.value.addresses.includes(newAddr)) {
 			this.newConfig.channel_group.values.OrdererAddresses.value.addresses.push(newAddr);
+		}else {
+			logger.info(newAddr, 'exist, addOrdererAddress skipped');
 		}
 		return this;
 	}
