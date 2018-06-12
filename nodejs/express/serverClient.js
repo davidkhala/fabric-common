@@ -85,11 +85,14 @@ exports.getSignatures = (serverBaseUrl, protoPath) => {
 exports.newOrg = (serverBaseUrl, channelName, MSPID, MSPName, nodeType, {admins, root_certs, tls_root_certs}) => {
 
 	const formData = {
-		channelName, MSPID, MSPName, nodeType,
+		MSPID, MSPName, nodeType,
 		admins: admins.map(path => fs.createReadStream(path)),
 		root_certs: root_certs.map(path => fs.createReadStream(path)),
 		tls_root_certs: tls_root_certs.map(path => fs.createReadStream(path)),
 	};
+	if(nodeType==='peer'){
+		formData.channelName = channelName;
+	}
 	return new Promise((resolve, reject) => {
 		Request.post({url: `${serverBaseUrl}/channel/newOrg`, formData}, errHandler(resolve, reject));
 	});
