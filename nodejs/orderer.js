@@ -39,15 +39,21 @@ exports.container = {CONFIGTX: '/etc/hyperledger/configtx'};
  * @returns {string[]}
  */
 exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, kafkas, tls}) => {
-	let rootCAs = [];
-	rootCAs.push(tls.caCert);
-	if (Array.isArray(tls.rootCAs)) {
-		rootCAs = rootCAs.concat(tls.rootCAs);
+	let tlsParams;
+	if (tls) {
+		let rootCAs = [];
+		rootCAs.push(tls.caCert);
+		if (Array.isArray(tls.rootCAs)) {
+			rootCAs = rootCAs.concat(tls.rootCAs);
+		}
+		tlsParams = [
+			`ORDERER_GENERAL_TLS_PRIVATEKEY=${tls.key}`,
+			`ORDERER_GENERAL_TLS_CERTIFICATE=${tls.cert}`,
+			`ORDERER_GENERAL_TLS_ROOTCAS=[${rootCAs.join(',')}]`];
+	} else {
+		tlsParams = [];
 	}
-	const tlsParams = tls ? [
-		`ORDERER_GENERAL_TLS_PRIVATEKEY=${tls.key}`,
-		`ORDERER_GENERAL_TLS_CERTIFICATE=${tls.cert}`,
-		`ORDERER_GENERAL_TLS_ROOTCAS=[${rootCAs.join(',')}]`] : [];
+
 	const kafkaEnv = kafkas ? ['ORDERER_KAFKA_RETRY_SHORTINTERVAL=1s',
 		'ORDERER_KAFKA_RETRY_SHORTTOTAL=30s',
 		'ORDERER_KAFKA_VERBOSE=true'] : [];
