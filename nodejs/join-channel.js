@@ -6,14 +6,14 @@ const EventHubUtil = require('./eventHub');
  * @param channel
  * @param peer
  * @param eventHub
- * @param Orderer
+ * @param orderer
  * @returns {Promise<*>}
  */
-exports.joinChannel = async (channel, peer, eventHub, Orderer) => {
+exports.joinChannel = async (channel, peer, eventHub, orderer) => {
 	logger.debug({channelName: channel.getName(), peer: peer._options});
 
 	const channelClient = channel._clientContext;
-	const genesis_block = await channel.getGenesisBlock({Orderer});
+	const genesis_block = await channel.getGenesisBlock({orderer});
 	logger.debug('signature identity', channelClient.getUserContext().getName());
 	const request = {
 		targets: [peer],
