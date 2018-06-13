@@ -24,6 +24,6 @@ exports.new = (client,channelName)=>{
 	}
 
 	delete client._channels[channelName];//Always renew, otherwise throw exception if exist
-	client.newChannel(channelName);
+	return client.newChannel(channelName);
 };
 exports.genesis = 'testchainid';
