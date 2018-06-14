@@ -251,6 +251,9 @@ exports.runZookeeper = ({container_name, network, imageTag, MY_ID}, zookeepersCo
 	};
 	return dockerUtil.containerStart(createOptions);
 };
+/**
+ * TODO not sure it is possible
+ */
 exports.uninstallChaincode = ({container_name, chaincodeId, chaincodeVersion}) => {
 	const Cmd = ['rm', '-rf', `/var/hyperledger/production/chaincodes/${chaincodeId}.${chaincodeVersion}`];
 	return dockerUtil.containerExec({container_name, Cmd});

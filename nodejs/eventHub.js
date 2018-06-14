@@ -59,36 +59,38 @@ exports.blockEvent = (eventHub, validator = ({block}) => {
 
 	return block_registration_number;
 };
-exports.txEventPromise = (eventHub, {txId, eventWaitTime, timeOutErr}, validator = ({tx, code}) => {
-
+/**
+ *
+ * @param eventHub
+ * @param txId
+ * @param validator
+ * @param onSuccess
+ * @param onError
+ * @returns {*|string}
+ */
+exports.txEvent = (eventHub, {txId}, validator = ({tx, code}) => {
 	return {valid: code === 'VALID', interrupt: true};
+}, onSuccess, onError = (err) => {
+	throw err;
 }) => {
 	const transactionID = txId.getTransactionID();
-	return new Promise((resolve, reject) => {
-		// eventHub.connect();//FIXME bug design in fabric. JSDOC  If the connection fails to get established, the application will be notified via the error callbacks from the registerXXXEvent() methods.
-		const timerID = setTimeout(() => {
+	// eventHub.connect();//FIXME bug design in fabric. JSDOC  If the connection fails to get established, the application will be notified via the error callbacks from the registerXXXEvent() methods.
+	eventHub.registerTxEvent(transactionID, (tx, code) => {
+		const {valid, interrupt} = validator({tx, code});
+		if (interrupt) {
 			eventHub.unregisterTxEvent(transactionID);
 			eventHub.disconnect();
-			reject(timeOutErr ? timeOutErr : 'txEventTimeout');
-		}, eventWaitTime);
-
-		eventHub.registerTxEvent(transactionID, (tx, code) => {
-			const {valid, interrupt} = validator({tx, code});
-			if (interrupt) {
-				clearTimeout(timerID);
-				eventHub.unregisterTxEvent(transactionID);
-				eventHub.disconnect();
-			}
-			if (valid) {
-				resolve({tx, code});
-			} else {
-				reject({tx, code});
-			}
-		}, err => {
-			eventHub.unregisterTxEvent(transactionID);
-			eventHub.disconnect();
-			reject(err);
-		});
-
+		}
+		if (valid) {
+			onSuccess({tx, code,interrupt});
+		} else {
+			onError({tx, code,interrupt});
+		}
+	}, err => {
+		eventHub.unregisterTxEvent(transactionID);
+		eventHub.disconnect();
+		onError({err, interrupt: true});
 	});
+	return transactionID;
+
 };
