@@ -195,7 +195,8 @@ exports.instantiate = async (channel, peers, eventHubs, {chaincodeId, chaincodeV
 	return Promise.all(promises);
 	//	NOTE result parser is not required here, because the payload in proposalresponse is in form of garbled characters.
 };
-exports.upgradeToCurrent = async (channel, richPeer, {chaincodeId, args, fcn}, client = channel._clientContext) => {
+exports.upgradeToCurrent = async (channel, richPeer, {chaincodeId, args, fcn}) => {
+	const client = channel._clientContext;
 	const {chaincodes} = await Query.chaincodes.installed(richPeer, client);
 	const foundChaincode = chaincodes.find((element) => element.name === chaincodeId);
 	if (!foundChaincode) {
@@ -265,7 +266,7 @@ const txTimerPromise = (eventHub, {txId}, eventWaitTime) => {
 		logger.debug('newTxEvent', {tx, code});
 		return {valid: code === 'VALID', interrupt: true};
 	};
-	const txPromise = new Promise((resolve, reject) => {
+	return new Promise((resolve, reject) => {
 		const onSuccess = ({tx, code, interrupt}) => {
 			clearTimeout(timerID);
 			resolve({tx, code});
@@ -281,5 +282,66 @@ const txTimerPromise = (eventHub, {txId}, eventWaitTime) => {
 			reject({err: 'txTimeout'});
 		}, eventWaitTime);
 	});
-	return txPromise;
+};
+
+/**
+ *
+ * @param channel
+ * @param peers
+ * @param eventHubs
+ * @param chaincodeId
+ * @param fcn
+ * @param args
+ * @param eventWaitTime
+ * @return {Promise.<TResult>}
+ */
+exports.invoke = async (channel, peers, eventHubs, {chaincodeId, fcn, args}, eventWaitTime) => {
+	logger.debug({channelName: channel.getName(), peersSize: peers.length, chaincodeId, fcn, args});
+	if (!eventWaitTime) eventWaitTime = 30000;
+	const client = channel._clientContext;
+	const txId = client.newTransactionID();
+
+	const request = {
+		chaincodeId,
+		fcn,
+		args,
+		txId,
+		targets: peers //optional: use channel.getPeers() as default
+	};
+	const [responses, proposal, header] = await channel.sendTransactionProposal(request);
+	const ccHandler = exports.chaincodeProposalAdapter('invoke');
+	const {nextRequest, errCounter} = ccHandler([responses, proposal, header]);
+
+	const {proposalResponses} = nextRequest;
+
+	if (errCounter > 0) {
+		throw {proposalResponses};
+	}
+	const promises = [];
+
+	for (const eventHub of eventHubs) {
+		promises.push(txTimerPromise(eventHub, {txId}, eventWaitTime));
+	}
+
+	await channel.sendTransaction(nextRequest);
+
+	const txEventResponses = await Promise.all(promises);
+	return exports.resultWrapper(txEventResponses, {proposalResponses});
+};
+
+exports.query = async (channel, peers, {chaincodeId, fcn, args}) => {
+	const logger = logUtil.new('query');
+	logger.debug({channelName: channel.getName(), peersSize: peers.length, chaincodeId, fcn, args});
+	const client = channel._clientContext;
+	const txId = client.newTransactionID();
+
+	const request = {
+		chaincodeId,
+		fcn,
+		args,
+		txId,
+		targets: peers //optional: use channel.getPeers() as default
+	};
+	const results = await channel.queryByChaincode(request);
+	return results.map(e => e.toString());
 };
