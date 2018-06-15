@@ -67,4 +67,5 @@ else
 	sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
 	$CURRENT/docker/install.sh
 	$CURRENT/docker/nodejs/install.sh
+	npm install $CURRENT/nodejs
 fi
