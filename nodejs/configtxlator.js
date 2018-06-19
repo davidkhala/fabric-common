@@ -67,9 +67,9 @@ exports.ConfigFactory = class {
 	 * @param {string[]} root_certs pem file path array
 	 * @param {string[]} tls_root_certs pem file path array
 	 */
-	newOrg(MSPName, MSPID, nodeType, {admins = [], root_certs = [], tls_root_certs = []} = {}) {
-		if (this.getOrg(MSPName,nodeType)) {
-			logger.info(MSPName, 'exist, newOrg skipped');
+	createOrUpdateOrg(MSPName, MSPID, nodeType, {admins = [], root_certs = [], tls_root_certs = []} = {}, skipIfExist) {
+		if (skipIfExist && this.getOrg(MSPName, nodeType)) {
+			logger.info(MSPName, 'exist, createOrUpdateOrg skipped');
 			return this;
 		}
 		const target = this._getTarget(nodeType);
@@ -190,7 +190,7 @@ exports.ConfigFactory = class {
 	addOrdererAddress(newAddr) {
 		if (!this.newConfig.channel_group.values.OrdererAddresses.value.addresses.includes(newAddr)) {
 			this.newConfig.channel_group.values.OrdererAddresses.value.addresses.push(newAddr);
-		}else {
+		} else {
 			logger.info(newAddr, 'exist, addOrdererAddress skipped');
 		}
 		return this;
