@@ -33,3 +33,5 @@ exports.ip = () => {
 	}
 };
 exports.hostname = os.hostname;
+
+exports.sha2_256 = require('fabric-client/lib/hash').sha2_256;
