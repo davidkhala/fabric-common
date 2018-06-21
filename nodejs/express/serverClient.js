@@ -3,38 +3,39 @@ const {sha2_256} = require('fabric-client/lib/hash');
 const fs = require('fs');
 const path = require('path');
 const fsExtra = require('fs-extra');
-const requestBuilder = ({uri, body}) => {
-	return {
-		method: 'POST',
-		uri,
+const Request = require('request');
+exports.RequestPromise = ({url, body, method = 'POST', formData}) => new Promise((resolve, reject) => {
+	const opts = {
+		method,
+		url,
 		body,
 		json: true
 	};
-};
+	if (formData) {
+		opts.formData = formData;
+	}
+	Request(opts, (err, resp, body) => {
+		if (err) reject(err);
+		resolve(body);
+	});
+});
 
-const errHandler = (resolve, reject, parse) => (err, resp, body) => {
-	if (err) reject(err);
-	if (parse) body = JSON.parse(body);
-	resolve(body);
-};
-const Request = require('request');
 //TODO have not cover all API yet
 exports.ping = async (serverBaseUrl) => {
 	const retryMax = 5;
 	let retryCounter = 0;
 	const aTry = () => new Promise((resolve, reject) => {
-		Request.get(`${serverBaseUrl}/`, (err, resp, body) => {
-			if (err) {
-				if (err.code === 'ECONNREFUSED' && retryCounter < retryMax) {
-					logger.warn('ping retry', retryCounter);
-					setTimeout(() => {
-						retryCounter++;
-						resolve(aTry());
-					}, 200);
-				} else reject(err);
-			} else {
-				resolve(body);
-			}
+		exports.RequestPromise({
+			url: `${serverBaseUrl}/`,
+			method: 'GET'
+		}).then(body => resolve(body)).catch(err => {
+			if (err.code === 'ECONNREFUSED' && retryCounter < retryMax) {
+				logger.warn('ping retry', retryCounter);
+				setTimeout(() => {
+					retryCounter++;
+					resolve(aTry());
+				}, 200);
+			} else reject(err);
 		});
 	});
 	return aTry();
@@ -42,16 +43,16 @@ exports.ping = async (serverBaseUrl) => {
 };
 exports.leader = {
 	update: (serverBaseUrl, {ip, hostname, managerToken}) => {
-		return new Promise((resolve, reject) => {
-			Request(requestBuilder({
-				uri: `${serverBaseUrl}/leader/update`,
-				body: {ip, hostname, managerToken}
-			}), errHandler(resolve, reject));
+		return exports.RequestPromise({
+			url: `${serverBaseUrl}/leader/update`,
+			body: {ip, hostname, managerToken}
 		});
+
 	},
 	info: (serverBaseUrl) => {
-		return new Promise((resolve, reject) => {
-			Request.get(`${serverBaseUrl}/leader`, errHandler(resolve, reject, true));
+		return exports.RequestPromise({
+			url: `${serverBaseUrl}/leader`,
+			method: 'GET'
 		});
 	},
 };
@@ -61,29 +62,27 @@ exports.leader = {
  * @param filePath
  * @returns {Promise<any>}
  */
-exports.block = (serverBaseUrl, filePath) => {
-	return new Promise((resolve, reject) => {
-		Request.get(`${serverBaseUrl}/block`, (err, resp, body) => {
-			if (err) reject(err);
-			logger.debug('check hash ', sha2_256(body));
-			fsExtra.ensureDirSync(path.dirname(filePath));
-			fs.writeFileSync(path.resolve(filePath), body, 'binary');
-			resolve(filePath);
-		});
+exports.block = async (serverBaseUrl, filePath) => {
+	const body = await exports.RequestPromise({
+		url: `${serverBaseUrl}/block`,
+		method: 'GET'
 	});
+	logger.debug('check hash ', sha2_256(body));
+	fsExtra.ensureDirSync(path.dirname(filePath));
+	fs.writeFileSync(path.resolve(filePath), body, 'binary');
+	return filePath;
 };
 exports.getSignatures = (serverBaseUrl, protoPath) => {
-	return new Promise((resolve, reject) => {
-		const formData = {
-			proto: fs.createReadStream(protoPath)
-		};
-		//TODO signServerPort might be different
-		Request.post({url: `${serverBaseUrl}/`, formData}, errHandler(resolve, reject));
+	const formData = {
+		proto: fs.createReadStream(protoPath)
+	};
+	return exports.RequestPromise({
+		url: `${serverBaseUrl}/`,//TODO signServerPort might be different
+		formData,
 	});
 };
 
-exports.createOrUpdateOrg = (serverBaseUrl, channelName, MSPID, MSPName, nodeType, {admins, root_certs, tls_root_certs},skip) => {
-
+exports.createOrUpdateOrg = (serverBaseUrl, channelName, MSPID, MSPName, nodeType, {admins, root_certs, tls_root_certs}, skip) => {
 	const formData = {
 		MSPID, MSPName, nodeType,
 		admins: admins.map(path => fs.createReadStream(path)),
@@ -91,11 +90,8 @@ exports.createOrUpdateOrg = (serverBaseUrl, channelName, MSPID, MSPName, nodeTyp
 		tls_root_certs: tls_root_certs.map(path => fs.createReadStream(path)),
 		skip,
 	};
-	if(nodeType==='peer'){
+	if (nodeType === 'peer') {
 		formData.channelName = channelName;
 	}
-	return new Promise((resolve, reject) => {
-		Request.post({url: `${serverBaseUrl}/channel/createOrUpdateOrg`, formData}, errHandler(resolve, reject));
-	});
+	return exports.RequestPromise({url: `${serverBaseUrl}/channel/createOrUpdateOrg`, formData});
 };
-exports.errHandler = errHandler;

@@ -232,6 +232,7 @@ exports.ConfigFactory = class {
  * This requires 'configtxlator' tool be running locally and on port 7059
  * @param channel
  * @param nodeType
+ * @param {Peer} peer optional when nodeType is 'peer'
  * @returns {Promise<{original_config_proto: Buffer, original_config: *}>}
  */
 exports.getChannelConfigReadable = async (channel, nodeType = 'peer', peer) => {
@@ -256,9 +257,9 @@ exports.getChannelConfigReadable = async (channel, nodeType = 'peer', peer) => {
  * @param channel
  * @param {function} mspCB input: {string|json} original_config, output {string|json} update_config
  * @param {function} signatureCollectCB input: {Buffer<binary>} proto, output {{signatures:string[]}} signatures
- * @param eventHub
+ * @param {EventHub} eventHub optional when nodeType is 'peer'
  * @param {string} nodeType
- * @param {Peer} peer
+ * @param {Peer} peer optional when nodeType is 'peer'
  * @param client
  * @param ordererUrl
  * @returns {Promise<{err: string, original_config: *}>}
