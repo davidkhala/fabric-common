@@ -58,6 +58,22 @@ exports.ConfigFactory = class {
 		return this.newConfig.channel_group.groups[target].groups[MSPName];
 	}
 
+	addAdmin(MSPName, nodeType, admin) {
+		if (!this.getOrg(MSPName, nodeType)) {
+			logger.error(MSPName, 'not exist, addAdmin skipped');
+			return this;
+		}
+		const target = this._getTarget(nodeType);
+		const adminCert = fs.readFileSync(admin).toString('base64');
+		const admins = this.newConfig.channel_group.groups[target].groups[MSPName].values.MSP.value.config.admins;
+		if (admins.find(adminCert)){
+			logger.warn('adminCert found, addAdmin skipped');
+			return this;
+		}
+		admins.push(adminCert);
+		return this;
+	}
+
 	/**
 	 * because we will not change the 'version' property, so it will never be totally identical
 	 * @param MSPName
@@ -163,7 +179,7 @@ exports.ConfigFactory = class {
 					'mod_policy': 'Admins',
 					'value': {
 						'config': {
-							'admins': admins.map(admin => {
+							admins: admins.map(admin => {
 								return fs.readFileSync(admin).toString('base64');
 							}),
 							'crypto_config': {

@@ -60,6 +60,7 @@ exports.init = async (caService, cryptoPath, nodeType, mspId, {affiliationRoot} 
  * @param {FabricCAServices} caService
  * @param {CryptoPath} cryptoPath
  * @param {User} admin
+ * @param TLS
  * @param {string} affiliationRoot
  * @returns {Promise<*>}
  */
