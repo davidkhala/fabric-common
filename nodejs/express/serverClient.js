@@ -89,10 +89,14 @@ exports.createOrUpdateOrg = (serverBaseUrl, channelName, MSPID, MSPName, nodeTyp
 		admins: admins.map(path => fs.createReadStream(path)),
 		root_certs: root_certs.map(path => fs.createReadStream(path)),
 		tls_root_certs: tls_root_certs.map(path => fs.createReadStream(path)),
-		skip,
 	};
+	if(skip){
+		formData.skip ='y'; //boolean in formData will trigger  "throw new TypeError('First argument must be a string or Buffer');"
+	}
 	if (nodeType === 'peer') {
 		formData.channelName = channelName;
 	}
-	return exports.RequestPromise({url: `${serverBaseUrl}/channel/createOrUpdateOrg`, formData});
+	const url = `${serverBaseUrl}/channel/createOrUpdateOrg`;
+	logger.debug('createOrUpdateOrg',{url,formData});
+	return exports.RequestPromise({url, formData});
 };
