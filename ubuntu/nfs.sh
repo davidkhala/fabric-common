@@ -27,7 +27,7 @@ function mountClient() {
 			;;
 		esac
 	else
-		echo "$nfsIP:$nfsDIR $localDIR $setting" >>$fstab
+		echo "$nfsIP:$nfsDIR $localDIR $setting" | sudo tee --append $fstab
 	fi
 }
 function rmMountedClient() {
