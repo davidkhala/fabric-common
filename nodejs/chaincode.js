@@ -285,7 +285,9 @@ const txTimerPromise = (eventHub, {txId}, eventWaitTime) => {
 };
 
 /**
- *
+ * NOTE Invoke action cannot be performed on peer without chaincode installed
+ * Error: cannot retrieve package for chaincode adminChaincode/v0,
+ *        error open /var/hyperledger/production/chaincodes/adminChaincode.v0: no such file or directory
  * @param channel
  * @param peers
  * @param eventHubs
