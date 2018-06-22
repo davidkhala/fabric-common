@@ -1,3 +1,4 @@
+const logger = require('./logger').new('configtxlator agent');
 const {RequestPromise} = require('./express/serverClient');
 
 const requestPost = (opt) => {
@@ -28,7 +29,7 @@ exports.compute = {
 
 		const noDiffErr = 'Error computing update: no differences detected between original and updated config';
 		if (bodyString.includes(noDiffErr)) {
-			//NOTE swallow it here
+			logger.warn(bodyString);
 		}
 		return body;
 

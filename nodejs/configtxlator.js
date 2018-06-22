@@ -246,7 +246,7 @@ exports.getChannelConfigReadable = async (channel, nodeType = 'peer', peer) => {
 	//NOTE JSON.stringify(data) :TypeError: Converting circular structure to JSON
 	const original_config_proto = configEnvelope.config.toBuffer();
 
-	const {body} = await agent.decode.config(original_config_proto);
+	const body = await agent.decode.config(original_config_proto);
 
 	return {
 		original_config_proto,
@@ -276,7 +276,7 @@ exports.channelUpdate = async (
 		logger.warn(ERROR_NO_UPDATE);
 		return {err: ERROR_NO_UPDATE, original_config};
 	}
-	const {body} = await agent.encode.config(update_configJSONString);
+	const body = await agent.encode.config(update_configJSONString);
 	const formData = {
 		channel: channel.getName(),
 		original: {
@@ -294,7 +294,7 @@ exports.channelUpdate = async (
 			}
 		}
 	};
-	const {body: body2} = await agent.compute.updateFromConfigs(formData);
+	const body2 = await agent.compute.updateFromConfigs(formData);
 	const proto = new Buffer(body2, 'binary');
 	const {signatures} = await signatureCollectCB(proto);
 
@@ -312,7 +312,7 @@ exports.channelUpdate = async (
 	}
 	logger.info('updateChannel', updateChannelResp);
 	if (nodeType === 'orderer') {
-		logger.error('orderer update will not trigger block event');
+		logger.info('orderer update will not trigger block event');
 	} else {
 		const {block} = await new Promise((resolve, reject) => {
 			const onSucc = (_) => resolve(_);
