@@ -9,6 +9,11 @@ exports.nextVersion = (chaincodeVersion) => {
 	const version = parseInt(chaincodeVersion.substr(1));
 	return `v${version + 1}`;
 };
+exports.newerVersion = (versionN, versionO) => {
+	const versionNumN = parseInt(versionN.substr(1));
+	const versionNumO = parseInt(versionO.substr(1));
+	return versionNumN > versionNumO;
+};
 exports.reducer = ({txEventResponses, proposalResponses}) => ({
 	txs: txEventResponses.map(entry => entry.tx),
 	responses: proposalResponses.map((entry) => entry.response.payload.toString())
@@ -97,11 +102,21 @@ exports.install = async (peers, {chaincodeId, chaincodePath, chaincodeVersion}, 
 
 exports.updateInstall = async (peer, {chaincodeId}, client) => {
 	const {chaincodes} = await Query.chaincodes.installed(peer, client);
-	const foundChaincode = chaincodes.find((element) => element.name === chaincodeId);
-	if (!foundChaincode) {
+	const foundChaincodes = chaincodes.filter((element) => element.name === chaincodeId);
+	if (foundChaincodes.length === 0) {
 		throw `No chaincode found with name ${chaincodeId}`;
 	}
-	const {version, path: chaincodePath} = foundChaincode;
+	let latestChaincode = foundChaincodes[0];
+	let latestVersion = latestChaincode.version;
+	for (const chaincode of foundChaincodes) {
+		const {version} = chaincode;
+		if(exports.newerVersion(version,latestVersion)){
+			latestVersion = version;
+			latestChaincode = chaincode;
+		}
+	}
+
+	const {path: chaincodePath} = latestChaincode;
 
 	// [ { name: 'adminChaincode',
 	// 	version: 'v0',
@@ -110,7 +125,7 @@ exports.updateInstall = async (peer, {chaincodeId}, client) => {
 	// 	escc: '',
 	// 	vscc: '' } ]
 
-	const chaincodeVersion = exports.nextVersion(version);
+	const chaincodeVersion = exports.nextVersion(latestVersion);
 	return exports.install([peer], {chaincodeId, chaincodePath, chaincodeVersion}, client);
 
 };
@@ -224,7 +239,8 @@ exports.upgrade = async (channel, peers, eventHubs, {chaincodeId, chaincodeVersi
 		chaincodeVersion,
 		args,
 		txId,
-		fcn
+		fcn,
+		targets: peers
 	};
 	const existSymptom = '(status: 500, message: version already exists for chaincode ';
 

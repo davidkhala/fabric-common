@@ -4,6 +4,7 @@ CURRENT=$(cd $(dirname ${BASH_SOURCE}); pwd)
 
 fcn=$1
 
+this_uname=$(uname)
 systemProfile="/etc/profile"
 remain_params=""
 for ((i = 2; i <= ${#}; i++)); do
@@ -43,7 +44,14 @@ function golang() {
 	fi
 
 }
+function install_libtool() {
+    if [ ${this_uname}=="Darwin" ];then
+        brew install libtool
+    else
+        sudo apt-get install libtool
+    fi
 
+}
 function golang-uninstall() {
 	:
 	#    TODO  To remove an existing Go installation from your system delete the go directory. This is usually /usr/local/go under Linux, Mac OS X, and FreeBSD or c:\Go under Windows.
@@ -63,12 +71,18 @@ function cn() {
 if [ -n "$fcn" ]; then
 	$fcn $remain_params
 else
-	sudo apt-get install -y linux-image-extra-$(uname -r) linux-image-extra-virtual
-	sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+    if [ ${this_uname}=="Darwin" ];then
+        :
+    else
+        sudo apt-get install -y linux-image-extra-$(uname -r) linux-image-extra-virtual
+        sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+    fi
+
 	$CURRENT/docker/install.sh
 	$CURRENT/docker/nodejs/install.sh
 	cd $CURRENT/nodejs
 	npm install
+	npm install grpc@1.10.1 # FIXME hot fix for 1.1
 	cd -
 	cd $CURRENT/docker/nodejs
 	npm install
