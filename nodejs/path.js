@@ -130,31 +130,17 @@ exports.CryptoPath = class {
 		return this.resolve(this.peerOrg(), 'users');
 	}
 
-
-	peerTLS() {
-		return this.resolve(this.peers(), this.peerHostName, 'tls');
-	}
-
-	ordererTLS() {
-		return this.resolve(this.orderers(), this.ordererHostName, 'tls');
+	tlsDir(type){
+		return this.resolve(this[`${type}s`](), this[`${type}HostName`], 'tls');
 	}
 
 	TLSFile(type) {
-		const tlsDIR = this[`${type}TLS`]();
+		const tlsDIR = this.tlsDir(type);
 		return {
 			caCert: this.resolve(tlsDIR, 'ca.crt'),
 			cert: this.resolve(tlsDIR, 'server.crt'),
 			key: this.resolve(tlsDIR, 'server.key')
 		};
-	}
-
-
-	peerCacerts() {
-		return this.resolve(this.peerOrgMSP(), 'cacerts', `ca.${this.peerOrgName}-cert.pem`);
-	}
-
-	ordererCacerts() {
-		return this.resolve(this.ordererOrgMSP(), 'cacerts', `ca.${this.ordererOrgName}-cert.pem`);
 	}
 
 

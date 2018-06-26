@@ -51,7 +51,7 @@ exports.fabricImagePull = async ({fabricTag, thirdPartyTag, arch}) => {
 /**
  * TLS enabled but no certificate or key provided, automatically generate TLS credentials
  * @param container_name
- * @param port
+ * @param {Number} port exposed host port
  * @param network
  * @param imageTag
  * @param admin

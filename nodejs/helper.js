@@ -1,4 +1,5 @@
 const os = require('os');
+const logger = require('./logger').new('helper util');
 exports.randomKeyOf = (obj) => {
 	const keys = Object.keys(obj);
 	const keyIndex = Math.floor(Math.random() * Math.floor(keys.length));
@@ -37,5 +38,6 @@ exports.hostname = os.hostname;
 exports.sha2_256 = require('fabric-client/lib/hash').sha2_256;
 
 exports.sleep = (ms) => {
+	logger.info(`sleep ${ms}ms`);
 	return new Promise(resolve => setTimeout(resolve, ms));
 };

@@ -5,12 +5,13 @@ const affiliationUtil = require('./affiliationService');
 /**
  *
  * @param {FabricCAServices} caService
- * @param {CryptoPath} cryptoPath
+ * @param {CryptoPath} cryptoPath should be host path
  * @param {string} nodeType
  * @param {string} mspId
+ * @param TLS
  * @returns {Promise<*>}
  */
-exports.initAdmin = async (caService, cryptoPath, nodeType, mspId) => {
+exports.initAdmin = async (caService, cryptoPath, nodeType, mspId,TLS) => {
 	const enrollmentID = userUtil.adminName;
 	const enrollmentSecret = userUtil.adminPwd;
 
@@ -27,18 +28,24 @@ exports.initAdmin = async (caService, cryptoPath, nodeType, mspId) => {
 	const result = await caService.enroll({enrollmentID, enrollmentSecret});
 	caUtil.toMSP(result, cryptoPath, type);
 	caUtil.org.saveAdmin(result, cryptoPath, nodeType);
+	if (TLS) {
+		const tlsResult = await caService.enroll({enrollmentID, enrollmentSecret, profile: 'tls'});
+		caUtil.toTLS(tlsResult, cryptoPath, type);
+		caUtil.org.saveTLS(tlsResult, cryptoPath, nodeType);
+	}
 
 	return await userUtil.build(userFull, result, mspId);
 };
 /**
  * @param {FabricCAServices} caService
- * @param {CryptoPath} cryptoPath
+ * @param {CryptoPath} cryptoPath should be host path
  * @param {string} nodeType
  * @param {string} mspId
+ * @param TLS
  * @param {string} affiliationRoot
  * @returns {Promise<*>}
  */
-exports.init = async (caService, cryptoPath, nodeType, mspId, {affiliationRoot} = {}) => {
+exports.init = async (caService, cryptoPath, nodeType, mspId, {TLS,affiliationRoot} = {}) => {
 	logger.debug('init', {mspId, nodeType}, cryptoPath);
 	const {[`${nodeType}OrgName`]: domain} = cryptoPath;
 	if (!affiliationRoot) affiliationRoot = domain;
@@ -46,7 +53,7 @@ exports.init = async (caService, cryptoPath, nodeType, mspId, {affiliationRoot} 
 	const force = true;//true to create recursively
 
 
-	const adminUser = await exports.initAdmin(caService, cryptoPath, nodeType, mspId);
+	const adminUser = await exports.initAdmin(caService, cryptoPath, nodeType, mspId,TLS);
 	const promises = [
 		affiliationUtil.creatIfNotExist(affiliationService, {name: `${affiliationRoot}.user`, force}, adminUser),
 		affiliationUtil.creatIfNotExist(affiliationService, {name: `${affiliationRoot}.peer`, force}, adminUser),
