@@ -26,7 +26,10 @@ exports.new = ({ordererPort, cert, pem, ordererHostName, host}) => {
 	}
 
 };
-exports.container = {CONFIGTX: '/etc/hyperledger/configtx'};
+exports.container = {
+	CONFIGTX: '/etc/hyperledger/configtx',
+	state: '/var/hyperledger/production/orderer/'
+};
 /**
  * if no blockFile:
  * panic: Unable to bootstrap orderer. Error reading genesis block file: open /etc/hyperledger/fabric/genesisblock: no such file or directory

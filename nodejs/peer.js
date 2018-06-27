@@ -27,10 +27,11 @@ exports.formatPeerName = (peerName, domain) => `${peerName}.${domain}`;
 exports.container =
 	{
 		MSPROOT: '/etc/hyperledger/crypto-config',
-		dockerSock:'/host/var/run/docker.sock'
+		dockerSock: '/host/var/run/docker.sock',
+		state: '/var/hyperledger/production'
 	};
 exports.host = {
-	dockerSock:'/run/docker.sock'
+	dockerSock: '/run/docker.sock'
 };
 
 exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls}) => {
