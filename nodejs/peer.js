@@ -41,7 +41,7 @@ exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls}) => {
 		`CORE_PEER_TLS_ROOTCERT_FILE=${tls.caCert}`] : [];
 	const environment =
 		[
-			`CORE_VM_ENDPOINT=unix://${module.exports.container.dockerSock}`,
+			`CORE_VM_ENDPOINT=unix://${exports.container.dockerSock}`,
 			`CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${network}`,
 			'CORE_LOGGING_LEVEL=DEBUG',
 			'CORE_LEDGER_HISTORY_ENABLEHISTORYDATABASE=true',

@@ -94,7 +94,7 @@ exports.toTLS = ({key, certificate, rootCertificate}, cryptoPath, type) => {
 	exports.pkcs11_key.save(serverKey, key);
 	CryptoPath.writeFileSync(cert, certificate);
 	CryptoPath.writeFileSync(caCert, rootCertificate);
-	CryptoPath.writeFileSync(tlscacerts,rootCertificate);
+	CryptoPath.writeFileSync(tlscacerts, rootCertificate);
 };
 
 exports.register = registerIfNotExist;
@@ -115,4 +115,19 @@ exports.envBuilder = () => {
 	return [
 		'GODEBUG=netdns=go',
 	];
+};
+exports.toString = (caService) => {
+	const caClient = caService._fabricCAClient;
+	const returned = {
+		caName: caClient._caName,
+		hostname: caClient._hostname,
+		port: caClient._port,
+	};
+	const trustedRoots = caClient._tlsOptions.trustedRoots.map(buffer => buffer.toString());
+	returned.tlsOptions = {
+		trustedRoots,
+		verify: caClient._tlsOptions.verify
+	};
+
+	return JSON.stringify(returned);
 };

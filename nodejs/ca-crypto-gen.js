@@ -2,6 +2,7 @@ const caUtil = require('./ca');
 const userUtil = require('./user');
 const logger = require('./logger').new('ca-crypto-gen');
 const affiliationUtil = require('./affiliationService');
+const commonHelper = require('./helper');
 /**
  *
  * @param {FabricCAServices} caService
@@ -11,7 +12,7 @@ const affiliationUtil = require('./affiliationService');
  * @param TLS
  * @returns {Promise<*>}
  */
-exports.initAdmin = async (caService, cryptoPath, nodeType, mspId,TLS) => {
+exports.initAdmin = async (caService, cryptoPath, nodeType, mspId, TLS) => {
 	const enrollmentID = userUtil.adminName;
 	const enrollmentSecret = userUtil.adminPwd;
 
@@ -45,15 +46,28 @@ exports.initAdmin = async (caService, cryptoPath, nodeType, mspId,TLS) => {
  * @param {string} affiliationRoot
  * @returns {Promise<*>}
  */
-exports.init = async (caService, cryptoPath, nodeType, mspId, {TLS,affiliationRoot} = {}) => {
+exports.init = async (caService, cryptoPath, nodeType, mspId, {TLS, affiliationRoot} = {}) => {
 	logger.debug('init', {mspId, nodeType}, cryptoPath);
 	const {[`${nodeType}OrgName`]: domain} = cryptoPath;
 	if (!affiliationRoot) affiliationRoot = domain;
 	const affiliationService = caService.newAffiliationService();
 	const force = true;//true to create recursively
 
+	const initAdminRetry = async () => {
+		try {
+			return await exports.initAdmin(caService, cryptoPath, nodeType, mspId, TLS);
+		} catch (e) {
+			if (e.toString().includes('[Error: read ECONNRESET]')) {
+				const ms = 1000;
+				logger.warn(`ca ${caUtil.toString(caService)} might not be ready, sleep and retry`);
+				await commonHelper.sleep(ms);
+				return initAdminRetry();
+			}
+			throw e;
+		}
+	};
 
-	const adminUser = await exports.initAdmin(caService, cryptoPath, nodeType, mspId,TLS);
+	const adminUser = await initAdminRetry();
 	const promises = [
 		affiliationUtil.creatIfNotExist(affiliationService, {name: `${affiliationRoot}.user`, force}, adminUser),
 		affiliationUtil.creatIfNotExist(affiliationService, {name: `${affiliationRoot}.peer`, force}, adminUser),
