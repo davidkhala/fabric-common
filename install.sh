@@ -56,7 +56,7 @@ function golangLatest() {
 	fi
 }
 function install_libtool() {
-	if [ ${this_uname} == "Darwin" ]; then
+	if [ "${this_uname}" == "Darwin" ]; then
         brew install libtool
     else
         sudo apt-get install libtool
