@@ -68,10 +68,7 @@ function golang_dep() {
 	curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
 	dep version
 }
-function cn() {
-	$CURRENT/docker/install.sh cn
-	$CURRENT/docker/nodejs/install.sh cn
-}
+
 if [ -n "$fcn" ]; then
 	$fcn $remain_params
 else
