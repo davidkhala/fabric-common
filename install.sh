@@ -44,8 +44,18 @@ function golang() {
 	fi
 
 }
+function golang1_10() {
+	if [ "$1" == "remove" ]; then
+		sudo apt-get -y remove golang-go
+		sudo add-apt-repository --remove -y ppa:longsleep/golang-backports
+	else
+		sudo add-apt-repository -y ppa:longsleep/golang-backports
+		sudo apt-get update
+		sudo apt-get -y install golang-go
+	fi
+}
 function install_libtool() {
-    if [ ${this_uname}=="Darwin" ];then
+	if [ ${this_uname} == "Darwin" ]; then
         brew install libtool
     else
         sudo apt-get install libtool
@@ -57,12 +67,10 @@ function golang-uninstall() {
 	#    TODO  To remove an existing Go installation from your system delete the go directory. This is usually /usr/local/go under Linux, Mac OS X, and FreeBSD or c:\Go under Windows.
 	# You should also remove the Go bin directory from your PATH environment variable. Under Linux and FreeBSD you should edit /etc/profile or $HOME/.profile. If you installed Go with the Mac OS X package then you should remove the /etc/paths.d/go file. Windows users should read the section about setting environment variables under Windows.
 }
-function govendor() {
-	go get -u github.com/kardianos/govendor
-}
+
 function golang_dep() {
-	export GOPATH=$(go env GOPATH)
 	curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+	dep version
 }
 function cn() {
 	$CURRENT/docker/install.sh cn
@@ -71,7 +79,7 @@ function cn() {
 if [ -n "$fcn" ]; then
 	$fcn $remain_params
 else
-    if [ ${this_uname}=="Darwin" ];then
+	if [ "${this_uname}" == "Darwin" ]; then
         :
     else
         sudo apt-get install -y linux-image-extra-$(uname -r) linux-image-extra-virtual
