@@ -14,9 +14,10 @@ done
 
 function golang() {
 	goVersion=go1.9.2
-	if docker version >/dev/null; then
-		goVersion=$(docker version | grep -m1 go | awk '{print($3)}')
-		echo ... to use docker inline go version :[${goVersion}]
+	if [ "$1" == "remove" ]; then
+		sudo sed -i '/\/usr\/local\/go\/bin/d' $systemProfile
+		sudo rm -rf /usr/local/go
+		return
 	fi
 
 	goTar=$goVersion.linux-amd64.tar.gz
@@ -44,7 +45,7 @@ function golang() {
 	fi
 
 }
-function golang1_10() {
+function golangLatest() {
 	if [ "$1" == "remove" ]; then
 		sudo apt-get -y remove golang-go
 		sudo add-apt-repository --remove -y ppa:longsleep/golang-backports
@@ -61,11 +62,6 @@ function install_libtool() {
         sudo apt-get install libtool
     fi
 
-}
-function golang-uninstall() {
-	:
-	#    TODO  To remove an existing Go installation from your system delete the go directory. This is usually /usr/local/go under Linux, Mac OS X, and FreeBSD or c:\Go under Windows.
-	# You should also remove the Go bin directory from your PATH environment variable. Under Linux and FreeBSD you should edit /etc/profile or $HOME/.profile. If you installed Go with the Mac OS X package then you should remove the /etc/paths.d/go file. Windows users should read the section about setting environment variables under Windows.
 }
 
 function golang_dep() {
