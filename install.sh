@@ -15,11 +15,13 @@ done
 function golang() {
 	goVersion=go1.9.2
 	if [ "$1" == "remove" ]; then
+	    echo remove golang $goVersion
 		sudo sed -i '/\/usr\/local\/go\/bin/d' $systemProfile
 		sudo rm -rf /usr/local/go
 		return
 	fi
 
+    echo install golang $goVersion
 	goTar=$goVersion.linux-amd64.tar.gz
 	# write path to 'go' command
 	if ! grep "/usr/local/go/bin" $systemProfile; then
@@ -59,7 +61,7 @@ function install_libtool() {
 	if [ "${this_uname}" == "Darwin" ]; then
         brew install libtool
     else
-        sudo apt-get install libtool
+        sudo apt-get install -y libtool
     fi
 
 }
@@ -69,6 +71,11 @@ function golang_dep() {
 	dep version
 }
 
+function chaincodeDevEnv(){
+    golangLatest
+    install_libtool
+    golang_dep
+}
 if [ -n "$fcn" ]; then
 	$fcn $remain_params
 else

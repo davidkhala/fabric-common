@@ -100,23 +100,25 @@ exports.install = async (peers, {chaincodeId, chaincodePath, chaincodeVersion}, 
 	}
 };
 
-exports.updateInstall = async (peer, {chaincodeId}, client) => {
+exports.updateInstall = async (peer, {chaincodeId, chaincodePath}, client) => {
 	const {chaincodes} = await Query.chaincodes.installed(peer, client);
 	const foundChaincodes = chaincodes.filter((element) => element.name === chaincodeId);
+	let chaincodeVersion = 'v0';
 	if (foundChaincodes.length === 0) {
-		throw `No chaincode found with name ${chaincodeId}`;
-	}
-	let latestChaincode = foundChaincodes[0];
-	let latestVersion = latestChaincode.version;
-	for (const chaincode of foundChaincodes) {
-		const {version} = chaincode;
-		if(exports.newerVersion(version,latestVersion)){
-			latestVersion = version;
-			latestChaincode = chaincode;
+		logger.warn(`No chaincode found with name ${chaincodeId}, to use version ${chaincodeVersion}, `, {chaincodePath});
+	} else {
+		let latestChaincode = foundChaincodes[0];
+		let latestVersion = latestChaincode.version;
+		for (const chaincode of foundChaincodes) {
+			const {version} = chaincode;
+			if (exports.newerVersion(version, latestVersion)) {
+				latestVersion = version;
+				latestChaincode = chaincode;
+			}
 		}
+		chaincodePath = latestChaincode.path;
+		chaincodeVersion = exports.nextVersion(latestVersion);
 	}
-
-	const {path: chaincodePath} = latestChaincode;
 
 	// [ { name: 'adminChaincode',
 	// 	version: 'v0',
@@ -125,7 +127,6 @@ exports.updateInstall = async (peer, {chaincodeId}, client) => {
 	// 	escc: '',
 	// 	vscc: '' } ]
 
-	const chaincodeVersion = exports.nextVersion(latestVersion);
 	return exports.install([peer], {chaincodeId, chaincodePath, chaincodeVersion}, client);
 
 };
@@ -308,13 +309,13 @@ const txTimerPromise = (eventHub, {txId}, eventWaitTime) => {
  * @param peers
  * @param eventHubs
  * @param chaincodeId
- * @param fcn
- * @param args
- * @param eventWaitTime
+ * @param {string} fcn
+ * @param {string[]} args
+ * @param {Number} eventWaitTime optional, default to use 30000 ms
  * @return {Promise.<TResult>}
  */
 exports.invoke = async (channel, peers, eventHubs, {chaincodeId, fcn, args}, eventWaitTime) => {
-	logger.debug({channelName: channel.getName(), peersSize: peers.length, chaincodeId, fcn, args});
+	logger.debug('invoke',{channelName: channel.getName(), peersSize: peers.length, chaincodeId, fcn, args});
 	if (!eventWaitTime) eventWaitTime = 30000;
 	const client = channel._clientContext;
 	const txId = client.newTransactionID();
