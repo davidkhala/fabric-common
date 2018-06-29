@@ -9,7 +9,7 @@ exports.getGOPATH = async () => {
 	return stdout.trim();
 };
 exports.setGOPATH = async () => {
-	process.env.GOPATH = await module.exports.getGOPATH();
+	process.env.GOPATH = await exports.getGOPATH();
 };
 /**
  * go get -u -v ${path}
@@ -20,9 +20,5 @@ exports.get = async (path) => {
 	const result = await exec(cmd);
 	const {stderr} = result;
 	logger.debug({cmd}, {stderr});
-	const str = stderr.toString().trim();
-	if (str.includes('error') || str.includes('panic')) {
-		throw Error(stderr);
-	}
 	return result;
 };
