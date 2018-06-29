@@ -295,6 +295,10 @@ exports.channelUpdate = async (
 		}
 	};
 	const body2 = await agent.compute.updateFromConfigs(formData);
+	if(!body2){
+		logger.warn(ERROR_NO_UPDATE,'(calculated from configtxlator)');
+		return {err: ERROR_NO_UPDATE, original_config};
+	}
 	const proto = new Buffer(body2, 'binary');
 	const {signatures} = await signatureCollectCB(proto);
 

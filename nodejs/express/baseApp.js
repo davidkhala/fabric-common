@@ -13,7 +13,7 @@ exports.run = (port, host) => {
 		extended: false
 	}));
 	const server = http.createServer(app).listen(port, host, () => {
-		logger.info('server started at', {host, port});
+		logger.info('===================','server started at', {host, port});
 	});
 
 	server.timeout = 240000;

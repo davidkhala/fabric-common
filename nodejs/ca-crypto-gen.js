@@ -57,7 +57,7 @@ exports.init = async (caService, cryptoPath, nodeType, mspId, {TLS, affiliationR
 		try {
 			return await exports.initAdmin(caService, cryptoPath, nodeType, mspId, TLS);
 		} catch (e) {
-			if (e.toString().includes('[Error: read ECONNRESET]')) {
+			if (e.toString().includes('Calling enrollment endpoint failed with error')) {
 				const ms = 1000;
 				logger.warn(`ca ${caUtil.toString(caService)} might not be ready, sleep and retry`);
 				await commonHelper.sleep(ms);
