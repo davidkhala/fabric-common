@@ -311,11 +311,12 @@ const txTimerPromise = (eventHub, {txId}, eventWaitTime) => {
  * @param chaincodeId
  * @param {string} fcn
  * @param {string[]} args
+ * @param {Orderer} orderer target orderer, default to pick one in channel
  * @param {Number} eventWaitTime optional, default to use 30000 ms
  * @return {Promise.<TResult>}
  */
-exports.invoke = async (channel, peers, eventHubs, {chaincodeId, fcn, args}, eventWaitTime) => {
-	logger.debug('invoke',{channelName: channel.getName(), peersSize: peers.length, chaincodeId, fcn, args});
+exports.invoke = async (channel, peers, eventHubs, {chaincodeId, fcn, args}, orderer, eventWaitTime) => {
+	logger.debug('invoke', {channelName: channel.getName(), peersSize: peers.length, chaincodeId, fcn, args});
 	if (!eventWaitTime) eventWaitTime = 30000;
 	const client = channel._clientContext;
 	const txId = client.newTransactionID();
@@ -331,6 +332,7 @@ exports.invoke = async (channel, peers, eventHubs, {chaincodeId, fcn, args}, eve
 	const ccHandler = exports.chaincodeProposalAdapter('invoke');
 	const {nextRequest, errCounter} = ccHandler([responses, proposal, header]);
 
+	nextRequest.orderer = orderer;
 	const {proposalResponses} = nextRequest;
 
 	if (errCounter > 0) {
