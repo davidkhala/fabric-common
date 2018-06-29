@@ -19,14 +19,14 @@ exports.swarmRenew = async () => {
 		if (reason === 'consensus') {
 			await dockerUtil.swarmLeave();
 			await exports.swarmIPInit();
-		}else if(reason ==='noexist'){
+		} else if (reason === 'noexist') {
 			await exports.swarmIPInit();
 		}
 	}
 };
 exports.swarmIPJoin = async ({AdvertiseAddr, JoinToken}) => {
 	const ip = commonHelper.ip();
-	await dockerUtil.swarmJoin({AdvertiseAddr,JoinToken},ip);
+	await dockerUtil.swarmJoin({AdvertiseAddr, JoinToken}, ip);
 };
 exports.swarmIPInit = async (AdvertiseAddr) => {
 	if (!AdvertiseAddr) {
@@ -268,12 +268,18 @@ exports.chaincodeContainerList = async () => {
 	const containers = await dockerUtil.containerList();
 	return containers.filter(container => container.Names.find(name => name.startsWith('/dev-')));
 };
-exports.chaincodeClean = async () => {
+exports.chaincodeClean = async (prune) => {
 	const containers = await exports.chaincodeContainerList();
 	await Promise.all(containers.map(async (container) => {
 		await dockerUtil.containerDelete(container.Id);
 		await dockerUtil.imageDelete(container.Image);
 	}));
+	if (prune) {
+		const images = await exports.chaincodeImageList();
+		await Promise.all(images.map(async (image) => {
+			await dockerUtil.imageDelete(image.Id);
+		}));
+	}
 };
 exports.runOrderer = ({container_name, imageTag, port, network, BLOCK_FILE, CONFIGTXVolume, msp: {id, configPath, volumeName}, kafkas, tls}) => {
 	const Image = `hyperledger/fabric-orderer:${imageTag}`;
