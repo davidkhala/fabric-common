@@ -29,20 +29,33 @@ exports.chaincodeProposalAdapter = (actionString, validator) => {
 	const _validator = validator ? validator : ({response}) => {
 		return {isValid: response && response.status === 200, isSwallowed: false};
 	};
+	const stringify = (proposalResponse) => {
+		const copy = Object.assign({}, proposalResponse);
+		const {response: {payload: r_payload}} = copy;
+		const {endorsement} = copy;
+		if (endorsement) {
+			copy.endorsement = Object.assign({},proposalResponse.endorsement);
+			copy.endorsement.endorser = copy.endorsement.endorser.toString();
+		}
+		copy.response.payload = r_payload.toString();
+		return copy;
+	};
 	return ([responses, proposal, header]) => {
 
 		let errCounter = 0; // NOTE logic: reject only when all bad
 		let swallowCounter = 0;
+
 		for (const i in responses) {
 			const proposalResponse = responses[i];
 			const {isValid, isSwallowed} = _validator(proposalResponse);
+
 			if (isValid) {
-				logger.info(`${actionString} was good for [${i}]`, proposalResponse);
+				logger.info(`${actionString} is good for [${i}]`, stringify(proposalResponse));
 				if (isSwallowed) {
 					swallowCounter++;
 				}
 			} else {
-				logger.error(`${actionString} was bad for [${i}]`, proposalResponse);
+				logger.error(`${actionString} is bad for [${i}]`, stringify(proposalResponse));
 				errCounter++;
 			}
 		}
