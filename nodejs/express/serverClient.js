@@ -43,10 +43,10 @@ exports.ping = async (serverBaseUrl) => {
 
 };
 exports.leader = {
-	update: (serverBaseUrl, {ip, hostname, managerToken}) => {
+	update: (serverBaseUrl, {ip, hostname, managerToken, workerToken}) => {
 		return exports.RequestPromise({
 			url: `${serverBaseUrl}/leader/update`,
-			body: {ip, hostname, managerToken}
+			body: {ip, hostname, managerToken, workerToken}
 		});
 
 	},
@@ -90,13 +90,13 @@ exports.createOrUpdateOrg = (serverBaseUrl, channelName, MSPID, MSPName, nodeTyp
 		root_certs: root_certs.map(path => fs.createReadStream(path)),
 		tls_root_certs: tls_root_certs.map(path => fs.createReadStream(path)),
 	};
-	if(skip){
-		formData.skip ='y'; //boolean in formData will trigger  "throw new TypeError('First argument must be a string or Buffer');"
+	if (skip) {
+		formData.skip = 'y'; //boolean in formData will trigger  "throw new TypeError('First argument must be a string or Buffer');"
 	}
 	if (nodeType === 'peer') {
 		formData.channelName = channelName;
 	}
 	const url = `${serverBaseUrl}/channel/createOrUpdateOrg`;
-	logger.debug('createOrUpdateOrg',{url,formData});
+	logger.debug('createOrUpdateOrg', {url, formData});
 	return exports.RequestPromise({url, formData});
 };
