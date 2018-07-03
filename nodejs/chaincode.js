@@ -34,7 +34,7 @@ exports.chaincodeProposalAdapter = (actionString, validator) => {
 		const {response: {payload: r_payload}} = copy;
 		const {endorsement} = copy;
 		if (endorsement) {
-			copy.endorsement = Object.assign({},proposalResponse.endorsement);
+			copy.endorsement = Object.assign({}, proposalResponse.endorsement);
 			copy.endorsement.endorser = copy.endorsement.endorser.toString();
 		}
 		copy.response.payload = r_payload.toString();
@@ -76,7 +76,7 @@ exports.chaincodeProposalAdapter = (actionString, validator) => {
  * @param {Peer[]} peers
  * @param {string} chaincodeId allowedCharsChaincodeName = "[A-Za-z0-9_-]+"
  * @param chaincodePath
- * @param {string} chaincodeVersion allowedCharsVersion       = "[A-Za-z0-9_.-]+"
+ * @param {string} chaincodeVersion allowedCharsVersion  = "[A-Za-z0-9_.-]+"
  * @param {Client} client
  * @returns {Promise<*>}
  */
