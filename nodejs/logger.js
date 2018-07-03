@@ -1,6 +1,6 @@
 const winston = require('winston');
 exports.new = (moduleName) => {
-	const logger = new (winston.Logger)({
+	return new (winston.Logger)({
 		transports: [
 			new (winston.transports.Console)({
 				level: 'debug',
@@ -9,7 +9,6 @@ exports.new = (moduleName) => {
 			})
 		]
 	});
-	return logger;
 };
 exports.setGlobal = () => {
 	const hfcLogger = exports.new('hfc');
