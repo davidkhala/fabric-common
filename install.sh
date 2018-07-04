@@ -48,7 +48,7 @@ function golang1_9() {
 }
 function golang1_7() {
 	goVersion=go1.7.6
-	GOPATH=$HOME/go/
+	GOPATH=$HOME/go
 	if [ "$1" == "remove" ]; then
 	    echo remove golang $goVersion
 		sudo sed -i '/\/usr\/local\/go\/bin/d' $systemProfile
