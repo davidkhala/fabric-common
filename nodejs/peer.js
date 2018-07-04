@@ -1,5 +1,6 @@
 const Peer = require('fabric-client/lib/Peer');
 const fs = require('fs-extra');
+const logger = require('./logger').new('peer');
 exports.new = ({peerPort, peerHostName, cert, pem, host}) => {
 	const Host = host ? host : 'localhost';
 	let peerUrl = `grpcs://${Host}:${peerPort}`;
