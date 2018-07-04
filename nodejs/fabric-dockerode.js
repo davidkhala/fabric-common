@@ -5,6 +5,7 @@ const caUtil = require('./ca');
 const kafkaUtil = require('./kafka');
 const ordererUtil = require('./orderer');
 const zookeeperUtil = require('./zookeeper');
+const couchdbUtil = require('./couchdb');
 const {CryptoPath} = require('./path');
 const userUtil = require('./user');
 const yaml = require('js-yaml');
@@ -345,9 +346,9 @@ exports.deployOrderer = async ({
 	});
 };
 exports.deployPeer = async ({
-	Name, network, imageTag, Constraints, port, eventHubPort,
-	msp: {volumeName, configPath, id}, peerHostName, tls
-}) => {
+								Name, network, imageTag, Constraints, port, eventHubPort,
+								msp: {volumeName, configPath, id}, peerHostName, tls
+							}) => {
 	const serviceName = dockerUtil.swarmServiceName(Name);
 	if (!Constraints) Constraints = await dockerUtil.constraintSelf();
 	return await dockerUtil.serviceCreateIfNotExist({
@@ -422,10 +423,40 @@ exports.runPeer = ({
 	return dockerUtil.containerStart(createOptions);
 };
 
-exports.volumeReCreate = async ({Name, path}) => {
-	await dockerUtil.volumeRemove(Name);
-	return await dockerUtil.volumeCreateIfNotExist({Name, path});
+exports.runCouchDB = async ({imageTag, container_name, port, network}) => {
+	const Image = `hyperledger/fabric-couchdb:${imageTag}`;
+	const Env = couchdbUtil.envBuilder();
+	const createOptions = {
+		name: container_name,
+		Env,
+		Volumes: {
+			[peerUtil.container.dockerSock]: {},
+			[peerUtil.container.MSPROOT]: {}
+		},
+		Image,
+		ExposedPorts: {
+			'5984': {},
+		},
+		Hostconfig: {
+			PortBindings: {
+				'5984': [
+					{
+						HostPort: port.toString()
+					}
+				]
+			},
+		},
+		NetworkingConfig: {
+			EndpointsConfig: {
+				[network]: {
+					Aliases: [container_name]
+				}
+			}
+		}
+	};
+	return dockerUtil.containerStart(createOptions);
 };
+
 /**
  * if service is deleted, taskList could not find legacy task
  * @param {Service[]} services service info array

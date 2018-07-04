@@ -45,6 +45,7 @@ function golang1_9() {
 		echo "export PATH=\$PATH:$GOPATH/bin" | sudo tee -a $systemProfile
 		export PATH=$PATH:$GOPATH/bin
 	fi
+	echo go intall done, restart is required
 }
 function golang1_7() {
 	goVersion=go1.7.6
@@ -85,6 +86,7 @@ function golang1_7() {
 		echo "export GOPATH=${GOPATH}" | sudo tee -a $systemProfile
 		export GOPATH=$GOPATH
 	fi
+	echo go intall done, restart is required
 }
 function golang1_10() {
 	if [ "$1" == "remove" ]; then
