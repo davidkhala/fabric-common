@@ -346,9 +346,9 @@ exports.deployOrderer = async ({
 	});
 };
 exports.deployPeer = async ({
-								Name, network, imageTag, Constraints, port, eventHubPort,
-								msp: {volumeName, configPath, id}, peerHostName, tls
-							}) => {
+	Name, network, imageTag, Constraints, port, eventHubPort,
+	msp: {volumeName, configPath, id}, peerHostName, tls
+}) => {
 	const serviceName = dockerUtil.swarmServiceName(Name);
 	if (!Constraints) Constraints = await dockerUtil.constraintSelf();
 	return await dockerUtil.serviceCreateIfNotExist({
@@ -372,14 +372,14 @@ exports.runPeer = ({
 	msp: {
 		id, volumeName,
 		configPath
-	}, peerHostName, tls
+	}, peerHostName, tls, couchDB
 }) => {
 	const Image = `hyperledger/fabric-peer:${imageTag}`;
 	const Cmd = ['peer', 'node', 'start'];
 	const Env = peerUtil.envBuilder({
 		network, msp: {
 			configPath, id, peerHostName
-		}, tls
+		}, tls, couchDB
 	});
 
 	const createOptions = {
