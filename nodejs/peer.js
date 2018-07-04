@@ -34,11 +34,22 @@ exports.host = {
 	dockerSock: '/run/docker.sock'
 };
 
-exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls}) => {
+exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchDB}) => {
 	const tlsParams = tls ? [
 		`CORE_PEER_TLS_KEY_FILE=${tls.key}`,
 		`CORE_PEER_TLS_CERT_FILE=${tls.cert}`,
 		`CORE_PEER_TLS_ROOTCERT_FILE=${tls.caCert}`] : [];
+
+	let couchDBparams = [];
+	if (couchDB) {
+		const {container_name, port = 5984, user = '', password = ''} = couchDB;
+		couchDBparams = [
+			'CORE_LEDGER_STATE_STATEDATABASE=CouchDB',
+			`CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=${container_name}:${port}`,
+			`CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=${user}`,
+			`CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=${password}`
+		];
+	}
 	const environment =
 		[
 			`CORE_VM_ENDPOINT=unix://${exports.container.dockerSock}`,
@@ -56,7 +67,7 @@ exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls}) => {
 			'CORE_CHAINCODE_EXECUTETIMEOUT=180s',
 			'CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052',//for swarm mode
 			'GODEBUG=netdns=go'//NOTE aliyun only
-		].concat(tlsParams);
+		].concat(tlsParams).concat(couchDBparams);
 
 	return environment;
 };
