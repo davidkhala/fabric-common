@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#NOTE This script only work for 1.0.0-rc1 or above
+#NOTE This script only work from 1.0.0-rc1 to 1.1.x
 #
 CURRENT=$(cd $(dirname ${BASH_SOURCE}); pwd)
 Parent=$(dirname $CURRENT)
