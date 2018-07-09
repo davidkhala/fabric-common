@@ -31,7 +31,9 @@ exports.chaincodeProposalAdapter = (actionString, validator) => {
 	};
 	const stringify = (proposalResponse) => {
 		const copy = Object.assign({}, proposalResponse);
-		const {response: {payload: r_payload}} = copy;
+		const {response} = copy;
+		if (!response) return copy;
+		const {payload: r_payload} = response;
 		const {endorsement} = copy;
 		if (endorsement) {
 			copy.endorsement = Object.assign({}, proposalResponse.endorsement);

@@ -123,7 +123,11 @@ else
 	if [ "${this_uname}" == "Darwin" ]; then
         :
     else
-        sudo apt-get install -y linux-image-extra-$(uname -r) linux-image-extra-virtual
+# FIXME allow for new version without plugin support
+        set +e
+        sudo apt-get install -y linux-image-extra-$(uname -r)
+        set -e
+        sudo apt-get install -y linux-image-extra-virtual
         sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
     fi
 
