@@ -10,6 +10,14 @@ const {CryptoPath} = require('./path');
 const userUtil = require('./user');
 const yaml = require('js-yaml');
 const commonHelper = require('./helper');
+
+exports.ImageTag = ({arch, tag}) => {
+	if (tag === '1.2.0' || tag === '0.4.10') {
+		return tag;
+	} else {
+		return `${arch}-${tag}`;
+	}
+};
 /**
  * TODO not mature
  * @returns {Promise<void>}
@@ -39,14 +47,16 @@ exports.swarmIPInit = async (AdvertiseAddr) => {
 };
 exports.fabricImagePull = async ({fabricTag, thirdPartyTag, arch}) => {
 	if (fabricTag) {
-		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-ccenv:${arch}-${fabricTag}`);
-		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-orderer:${arch}-${fabricTag}`);
-		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-peer:${arch}-${fabricTag}`);
-		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-ca:${arch}-${fabricTag}`);
+		const imageTag = exports.ImageTag({arch, tag: fabricTag});
+		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-ccenv:${imageTag}`);
+		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-orderer:${imageTag}`);
+		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-peer:${imageTag}`);
+		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-ca:${imageTag}`);
 	}
 	if (thirdPartyTag) {
-		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-kafka:${arch}-${thirdPartyTag}`);
-		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-zookeeper:${arch}-${thirdPartyTag}`);
+		const imageTag = exports.ImageTag({arch, tag: thirdPartyTag});
+		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-kafka:${imageTag}`);
+		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-zookeeper:${imageTag}`);
 	}
 };
 /**
