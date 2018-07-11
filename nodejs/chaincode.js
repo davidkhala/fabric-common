@@ -2,8 +2,7 @@ const logger = require('./logger').new('chaincode');
 const golangUtil = require('./golang');
 const logUtil = require('./logger');
 const Query = require('./query');
-const commonHelper = require('./helper.js');
-const {txEvent, blockEvent} = require('./eventHub');
+const {txEvent} = require('./eventHub');
 const Policy = require('fabric-client/lib/Policy');
 exports.nextVersion = (chaincodeVersion) => {
 	const version = parseInt(chaincodeVersion.substr(1));
