@@ -1,5 +1,5 @@
 const logger = require('./logger').new('affiliationService');
-exports.creatIfNotExist = async (affiliationService, {name, force = false}, adminUser) => {
+exports.createIfNotExist = async (affiliationService, {name, force = false}, adminUser) => {
 	try {
 		const resp = await affiliationService.getOne(name, adminUser);
 		logger.info('affiliationService exists', resp.result.name);
@@ -11,4 +11,7 @@ exports.creatIfNotExist = async (affiliationService, {name, force = false}, admi
 			throw err;
 		}
 	}
+};
+exports.new = (caService) => {
+	return caService.newAffiliationService();
 };

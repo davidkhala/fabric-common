@@ -50,7 +50,6 @@ exports.init = async (caService, adminCryptoPath, nodeType, mspId, {TLS, affilia
 	logger.debug('init', {mspId, nodeType}, adminCryptoPath);
 	const {[`${nodeType}OrgName`]: domain} = adminCryptoPath;
 	if (!affiliationRoot) affiliationRoot = domain;
-	const affiliationService = caService.newAffiliationService();
 	const force = true;//true to create recursively
 
 	const initAdminRetry = async () => {
@@ -68,10 +67,11 @@ exports.init = async (caService, adminCryptoPath, nodeType, mspId, {TLS, affilia
 	};
 
 	const adminUser = await initAdminRetry();
+	const affiliationService = affiliationUtil.new(caService);
 	const promises = [
-		affiliationUtil.creatIfNotExist(affiliationService, {name: `${affiliationRoot}.user`, force}, adminUser),
-		affiliationUtil.creatIfNotExist(affiliationService, {name: `${affiliationRoot}.peer`, force}, adminUser),
-		affiliationUtil.creatIfNotExist(affiliationService, {name: `${affiliationRoot}.orderer`, force}, adminUser)
+		affiliationUtil.createIfNotExist(affiliationService, {name: `${affiliationRoot}.user`, force}, adminUser),
+		affiliationUtil.createIfNotExist(affiliationService, {name: `${affiliationRoot}.peer`, force}, adminUser),
+		affiliationUtil.createIfNotExist(affiliationService, {name: `${affiliationRoot}.orderer`, force}, adminUser)
 	];
 	await Promise.all(promises);
 	return adminUser;
