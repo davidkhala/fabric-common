@@ -13,8 +13,8 @@ const commonHelper = require('./helper');
  * @returns {Promise<*>}
  */
 exports.initAdmin = async (caService, cryptoPath, nodeType, mspId, TLS) => {
-	const enrollmentID = userUtil.adminName;
-	const enrollmentSecret = userUtil.adminPwd;
+	const enrollmentID = cryptoPath.userName;
+	const enrollmentSecret = cryptoPath.password;
 
 	const {[`${nodeType}OrgName`]: domain} = cryptoPath;
 
@@ -39,23 +39,23 @@ exports.initAdmin = async (caService, cryptoPath, nodeType, mspId, TLS) => {
 };
 /**
  * @param {FabricCAServices} caService
- * @param {CryptoPath} cryptoPath should be host path
+ * @param {CryptoPath} adminCryptoPath should be host path
  * @param {string} nodeType
  * @param {string} mspId
  * @param TLS
  * @param {string} affiliationRoot
  * @returns {Promise<*>}
  */
-exports.init = async (caService, cryptoPath, nodeType, mspId, {TLS, affiliationRoot} = {}) => {
-	logger.debug('init', {mspId, nodeType}, cryptoPath);
-	const {[`${nodeType}OrgName`]: domain} = cryptoPath;
+exports.init = async (caService, adminCryptoPath, nodeType, mspId, {TLS, affiliationRoot} = {}) => {
+	logger.debug('init', {mspId, nodeType}, adminCryptoPath);
+	const {[`${nodeType}OrgName`]: domain} = adminCryptoPath;
 	if (!affiliationRoot) affiliationRoot = domain;
 	const affiliationService = caService.newAffiliationService();
 	const force = true;//true to create recursively
 
 	const initAdminRetry = async () => {
 		try {
-			return await exports.initAdmin(caService, cryptoPath, nodeType, mspId, TLS);
+			return await exports.initAdmin(caService, adminCryptoPath, nodeType, mspId, TLS);
 		} catch (e) {
 			if (e.toString().includes('Calling enrollment endpoint failed with error')) {
 				const ms = 1000;
@@ -161,31 +161,24 @@ exports.genPeer = async (caService, cryptoPath, admin, {TLS, affiliationRoot} = 
 };
 /**
  * for non-admin user only
- * FIXME TODO in progress
  * @param caService
  * @param {CryptoPath} cryptoPath
+ * @param nodeType
  * @param admin
  * @param TLS
  * @param affiliationRoot
- * @returns {Promise<void>}
+ * @returns {Promise<User>}
  */
 exports.genUser = async (caService, cryptoPath, nodeType, admin, {TLS, affiliationRoot} = {}) => {
 
 	const type = `${nodeType}User`;
-	// this.userName = user.name;
-	// if (this.ordererOrgName) {
-	// 	this.ordererUserHostName = `${this.userName}@${this.ordererOrgName}`;
-	// }
-	// if (this.peerOrgName) {
-	// 	this.peerUserHostName = `${this.userName}@${this.peerOrgName}`;
-	// }
 	if (!affiliationRoot) affiliationRoot = cryptoPath[`${nodeType}OrgName`];
-	const userMSPRoot = cryptoPath.MSP(type);
 
-	const exist = cryptoPath.cryptoExistLocal(type);
-	if (exist) {
-		logger.info(`crypto exist in ${userMSPRoot}`);
-		return;
+	const mspId = userUtil.getMSPID(admin);
+	let user = await userUtil.loadFromLocal(cryptoPath, nodeType, mspId, undefined);
+	if (user) {
+		logger.info('user exist', {name: user.getName()});
+		return user;
 	}
 
 	const enrollmentID = cryptoPath[`${nodeType}UserHostName`];
@@ -206,6 +199,8 @@ exports.genUser = async (caService, cryptoPath, nodeType, admin, {TLS, affiliati
 		caUtil.toTLS(tlsResult, cryptoPath, type);
 		caUtil.org.saveTLS(tlsResult, cryptoPath, type);
 	}
+	user = await userUtil.loadFromLocal(cryptoPath, nodeType, mspId, undefined);
+	return user;
 
 };
 

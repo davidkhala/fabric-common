@@ -35,8 +35,7 @@ exports.build = async (username, {key, certificate}, MSPID, cryptoSuite = client
 	await user.setEnrollment(privateKey, certificate, MSPID);
 	return user;
 };
-exports.getCertificate = (user) => {
-	return user.getSigningIdentity()._certificate;
-};
+exports.getCertificate = (user) => user.getSigningIdentity()._certificate;
+exports.getMSPID = (user) => user._mspId;
 exports.adminName = 'Admin';
 exports.adminPwd = 'passwd';
