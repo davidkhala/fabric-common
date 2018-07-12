@@ -1,12 +1,12 @@
 const Peer = require('fabric-client/lib/Peer');
-const fs = require('fs-extra');
+const {fsExtra} = require('./path');
 const logger = require('./logger').new('peer');
 exports.new = ({peerPort, peerHostName, cert, pem, host}) => {
 	const Host = host ? host : 'localhost';
 	let peerUrl = `grpcs://${Host}:${peerPort}`;
 	if (!pem) {
-		if (fs.existsSync(cert)) {
-			pem = fs.readFileSync(cert).toString();
+		if (fsExtra.existsSync(cert)) {
+			pem = fsExtra.readFileSync(cert).toString();
 		}
 	}
 	if (pem) {

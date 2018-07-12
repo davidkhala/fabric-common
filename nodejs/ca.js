@@ -1,7 +1,7 @@
 const path = require('path');
 const logger = require('./logger').new('ca-core');
 const CAClient = require('fabric-ca-client/lib/FabricCAClientImpl');
-const {CryptoPath} = require('./path');
+const {CryptoPath,fsExtra} = require('./path');
 const FABRIC_CA_HOME = '/etc/hyperledger/fabric-ca-server';
 exports.container = {
 	FABRIC_CA_HOME,
@@ -10,16 +10,12 @@ exports.container = {
 	caCert: path.resolve(FABRIC_CA_HOME, 'ca-cert.pem'),
 	tlsCert: path.resolve(FABRIC_CA_HOME, 'tls-cert.pem'),
 };
-exports.user = {
-	register: (caService, {username, affiliation}, adminUser) =>
-		registerIfNotExist(caService, {enrollmentID: username, affiliation, role: 'user'}, adminUser),
+
+exports.toAdminCerts = ({certificate}, cryptoPath, type) => {
+	const {admincerts} = cryptoPath.MSPFile(type);
+	fsExtra.outputFileSync(admincerts, certificate)
 };
-exports.peer = {
-	toAdminCerts: ({certificate}, cryptoPath, nodeType) => {
-		const {admincerts} = cryptoPath.MSPFile(nodeType);
-		CryptoPath.writeFileSync(admincerts, certificate);
-	},
-};
+
 exports.intermediateCA = {
 	register: (caService, {enrollmentID, affiliation}, adminUser) => {
 
@@ -63,38 +59,38 @@ exports.pkcs11_key = {
 		exports.pkcs11_key.save(absolutePath, key);
 	},
 	save: (path, key) => {
-		CryptoPath.writeFileSync(path, key.toBytes());
+		fsExtra.outputFileSync(path, key.toBytes());
 	}
 
 };
 
 exports.toMSP = ({key, certificate, rootCertificate}, cryptoPath, type) => {
 	const {cacerts, keystore, signcerts} = cryptoPath.MSPFile(type);
-	CryptoPath.writeFileSync(signcerts, certificate);
+	fsExtra.outputFileSync(signcerts, certificate);
 	exports.pkcs11_key.toKeystore(key, keystore);
-	CryptoPath.writeFileSync(cacerts, rootCertificate);
+	fsExtra.outputFileSync(cacerts, rootCertificate);
 };
 exports.org = {
 	saveAdmin: ({certificate, rootCertificate}, cryptoPath, nodeType) => {
 		const {ca, msp: {admincerts, cacerts}} = cryptoPath.OrgFile(nodeType);
 
-		CryptoPath.writeFileSync(cacerts, rootCertificate);
-		CryptoPath.writeFileSync(ca, rootCertificate);
-		CryptoPath.writeFileSync(admincerts, certificate);
+		fsExtra.outputFileSync(cacerts, rootCertificate);
+		fsExtra.outputFileSync(ca, rootCertificate);
+		fsExtra.outputFileSync(admincerts, certificate);
 	},
 	saveTLS: ({rootCertificate}, cryptoPath, nodeType) => {
 		const {msp: {tlscacerts}, tlsca} = cryptoPath.OrgFile(nodeType);
-		CryptoPath.writeFileSync(tlsca, rootCertificate);
-		CryptoPath.writeFileSync(tlscacerts, rootCertificate);
+		fsExtra.outputFileSync(tlsca, rootCertificate);
+		fsExtra.outputFileSync(tlscacerts, rootCertificate);
 	}
 };
 exports.toTLS = ({key, certificate, rootCertificate}, cryptoPath, type) => {
 	const {caCert, cert, key: serverKey} = cryptoPath.TLSFile(type);
 	const {tlscacerts} = cryptoPath.MSPFile(type);//TLS in msp folder
 	exports.pkcs11_key.save(serverKey, key);
-	CryptoPath.writeFileSync(cert, certificate);
-	CryptoPath.writeFileSync(caCert, rootCertificate);
-	CryptoPath.writeFileSync(tlscacerts, rootCertificate);
+	fsExtra.outputFileSync(cert, certificate);
+	fsExtra.outputFileSync(caCert, rootCertificate);
+	fsExtra.outputFileSync(tlscacerts, rootCertificate);
 };
 
 exports.register = registerIfNotExist;

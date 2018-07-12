@@ -6,7 +6,7 @@ const kafkaUtil = require('./kafka');
 const ordererUtil = require('./orderer');
 const zookeeperUtil = require('./zookeeper');
 const couchdbUtil = require('./couchdb');
-const {CryptoPath} = require('./path');
+const {fsExtra} = require('./path');
 const userUtil = require('./user');
 const yaml = require('js-yaml');
 const commonHelper = require('./helper');
@@ -171,7 +171,7 @@ exports.runCA = ({
 			},
 
 		};
-		CryptoPath.writeFileSync(configFile, yaml.safeDump(config, {lineWidth: 180}));
+		fsExtra.outputFileSync(configFile, yaml.safeDump(config, {lineWidth: 180}));
 
 		createOptions.Volumes = {
 			[caUtil.container.CONFIG]: {},

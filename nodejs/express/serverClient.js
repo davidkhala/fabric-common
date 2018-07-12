@@ -2,7 +2,7 @@ const logger = require('../logger').new('ServerClient');
 const {sha2_256} = require('fabric-client/lib/hash');
 const fs = require('fs');
 const path = require('path');
-const fsExtra = require('fs-extra');
+const {fsExtra} = require('../path');
 const Request = require('request');
 exports.RequestPromise = ({url, body, method = 'POST', formData}, otherOptions = {json: true}) => {
 	return new Promise((resolve, reject) => {
@@ -69,8 +69,7 @@ exports.block = async (serverBaseUrl, filePath) => {
 		method: 'GET'
 	});
 	logger.debug('check hash ', sha2_256(body));
-	fsExtra.ensureDirSync(path.dirname(filePath));
-	fs.writeFileSync(path.resolve(filePath), body, 'binary');
+	fsExtra.outputFileSync(path.resolve(filePath), body, 'binary');
 	return filePath;
 };
 exports.getSignatures = (serverBaseUrl, protoPath) => {

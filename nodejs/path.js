@@ -130,7 +130,7 @@ exports.CryptoPath = class {
 		return this.resolve(this.peerOrg(), 'users');
 	}
 
-	tlsDir(type){
+	tlsDir(type) {
 		return this.resolve(this[`${type}s`](), this[`${type}HostName`], 'tls');
 	}
 
@@ -161,10 +161,5 @@ exports.CryptoPath = class {
 		if (!fs.existsSync(keystore)) return;
 		return {keystore, signcerts};
 	}
-
-	static writeFileSync(filePath, data) {
-		const dir = path.dirname(filePath);
-		fsExtra.ensureDirSync(dir);
-		fs.writeFileSync(filePath, data);
-	}
 };
+exports.fsExtra = fsExtra;
