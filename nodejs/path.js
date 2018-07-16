@@ -49,7 +49,7 @@ exports.CryptoPath = class {
 		const dir = path.dirname(result);
 		switch (this.react) {
 			case 'throw':
-				if (!fs.existsSync(dir)) {
+				if (!fsExtra.pathExistsSync(dir)) {
 					throw new Error(`${dir} not exist`);
 				}
 				break;
@@ -156,9 +156,9 @@ exports.CryptoPath = class {
 
 	cryptoExistLocal(type) {
 		const signcerts = this.MSPFile(type).signcerts;
-		if (!fs.existsSync(signcerts)) return;
+		if (!fsExtra.pathExistsSync(signcerts)) return;
 		const keystore = this.MSPKeystore(type);
-		if (!fs.existsSync(keystore)) return;
+		if (!fsExtra.pathExistsSync(keystore)) return;
 		return {keystore, signcerts};
 	}
 };
