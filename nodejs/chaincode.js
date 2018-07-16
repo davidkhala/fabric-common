@@ -24,11 +24,11 @@ exports.resultWrapper = (result, {proposalResponses}) => ({
 	proposalResponses
 });
 
-exports.chaincodeProposalAdapter = (actionString, validator) => {
+exports.chaincodeProposalAdapter = (actionString, validator, verbose, log) => {
 	const _validator = validator ? validator : ({response}) => {
 		return {isValid: response && response.status === 200, isSwallowed: false};
 	};
-	const stringify = (proposalResponse) => {
+	const stringify = (proposalResponse, verbose) => {
 		const copy = Object.assign({}, proposalResponse);
 		const {response} = copy;
 		if (!response) return copy;
@@ -38,7 +38,8 @@ exports.chaincodeProposalAdapter = (actionString, validator) => {
 			copy.endorsement = Object.assign({}, proposalResponse.endorsement);
 			copy.endorsement.endorser = copy.endorsement.endorser.toString();
 		}
-		copy.response.payload = r_payload.toString();
+		if (verbose) copy.response.payload = r_payload.toString();
+		if (!verbose) delete copy.payload;
 		return copy;
 	};
 	return ([responses, proposal, header]) => {
@@ -51,12 +52,12 @@ exports.chaincodeProposalAdapter = (actionString, validator) => {
 			const {isValid, isSwallowed} = _validator(proposalResponse);
 
 			if (isValid) {
-				logger.info(`${actionString} is good for [${i}]`, stringify(proposalResponse));
+				if (log) logger.info(`${actionString} is good for [${i}]`, stringify(proposalResponse, verbose));
 				if (isSwallowed) {
 					swallowCounter++;
 				}
 			} else {
-				logger.error(`${actionString} is bad for [${i}]`, stringify(proposalResponse));
+				logger.error(`${actionString} is bad for [${i}]`, stringify(proposalResponse, verbose));
 				errCounter++;
 			}
 		}

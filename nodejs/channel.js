@@ -3,6 +3,9 @@ const logger = require('./logger').new('channel');
 const fs = require('fs');
 const {signs} = require('./multiSign');
 const EventHubUtil = require('./eventHub');
+exports.setClientContext = (channel, clientContext) => {
+	channel._clientContext = clientContext;
+};
 /**
  * New feature introduced from 1.1.0-alpha
  */
@@ -17,7 +20,7 @@ exports.nameMatcher = (channelName, toThrow) => {
 	}
 	return result;
 };
-exports.new = (client,channelName)=>{
+exports.new = (client, channelName) => {
 
 	if (!channelName) {
 		logger.warn('default to using system channel', exports.genesis);
@@ -67,7 +70,6 @@ exports.create = async (signClients, channel, channelConfigFile, orderer) => {
 	if (status === 'SUCCESS') return results;
 	else throw results;
 };
-
 
 
 /**
