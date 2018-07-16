@@ -4,6 +4,7 @@ const logUtil = require('./logger');
 const Query = require('./query');
 const {txEvent} = require('./eventHub');
 const Policy = require('fabric-client/lib/Policy');
+
 exports.nextVersion = (chaincodeVersion) => {
 	const version = parseInt(chaincodeVersion.substr(1));
 	return `v${version + 1}`;
@@ -73,6 +74,23 @@ exports.chaincodeProposalAdapter = (actionString, validator, verbose, log) => {
 	};
 };
 
+
+exports.nameMatcher = (chaincodeName, toThrow) => {
+	const namePattern = /^[A-Za-z0-9_-]+$/;
+	const result = chaincodeName.match(namePattern);
+	if (!result && toThrow) {
+		throw Error(`invalid chaincode name:${chaincodeName}; should match regx: ${namePattern}`);
+	}
+	return result;
+};
+exports.versionMatcher = (ccVersionName, toThrow) => {
+	const namePattern = /^[A-Za-z0-9_.-]+$/;
+	const result = ccVersionName.match(namePattern);
+	if (!result && toThrow) {
+		throw Error(`invalid chaincode version:${ccVersionName}; should match regx: ${namePattern}`);
+	}
+	return result;
+};
 /**
  * install chaincode does not require channel existence
  * @param {Peer[]} peers
@@ -86,6 +104,8 @@ exports.install = async (peers, {chaincodeId, chaincodePath, chaincodeVersion}, 
 	const logger = logUtil.new('install-chaincode');
 	logger.debug({peers_length: peers.length, chaincodeId, chaincodePath, chaincodeVersion});
 
+	exports.nameMatcher(chaincodeId, true);
+	exports.versionMatcher(chaincodeVersion, true);
 	const request = {
 		targets: peers,
 		chaincodePath,
@@ -109,7 +129,7 @@ exports.install = async (peers, {chaincodeId, chaincodePath, chaincodeVersion}, 
 	const result = ccHandler([responses, proposal, header]);
 	const {errCounter, nextRequest: {proposalResponses}} = result;
 	if (errCounter > 0) {
-		throw proposalResponses;
+		throw Error(proposalResponses);
 	} else {
 		return result;
 	}
@@ -165,7 +185,7 @@ exports.instantiate = async (channel, peers, eventHubs, {chaincodeId, chaincodeV
 	if (!eventWaitTime) eventWaitTime = 30000;
 	logger.debug({channelName: channel.getName(), chaincodeId, chaincodeVersion, args});
 
-	//Error: Verifying MSPs not found in the channel object, make sure "intialize()" is called first.
+	exports.versionMatcher(chaincodeVersion, true);
 
 	const txId = client.newTransactionID();
 
@@ -250,6 +270,7 @@ exports.upgrade = async (channel, peers, eventHubs, {chaincodeId, chaincodeVersi
 	const logger = logUtil.new('upgrade-chaincode');
 	if (!eventWaitTime) eventWaitTime = 30000;
 	const txId = client.newTransactionID();
+	exports.versionMatcher(chaincodeVersion, true);
 	const request = {
 		chaincodeId,
 		chaincodeVersion,

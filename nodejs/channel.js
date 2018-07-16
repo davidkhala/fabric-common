@@ -1,4 +1,3 @@
-const util = require('util');
 const logger = require('./logger').new('channel');
 const fs = require('fs');
 const {signs} = require('./multiSign');
@@ -13,10 +12,10 @@ exports.newEventHub = (channel, peer) => {
 	channel.newChannelEventHub(peer);
 };
 exports.nameMatcher = (channelName, toThrow) => {
-	const namePattern = /^[a-z][a-z0-9.-]*$/;//TODO in fabric 1.2: we could test with new Channel()
+	const namePattern = /^[a-z][a-z0-9.-]*$/;
 	const result = channelName.match(namePattern);
 	if (!result && toThrow) {
-		throw new Error(util.format('Failed to create Channel. channel name should match Regex %s, but got %j', namePattern, channelName));
+		throw Error(`invalid channel name ${channelName}; should match regx: ${namePattern}`);
 	}
 	return result;
 };
