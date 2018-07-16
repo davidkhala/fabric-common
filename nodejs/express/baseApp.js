@@ -1,10 +1,13 @@
 const express = require('express');
 const logger = require('../logger').new('express server');
-exports.run = (port, host) => {
-	const bodyParser = require('body-parser');
-	const http = require('http');
+const bodyParser = require('body-parser');
+const http = require('http');
+const https = require('https');
+const cors = require('cors');
+const fs = require('fs');
+exports.run = (port, host, tlsOptions) => {
 	const app = express();
-	const cors = require('cors');
+
 
 	app.options('*', cors());
 	app.use(cors());
@@ -12,9 +15,24 @@ exports.run = (port, host) => {
 	app.use(bodyParser.urlencoded({
 		extended: false
 	}));
-	const server = http.createServer(app).listen(port, host, () => {
-		logger.info('===================','server started at', {host, port});
-	});
+	let server;
+	if (tlsOptions) {
+		const {key, cert, ca, requestCert = false} = tlsOptions;
+
+		server = https.createServer({
+			key: fs.readFileSync(key),
+			cert: fs.readFileSync(cert),
+			ca: fs.readFileSync(ca),
+			requestCert
+		}, app).listen(port, () => {
+			logger.info('https server started at', {host, port, cert, ca, requestCert});
+		});
+	} else {
+		server = http.createServer(app).listen(port, host, () => {
+			logger.info('===================', 'http server started at', {host, port});
+		});
+	}
+
 
 	server.timeout = 240000;
 	return {app, server};
