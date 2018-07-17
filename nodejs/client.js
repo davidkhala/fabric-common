@@ -6,6 +6,10 @@ const path = require('path');
 //TODO move to config
 const cryptoKeyStorePath = path.join(path.dirname(__dirname), 'cryptoKeyStore');
 
+/**
+ *
+ * @returns {Client}
+ */
 exports.new = () => {
 	const client = new Client();
 	const newCryptoSuite = exports.newCryptoSuite({path:cryptoKeyStorePath});

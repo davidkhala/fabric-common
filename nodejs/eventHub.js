@@ -8,18 +8,26 @@ exports.unRegisterAllEvents = (eventHub) => {
 	eventHub._transactionOnEvents = {};
 	eventHub._transactionOnErrors = {};
 };
+/**
+ *
+ * @param {Client} client
+ * @param {Number|string} eventHubPort
+ * @param {string} cert optional, file path of pem
+ * @param {string} pem certificate content
+ * @param {string} peerHostName used as property 'ssl-target-name-override'
+ * @param {string} host
+ * @returns {EventHub}
+ */
+exports.new = (client, {eventHubPort, cert, pem, peerHostName, host = 'localhost'}) => {
 
-exports.new = (client, {eventHubPort, cert, pem, peerHostName, host}) => {
-
-	const Host = host ? host : 'localhost';
 	const eventHub = client.newEventHub();// NOTE newEventHub binds to clientContext
 	if (pem) {
-		eventHub.setPeerAddr(`grpcs://${Host}:${eventHubPort}`, {
+		eventHub.setPeerAddr(`grpcs://${host}:${eventHubPort}`, {
 			pem,
 			'ssl-target-name-override': peerHostName
 		});
 	} else if (cert) {
-		eventHub.setPeerAddr(`grpcs://${Host}:${eventHubPort}`, {
+		eventHub.setPeerAddr(`grpcs://${host}:${eventHubPort}`, {
 			pem: fs.readFileSync(cert).toString(),
 			'ssl-target-name-override': peerHostName
 		});
@@ -27,7 +35,7 @@ exports.new = (client, {eventHubPort, cert, pem, peerHostName, host}) => {
 	else {
 		//non tls
 		//FIXME node-sdk jsdoc update
-		eventHub.setPeerAddr(`grpc://${Host}:${eventHubPort}`);
+		eventHub.setPeerAddr(`grpc://${host}:${eventHubPort}`);
 	}
 	// eventHub._force_reconnect = false; //see Bug design in registration and eventHub
 	//FIXME: bug design in fabric, if onError callback is set in registerBlockEvent, the register action will reconnect EventHub automatically
@@ -82,9 +90,9 @@ exports.txEvent = (eventHub, {txId}, validator = ({tx, code}) => {
 			eventHub.disconnect();
 		}
 		if (valid) {
-			onSuccess({tx, code,interrupt});
+			onSuccess({tx, code, interrupt});
 		} else {
-			onError({tx, code,interrupt});
+			onError({tx, code, interrupt});
 		}
 	}, err => {
 		eventHub.unregisterTxEvent(transactionID);

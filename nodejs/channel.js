@@ -19,6 +19,11 @@ exports.nameMatcher = (channelName, toThrow) => {
 	}
 	return result;
 };
+/**
+ * @param {Client} client
+ * @param {string} channelName
+ * @returns {Channel}
+ */
 exports.new = (client, channelName) => {
 
 	if (!channelName) {
