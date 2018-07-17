@@ -34,7 +34,6 @@ exports.new = (client, {eventHubPort, cert, pem, peerHostName, host = 'localhost
 	}
 	else {
 		//non tls
-		//FIXME node-sdk jsdoc update
 		eventHub.setPeerAddr(`grpc://${host}:${eventHubPort}`);
 	}
 	// eventHub._force_reconnect = false; //see Bug design in registration and eventHub

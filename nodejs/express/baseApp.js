@@ -5,9 +5,14 @@ const http = require('http');
 const https = require('https');
 const cors = require('cors');
 const fs = require('fs');
+/**
+ * @param port
+ * @param host if specified, the access point is limited to host
+ * @param tlsOptions
+ * @returns {{app: express app, server: *}}
+ */
 exports.run = (port, host, tlsOptions) => {
 	const app = express();
-
 
 	app.options('*', cors());
 	app.use(cors());
@@ -32,7 +37,6 @@ exports.run = (port, host, tlsOptions) => {
 			logger.info('===================', 'http server started at', {host, port});
 		});
 	}
-
 
 	server.timeout = 240000;
 	return {app, server};
