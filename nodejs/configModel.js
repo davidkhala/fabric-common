@@ -73,11 +73,10 @@ exports.OrdererOrgConfig = class {
 	}
 };
 exports.PeerConfig = class {
-	constructor({name, port, eventHubPort, container_name}) {
+	constructor({name, port, container_name}) {
 		this.name = name;
 		if (container_name) this.container_name = container_name;
 		this.port = port;
-		this.eventHubPort = eventHubPort;
 	}
 };
 exports.PeerOrgConfig = class {

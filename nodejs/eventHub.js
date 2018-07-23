@@ -9,36 +9,12 @@ exports.unRegisterAllEvents = (eventHub) => {
 	eventHub._transactionOnErrors = {};
 };
 /**
- *
- * @param {Client} client
- * @param {Number|string} eventHubPort
- * @param {string} cert optional, file path of pem
- * @param {string} pem certificate content
- * @param {string} peerHostName used as property 'ssl-target-name-override'
- * @param {string} host
- * @returns {EventHub}
+ * @param {Channel} channel
+ * @param {Peer} peer
+ * @returns {ChannelEventHub}
  */
-exports.new = (client, {eventHubPort, cert, pem, peerHostName, host = 'localhost'}) => {
-
-	const eventHub = client.newEventHub();// NOTE newEventHub binds to clientContext
-	if (pem) {
-		eventHub.setPeerAddr(`grpcs://${host}:${eventHubPort}`, {
-			pem,
-			'ssl-target-name-override': peerHostName
-		});
-	} else if (cert) {
-		eventHub.setPeerAddr(`grpcs://${host}:${eventHubPort}`, {
-			pem: fs.readFileSync(cert).toString(),
-			'ssl-target-name-override': peerHostName
-		});
-	}
-	else {
-		//non tls
-		eventHub.setPeerAddr(`grpc://${host}:${eventHubPort}`);
-	}
-	// eventHub._force_reconnect = false; //see Bug design in registration and eventHub
-	//FIXME: bug design in fabric, if onError callback is set in registerBlockEvent, the register action will reconnect EventHub automatically
-	return eventHub;
+exports.newEventHub = (channel, peer) => {
+	return channel.newChannelEventHub(peer);
 };
 exports.blockEvent = (eventHub, validator = ({block}) => {
 	return {valid: block.data.data.length === 1, interrupt: true};
@@ -81,7 +57,7 @@ exports.txEvent = (eventHub, {txId}, validator = ({tx, code}) => {
 	throw err;
 }) => {
 	const transactionID = txId.getTransactionID();
-	// eventHub.connect();//FIXME bug design in fabric. JSDOC  If the connection fails to get established, the application will be notified via the error callbacks from the registerXXXEvent() methods.
+	eventHub.connect();	//NOTE required in 1.2, only for txEvent
 	eventHub.registerTxEvent(transactionID, (tx, code) => {
 		const {valid, interrupt} = validator({tx, code});
 		if (interrupt) {

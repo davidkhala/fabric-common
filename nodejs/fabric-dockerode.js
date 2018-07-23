@@ -356,7 +356,7 @@ exports.deployOrderer = async ({
 	});
 };
 exports.deployPeer = async ({
-	Name, network, imageTag, Constraints, port, eventHubPort,
+	Name, network, imageTag, Constraints, port,
 	msp: {volumeName, configPath, id}, peerHostName, tls
 }) => {
 	const serviceName = dockerUtil.swarmServiceName(Name);
@@ -371,14 +371,13 @@ exports.deployPeer = async ({
 		}],
 		ports: [
 			{host: port, container: 7051},
-			{host: eventHubPort, container: 7053}
 		],
 		Env: peerUtil.envBuilder({network, msp: {configPath, id, peerHostName}, tls}),
 		Aliases: [Name, peerHostName],
 	});
 };
 exports.runPeer = ({
-	container_name, port, eventHubPort, network, imageTag,
+	container_name, port, network, imageTag,
 	msp: {
 		id, volumeName,
 		configPath
@@ -403,7 +402,6 @@ exports.runPeer = ({
 		Image,
 		ExposedPorts: {
 			'7051': {},
-			'7053': {}
 		},
 		Hostconfig: {
 			Binds: [
@@ -415,11 +413,6 @@ exports.runPeer = ({
 						HostPort: port.toString()
 					}
 				],
-				'7053': [
-					{
-						HostPort: eventHubPort.toString()
-					}
-				]
 			},
 		},
 		NetworkingConfig: {

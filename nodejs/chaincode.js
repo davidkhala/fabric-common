@@ -3,7 +3,7 @@ const golangUtil = require('./golang');
 const logUtil = require('./logger');
 const Query = require('./query');
 const {txEvent} = require('./eventHub');
-const Policy = require('fabric-client/lib/Policy');
+exports.Policy = require('fabric-client/lib/Policy');
 
 exports.nextVersion = (chaincodeVersion) => {
 	const version = parseInt(chaincodeVersion.substr(1));
@@ -129,7 +129,7 @@ exports.install = async (peers, {chaincodeId, chaincodePath, chaincodeVersion}, 
 	const result = ccHandler([responses, proposal, header]);
 	const {errCounter, nextRequest: {proposalResponses}} = result;
 	if (errCounter > 0) {
-		throw Error(proposalResponses);
+		throw Error(JSON.stringify(proposalResponses));
 	} else {
 		return result;
 	}
@@ -176,10 +176,11 @@ exports.updateInstall = async (peer, {chaincodeId, chaincodePath}, client) => {
  * @param chaincodeVersion
  * @param {string[]} args
  * @param {string} fcn default: 'init'
+ * @param endorsementPolicy
  * @param eventWaitTime default: 30000
  * @returns {Promise<any[]>}
  */
-exports.instantiate = async (channel, peers, eventHubs, {chaincodeId, chaincodeVersion, args, fcn = 'init'}, eventWaitTime) => {
+exports.instantiate = async (channel, peers, eventHubs, {chaincodeId, chaincodeVersion, args, fcn = 'init',endorsementPolicy}, eventWaitTime) => {
 	const logger = logUtil.new('instantiate-chaincode');
 	const client = channel._clientContext;
 	if (!eventWaitTime) eventWaitTime = 30000;
@@ -189,29 +190,14 @@ exports.instantiate = async (channel, peers, eventHubs, {chaincodeId, chaincodeV
 
 	const txId = client.newTransactionID();
 
-	const {Role, OrganizationUnit, Identity} = Policy.IDENTITY_TYPE; // TODO only option 'Role' has been implemented
-	const roleType = 'member'; //member|admin
-
-	const policyTypes = [
-		'signed-by', (key) => key.match(/^\d+-of$/)
-	];
 	const request = {
 		chaincodeId,
 		chaincodeVersion,
 		args,
 		fcn,
 		txId,
-		targets: peers// optional: if not set, targets will be channel.getPeers
-		// , 'endorsement-policy': {
-		// 	identities: [
-		// 		{
-		// 			[Role]: {
-		// 				name: roleType,
-		// 				mspId: ''
-		// 			}
-		// 		}],
-		// 	policy: {}
-		// }
+		targets: peers,// optional: if not set, targets will be channel.getPeers
+		'endorsement-policy':endorsementPolicy,
 		// 		`chaincodeType` : optional -- Type of chaincode ['golang', 'car', 'java'] (default 'golang')
 	};
 	const existSymptom = '(status: 500, message: chaincode exists';
