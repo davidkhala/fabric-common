@@ -197,7 +197,6 @@ exports.genUser = async (caService, cryptoPath, nodeType, admin, {TLS, affiliati
 	if (TLS) {
 		const tlsResult = await caService.enroll({enrollmentID, enrollmentSecret, profile: 'tls'});
 		caUtil.toTLS(tlsResult, cryptoPath, type);
-		caUtil.org.saveTLS(tlsResult, cryptoPath, type);
 	}
 	user = await userUtil.loadFromLocal(cryptoPath, nodeType, mspId, undefined);
 	return user;
