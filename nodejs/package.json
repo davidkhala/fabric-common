@@ -11,6 +11,7 @@
     "pm2": "^2.10.4",
     "request": "^2.85.0"
   },
+  "cryptoKeyStore": "../keyStoreCache",
   "devDependencies": {
     "log4js": "^3.0.0"
   }

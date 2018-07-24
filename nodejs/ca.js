@@ -9,6 +9,7 @@ const CAClient = require('fabric-ca-client/lib/FabricCAClientImpl');
 const {CryptoPath, fsExtra} = require('./path');
 const FABRIC_CA_HOME = '/etc/hyperledger/fabric-ca-server';
 const identityServiceUtil = require('./identityService');
+const ClientUtil = require('./client');
 exports.container = {
 	FABRIC_CA_HOME,
 	CONFIG: path.resolve(FABRIC_CA_HOME, 'fabric-ca-server-config.yaml'),
@@ -104,14 +105,15 @@ exports.register = registerIfNotExist;
  *
  * @param {string} caUrl
  * @param {string[]} trustedRoots
+ * @param {CryptoSuite} cryptoSuite
  * @returns {FabricCAServices}
  */
-exports.new = (caUrl, trustedRoots = []) => {
+exports.new = (caUrl, trustedRoots = [], cryptoSuite = ClientUtil.newCryptoSuite()) => {
 	const tlsOptions = {
 		trustedRoots,
 		verify: trustedRoots.length > 0
 	};
-	return new CAClient(caUrl, tlsOptions);
+	return new CAClient(caUrl, tlsOptions, undefined, cryptoSuite);
 };
 exports.envBuilder = () => {
 	return [

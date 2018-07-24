@@ -10,7 +10,7 @@ const User = require('fabric-client/lib/User');
  * @param nodeType
  * @param mspId
  * @param cryptoSuite
- * @returns {Promise|*|Promise<User>}
+ * @returns {Promise<User>}
  */
 exports.loadFromLocal = async (cryptoPath, nodeType, mspId, cryptoSuite = clientUtil.newCryptoSuite()) => {
 	const username = cryptoPath.userName;

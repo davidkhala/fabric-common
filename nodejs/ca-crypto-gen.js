@@ -3,6 +3,7 @@ const userUtil = require('./user');
 const logger = require('./logger').new('ca-crypto-gen');
 const affiliationUtil = require('./affiliationService');
 const commonHelper = require('./helper');
+const clientUtil = require('./client');
 /**
  *
  * @param {FabricCAServices} caService
@@ -20,7 +21,8 @@ exports.initAdmin = async (caService, cryptoPath, nodeType, mspId, TLS) => {
 
 	const type = `${nodeType}User`;
 	const userFull = cryptoPath[`${nodeType}UserHostName`];
-	const user = await userUtil.loadFromLocal(cryptoPath, nodeType, mspId, undefined);
+	const cryptoSuite = clientUtil.newCryptoSuite();
+	const user = await userUtil.loadFromLocal(cryptoPath, nodeType, mspId, cryptoSuite);
 	if (user) {
 		logger.info(`${domain} admin found in local`);
 		return user;
@@ -35,7 +37,7 @@ exports.initAdmin = async (caService, cryptoPath, nodeType, mspId, TLS) => {
 		caUtil.org.saveTLS(tlsResult, cryptoPath, nodeType);
 	}
 
-	return await userUtil.build(userFull, result, mspId);
+	return await userUtil.build(userFull, result, mspId, cryptoSuite);
 };
 /**
  * @param {FabricCAServices} caService
