@@ -135,7 +135,6 @@ else
 	$CURRENT/docker/nodejs/install.sh
 	cd $CURRENT/nodejs
 	npm install
-	npm install grpc@1.10.1 # FIXME hot fix for 1.1
 	cd -
 	cd $CURRENT/docker/nodejs
 	npm install
