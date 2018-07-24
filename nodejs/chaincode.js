@@ -1,5 +1,4 @@
 const logger = require('./logger').new('chaincode');
-const golangUtil = require('./golang');
 const logUtil = require('./logger');
 const Query = require('./query');
 const {txEvent} = require('./eventHub');
@@ -93,6 +92,7 @@ exports.versionMatcher = (ccVersionName, toThrow) => {
 };
 /**
  * install chaincode does not require channel existence
+ * set golang path is required when chaincodeType is 'golang'
  * @param {Peer[]} peers
  * @param {string} chaincodeId allowedCharsChaincodeName = "[A-Za-z0-9_-]+"
  * @param chaincodePath
@@ -114,9 +114,6 @@ exports.install = async (peers, {chaincodeId, chaincodePath, chaincodeVersion, c
 		chaincodeVersion,
 		chaincodeType
 	};
-	if (chaincodeType === 'golang') {
-		await golangUtil.setGOPATH();
-	}
 
 	const [responses, proposal, header] = await client.installChaincode(request);
 	const ccHandler = exports.chaincodeProposalAdapter('install', (proposalResponse) => {
@@ -186,7 +183,7 @@ exports.updateInstall = async (peer, {chaincodeId, chaincodePath}, client) => {
  * @param eventWaitTime default: 30000
  * @returns {Promise<any[]>}
  */
-exports.instantiate = async (channel, peers, eventHubs, {chaincodeId, chaincodeVersion, args, fcn = 'init', endorsementPolicy,chaincodeType = 'golang'}, eventWaitTime) => {
+exports.instantiate = async (channel, peers, eventHubs, {chaincodeId, chaincodeVersion, args, fcn = 'init', endorsementPolicy, chaincodeType = 'golang'}, eventWaitTime) => {
 	const logger = logUtil.new('instantiate-chaincode');
 	const client = channel._clientContext;
 	if (!eventWaitTime) eventWaitTime = 30000;
