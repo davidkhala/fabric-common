@@ -97,10 +97,11 @@ exports.versionMatcher = (ccVersionName, toThrow) => {
  * @param {string} chaincodeId allowedCharsChaincodeName = "[A-Za-z0-9_-]+"
  * @param chaincodePath
  * @param {string} chaincodeVersion allowedCharsVersion  = "[A-Za-z0-9_.-]+"
+ * @param {string} chaincodeType Optional. Type of chaincode. One of 'golang', 'car', 'node' or 'java'.
  * @param {Client} client
  * @returns {Promise<*>}
  */
-exports.install = async (peers, {chaincodeId, chaincodePath, chaincodeVersion}, client) => {
+exports.install = async (peers, {chaincodeId, chaincodePath, chaincodeVersion, chaincodeType = 'golang',}, client) => {
 	const logger = logUtil.new('install-chaincode');
 	logger.debug({peers_length: peers.length, chaincodeId, chaincodePath, chaincodeVersion});
 
@@ -110,9 +111,13 @@ exports.install = async (peers, {chaincodeId, chaincodePath, chaincodeVersion}, 
 		targets: peers,
 		chaincodePath,
 		chaincodeId,
-		chaincodeVersion
+		chaincodeVersion,
+		chaincodeType
 	};
-	await golangUtil.setGOPATH();
+	if (chaincodeType === 'golang') {
+		await golangUtil.setGOPATH();
+	}
+
 	const [responses, proposal, header] = await client.installChaincode(request);
 	const ccHandler = exports.chaincodeProposalAdapter('install', (proposalResponse) => {
 		const {response} = proposalResponse;
@@ -177,10 +182,11 @@ exports.updateInstall = async (peer, {chaincodeId, chaincodePath}, client) => {
  * @param {string[]} args
  * @param {string} fcn default: 'init'
  * @param endorsementPolicy
+ * @param {string} chaincodeType Type of chaincode. One of 'golang', 'car', 'java' or 'node'.
  * @param eventWaitTime default: 30000
  * @returns {Promise<any[]>}
  */
-exports.instantiate = async (channel, peers, eventHubs, {chaincodeId, chaincodeVersion, args, fcn = 'init',endorsementPolicy}, eventWaitTime) => {
+exports.instantiate = async (channel, peers, eventHubs, {chaincodeId, chaincodeVersion, args, fcn = 'init', endorsementPolicy,chaincodeType = 'golang'}, eventWaitTime) => {
 	const logger = logUtil.new('instantiate-chaincode');
 	const client = channel._clientContext;
 	if (!eventWaitTime) eventWaitTime = 30000;
@@ -197,8 +203,8 @@ exports.instantiate = async (channel, peers, eventHubs, {chaincodeId, chaincodeV
 		fcn,
 		txId,
 		targets: peers,// optional: if not set, targets will be channel.getPeers
-		'endorsement-policy':endorsementPolicy,
-		// 		`chaincodeType` : optional -- Type of chaincode ['golang', 'car', 'java'] (default 'golang')
+		'endorsement-policy': endorsementPolicy,
+		chaincodeType,
 	};
 	const existSymptom = '(status: 500, message: chaincode exists';
 
