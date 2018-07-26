@@ -19,11 +19,6 @@ exports.reducer = ({txEventResponses, proposalResponses}) => ({
 });
 
 
-exports.resultWrapper = (result, {proposalResponses}) => ({
-	txEventResponses: result,
-	proposalResponses
-});
-
 exports.chaincodeProposalAdapter = (actionString, validator, verbose, log) => {
 	const _validator = validator ? validator : ({response}) => {
 		return {isValid: response && response.status === 200, isSwallowed: false};
@@ -372,7 +367,7 @@ exports.invoke = async (channel, peers, eventHubs, {chaincodeId, fcn, args}, ord
 	await channel.sendTransaction(nextRequest);
 
 	const txEventResponses = await Promise.all(promises);
-	return exports.resultWrapper(txEventResponses, {proposalResponses});
+	return {txEventResponses, proposalResponses};
 };
 
 exports.query = async (channel, peers, {chaincodeId, fcn, args}) => {
