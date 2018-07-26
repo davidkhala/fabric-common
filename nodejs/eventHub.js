@@ -1,5 +1,4 @@
 const Logger = require('./logger');
-const logger = Logger.new('eventHub');
 exports.unRegisterAllEvents = (eventHub) => {
 	eventHub._chaincodeRegistrants = {};
 	eventHub._blockOnEvents = {};
@@ -38,11 +37,11 @@ const defaultOnError = (err) => {
  */
 /**
  *
- * @param eventHub connection is required to be established
- * @param validator
- * @param chaincodeId
- * @param eventName
- * @param onSuccess
+ * @param {ChannelEventHub} eventHub connection is required to be established
+ * @param {function} validator
+ * @param {string} chaincodeId
+ * @param {string} eventName
+ * @param {CCEventSuccessCB} onSuccess
  * @param {evenHubErrorCB} onError
  * @returns {ChaincodeChannelEventHandle}
  */
@@ -78,6 +77,13 @@ exports.chaincodeEvent = (eventHub, validator, {chaincodeId, eventName}, onSucce
 	});
 	return listener;
 };
+/**
+ * @param {ChannelEventHub} eventHub connection is required to be established
+ * @param {function} validator
+ * @param onSuccess
+ * @param {evenHubErrorCB} onError
+ * @returns {number}
+ */
 exports.blockEvent = (eventHub, validator, onSuccess, onError = defaultOnError) => {
 	const logger = Logger.new('blockEvent');
 	if (!validator) {
@@ -107,12 +113,12 @@ exports.blockEvent = (eventHub, validator, onSuccess, onError = defaultOnError) 
 };
 /**
  *
- * @param eventHub connection is required to be established
- * @param txId
+ * @param {ChannelEventHub} eventHub connection is required to be established
+ * @param {TransactionId} txId
  * @param {function} validator
  * @param {function} onSuccess
  * @param {evenHubErrorCB} onError
- * @returns {string}
+ * @returns {string} transaction id string
  */
 exports.txEvent = (eventHub, {txId}, validator, onSuccess, onError = defaultOnError) => {
 	const logger = Logger.new('txEvent');
