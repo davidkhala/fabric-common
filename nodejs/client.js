@@ -7,20 +7,28 @@ const logger = require('./logger').new('client');
 const {cryptoKeyStore} = require('./package');
 const cryptoKeyStorePath = path.resolve(__dirname, cryptoKeyStore);
 fsExtra.ensureDirSync(cryptoKeyStorePath);
-/**
- * configuration is set in package.json
- * @returns {Client}
- */
-exports.new = () => {
+exports.new = (persist) => {
 	const client = new Client();
-	const newCryptoSuite = exports.newCryptoSuite();
+	const newCryptoSuite = exports.newCryptoSuite({persist});
 	client.setCryptoSuite(newCryptoSuite);
 	return client;
 };
-exports.newCryptoSuite = ({path} = {path: cryptoKeyStorePath}) => {
+/**
+ * configuration is set in package.json
+ * @param path
+ * @param ephemeral
+ * @returns {Client.ICryptoSuite}
+ */
+exports.newCryptoSuite = ({path, persist} = {}) => {
 	const newCryptoSuite = BaseClient.newCryptoSuite();
-	newCryptoSuite.setCryptoKeyStore(BaseClient.newCryptoKeyStore(undefined, {path}));
-	logger.debug('cryptoKeystore cache files:', fsExtra.readdirSync(path).length);
+	if (!persist) {
+		logger.debug('ephemeral cryptoKeystore without cache storage');
+	} else {
+		if (!path) path = cryptoKeyStorePath;
+		newCryptoSuite.setCryptoKeyStore(BaseClient.newCryptoKeyStore(undefined, {path}));
+		logger.debug('cryptoKeystore cache files:', fsExtra.readdirSync(path).length);
+	}
+
 	return newCryptoSuite;
 };
 exports.clean = () => {
