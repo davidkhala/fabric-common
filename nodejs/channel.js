@@ -4,7 +4,13 @@ const {signs} = require('./multiSign');
 exports.setClientContext = (channel, clientContext) => {
 	channel._clientContext = clientContext;
 };
-
+/**
+ * could be ignored from 1.2
+ * @author davidliu
+ * @param channelName
+ * @param toThrow
+ * @returns {*}
+ */
 exports.nameMatcher = (channelName, toThrow) => {
 	const namePattern = /^[a-z][a-z0-9.-]*$/;
 	const result = channelName.match(namePattern);
@@ -23,12 +29,18 @@ exports.new = (client, channelName) => {
 	if (!channelName) {
 		logger.warn('default to using system channel', exports.genesis);
 		channelName = exports.genesis;
-	} else {
-		exports.nameMatcher(channelName, true);
 	}
 
 	delete client._channels[channelName];//Always renew, otherwise throw exception if exist
 	return client.newChannel(channelName);
+};
+/**
+ * FIXME This should be deprecated in 1.3
+ * @param client
+ * @returns {Channel}
+ */
+exports.newDummy = (client) => {
+	return exports.new(client, 'dummy');
 };
 exports.genesis = 'testchainid';
 
@@ -94,7 +106,7 @@ exports.join = async (channel, peer, orderer) => {
 	const joinedBeforeSymptom = 'Cannot create ledger from genesis block, due to LedgerID already exists';
 	const dataEntry = data[0];
 
-	if(dataEntry instanceof Error){
+	if (dataEntry instanceof Error) {
 		throw dataEntry;
 	}
 	const {response: {status, message}} = dataEntry;
