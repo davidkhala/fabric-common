@@ -166,34 +166,40 @@ exports.updateInstall = async (peer, {chaincodeId, chaincodePath}, client) => {
 };
 
 /**
- *
+ * @typedef {Object} instantiateOrUpgradeOpts
+ * @property chaincodeId
+ * @property chaincodeVersion
+ * @property {string[]} args
+ * @property {string} fcn
+ * @property endorsementPolicy
+ * @property collectionConfig
+ * @property {string} chaincodeType Type of chaincode. One of 'golang', 'car', 'java' or 'node'.
+ */
+/**
+ * TODO provide atomic step
  * @param {string} command 'deploy' or 'upgrade'
  * @param channel
  * @param {Peer[]} peers default: all peers in channel
  * @param {EventHub[]} eventHubs
- * @param chaincodeId
- * @param chaincodeVersion
- * @param {string[]} args
- * @param {string} fcn default: 'init'
- * @param endorsementPolicy
- * @param collectionConfig
- * @param {string} chaincodeType Type of chaincode. One of 'golang', 'car', 'java' or 'node'.
+ * @param {instantiateOrUpgradeOpts} opts
  * @param eventWaitTime default: 30000
  * @param proposalTimeOut
  * @returns {Promise<any[]>}
  */
 exports.instantiateOrUpgrade = async (
 	command, channel, peers, eventHubs,
-	{chaincodeId, chaincodeVersion, args, fcn, endorsementPolicy, collectionConfig, chaincodeType},
+	opts,
 	eventWaitTime, proposalTimeOut
 ) => {
+	const logger = logUtil.new(`${command}-chaincode`);
+	const {chaincodeId, chaincodeVersion, args, fcn, endorsementPolicy, collectionConfig, chaincodeType} = opts;
 	if (command !== 'deploy' && command !== 'upgrade') {
 		throw Error(`invalid command: ${command}`);
 	}
-	const logger = logUtil.new(`${command}-chaincode`);
+
 	const client = channel._clientContext;
 	if (!eventWaitTime) eventWaitTime = 30000;
-	logger.debug({channelName: channel.getName(), chaincodeId, chaincodeVersion, args});
+	logger.debug({channelName: channel.getName()}, opts);
 
 	exports.versionMatcher(chaincodeVersion, true);
 
