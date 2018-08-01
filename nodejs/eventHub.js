@@ -111,6 +111,10 @@ exports.blockEvent = (eventHub, validator, onSuccess, onError = defaultOnError) 
 
 	return block_registration_number;
 };
+exports.txEventCode = {
+	valid: 'VALID',
+	invalidEndorser: 'ENDORSEMENT_POLICY_FAILURE',
+};
 /**
  *
  * @param {ChannelEventHub} eventHub connection is required to be established
@@ -124,7 +128,7 @@ exports.txEvent = (eventHub, {txId}, validator, onSuccess, onError = defaultOnEr
 	const logger = Logger.new('txEvent');
 	if (!validator) {
 		validator = ({tx, code}) => {
-			return {valid: code === 'VALID', interrupt: true};
+			return {valid: code === txEventCode.valid, interrupt: true};
 		};
 	}
 	const transactionID = txId.getTransactionID();
