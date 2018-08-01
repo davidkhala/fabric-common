@@ -106,29 +106,16 @@ binariesInstall() {
 		echo "------> ${FABRIC_TAG} platform specific fabric binary is not available to download <----"
 		echo
 	fi
-
-	echo "===> Downloading version ${CA_TAG} platform specific fabric-ca-client binary"
-	binaryDownload ${CA_BINARY_FILE} https://nexus.hyperledger.org/content/repositories/releases/org/hyperledger/fabric-ca/hyperledger-fabric-ca/${ARCH}-${CA_VERSION}/${CA_BINARY_FILE}
-	if [ $? -eq 22 ]; then
-		echo
-		echo "------> ${CA_TAG} fabric-ca-client binary is not available to download  (Available from 1.1.0-rc1) <----"
-		echo
-	fi
 }
 
 dockerInstall() {
-	which docker >&/dev/null
-	NODOCKER=$?
-	if [ "${NODOCKER}" == 0 ]; then
+	if docker --version; then
 		echo "===> Pulling fabric Images"
 		dockerFabricPull ${FABRIC_TAG}
 		echo "===> Pulling fabric ca Image"
 		dockerCaPull ${CA_TAG}
 		echo "===> Pulling thirdparty docker images"
 		dockerThirdPartyImagesPull ${THIRDPARTY_TAG}
-		echo
-		echo "===> List out hyperledger docker images"
-		docker images | grep hyperledger*
 	else
 		echo "========================================================="
 		echo "Docker not installed, bypassing download of Fabric images"
