@@ -4,40 +4,10 @@ CURRENT=$(cd $(dirname ${BASH_SOURCE}); pwd)
 cd $(dirname $CURRENT)
 # if version not passed in, default to latest released version
 export VERSION=1.2.0
-# if ca version not passed in, default to latest released version
-export CA_VERSION=$VERSION
 # current version of thirdparty images (couchdb, kafka and zookeeper) released
-export THIRDPARTY_IMAGE_VERSION=0.4.10
 export ARCH=$(echo "$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/mingw64_nt.*/windows/')-$(uname -m | sed 's/x86_64/amd64/g')")
 export MARCH=$(uname -m)
 
-dockerFabricPull() {
-	local FABRIC_TAG=$1
-	for IMAGES in peer orderer ccenv tools; do
-		echo "==> FABRIC IMAGE: $IMAGES"
-		echo
-		docker pull hyperledger/fabric-$IMAGES:$FABRIC_TAG
-		docker tag hyperledger/fabric-$IMAGES:$FABRIC_TAG hyperledger/fabric-$IMAGES
-	done
-}
-
-dockerThirdPartyImagesPull() {
-	local THIRDPARTY_TAG=$1
-	for IMAGES in couchdb kafka zookeeper; do
-		echo "==> THIRDPARTY DOCKER IMAGE: $IMAGES"
-		echo
-		docker pull hyperledger/fabric-$IMAGES:$THIRDPARTY_TAG
-		docker tag hyperledger/fabric-$IMAGES:$THIRDPARTY_TAG hyperledger/fabric-$IMAGES
-	done
-}
-
-dockerCaPull() {
-	local CA_TAG=$1
-	echo "==> FABRIC CA IMAGE"
-	echo
-	docker pull hyperledger/fabric-ca:$CA_TAG
-	docker tag hyperledger/fabric-ca:$CA_TAG hyperledger/fabric-ca
-}
 
 # Incrementally downloads the .tar.gz file locally first, only decompressing it
 # after the download is complete. This is slower than binaryDownload() but
@@ -108,36 +78,16 @@ binariesInstall() {
 	fi
 }
 
-dockerInstall() {
-	if docker --version; then
-		echo "===> Pulling fabric Images"
-		dockerFabricPull ${FABRIC_TAG}
-		echo "===> Pulling fabric ca Image"
-		dockerCaPull ${CA_TAG}
-		echo "===> Pulling thirdparty docker images"
-		dockerThirdPartyImagesPull ${THIRDPARTY_TAG}
-	else
-		echo "========================================================="
-		echo "Docker not installed, bypassing download of Fabric images"
-		echo "========================================================="
-	fi
-}
+
 
 # starting with 1.2.0, multi-arch images will be default
-: ${CA_TAG:="$CA_VERSION"}
 : ${FABRIC_TAG:="$VERSION"}
-: ${THIRDPARTY_TAG:="$THIRDPARTY_IMAGE_VERSION"}
 
 BINARY_FILE=hyperledger-fabric-${ARCH}-${VERSION}.tar.gz
-CA_BINARY_FILE=hyperledger-fabric-ca-${ARCH}-${CA_VERSION}.tar.gz
 
 echo
 echo "Installing Hyperledger Fabric binaries"
 echo
 binariesInstall
-echo
-echo "Installing Hyperledger Fabric docker images"
-echo
-dockerInstall
 
 cd -
