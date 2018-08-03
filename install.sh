@@ -156,7 +156,7 @@ else
 		sudo apt-get install -y linux-image-extra-$(uname -r)
 		set -e
 		sudo apt-get install -y linux-image-extra-virtual
-		sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+		sudo apt-get install -y ca-certificates software-properties-common
 	fi
 
 	$CURRENT/docker/install.sh
