@@ -85,13 +85,14 @@ function golang1_9() {
 
 	# write path to 'go' command
 	if ! echo $PATH | grep "/usr/local/go/bin" >/dev/null ; then
-		echo "export PATH=\$PATH:/usr/local/go/bin" | sudo tee -a $bashProfile
+		sudo sed -i "1 i\export PATH=\$PATH:/usr/local/go/bin" $bashProfile
+		source $bashProfile
 	fi
-
+	echo path $PATH
 	# write path to $GOPATH/bin
 	GOPATH=$(go env GOPATH)
 	if ! echo $PATH | grep "$GOPATH/bin" >/dev/null ; then
-		echo "export PATH=\$PATH:$GOPATH/bin" | sudo tee -a $bashProfile
+		sudo sed -i "1 i\export PATH=\$PATH:$GOPATH/bin" $bashProfile
 	fi
 	source $bashProfile
 }
