@@ -15,7 +15,9 @@ for ((i = 2; i <= ${#}; i++)); do
 	remain_params="$remain_params $j"
 done
 
-
+function setPath(){
+	export PATH="$1"
+}
 function golang1_9Remove() {
 	local goVersion=go1.9.2
 	local purge=$1
@@ -46,76 +48,76 @@ function golang1_9Remove() {
 function golang1_9() {
 	local goVersion=go1.9.2
 
-	echo install golang $goVersion
-	goTar=$goVersion.linux-amd64.tar.gz
-
 	if go version; then
-		if go version | grep $goVersion; then
-			echo go version $goVersion exist, skip install
+			echo "current go version " $(go version) " exist, skip install"
 			return
-		fi
-		echo ... to overwrite exiting go at version $(go version)
-		golangBinaryRemove $(go version)
 	fi
+	echo install golang $goVersion
+	
 
+	
+	goTar=$goVersion.linux-amd64.tar.gz
 	wget https://redirector.gvt1.com/edgedl/go/${goTar}
 	sudo tar -C /usr/local -xzf ${goTar}
 	rm -f ${goTar}
 
-	# write path to 'go' command
-	if grep "/usr/local/go/bin" $bashProfile ; then
+	# write 'go' command to $PATH
+	if ! grep "/usr/local/go/bin" $bashProfile ; then
+		echo "...To set GOROOT"
 		sudo sed -i "1 i\export PATH=\$PATH:/usr/local/go/bin" $bashProfile
-		source $bashProfile
+	else
+		echo "GOROOT found in $bashProfile"
 	fi
-
-	# write path to $GOPATH/bin
+	
+	export PATH=$PATH:/usr/local/go/bin # ephermeral
+	# write $GOPATH/bin to $PATH
 	GOPATH=$(go env GOPATH)
-	if grep "$GOPATH/bin" $bashProfile ; then
+	if ! grep "$GOPATH/bin" $bashProfile ; then
+		echo "...To set GOPATH/bin"
 		sudo sed -i "1 i\export PATH=\$PATH:$GOPATH/bin" $bashProfile
+	else
+		echo "GOPATH/bin found in $bashProfile"
 	fi
-	source $bashProfile
 	echo "path (effective in new shell) $PATH"
 }
+
 function golang1_7() {
-	goVersion=go1.7.6
-	GOPATH=$HOME/go
-	if [ "$1" == "remove" ]; then
-		echo remove golang $goVersion
-		sudo sed -i '/\/usr\/local\/go\/bin/d' $bashProfile
-		sudo sed -i "/${GOPATH}/d" $bashProfile
-		sudo rm -rf /usr/local/go
-		return
+	local goVersion=go1.7.6
+	if go version; then
+			echo "current go version " $(go version) " exist, skip install"
+			return
 	fi
+	local GOPATH=$HOME/go
 
 	echo install golang $goVersion
-	goTar=$goVersion.linux-amd64.tar.gz
+	
 	# write path to 'go' command
 	if ! grep "/usr/local/go/bin" $bashProfile; then
-		echo "export PATH=\$PATH:/usr/local/go/bin" | sudo tee -a $bashProfile
-		export PATH=$PATH:/usr/local/go/bin
+		echo "...To set GOROOT"
+		sudo sed -i "1 i\export PATH=\$PATH:/usr/local/go/bin" $bashProfile
+	else		
+		echo "GOROOT found in $bashProfile"
 	fi
+	export PATH=$PATH:/usr/local/go/bin
 
-	if ! go version | grep $goVersion; then
-		if go version; then
-			echo ... to overwrite exiting golang at GOROOT: $(go env GOROOT)
-			sudo rm -rf $(go env GOROOT)
-		fi
+	
+		goTar=$goVersion.linux-amd64.tar.gz
 		wget https://redirector.gvt1.com/edgedl/go/${goTar}
 		sudo tar -C /usr/local -xzf ${goTar}
 		rm -f ${goTar}
-	fi
 
-	# write path to $GOPATH/bin
-	if ! grep "$GOPATH/bin" $bashProfile; then
-		echo "export PATH=\$PATH:$GOPATH/bin" | sudo tee -a $bashProfile
-		export PATH=$PATH:$GOPATH/bin
-	fi
 	# write GOPATH
 	if ! grep "$GOPATH" $bashProfile; then
+		echo "...To set GOPATH"
 		echo "export GOPATH=${GOPATH}" | sudo tee -a $bashProfile
-		export GOPATH=$GOPATH
 	fi
-	echo go intall done, restart is required
+	# write path to $GOPATH/bin
+	if ! grep "$GOPATH/bin" $bashProfile ; then
+		echo "...To set GOPATH/bin"
+		sudo sed -i "1 i\export PATH=\$PATH:$GOPATH/bin" $bashProfile
+	else
+		echo "GOPATH/bin found in $bashProfile"
+	fi
 }
 function golang1_10() {
 	if [ "$1" == "remove" ]; then
