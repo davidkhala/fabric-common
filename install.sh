@@ -47,22 +47,25 @@ function golang1_9Remove() {
 		echo go not found, skip remove
 		return
 	fi
-	GOROOT=$(go env GOROOT)
 	if ! go version | grep $goVersion; then
 		echo current go version=$(go verion), not $goVersion, skip remove
 		return
 	fi
-	echo remove golang $goVersion
+	GOROOT=$(go env GOROOT)
+	GOPATH=$(go env GOPATH)
+	echo remove golang $goVersion at $GOROOT
 
 	sudo sed -i "\|${GOROOT}|d" $bashProfile
+	sudo sed -i "\|${GOPATH}|d" $bashProfile
 	if [ -n "$purge" ]; then
-		GOPATH=$(go env GOPATH)
 		echo ...and PURGE, GOPATH:$GOPATH is nuke!!!
-		sudo sed -i "\|${GOPATH}|d" $bashProfile
 		sudo rm -rf $GOPATH
+	else 
+		echo "legacy files exists in GOPATH : $GOPATH"
 	fi
 	sudo rm -rf $GOROOT
 	source $bashProfile
+
 }
 function golang1_9() {
 	local goVersion=go1.9.2
