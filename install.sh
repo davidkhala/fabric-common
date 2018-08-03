@@ -15,30 +15,6 @@ for ((i = 2; i <= ${#}; i++)); do
 	remain_params="$remain_params $j"
 done
 
-function golangBinaryRemove() {
-	local goVersion=$1
-	local purge=$2
-	if ! go version; then
-		echo go not found, skip remove
-		return
-	fi
-	GOROOT=$(go env GOROOT)
-	if ! go version | grep $goVersion; then
-		echo current go version=$(go verion), not $goVersion, skip remove
-		return
-	fi
-	echo remove golang $goVersion
-
-	sudo sed -i "\|${GOROOT}|d" $bashProfile
-	if [ -n "$purge" ]; then
-		GOPATH=$(go env GOPATH)
-		echo ...and PURGE, GOPATH:$GOPATH is nuke!!!
-		sudo sed -i "\|${GOPATH}|d" $bashProfile
-		sudo rm -rf $GOPATH
-	fi
-	sudo rm -rf $GOROOT
-	source $bashProfile
-}
 
 function golang1_9Remove() {
 	local goVersion=go1.9.2
@@ -87,17 +63,18 @@ function golang1_9() {
 	rm -f ${goTar}
 
 	# write path to 'go' command
-	if ! echo $PATH | grep "/usr/local/go/bin" >/dev/null ; then
+	if grep "/usr/local/go/bin" $bashProfile ; then
 		sudo sed -i "1 i\export PATH=\$PATH:/usr/local/go/bin" $bashProfile
 		source $bashProfile
 	fi
-	echo path $PATH
+
 	# write path to $GOPATH/bin
 	GOPATH=$(go env GOPATH)
-	if ! echo $PATH | grep "$GOPATH/bin" >/dev/null ; then
+	if grep "$GOPATH/bin" $bashProfile ; then
 		sudo sed -i "1 i\export PATH=\$PATH:$GOPATH/bin" $bashProfile
 	fi
 	source $bashProfile
+	echo "path (effective in new shell) $PATH"
 }
 function golang1_7() {
 	goVersion=go1.7.6
