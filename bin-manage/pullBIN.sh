@@ -4,7 +4,7 @@
 CURRENT=$(cd $(dirname ${BASH_SOURCE}); pwd)
 Parent=$(dirname $CURRENT)
 
-VERSION="1.0.0"
+VERSION="1.1.0"
 ARCH=$(echo "$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/mingw64_nt.*/windows/')-$(uname -m | sed 's/x86_64/amd64/g')" | awk '{print tolower($0)}')
 for ((i = 1; i <= $#; i++)); do
 	j=${!i}
