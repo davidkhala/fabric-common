@@ -2,11 +2,10 @@
 set -e
 CURRENT=$(cd $(dirname ${BASH_SOURCE}); pwd)
 cd $(dirname $CURRENT)
-# if version not passed in, default to latest released version
-export VERSION=1.2.0
-# current version of thirdparty images (couchdb, kafka and zookeeper) released
-export ARCH=$(echo "$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/mingw64_nt.*/windows/')-$(uname -m | sed 's/x86_64/amd64/g')")
-export MARCH=$(uname -m)
+
+VERSION=1.2.0
+
+ARCH=$(echo "$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/mingw64_nt.*/windows/')-$(uname -m | sed 's/x86_64/amd64/g')")
 
 
 # Incrementally downloads the .tar.gz file locally first, only decompressing it
@@ -69,21 +68,16 @@ binaryDownload() {
 }
 
 binariesInstall() {
-	echo "===> Downloading version ${FABRIC_TAG} platform specific fabric binaries"
+	local BINARY_FILE=hyperledger-fabric-${ARCH}-${VERSION}.tar.gz
+	echo "===> Downloading version ${VERSION} platform specific fabric binaries"
 	binaryDownload ${BINARY_FILE} https://nexus.hyperledger.org/content/repositories/releases/org/hyperledger/fabric/hyperledger-fabric/${ARCH}-${VERSION}/${BINARY_FILE}
 	if [ $? -eq 22 ]; then
 		echo
-		echo "------> ${FABRIC_TAG} platform specific fabric binary is not available to download <----"
+		echo "------> ${VERSION} platform specific fabric binary is not available to download <----"
 		echo
 	fi
 }
 
-
-
-# starting with 1.2.0, multi-arch images will be default
-: ${FABRIC_TAG:="$VERSION"}
-
-BINARY_FILE=hyperledger-fabric-${ARCH}-${VERSION}.tar.gz
 
 echo
 echo "Installing Hyperledger Fabric binaries"
