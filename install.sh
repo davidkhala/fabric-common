@@ -23,7 +23,7 @@ function golangRemove() {
 		return
 	fi
 	if ! go version | grep $goVersion; then
-		echo current go version=$(go verion), not $goVersion, skip remove
+		echo current go version=$(go version), not $goVersion, skip remove
 		return
 	fi
 	GOROOT=$(go env GOROOT)
