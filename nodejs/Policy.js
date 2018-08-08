@@ -27,7 +27,7 @@
 */
 
 exports.Policy = require('fabric-client/lib/Policy');
-const sideDB = require('fabric-client/lib/SideDB');
+
 exports.simplePolicyBuilder = (identities, n) => {
 	return {
 		identities,
@@ -40,18 +40,4 @@ exports.simplePolicyBuilder = (identities, n) => {
 exports.RoleIdentity = (mspId, isAdmin) => ({
 	[exports.Policy.IDENTITY_TYPE.Role]: {name: isAdmin ? 'admin' : 'member', mspId}
 });
-exports.collectionConfig = ({name, policy, requiredPeerCount, maxPeerCount, blockToLive}) => {
-	return sideDB.checkCollectionConfig({name, policy, requiredPeerCount, maxPeerCount, blockToLive});
-};
-exports.collectionConfigs = (collectionConfigs) => {
-	const nameSet = [];
-	for (const collectionConfig of collectionConfigs) {
-		const {name} = collectionConfig;
-		if (nameSet.includes(name)) {
-			throw Error(`duplicated name: ${name}`);
-		} else {
-			nameSet.push(name);
-		}
-	}
-	return collectionConfigs;
-};
+
