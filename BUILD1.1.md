@@ -15,7 +15,7 @@ this will take effect in current terminal, **Logout is required for system-wide 
 `./install.sh install_libtool` 
 
 6. build third party and base images 
-    
+    **No unit test in make file**
     1. get baseimage source and reset to tag `v0.4.6`  
         ```
         git clone https://github.com/hyperledger/fabric-baseimage.git
@@ -48,6 +48,14 @@ this will take effect in current terminal, **Logout is required for system-wide 
         make peer-docker orderer-docker
         ```
         `peer-docker` depend on `ccenv`
+    4. run unit test, it require baseImage
+        ```
+        mkdir -p /tmp/fabric/ledgertests/kvledger/history/historydb/historyleveldb/ledgersData/
+        export GOPATH=$(go env GOPATH)
+        make unit-test
+        make unit-test-clean
+        rm -r /tmp/fabric/ledgertests/kvledger/history/historydb/historyleveldb/ledgersData/
+        ```
     3. make configtxgen binary
         ```
         export GOPATH=$(go env GOPATH)
@@ -63,6 +71,8 @@ this will take effect in current terminal, **Logout is required for system-wide 
         ```
     2. make images
         `make clean-all rename docker-fabric-ca`
+    3. run unit test (10 minutes)
+        `make unit-tests`
  
 9. (experimental) unit tests failed in each section  
 swallow it if OK for project
