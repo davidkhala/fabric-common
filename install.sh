@@ -148,17 +148,6 @@ function chaincodeDevEnv() {
 if [ -n "$fcn" ]; then
 	$fcn $remain_params
 else
-	if [ "${this_uname}" == "Darwin" ]; then
-		:
-	else
-		# FIXME allow for new version without plugin support
-		set +e
-		sudo apt-get install -y linux-image-extra-$(uname -r)
-		set -e
-		sudo apt-get install -y linux-image-extra-virtual
-		sudo apt-get install -y ca-certificates software-properties-common
-	fi
-
 	$CURRENT/docker/install.sh
 	$CURRENT/docker/nodejs/install.sh
 	cd $CURRENT/nodejs
