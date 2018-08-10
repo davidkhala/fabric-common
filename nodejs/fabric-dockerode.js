@@ -12,11 +12,7 @@ const yaml = require('js-yaml');
 const commonHelper = require('./helper');
 
 exports.ImageTag = ({arch, tag}) => {
-	if (tag === '1.2.0' || tag === '0.4.10') {
-		return tag;
-	} else {
-		return `${arch}-${tag}`;
-	}
+	return tag;
 };
 /**
  * TODO not mature
