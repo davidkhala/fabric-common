@@ -46,7 +46,7 @@ exports.genesis = 'testchainid';
 
 /**
  *
- * @param {Promise<Client>[]} signClients
+ * @param {Client[]} signClients
  * @param {Channel} channel
  * @param {string} channelConfigFile file path
  * @param {Orderer} orderer
@@ -62,7 +62,7 @@ exports.create = async (signClients, channel, channelConfigFile, orderer) => {
 
 	// extract the channel config bytes from the envelope to be signed
 	const channelConfig = channelClient.extractChannelConfig(channelConfig_envelop);
-	const {signatures} = await signs(signClients, channelConfig);
+	const {signatures} = signs(signClients, channelConfig);
 	const txId = channelClient.newTransactionID();
 	const request = {
 		config: channelConfig,
@@ -121,4 +121,35 @@ exports.join = async (channel, peer, orderer) => {
 	}
 	return dataEntry;
 
+};
+
+/**
+ * take effect in next block, it is recommended to register a block event after
+ * @param channel
+ * @param anchorPeerTxFile
+ * @param orderer
+ * @returns {Promise<BroadcastResponse>}
+ */
+exports.setupAnchorPeers = async (channel, anchorPeerTxFile, orderer) => {
+
+	const client = channel._clientContext;
+	const channelConfig_envelop = fs.readFileSync(anchorPeerTxFile);
+	const channelConfig = client.extractChannelConfig(channelConfig_envelop);
+	const {signatures} = signs([client], channelConfig);
+
+	const request = {
+		config: channelConfig,
+		signatures,
+		name: channel.getName(),
+		orderer,
+		txId: client.newTransactionID()
+	};
+
+	const updateChannelResp = await client.updateChannel(request);
+	if (updateChannelResp.status !== 'SUCCESS') {
+		throw JSON.stringify(updateChannelResp);
+	}
+
+	logger.info('updateChannel', updateChannelResp);
+	return updateChannelResp;
 };

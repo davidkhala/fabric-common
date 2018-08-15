@@ -88,7 +88,10 @@ exports.blockEvent = (eventHub, validator, onSuccess, onError = defaultOnError) 
 	const logger = Logger.new('blockEvent');
 	if (!validator) {
 		validator = ({block}) => {
-			return {valid: block.data.data.length === 1, interrupt: true};
+			const {number, previous_hash, data_hash} = block.header;
+			const {data} = block.data;
+			logger.debug('blockEvent validator', {number, previous_hash, data_hash});
+			return {valid: data.length === 1, interrupt: true};
 		};
 	}
 	const block_registration_number = eventHub.registerBlockEvent((block) => {
@@ -110,6 +113,36 @@ exports.blockEvent = (eventHub, validator, onSuccess, onError = defaultOnError) 
 	});
 
 	return block_registration_number;
+};
+exports.BlockWaiter = async (eventHub, minHeight) => {
+	const logger = Logger.new('blockWaiter');
+	const {block} = await new Promise((resolve, reject) => {
+		const onSucc = ({block, interrupt}) => {
+			if (interrupt) {
+				resolve({block});
+			}
+		};
+		const onErr = (e) => reject(e);
+		let validator;
+		if (Number.isInteger(minHeight)) {
+			validator = ({block}) => {
+				const {number, previous_hash, data_hash} = block.header;
+				const {data} = block.data;
+				logger.debug('validator', {number, previous_hash, data_hash});
+				if (data.length !== 1) {
+					return {valid: false, interrupt: true};
+				}
+				if (number >= minHeight) {
+					return {valid: true, interrupt: true};
+				} else {
+					return {valid: true, interrupt: false};
+				}
+
+			};
+		}
+		exports.blockEvent(eventHub, validator, onSucc, onErr);
+	});
+	return block;
 };
 exports.txEventCode = {
 	valid: 'VALID',

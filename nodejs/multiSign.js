@@ -1,9 +1,13 @@
 const logger = require('./logger').new('multi-signature');
-exports.signs = async (clientSwitchPromises, proto) => {
+/**
+ * @param {Client[]} clients
+ * @param proto
+ * @returns {{signatures: Array, proto: *}}
+ */
+exports.signs = (clients, proto) => {
 	const signatures = [];
-	for (const promise of clientSwitchPromises) {
-		const client = await promise;
-		const inlineUser = client.getUserContext();
+	for (const client of clients) {
+		const inlineUser = client._userContext;
 		logger.debug('signature identity', inlineUser.getName(), inlineUser._mspId);
 		signatures.push(client.signChannelConfig(proto));
 	}

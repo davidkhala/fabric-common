@@ -66,7 +66,7 @@ exports.ConfigFactory = class {
 		const target = this._getTarget(nodeType);
 		const adminCert = fs.readFileSync(admin).toString('base64');
 		const admins = this.newConfig.channel_group.groups[target].groups[MSPName].values.MSP.value.config.admins;
-		if (admins.find(adminCert)){
+		if (admins.find(adminCert)) {
 			logger.warn('adminCert found, addAdmin skipped');
 			return this;
 		}
@@ -254,6 +254,7 @@ exports.getChannelConfigReadable = async (channel, nodeType = 'peer', peer) => {
 	};
 };
 /**
+ * TODO use new EventHub design
  * @param channel
  * @param {function} mspCB input: {string|json} original_config, output {string|json} update_config
  * @param {function} signatureCollectCB input: {Buffer<binary>} proto, output {{signatures:string[]}} signatures
@@ -295,8 +296,8 @@ exports.channelUpdate = async (
 		}
 	};
 	const body2 = await agent.compute.updateFromConfigs(formData);
-	if(!body2){
-		logger.warn(ERROR_NO_UPDATE,'(calculated from configtxlator)');
+	if (!body2) {
+		logger.warn(ERROR_NO_UPDATE, '(calculated from configtxlator)');
 		return {err: ERROR_NO_UPDATE, original_config};
 	}
 	const proto = new Buffer(body2, 'binary');
@@ -318,11 +319,7 @@ exports.channelUpdate = async (
 	if (nodeType === 'orderer') {
 		logger.info('orderer update will not trigger block event');
 	} else {
-		const {block} = await new Promise((resolve, reject) => {
-			const onSucc = (_) => resolve(_);
-			const onErr = (e) => reject(e);
-			EventHubUtil.blockEvent(eventHub, undefined, onSucc, onErr);
-		});
+		const block = await EventHubUtil.BlockWaiter(eventHub);
 		logger.info('new Block', block);
 	}
 };
