@@ -6,15 +6,7 @@ const Orderer = require('fabric-client/lib/Orderer');
 const ChannelUtil = require('./channel');
 const { txEvent, txEventCode } = require('./eventHub');
 
-exports.nextVersion = (chaincodeVersion) => {
-	const version = parseInt(chaincodeVersion.substr(1));
-	return `v${version + 1}`;
-};
-exports.newerVersion = (versionN, versionO) => {
-	const versionNumN = parseInt(versionN.substr(1));
-	const versionNumO = parseInt(versionO.substr(1));
-	return versionNumN > versionNumO;
-};
+
 exports.reducer = ({ txEventResponses, proposalResponses }) => ({
 	txs: txEventResponses.map(entry => entry.tx),
 	responses: proposalResponses.map((entry) => entry.response.payload.toString())
@@ -139,36 +131,7 @@ exports.install = async (peers, { chaincodeId, chaincodePath, chaincodeVersion, 
 	}
 };
 
-exports.updateInstall = async (peer, { chaincodeId, chaincodePath }, client) => {
-	const { chaincodes } = await Query.chaincodes.installed(peer, client);
-	const foundChaincodes = chaincodes.filter((element) => element.name === chaincodeId);
-	let chaincodeVersion = 'v0';
-	if (foundChaincodes.length === 0) {
-		logger.warn(`No chaincode found with name ${chaincodeId}, to use version ${chaincodeVersion}, `, { chaincodePath });
-	} else {
-		let latestChaincode = foundChaincodes[0];
-		let latestVersion = latestChaincode.version;
-		for (const chaincode of foundChaincodes) {
-			const { version } = chaincode;
-			if (exports.newerVersion(version, latestVersion)) {
-				latestVersion = version;
-				latestChaincode = chaincode;
-			}
-		}
-		chaincodePath = latestChaincode.path;
-		chaincodeVersion = exports.nextVersion(latestVersion);
-	}
 
-	// [ { name: 'adminChaincode',
-	// 	version: 'v0',
-	// 	path: 'github.com/admin',
-	// 	input: '',
-	// 	escc: '',
-	// 	vscc: '' } ]
-
-	return exports.install([peer], { chaincodeId, chaincodePath, chaincodeVersion }, client);
-
-};
 
 /**
  * @typedef {Object} instantiateOrUpgradeOpts
@@ -255,25 +218,7 @@ exports.instantiateOrUpgrade = async (
 	return Promise.all(promises);
 	//	NOTE result parser is not required here, because the payload in proposalresponse is in form of garbled characters.
 };
-exports.upgradeToCurrent = async (channel, richPeer, { chaincodeId, args, fcn }) => {
-	const client = channel._clientContext;
-	const { chaincodes } = await Query.chaincodes.installed(richPeer, client);
-	const foundChaincode = chaincodes.find((element) => element.name === chaincodeId);
-	if (!foundChaincode) {
-		throw `No chaincode found with name ${chaincodeId}`;
-	}
-	const { version } = foundChaincode;
 
-	// [ { name: 'adminChaincode',
-	// 	version: 'v0',
-	// 	path: 'github.com/admin',
-	// 	input: '',
-	// 	escc: '',
-	// 	vscc: '' } ]
-
-	const chaincodeVersion = exports.nextVersion(version);
-	return exports.upgrade(channel, [richPeer], { chaincodeId, args, chaincodeVersion, fcn }, client);
-};
 
 
 const txTimerPromise = (eventHub, { txId }, eventWaitTime) => {
