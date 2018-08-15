@@ -41,3 +41,5 @@ exports.sleep = (ms) => {
 	logger.info(`sleep ${ms}ms`);
 	return new Promise(resolve => setTimeout(resolve, ms));
 };
+const util = require('util');
+exports.exec = util.promisify(require('child_process').exec);

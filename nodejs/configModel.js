@@ -67,7 +67,7 @@ exports.OrdererOrgConfig = class {
 	 */
 	constructor({name, MSP, ca, orderers}) {
 		this.name = name;
-		this.MSP = {name: MSP.name, id: MSP.id};
+		this.MSP = {id: MSP.id};
 		this.ca = {port: ca.port};
 		this.orderers = orderers;
 	}
@@ -88,7 +88,7 @@ exports.PeerOrgConfig = class {
 	 */
 	constructor({name, MSP, ca, peers}) {
 		this.name = name;
-		this.MSP = {name: MSP.name, id: MSP.id};
+		this.MSP = {id: MSP.id};
 		this.ca = {port: ca.port};
 		this.peers = peers;
 	}

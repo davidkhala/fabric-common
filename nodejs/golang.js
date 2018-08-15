@@ -1,5 +1,4 @@
-const util = require('util');
-const exec = util.promisify(require('child_process').exec);
+const {exec} = require('./helper');
 const logger = require('./logger').new('golang');
 exports.getGOPATH = async () => {
 	const {stdout, stderr} = await exec('go env GOPATH');

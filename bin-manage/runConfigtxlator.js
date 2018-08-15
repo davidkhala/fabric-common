@@ -1,5 +1,4 @@
-const util = require('util');
-const exec = util.promisify(require('child_process').exec);
+const {exec} = require('../nodejs/helper');
 const logger = require('../nodejs/logger').new('configtxlator server');
 const path = require('path');
 
