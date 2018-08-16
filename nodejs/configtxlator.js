@@ -231,13 +231,12 @@ exports.ConfigFactory = class {
 /**
  * This requires 'configtxlator' tool be running locally and on port 7059
  * @param channel
- * @param nodeType
  * @param {Peer} peer optional when nodeType is 'peer'
  * @returns {Promise<{original_config_proto: Buffer, original_config: *}>}
  */
-exports.getChannelConfigReadable = async (channel, nodeType = 'peer', peer) => {
+exports.getChannelConfigReadable = async (channel, peer) => {
 	let configEnvelope;
-	if (nodeType === 'peer') {
+	if (peer) {
 		configEnvelope = await channel.getChannelConfig(peer);
 	} else {
 		configEnvelope = await channel.getChannelConfigFromOrderer();
@@ -254,24 +253,18 @@ exports.getChannelConfigReadable = async (channel, nodeType = 'peer', peer) => {
 	};
 };
 /**
- * TODO use new EventHub design
- * @param channel
+ * @param {Channel} channel
+ * @param {Orderer} orderer request send to
+ * @param {Peer} peer optional when for nodeType=='peer'
  * @param {function} mspCB input: {string|json} original_config, output {string|json} update_config
  * @param {function} signatureCollectCB input: {Buffer<binary>} proto, output {{signatures:string[]}} signatures
- * @param {EventHub} eventHub optional when nodeType is 'peer'
- * @param {string} nodeType
- * @param {Peer} peer optional when nodeType is 'peer'
  * @param client
- * @param ordererUrl
- * @returns {Promise<{err: string, original_config: *}>}
+ * @returns {Promise<>}
  */
-exports.channelUpdate = async (
-	channel, mspCB, signatureCollectCB, eventHub,
-	{nodeType, peer}, client = channel._clientContext, {ordererUrl} = {}) => {
-	const orderer = OrdererUtil.find({orderers: channel.getOrderers(), ordererUrl});
+exports.channelUpdate = async (channel, orderer, peer, mspCB, signatureCollectCB, client = channel._clientContext) => {
 
 	const ERROR_NO_UPDATE = 'No update to original_config';
-	const {original_config_proto, original_config} = await exports.getChannelConfigReadable(channel, nodeType, peer);
+	const {original_config_proto, original_config} = await exports.getChannelConfigReadable(channel, peer);
 	const update_configJSONString = await mspCB(original_config);
 	if (JSONEqual(update_configJSONString, original_config)) {
 		logger.warn(ERROR_NO_UPDATE);
@@ -316,12 +309,7 @@ exports.channelUpdate = async (
 		throw JSON.stringify(updateChannelResp);
 	}
 	logger.info('updateChannel', updateChannelResp);
-	if (nodeType === 'orderer') {
-		logger.info('orderer update will not trigger block event');
-	} else {
-		const block = await EventHubUtil.BlockWaiter(eventHub);
-		logger.info('new Block', block);
-	}
+	return updateChannelResp;
 };
 
 
