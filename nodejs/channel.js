@@ -50,7 +50,7 @@ exports.genesis = 'testchainid';
  * @param {Channel} channel
  * @param {string} channelConfigFile file path
  * @param {Orderer} orderer
- * @returns {PromiseLike<T> | Promise<T>}
+ * @returns {Promise<T>}
  */
 exports.create = async (signClients, channel, channelConfigFile, orderer) => {
 	const logger = require('./logger').new('create-channel');
