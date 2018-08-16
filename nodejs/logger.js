@@ -11,7 +11,8 @@ exports.new = (moduleName, dev) => {
 			new (winston.transports.Console)({
 				level: 'debug',
 				colorize: true,
-				label: moduleName
+				label: moduleName,
+				timestamp:true,
 			})
 		]
 	});
