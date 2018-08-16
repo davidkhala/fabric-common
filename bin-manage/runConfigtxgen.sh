@@ -18,31 +18,59 @@ done
 
 
 function genBlock() {
-    local outPutFile=$1
+    local outputFile=$1
     local profile=$2
     local channelName=${3:-testchainid}
-	local CMD="$BIN_PATH/configtxgen -outputBlock $outPutFile -profile $profile -channelID $channelName"
+	local CMD="$BIN_PATH/configtxgen -outputBlock $outputFile -profile $profile -channelID $channelName"
 	echo CMD $CMD
 	$CMD
 }
 
 function genChannel() {
-    local outPutFile=$1
+    local outputFile=$1
     local profile=$2
     local channelName=$3
-	local CMD="$BIN_PATH/configtxgen -outputCreateChannelTx $outPutFile -profile $profile -channelID $channelName"
+	local CMD="$BIN_PATH/configtxgen -outputCreateChannelTx $outputFile -profile $profile -channelID $channelName"
 	echo CMD $CMD
 	$CMD
 }
 
 function genAnchorPeers(){
-    local outPutFile=$1
+    local outputFile=$1
     local profile=$2
     local channelName=$3
     local asOrg=$4
-	local CMD="$BIN_PATH/configtxgen -outputAnchorPeersUpdate $outPutFile -profile $profile -channelID $channelName -asOrg $asOrg"
+	local CMD="$BIN_PATH/configtxgen -outputAnchorPeersUpdate $outputFile -profile $profile -channelID $channelName -asOrg $asOrg"
 	echo CMD $CMD
 	$CMD
+}
+
+function viewBlock() {
+    local blockFile=$1
+    local profile=$2
+    local channelName=${3:-testchainid}
+    local viewOutputFile=$4
+	local CMD="$BIN_PATH/configtxgen -inspectBlock $blockFile -profile $profile"
+	echo CMD $CMD
+	if [ -z "$viewOutputFile" ]; then
+		$CMD
+	else
+		$CMD >"$viewOutputFile"
+	fi
+}
+
+function viewChannel() {
+    local channelFile=$1
+    local profile=$2
+    local channelID=$3
+    local viewOutputFile=$4
+	local CMD="$BIN_PATH/configtxgen -inspectChannelCreateTx $channelFile -profile $profile -channelID $channelID"
+	echo CMD $CMD
+	if [ -z "$viewOutputFile" ]; then
+		$CMD
+	else
+		$CMD >"$viewOutputFile"
+	fi
 }
 
 $fcn $remain_params
