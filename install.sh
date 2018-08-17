@@ -150,6 +150,7 @@ if [ -n "$fcn" ]; then
 else
 	$CURRENT/docker/install.sh
 	$CURRENT/docker/nodejs/install.sh
+	$CURRENT/docker/nodejs/install.sh packageLock false
 	cd $CURRENT/nodejs
 	npm install
 	cd -

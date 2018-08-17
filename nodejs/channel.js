@@ -89,7 +89,7 @@ exports.create = async (signClients, channel, channelConfigFile, orderer) => {
  * @param orderer
  * @returns {Promise<*>}
  */
-exports.join = async (channel, peer, orderer) => {
+exports.join = async (channel, peer, orderer, waitTime) => {
 	const logger = require('./logger').new('join-channel');
 	logger.debug({channelName: channel.getName(), peer: peer._name});
 
@@ -107,7 +107,17 @@ exports.join = async (channel, peer, orderer) => {
 	const dataEntry = data[0];
 
 	if (dataEntry instanceof Error) {
-		throw dataEntry;
+		if (waitTime && Number.isInteger(waitTime) && waitTime > 0) {
+			const errString = dataEntry.toString();
+			if (errString.includes('Invalid results returned ::NOT_FOUND') || errString.includes('UNAVAILABLE')) {
+				logger.warn('loopJoinChannel...', errString);
+				await new Promise(resolve => {
+					setTimeout(() => {
+						resolve(exports.join(channel, peer, orderer, waitTime));
+					}, waitTime);
+				});
+			}
+		} else throw dataEntry;
 	}
 	const {response: {status, message}} = dataEntry;
 	if (status !== 200) {
