@@ -67,10 +67,10 @@ exports.fabricImagePull = async ({fabricTag, thirdPartyTag, arch}) => {
  * @returns {Promise<*>}
  */
 exports.runCA = ({
-					 container_name, port, network, imageTag,
-					 admin = userUtil.adminName, adminpw = userUtil.adminPwd,
-					 TLS,
-				 }, configFile) => {
+	container_name, port, network, imageTag,
+	admin = userUtil.adminName, adminpw = userUtil.adminPwd,
+	TLS,
+}, configFile) => {
 
 	const {caKey, caCert} = caUtil.container;
 	const cmdAppend = configFile ? '' : `-d -b ${admin}:${adminpw} ${TLS ? '--tls.enabled' : ''} --csr.cn=${container_name}`;
@@ -269,7 +269,13 @@ exports.uninstallChaincode = ({container_name, chaincodeId, chaincodeVersion}) =
 };
 exports.chaincodeImageList = async () => {
 	const images = await dockerUtil.imageList();
-	return images.filter(image => image.RepoTags.find(name => name.startsWith('dev-')));
+	return images.filter(image => {
+		// RepoTags can be null
+		if (!image.RepoTags) {
+			return false;
+		}
+		return image.RepoTags.find(name => name.startsWith('dev-'));
+	});
 };
 exports.chaincodeContainerList = async () => {
 	const containers = await dockerUtil.containerList();
