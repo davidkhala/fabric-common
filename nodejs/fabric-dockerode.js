@@ -11,9 +11,6 @@ const userUtil = require('./user');
 const yaml = require('js-yaml');
 const commonHelper = require('./helper');
 
-exports.ImageTag = ({arch, tag}) => {
-	return tag;
-};
 /**
  * TODO not mature
  * @returns {Promise<void>}
@@ -43,14 +40,14 @@ exports.swarmIPInit = async (AdvertiseAddr) => {
 };
 exports.fabricImagePull = async ({fabricTag, thirdPartyTag, arch}) => {
 	if (fabricTag) {
-		const imageTag = exports.ImageTag({arch, tag: fabricTag});
+		const imageTag = fabricTag;
 		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-ccenv:${imageTag}`);
 		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-orderer:${imageTag}`);
 		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-peer:${imageTag}`);
 		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-ca:${imageTag}`);
 	}
 	if (thirdPartyTag) {
-		const imageTag = exports.ImageTag({arch, tag: thirdPartyTag});
+		const imageTag = thirdPartyTag;
 		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-kafka:${imageTag}`);
 		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-zookeeper:${imageTag}`);
 	}
