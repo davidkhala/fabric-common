@@ -6,5 +6,6 @@
 /java/gradlew.bat
 /java/gradle
 /java/out
+/golang/vendor
 /nodejs/node_modules
 /keyStoreCache
