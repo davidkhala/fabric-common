@@ -48,15 +48,15 @@ exports.CryptoPath = class {
 		const result = path.resolve(...tokens);
 		const dir = path.dirname(result);
 		switch (this.react) {
-			case 'throw':
-				if (!fsExtra.pathExistsSync(dir)) {
-					throw new Error(`${dir} not exist`);
-				}
-				break;
-			case 'mkdir':
-				fsExtra.ensureDirSync(dir);
-				break;
-			default:
+		case 'throw':
+			if (!fsExtra.pathExistsSync(dir)) {
+				throw new Error(`${dir} not exist`);
+			}
+			break;
+		case 'mkdir':
+			fsExtra.ensureDirSync(dir);
+			break;
+		default:
 		}
 		return result;
 	}

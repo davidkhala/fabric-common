@@ -6,7 +6,7 @@
 const path = require('path');
 const logger = require('./logger').new('ca-core');
 const CAClient = require('fabric-ca-client/lib/FabricCAClientImpl');
-const {CryptoPath, fsExtra} = require('./path');
+const {fsExtra} = require('./path');
 const FABRIC_CA_HOME = '/etc/hyperledger/fabric-ca-server';
 const identityServiceUtil = require('./identityService');
 const ClientUtil = require('./client');

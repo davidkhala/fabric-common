@@ -75,8 +75,8 @@ exports.create = async (signClients, channel, channelConfigFile, orderer) => {
 
 	//The client application must poll the orderer to discover whether the channel has been created completely or not.
 	const results = await channelClient.createChannel(request);
-	logger.debug('channel created', results);
 	const {status, info} = results;
+	logger.debug('channel created', {status,info},results);
 	if (status === 'SUCCESS') return results;
 	else throw results;
 };

@@ -144,10 +144,12 @@ exports.BlockWaiter = async (eventHub, minHeight) => {
 	});
 	return block;
 };
-exports.txEventCode = {
+
+const txEventCode = {
 	valid: 'VALID',
 	invalidEndorser: 'ENDORSEMENT_POLICY_FAILURE',
 };
+exports.txEventCode = txEventCode;
 /**
  *
  * @param {ChannelEventHub} eventHub connection is required to be established

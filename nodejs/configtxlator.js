@@ -2,8 +2,6 @@ const logger = require('./logger').new('configtxlator');
 
 const fs = require('fs');
 const agent = require('./agent2configtxlator');
-const OrdererUtil = require('./orderer');
-const EventHubUtil = require('./eventHub');
 const {JSONEqual} = require('./helper');
 exports.ConfigFactory = class {
 	constructor(original_config) {
