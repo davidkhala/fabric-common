@@ -1,28 +1,45 @@
 const logger = require('./logger').new('chaincode', true);
 const logUtil = require('./logger');
-const Query = require('./query');
 const Channel = require('fabric-client/lib/Channel');
 const Orderer = require('fabric-client/lib/Orderer');
 const ChannelUtil = require('./channel');
-const { txEvent, txEventCode } = require('./eventHub');
+const {txEvent, txEventCode} = require('./eventHub');
 
 
-exports.reducer = ({ txEventResponses, proposalResponses }) => ({
+exports.reducer = ({txEventResponses, proposalResponses}) => ({
 	txs: txEventResponses.map(entry => entry.tx),
 	responses: proposalResponses.map((entry) => entry.response.payload.toString())
 });
+/**
+ * @typedef {Object} ProposalResult
+ * @property {number} errCounter
+ * @property {number} swallowCounter
+ * @property {TransactionRequest} nextRequest
+ */
 
+/**
+ * @callback ProposalValidator
+ * @param {Object} response
+ * @return {{isValid:boolean, isSwallowed:boolean}}
+ */
 
+/**
+ * @param {string} actionString
+ * @param {ProposalValidator} validator
+ * @param {boolean} verbose
+ * @param {boolean} log
+ * @return {function(*[]): ProposalResult}
+ */
 exports.chaincodeProposalAdapter = (actionString, validator, verbose, log) => {
-	const _validator = validator ? validator : ({ response }) => {
-		return { isValid: response && response.status === 200, isSwallowed: false };
+	const _validator = validator ? validator : ({response}) => {
+		return {isValid: response && response.status === 200, isSwallowed: false};
 	};
 	const stringify = (proposalResponse, verbose) => {
 		const copy = Object.assign({}, proposalResponse);
-		const { response } = copy;
+		const {response} = copy;
 		if (!response) return copy;
-		const { payload: r_payload } = response;
-		const { endorsement } = copy;
+		const {payload: r_payload} = response;
+		const {endorsement} = copy;
 		if (endorsement) {
 			copy.endorsement = Object.assign({}, proposalResponse.endorsement);
 			copy.endorsement.endorser = copy.endorsement.endorser.toString();
@@ -38,7 +55,7 @@ exports.chaincodeProposalAdapter = (actionString, validator, verbose, log) => {
 
 		for (const i in responses) {
 			const proposalResponse = responses[i];
-			const { isValid, isSwallowed } = _validator(proposalResponse);
+			const {isValid, isSwallowed} = _validator(proposalResponse);
 
 			if (isValid) {
 				if (log) logger.info(`${actionString} is good for [${i}]`, stringify(proposalResponse, verbose));
@@ -88,11 +105,11 @@ exports.versionMatcher = (ccVersionName, toThrow) => {
  * @param {string} chaincodeVersion allowedCharsVersion  = "[A-Za-z0-9_.-]+"
  * @param {string} chaincodeType Optional. Type of chaincode. One of 'golang', 'car', 'node' or 'java'.
  * @param {Client} client
- * @returns {Promise<*>}
+ * @returns {Promise<ProposalResult>}
  */
-exports.install = async (peers, { chaincodeId, chaincodePath, chaincodeVersion, chaincodeType = 'golang', }, client) => {
+exports.install = async (peers, {chaincodeId, chaincodePath, chaincodeVersion, chaincodeType = 'golang',}, client) => {
 	const logger = logUtil.new('install-chaincode', true);
-	logger.debug({ peers_length: peers.length, chaincodeId, chaincodePath, chaincodeVersion });
+	logger.debug({peers_length: peers.length, chaincodeId, chaincodePath, chaincodeVersion});
 
 	exports.nameMatcher(chaincodeId, true);
 	exports.versionMatcher(chaincodeVersion, true);
@@ -106,9 +123,9 @@ exports.install = async (peers, { chaincodeId, chaincodePath, chaincodeVersion, 
 
 	const [responses, proposal] = await client.installChaincode(request);
 	const ccHandler = exports.chaincodeProposalAdapter('install', (proposalResponse) => {
-		const { response } = proposalResponse;
+		const {response} = proposalResponse;
 		if (response) {
-			const { status, message } = response;
+			const {status, message} = response;
 			if (status === 200) {
 				return {
 					isValid: true,
@@ -117,13 +134,13 @@ exports.install = async (peers, { chaincodeId, chaincodePath, chaincodeVersion, 
 			}
 			if (status === 500 && message.includes('exists')) {
 				logger.warn('swallow when exsitence');
-				return { isValid: true, isSwallowed: true };
+				return {isValid: true, isSwallowed: true};
 			}
 		}
-		return { isValid: false, isSwallowed: false };
+		return {isValid: false, isSwallowed: false};
 	});
 	const result = ccHandler([responses, proposal]);
-	const { errCounter, nextRequest: { proposalResponses } } = result;
+	const {errCounter, nextRequest: {proposalResponses}} = result;
 	if (errCounter > 0) {
 		throw Error(JSON.stringify(proposalResponses));
 	} else {
@@ -132,15 +149,14 @@ exports.install = async (peers, { chaincodeId, chaincodePath, chaincodeVersion, 
 };
 
 
-
 /**
  * @typedef {Object} instantiateOrUpgradeOpts
- * @property chaincodeId
- * @property chaincodeVersion
+ * @property {string} chaincodeId
+ * @property {string} chaincodeVersion
  * @property {string[]} args
  * @property {string} fcn
- * @property endorsementPolicy
- * @property collectionConfig
+ * @property {Object} endorsementPolicy
+ * @property {Object} collectionConfig
  * @property {string} chaincodeType Type of chaincode. One of 'golang', 'car', 'java' or 'node'.
  */
 /**
@@ -150,9 +166,9 @@ exports.install = async (peers, { chaincodeId, chaincodePath, chaincodeVersion, 
  * @param {Peer[]} peers default: all peers in channel
  * @param {EventHub[]} eventHubs
  * @param {instantiateOrUpgradeOpts} opts
- * @param eventWaitTime default: 30000
- * @param proposalTimeOut
- * @returns {Promise<any[]>}
+ * @param {number} eventWaitTime default: 30000
+ * @param {number} proposalTimeOut
+ * @returns {Promise}
  */
 exports.instantiateOrUpgrade = async (
 	command, channel, peers, eventHubs,
@@ -160,14 +176,14 @@ exports.instantiateOrUpgrade = async (
 	eventWaitTime, proposalTimeOut
 ) => {
 	const logger = logUtil.new(`${command}-chaincode`);
-	const { chaincodeId, chaincodeVersion, args, fcn, endorsementPolicy, collectionConfig, chaincodeType } = opts;
+	const {chaincodeId, chaincodeVersion, args, fcn, endorsementPolicy, collectionConfig, chaincodeType} = opts;
 	if (command !== 'deploy' && command !== 'upgrade') {
 		throw Error(`invalid command: ${command}`);
 	}
 
 	const client = channel._clientContext;
 	if (!eventWaitTime) eventWaitTime = 30000;
-	logger.debug({ channelName: channel.getName() }, opts);
+	logger.debug({channelName: channel.getName()}, opts);
 
 	exports.versionMatcher(chaincodeVersion, true);
 
@@ -191,26 +207,26 @@ exports.instantiateOrUpgrade = async (
 
 	logger.info('got proposalReponse: ', responses.length);
 	const ccHandler = exports.chaincodeProposalAdapter(command, proposalResponse => {
-		const { response } = proposalResponse;
-		if (response && response.status === 200) return { isValid: true, isSwallowed: false };
+		const {response} = proposalResponse;
+		if (response && response.status === 200) return {isValid: true, isSwallowed: false};
 		if (proposalResponse instanceof Error && proposalResponse.toString().includes(existSymptom)) {
 			logger.warn('swallow when existence');
-			return { isValid: true, isSwallowed: true };
+			return {isValid: true, isSwallowed: true};
 		}
-		return { isValid: false, isSwallowed: false };
+		return {isValid: false, isSwallowed: false};
 	});
-	const { errCounter, swallowCounter, nextRequest } = ccHandler([responses, proposal]);
-	const { proposalResponses } = nextRequest;
+	const {errCounter, swallowCounter, nextRequest} = ccHandler([responses, proposal]);
+	const {proposalResponses} = nextRequest;
 	if (errCounter > 0) {
-		throw { proposalResponses };
+		throw {proposalResponses};
 	}
 	if (swallowCounter === proposalResponses.length) {
-		return { proposalResponses };
+		return {proposalResponses};
 	}
 
 	const promises = [];
 	for (const eventHub of eventHubs) {
-		promises.push(txTimerPromise(eventHub, { txId }, eventWaitTime));
+		promises.push(txTimerPromise(eventHub, {txId}, eventWaitTime));
 	}
 
 	const response = await channel.sendTransaction(nextRequest);
@@ -220,26 +236,25 @@ exports.instantiateOrUpgrade = async (
 };
 
 
-
-const txTimerPromise = (eventHub, { txId }, eventWaitTime) => {
-	const validator = ({ tx, code }) => {
-		logger.debug('newTxEvent', { tx, code });
-		return { valid: code === txEventCode.valid, interrupt: true };
+const txTimerPromise = (eventHub, {txId}, eventWaitTime) => {
+	const validator = ({tx, code}) => {
+		logger.debug('newTxEvent', {tx, code});
+		return {valid: code === txEventCode.valid, interrupt: true};
 	};
 	return new Promise((resolve, reject) => {
-		const onSuccess = ({ tx, code, interrupt }) => {
+		const onSuccess = ({tx, code, interrupt}) => {
 			clearTimeout(timerID);
-			resolve({ tx, code });
+			resolve({tx, code});
 		};
 		const onErr = (err) => {
 			clearTimeout(timerID);
 			reject(err);
 		};
-		const transactionID = txEvent(eventHub, { txId }, validator, onSuccess, onErr);
+		const transactionID = txEvent(eventHub, {txId}, validator, onSuccess, onErr);
 		const timerID = setTimeout(() => {
 			eventHub.unregisterTxEvent(transactionID);
 			eventHub.disconnect();
-			reject({ err: 'txTimeout' });
+			reject({err: 'txTimeout'});
 		}, eventWaitTime);
 	});
 };
@@ -256,27 +271,37 @@ const txTimerPromise = (eventHub, { txId }, eventWaitTime) => {
  * @param {string[]} args
  * @param {Orderer} orderer target orderer, default to pick one in channel
  * @param {Number} eventWaitTime optional, default to use 30000 ms
- * @return {Promise.<TResult>}
+ * @return {Promise<{txEventResponses: any[], proposalResponses}>}
  */
-exports.invoke = async (channel, peers, eventHubs, { chaincodeId, fcn, args }, orderer, eventWaitTime) => {
-	logger.debug('invoke', { channel: channel.getName(), peersSize: peers.length, chaincodeId, fcn, args });
+exports.invoke = async (channel, peers, eventHubs, {chaincodeId, fcn, args}, orderer, eventWaitTime) => {
+	logger.debug('invoke', {channel: channel.getName(), peersSize: peers.length, chaincodeId, fcn, args});
 	if (!eventWaitTime) eventWaitTime = 30000;
 	const client = channel._clientContext;
 
-	const nextRequest = await exports.invokeProposal(client, peers, channel.getName(), { chaincodeId, fcn, args });
-	const { txId, proposalResponses } = nextRequest;
+	const nextRequest = await exports.invokeProposal(client, peers, channel.getName(), {chaincodeId, fcn, args});
+	const {txId, proposalResponses} = nextRequest;
 	const promises = [];
 
 	for (const eventHub of eventHubs) {
-		promises.push(txTimerPromise(eventHub, { txId }, eventWaitTime));
+		promises.push(txTimerPromise(eventHub, {txId}, eventWaitTime));
 	}
 
 	await exports.invokeCommit(client, nextRequest, orderer);
 
 	const txEventResponses = await Promise.all(promises);
-	return { txEventResponses, proposalResponses };
+	return {txEventResponses, proposalResponses};
 };
-exports.invokeProposal = async (client, targets, channelId, { chaincodeId, fcn, args }, proposalTimeout) => {
+/**
+ * @param {Client} client
+ * @param {Peer[]} targets
+ * @param {string} channelId
+ * @param {string} chaincodeId
+ * @param {string} fcn
+ * @param {string[]} args
+ * @param {number} proposalTimeout
+ * @return {Promise<TransactionRequest>}
+ */
+exports.invokeProposal = async (client, targets, channelId, {chaincodeId, fcn, args}, proposalTimeout) => {
 
 	const txId = client.newTransactionID();
 	const request = {
@@ -289,27 +314,34 @@ exports.invokeProposal = async (client, targets, channelId, { chaincodeId, fcn, 
 
 	const [responses, proposal] = await Channel.sendTransactionProposal(request, channelId, client, proposalTimeout);
 	const ccHandler = exports.chaincodeProposalAdapter('invoke');
-	const { nextRequest, errCounter } = ccHandler([responses, proposal]);
-	const { proposalResponses } = nextRequest;
+	const {nextRequest, errCounter} = ccHandler([responses, proposal]);
+	const {proposalResponses} = nextRequest;
 
 	if (errCounter > 0) {
-		throw { proposalResponses };
+		throw {proposalResponses};
 	}
 	nextRequest.txId = txId;
 	return nextRequest;
 };
-exports.invokeCommit = async (client, { proposalResponses, proposal }, orderer) => {
+/**
+ *
+ * @param {Client} client
+ * @param {TransactionRequest} nextRequest
+ * @param {Orderer} orderer
+ * @return {Promise<Client.BroadcastResponse>}
+ */
+exports.invokeCommit = async (client, nextRequest, orderer) => {
 	if (!(orderer instanceof Orderer)) {
 		throw Error(`orderer should be instance of Orderer, but got ${typeof orderer}`);
 	}
-	const nextRequest = { proposalResponses, proposal, orderer };
+	nextRequest.orderer = orderer;
 	const dummyChannel = ChannelUtil.newDummy(client);
 	return dummyChannel.sendTransaction(nextRequest);
 };
 
-exports.query = async (channel, peers, { chaincodeId, fcn, args }) => {
+exports.query = async (channel, peers, {chaincodeId, fcn, args}) => {
 	const logger = logUtil.new('query');
-	logger.debug({ channelName: channel.getName(), peersSize: peers.length, chaincodeId, fcn, args });
+	logger.debug({channelName: channel.getName(), peersSize: peers.length, chaincodeId, fcn, args});
 	const client = channel._clientContext;
 	const txId = client.newTransactionID();
 
