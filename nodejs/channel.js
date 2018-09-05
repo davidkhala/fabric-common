@@ -140,7 +140,7 @@ exports.join = async (channel, peer, orderer, waitTime) => {
  * @param orderer
  * @returns {Promise<BroadcastResponse>}
  */
-exports.setupAnchorPeers = async (channel, anchorPeerTxFile, orderer) => {
+exports.updateAnchorPeers = async (channel, anchorPeerTxFile, orderer) => {
 
 	const client = channel._clientContext;
 	const channelConfig_envelop = fs.readFileSync(anchorPeerTxFile);
@@ -155,11 +155,11 @@ exports.setupAnchorPeers = async (channel, anchorPeerTxFile, orderer) => {
 		txId: client.newTransactionID()
 	};
 
-	const updateChannelResp = await client.updateChannel(request);
-	if (updateChannelResp.status !== 'SUCCESS') {
-		throw JSON.stringify(updateChannelResp);
+	const result = await client.updateChannel(request);
+	if (result.status !== 'SUCCESS') {
+		throw JSON.stringify(result);
 	}
 
-	logger.info('updateChannel', updateChannelResp);
-	return updateChannelResp;
+	logger.info('set anchor peers', result);
+	return result;
 };
