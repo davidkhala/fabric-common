@@ -35,7 +35,7 @@ exports.host = {
 	dockerSock: '/run/docker.sock'
 };
 
-exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchDB}) => {
+exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchDB}, loggingLevel = 'INFO') => {
 	const tlsParams = tls ? [
 		`CORE_PEER_TLS_KEY_FILE=${tls.key}`,
 		`CORE_PEER_TLS_CERT_FILE=${tls.cert}`,
@@ -55,11 +55,11 @@ exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchD
 		[
 			`CORE_VM_ENDPOINT=unix://${exports.container.dockerSock}`,
 			`CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${network}`,
-			'CORE_LOGGING_LEVEL=DEBUG',
+			`CORE_LOGGING_LEVEL=${loggingLevel ? loggingLevel.toUpperCase() : 'DEBUG'}`,
 			'CORE_LEDGER_HISTORY_ENABLEHISTORYDATABASE=true',
 			'CORE_PEER_GOSSIP_USELEADERELECTION=true',
 			'CORE_PEER_GOSSIP_ORGLEADER=false',
-			`CORE_PEER_GOSSIP_EXTERNALENDPOINT=${peerHostName}:7051`, // FIXME take care!
+			`CORE_PEER_GOSSIP_EXTERNALENDPOINT=${peerHostName}:7051`,
 			`CORE_PEER_LOCALMSPID=${id}`,
 			`CORE_PEER_MSPCONFIGPATH=${configPath}`,
 			`CORE_PEER_TLS_ENABLED=${!!tls}`,
