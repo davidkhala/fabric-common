@@ -7,7 +7,6 @@ CURRENT=$(
 
 fcn=$1
 
-this_uname=$(uname)
 bashProfile="$HOME/.bashrc"
 remain_params=""
 for ((i = 2; i <= ${#}; i++)); do
@@ -114,24 +113,35 @@ function golang1_7() {
 }
 function golang1_10() {
 	if [ "$1" == "remove" ]; then
+		if [ $(uname) == "Darwin" ]; then
+			brew uninstall go || true
+			return
+		fi
 		sudo apt-get -y remove golang-go
 		sudo add-apt-repository --remove -y ppa:longsleep/golang-backports
 	else
+		if [ $(uname) == "Darwin" ]; then
+			brew install go || true
+			return
+		fi
 		sudo add-apt-repository -y ppa:longsleep/golang-backports
 		sudo apt-get update
 		sudo apt-get -y install golang-go
 	fi
 }
 function install_libtool() {
-	if [ "${this_uname}" == "Darwin" ]; then
+	if [ $(uname) == "Darwin" ]; then
 		brew install libtool
-	else
-		sudo apt-get install -y libtool
+		return
 	fi
-
+	sudo apt-get install -y libtool
 }
 
 function golang_dep() {
+	if [ $(uname) == "Darwin" ]; then
+		brew install dep
+		return
+	fi
 	curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
 	dep version
 }
