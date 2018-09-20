@@ -132,7 +132,8 @@ exports.install = async (peers, {chaincodeId, chaincodePath, chaincodeVersion, c
 					isSwallowed: false
 				};
 			}
-			if (status === 500 && message.includes('exists')) {
+		} else {
+			if (proposalResponse.toString().includes('exists')) {
 				logger.warn('swallow when exsitence');
 				return {isValid: true, isSwallowed: true};
 			}
