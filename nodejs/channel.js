@@ -1,6 +1,7 @@
 const logger = require('./logger').new('channel');
 const fs = require('fs');
 const {signs} = require('./multiSign');
+const Channel = require('fabric-client/lib/Channel');
 exports.setClientContext = (channel, clientContext) => {
 	channel._clientContext = clientContext;
 };
@@ -30,13 +31,11 @@ exports.new = (client, channelName) => {
 		logger.warn('default to using system channel', exports.genesis);
 		channelName = exports.genesis;
 	}
-
-	delete client._channels[channelName];//Always renew, otherwise throw exception if exist
-	return client.newChannel(channelName);
+	return new Channel(channelName, client);
 };
 /**
- * FIXME This should be deprecated in 1.3
- * @param client
+ * This is designed to be along with channel.sendTransaction
+ * @param {Client} client
  * @returns {Channel}
  */
 exports.newDummy = (client) => {
@@ -76,7 +75,7 @@ exports.create = async (signClients, channel, channelConfigFile, orderer) => {
 	//The client application must poll the orderer to discover whether the channel has been created completely or not.
 	const results = await channelClient.createChannel(request);
 	const {status, info} = results;
-	logger.debug('channel created', {status,info},results);
+	logger.debug('channel created', {status, info}, results);
 	if (status === 'SUCCESS') return results;
 	else throw results;
 };

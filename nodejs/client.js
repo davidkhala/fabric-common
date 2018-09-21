@@ -13,6 +13,12 @@ exports.new = (persist) => {
 	client.setCryptoSuite(newCryptoSuite);
 	return client;
 };
+exports.setChannel = (client, channelName, channel) => {
+	client._channels.set(channelName, channel);
+};
+exports.deleteChannel = (client, channelName) => {
+	client._channels.delete(channelName);
+};
 /**
  * configuration is set in package.json
  * @param path
