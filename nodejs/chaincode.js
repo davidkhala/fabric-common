@@ -201,7 +201,7 @@ exports.instantiateOrUpgrade = async (
 		'collections-config': collectionConfig,
 		chaincodeType,
 	};
-	const existSymptom = '(status: 500, message: chaincode exists';
+	const existSymptom = 'exists';
 
 
 	const [responses, proposal] = await channel._sendChaincodeProposal(request, command, proposalTimeOut);
@@ -219,9 +219,16 @@ exports.instantiateOrUpgrade = async (
 	const {errCounter, swallowCounter, nextRequest} = ccHandler([responses, proposal]);
 	const {proposalResponses} = nextRequest;
 	if (errCounter > 0) {
+		for (const eventHub of eventHubs) {
+			eventHub.disconnect();
+		}
 		throw {proposalResponses};
 	}
 	if (swallowCounter === proposalResponses.length) {
+		logger.warn('[final] swallow when existence');
+		for (const eventHub of eventHubs) {
+			eventHub.disconnect();
+		}
 		return {proposalResponses};
 	}
 
