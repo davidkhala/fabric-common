@@ -277,16 +277,17 @@ const txTimerPromise = (eventHub, {txId}, eventWaitTime) => {
  * @param chaincodeId
  * @param {string} fcn
  * @param {string[]} args
+ * @param {Object} transientMap
  * @param {Orderer} orderer target orderer, default to pick one in channel
  * @param {Number} eventWaitTime optional, default to use 30000 ms
  * @return {Promise<{txEventResponses: any[], proposalResponses}>}
  */
-exports.invoke = async (channel, peers, eventHubs, {chaincodeId, fcn, args}, orderer, eventWaitTime) => {
+exports.invoke = async (channel, peers, eventHubs, {chaincodeId, fcn, args, transientMap}, orderer, eventWaitTime) => {
 	logger.debug('invoke', {channel: channel.getName(), peersSize: peers.length, chaincodeId, fcn, args});
 	if (!eventWaitTime) eventWaitTime = 30000;
 	const client = channel._clientContext;
 
-	const nextRequest = await exports.invokeProposal(client, peers, channel.getName(), {chaincodeId, fcn, args});
+	const nextRequest = await exports.invokeProposal(client, peers, channel.getName(), {chaincodeId, fcn, args, transientMap});
 	const {txId, proposalResponses} = nextRequest;
 	const promises = [];
 
@@ -306,11 +307,11 @@ exports.invoke = async (channel, peers, eventHubs, {chaincodeId, fcn, args}, ord
  * @param {string} chaincodeId
  * @param {string} fcn
  * @param {string[]} args
- * @param {map} transientMap //TODO format test
+ * @param {Object} transientMap jsObject of key<string> --> value<Buffer>
  * @param {number} proposalTimeout
  * @return {Promise<TransactionRequest>}
  */
-exports.invokeProposal = async (client, targets, channelId, {chaincodeId, fcn, args,transientMap}, proposalTimeout) => {
+exports.invokeProposal = async (client, targets, channelId, {chaincodeId, fcn, args, transientMap}, proposalTimeout) => {
 
 	const txId = client.newTransactionID();
 	const request = {
