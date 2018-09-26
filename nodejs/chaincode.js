@@ -306,10 +306,11 @@ exports.invoke = async (channel, peers, eventHubs, {chaincodeId, fcn, args}, ord
  * @param {string} chaincodeId
  * @param {string} fcn
  * @param {string[]} args
+ * @param {map} transientMap //TODO format test
  * @param {number} proposalTimeout
  * @return {Promise<TransactionRequest>}
  */
-exports.invokeProposal = async (client, targets, channelId, {chaincodeId, fcn, args}, proposalTimeout) => {
+exports.invokeProposal = async (client, targets, channelId, {chaincodeId, fcn, args,transientMap}, proposalTimeout) => {
 
 	const txId = client.newTransactionID();
 	const request = {
@@ -317,7 +318,8 @@ exports.invokeProposal = async (client, targets, channelId, {chaincodeId, fcn, a
 		fcn,
 		args,
 		txId,
-		targets
+		targets,
+		transientMap
 	};
 
 	const [responses, proposal] = await Channel.sendTransactionProposal(request, channelId, client, proposalTimeout);
