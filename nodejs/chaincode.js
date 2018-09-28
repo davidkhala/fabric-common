@@ -1,15 +1,24 @@
-const logger = require('./logger').new('chaincode', true);
 const logUtil = require('./logger');
+const logger = logUtil.new('chaincode', true);
 const Channel = require('fabric-client/lib/Channel');
 const Orderer = require('fabric-client/lib/Orderer');
 const ChannelUtil = require('./channel');
 const {txEvent, txEventCode} = require('./eventHub');
 
-
 exports.reducer = ({txEventResponses, proposalResponses}) => ({
 	txs: txEventResponses.map(entry => entry.tx),
 	responses: proposalResponses.map((entry) => entry.response.payload.toString())
 });
+exports.transientMap = (jsObject) => {
+	if (!jsObject) {
+		return jsObject;
+	}
+	const result = {};
+	for (const [key, value] of Object.entries(jsObject)) {
+		result[key] = Buffer.from(value);
+	}
+	return result;
+};
 /**
  * @typedef {Object} ProposalResult
  * @property {number} errCounter
@@ -277,7 +286,7 @@ const txTimerPromise = (eventHub, {txId}, eventWaitTime) => {
  * @param chaincodeId
  * @param {string} fcn
  * @param {string[]} args
- * @param {Object} transientMap
+ * @param {Object} transientMap key<string> -> value<string>
  * @param {Orderer} orderer target orderer, default to pick one in channel
  * @param {Number} eventWaitTime optional, default to use 30000 ms
  * @return {Promise<{txEventResponses: any[], proposalResponses}>}
@@ -287,7 +296,13 @@ exports.invoke = async (channel, peers, eventHubs, {chaincodeId, fcn, args, tran
 	if (!eventWaitTime) eventWaitTime = 30000;
 	const client = channel._clientContext;
 
-	const nextRequest = await exports.invokeProposal(client, peers, channel.getName(), {chaincodeId, fcn, args, transientMap});
+	const nextRequest = await exports.invokeProposal(client, peers, channel.getName(), {
+		chaincodeId,
+		fcn,
+		args,
+		transientMap: exports.transientMap(transientMap)
+	});
+
 	const {txId, proposalResponses} = nextRequest;
 	const promises = [];
 
