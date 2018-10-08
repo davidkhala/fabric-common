@@ -142,6 +142,8 @@ function golang_dep() {
 		brew install dep
 		return
 	fi
+	export GOBIN=$HOME/go/bin/
+	mkdir -p $GOBIN
 	curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
 	dep version
 }
