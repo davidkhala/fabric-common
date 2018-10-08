@@ -63,7 +63,7 @@ function golang1_9() {
 		echo "GOROOT found in $bashProfile"
 	fi
 
-	export PATH=$PATH:/usr/local/go/bin # ephermeral
+	export PATH=$PATH:/usr/local/go/bin # ephemeral
 	# write $GOPATH/bin to $PATH
 	GOPATH=$(go env GOPATH)
 	if ! grep "$GOPATH/bin" $bashProfile; then
@@ -144,6 +144,7 @@ function golang_dep() {
 	fi
 	export GOBIN=$HOME/go/bin/
 	mkdir -p $GOBIN
+	export PATH=$PATH:$GOBIN # ephemeral
 	curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
 	dep version
 }
