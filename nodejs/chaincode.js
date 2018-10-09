@@ -44,6 +44,9 @@ exports.chaincodeProposalAdapter = (actionString, validator, verbose, log) => {
 		return {isValid: response && response.status === 200, isSwallowed: false};
 	};
 	const stringify = (proposalResponse, verbose) => {
+		if (proposalResponse instanceof Error) {
+			return proposalResponse;
+		}
 		const copy = Object.assign({}, proposalResponse);
 		const {response} = copy;
 		if (!response) return copy;
