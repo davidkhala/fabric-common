@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -e
-CURRENT=$(cd $(dirname ${BASH_SOURCE}); pwd)
+CURRENT=$(cd $(dirname ${BASH_SOURCE}) && pwd)
 CRYPTO_CONFIG_DIR=$CURRENT/crypto-config/
 CRYPTO_CONFIG_FILE=$CURRENT/crypto-config.yaml
 

@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 set -e
-CURRENT=$(
-	cd $(dirname ${BASH_SOURCE})
-	pwd
-)
+CURRENT=$(cd $(dirname ${BASH_SOURCE}) && pwd)
 Parent=$(dirname $CURRENT)
 cd $Parent
 

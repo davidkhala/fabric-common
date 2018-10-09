@@ -1,12 +1,9 @@
 #!/usr/bin/env bash
-
-# For integration most path is absolute path
-
-CURRENT=$(cd $(dirname ${BASH_SOURCE}); pwd)
+CURRENT=$(cd $(dirname ${BASH_SOURCE}) && pwd)
 
 BIN_PATH="$(dirname $CURRENT)/bin"
-if [ -z "$FABRIC_CFG_PATH" ];then
-    export FABRIC_CFG_PATH=$CURRENT
+if [ -z "$FABRIC_CFG_PATH" ]; then
+	export FABRIC_CFG_PATH=$CURRENT
 fi
 
 fcn=$1
@@ -16,40 +13,39 @@ for ((i = 2; i <= ${#}; i++)); do
 	remain_params="$remain_params $j"
 done
 
-
 function genBlock() {
-    local outputFile=$1
-    local profile=$2
-    local channelName=${3:-testchainid}
+	local outputFile=$1
+	local profile=$2
+	local channelName=${3:-testchainid}
 	local CMD="$BIN_PATH/configtxgen -outputBlock $outputFile -profile $profile -channelID $channelName"
 	echo CMD $CMD
 	$CMD
 }
 
 function genChannel() {
-    local outputFile=$1
-    local profile=$2
-    local channelName=$3
+	local outputFile=$1
+	local profile=$2
+	local channelName=$3
 	local CMD="$BIN_PATH/configtxgen -outputCreateChannelTx $outputFile -profile $profile -channelID $channelName"
 	echo CMD $CMD
 	$CMD
 }
 
-function genAnchorPeers(){
-    local outputFile=$1
-    local profile=$2
-    local channelName=$3
-    local asOrg=$4
+function genAnchorPeers() {
+	local outputFile=$1
+	local profile=$2
+	local channelName=$3
+	local asOrg=$4
 	local CMD="$BIN_PATH/configtxgen -outputAnchorPeersUpdate $outputFile -profile $profile -channelID $channelName -asOrg $asOrg"
 	echo CMD $CMD
 	$CMD
 }
 
 function viewBlock() {
-    local blockFile=$1
-    local profile=$2
-    local channelName=${3:-testchainid}
-    local viewOutputFile=$4
+	local blockFile=$1
+	local profile=$2
+	local channelName=${3:-testchainid}
+	local viewOutputFile=$4
 	local CMD="$BIN_PATH/configtxgen -inspectBlock $blockFile -profile $profile"
 	echo CMD $CMD
 	if [ -z "$viewOutputFile" ]; then
@@ -60,10 +56,10 @@ function viewBlock() {
 }
 
 function viewChannel() {
-    local channelFile=$1
-    local profile=$2
-    local channelID=$3
-    local viewOutputFile=$4
+	local channelFile=$1
+	local profile=$2
+	local channelID=$3
+	local viewOutputFile=$4
 	local CMD="$BIN_PATH/configtxgen -inspectChannelCreateTx $channelFile -profile $profile -channelID $channelID"
 	echo CMD $CMD
 	if [ -z "$viewOutputFile" ]; then
