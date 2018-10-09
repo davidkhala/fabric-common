@@ -43,10 +43,10 @@ exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchD
 
 	let couchDBparams = [];
 	if (couchDB) {
-		const {container_name, port = 5984, user = '', password = ''} = couchDB;
+		const {container_name, user = '', password = ''} = couchDB;
 		couchDBparams = [
 			'CORE_LEDGER_STATE_STATEDATABASE=CouchDB',
-			`CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=${container_name}:${port}`,
+			`CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=${container_name}:5984`,
 			`CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=${user}`,
 			`CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=${password}`
 		];

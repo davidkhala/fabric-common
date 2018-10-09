@@ -427,29 +427,14 @@ exports.runPeer = ({
 	return dockerUtil.containerStart(createOptions);
 };
 
-exports.runCouchDB = async ({imageTag, container_name, port, network}) => {
+//TODO deployCouchDB
+exports.runCouchDB = async ({imageTag, container_name, port, network, user, password}) => {
 	const Image = `hyperledger/fabric-couchdb:${imageTag}`;
-	const Env = couchdbUtil.envBuilder();
+	const Env = couchdbUtil.envBuilder(user, password);
 	const createOptions = {
 		name: container_name,
 		Env,
-		Volumes: {
-			[peerUtil.container.dockerSock]: {},
-			[peerUtil.container.MSPROOT]: {}
-		},
 		Image,
-		ExposedPorts: {
-			'5984': {},
-		},
-		Hostconfig: {
-			PortBindings: {
-				'5984': [
-					{
-						HostPort: port.toString()
-					}
-				]
-			},
-		},
 		NetworkingConfig: {
 			EndpointsConfig: {
 				[network]: {
@@ -458,6 +443,20 @@ exports.runCouchDB = async ({imageTag, container_name, port, network}) => {
 			}
 		}
 	};
+	if (port) {
+		createOptions.ExposedPorts = {
+			'5984': {},
+		};
+		createOptions.Hostconfig = {
+			PortBindings: {
+				'5984': [
+					{
+						HostPort: port.toString()
+					}
+				]
+			},
+		};
+	}
 	return dockerUtil.containerStart(createOptions);
 };
 
