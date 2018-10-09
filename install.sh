@@ -143,14 +143,23 @@ function install_libtool() {
 }
 
 function golang_dep() {
+	echo "install dep..."
 	if [ $(uname) == "Darwin" ]; then
 		brew install dep
 		return
 	fi
-	export GOBIN=$HOME/go/bin/
+	if [ -z "$GOBIN" ]; then
+		if [ -z "$GOPATH" ]; then
+			echo install dep failed: GOPATH not found
+			exit 1
+		fi
+		export GOBIN=$GOPATH/bin/
+	fi
 	mkdir -p $GOBIN
-	export PATH=$PATH:$GOBIN # ephemeral
 	curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+	if echo $PATH | grep "$GOBIN" >/dev/null; then
+		export PATH=$PATH:$GOBIN # ephemeral
+	fi
 	dep version
 }
 function gitSync() {
@@ -158,11 +167,6 @@ function gitSync() {
 	git submodule update --init --recursive
 }
 
-function chaincodeDevEnv() {
-	golang1_10
-	install_libtool
-	golang_dep
-}
 if [ -n "$fcn" ]; then
 	$fcn $remain_params
 else
