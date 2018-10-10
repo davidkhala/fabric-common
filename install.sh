@@ -172,8 +172,7 @@ if [ -n "$fcn" ]; then
 else
 	# install home brew
 	if [ $(uname) == "Darwin" ]; then
-		# TODO use brew version??
-		if ! brew >/dev/null; then
+		if ! brew config >/dev/null; then
 			/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 		fi
 	fi
