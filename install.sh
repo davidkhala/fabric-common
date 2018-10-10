@@ -170,6 +170,14 @@ function gitSync() {
 if [ -n "$fcn" ]; then
 	$fcn $remain_params
 else
+	# install home brew
+	if [ $(uname) == "Darwin" ]; then
+		# TODO use brew version??
+		if ! brew >/dev/null; then
+			/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+		fi
+	fi
+
 	$CURRENT/docker/install.sh
 	$CURRENT/docker/nodejs/install.sh
 	$CURRENT/docker/nodejs/install.sh packageLock false
