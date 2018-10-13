@@ -37,7 +37,9 @@ exports.simplePolicyBuilder = (identities, n) => {
 	};
 };
 
-exports.RoleIdentity = (mspId, isAdmin) => ({
-	[exports.Policy.IDENTITY_TYPE.Role]: {name: isAdmin ? 'admin' : 'member', mspId}
+const MSPRoleType = ['member', 'admin', 'client', 'peer'];
+
+exports.RoleIdentity = (mspId, typeIndex) => ({
+	[exports.Policy.IDENTITY_TYPE.Role]: {name: MSPRoleType[typeIndex], mspId}
 });
 
