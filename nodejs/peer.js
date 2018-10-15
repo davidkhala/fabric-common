@@ -66,10 +66,10 @@ exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchD
 			`CORE_PEER_ID=${peerHostName}`,
 			`CORE_PEER_ADDRESS=${peerHostName}:7051`,
 			'CORE_CHAINCODE_EXECUTETIMEOUT=180s',
-			`CORE_CHAINCODE_LOGGING_SHIM=${loggingLevel ? loggingLevel.toUpperCase() : 'DEBUG'}`,
+			`CORE_CHAINCODE_LOGGING_LEVEL=${loggingLevel ? loggingLevel.toUpperCase() : 'DEBUG'}`, //used for chaincode logging
 			'CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052',//for swarm mode
 			'GODEBUG=netdns=go'//NOTE aliyun only
 		].concat(tlsParams).concat(couchDBparams);
-
+	//CORE_CHAINCODE_LOGGING_SHIM :used for fabric logging
 	return environment;
 };
