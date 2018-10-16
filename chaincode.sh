@@ -20,7 +20,7 @@ function rmImages() {
 	fi
 }
 function couchDBIndex() {
-	local root=$1
+	local metaINF=$1
 	local fileName=index.json
 	local fields=""
 	for ((i = 2; i < ${#}; i++)); do
@@ -30,7 +30,7 @@ function couchDBIndex() {
 	j=${!i}
 	fields="$fields\"$j\""
 
-	local parent=$root/META-INF/statedb/couchdb/indexes/
+	local parent=$metaINF/statedb/couchdb/indexes/
 	mkdir -p ${parent}
 	cd ${parent}
 	echo "{\"index\":{\"fields\":[${fields}]},\"type\":\"json\"}" >${parent}$fileName

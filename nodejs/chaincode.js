@@ -116,10 +116,12 @@ exports.versionMatcher = (ccVersionName, toThrow) => {
  * @param chaincodePath
  * @param {string} chaincodeVersion allowedCharsVersion  = "[A-Za-z0-9_.-]+"
  * @param {string} chaincodeType Optional. Type of chaincode. One of 'golang', 'car', 'node' or 'java'.
+ * @param {string} metadataPath the absolute path to the directory structure containing the JSON index files. e.g<br>
+ * <$metadataPath>/statedb/couchdb/indexes/<files *.json>
  * @param {Client} client
  * @returns {Promise<ProposalResult>}
  */
-exports.install = async (peers, {chaincodeId, chaincodePath, chaincodeVersion, chaincodeType = 'golang',}, client) => {
+exports.install = async (peers, {chaincodeId, chaincodePath, chaincodeVersion, chaincodeType = 'golang', metadataPath}, client) => {
 	const logger = logUtil.new('chaincode:install', true);
 	logger.debug({peers_length: peers.length, chaincodeId, chaincodePath, chaincodeVersion});
 
@@ -130,7 +132,8 @@ exports.install = async (peers, {chaincodeId, chaincodePath, chaincodeVersion, c
 		chaincodePath,
 		chaincodeId,
 		chaincodeVersion,
-		chaincodeType
+		chaincodeType,
+		metadataPath
 	};
 
 	const [responses, proposal] = await client.installChaincode(request);
