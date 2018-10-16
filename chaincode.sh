@@ -33,6 +33,6 @@ function couchDBIndex() {
 	local parent=$root/META-INF/statedb/couchdb/indexes/
 	mkdir -p ${parent}
 	cd ${parent}
-	echo "{\"index\":{\"fields\":[${fields}]},\"type\":\"json\"}" >${parent}/$fileName
+	echo "{\"index\":{\"fields\":[${fields}]},\"type\":\"json\"}" >${parent}$fileName
 }
 $fcn $remain_params

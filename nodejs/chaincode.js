@@ -120,7 +120,7 @@ exports.versionMatcher = (ccVersionName, toThrow) => {
  * @returns {Promise<ProposalResult>}
  */
 exports.install = async (peers, {chaincodeId, chaincodePath, chaincodeVersion, chaincodeType = 'golang',}, client) => {
-	const logger = logUtil.new('install-chaincode', true);
+	const logger = logUtil.new('chaincode:install', true);
 	logger.debug({peers_length: peers.length, chaincodeId, chaincodePath, chaincodeVersion});
 
 	exports.nameMatcher(chaincodeId, true);
@@ -188,7 +188,7 @@ exports.instantiateOrUpgrade = async (
 	opts,
 	eventWaitTime, proposalTimeOut
 ) => {
-	const logger = logUtil.new(`${command}-chaincode`);
+	const logger = logUtil.new(`${command}-chaincode`, true);
 	const {chaincodeId, chaincodeVersion, args, fcn, endorsementPolicy, collectionConfig, chaincodeType} = opts;
 	if (command !== 'deploy' && command !== 'upgrade') {
 		throw Error(`invalid command: ${command}`);
@@ -295,7 +295,8 @@ const txTimerPromise = (eventHub, {txId}, eventWaitTime) => {
  * @return {Promise<{txEventResponses: any[], proposalResponses}>}
  */
 exports.invoke = async (channel, peers, eventHubs, {chaincodeId, fcn, args, transientMap}, orderer, eventWaitTime) => {
-	logger.debug('invoke', {channel: channel.getName(), peersSize: peers.length, chaincodeId, fcn, args});
+	const logger = logUtil.new('chaincode:invoke', true);
+	logger.debug({channel: channel.getName(), peersSize: peers.length, chaincodeId, fcn, args});
 	if (!eventWaitTime) eventWaitTime = 30000;
 	const client = channel._clientContext;
 
@@ -330,7 +331,7 @@ exports.invoke = async (channel, peers, eventHubs, {chaincodeId, fcn, args, tran
  * @return {Promise<TransactionRequest>}
  */
 exports.invokeProposal = async (client, targets, channelId, {chaincodeId, fcn, args, transientMap}, proposalTimeout) => {
-
+	const logger = logUtil.new('chaincode:invokeProposal', true);
 	const txId = client.newTransactionID();
 	const request = {
 		chaincodeId,
@@ -347,6 +348,7 @@ exports.invokeProposal = async (client, targets, channelId, {chaincodeId, fcn, a
 	const {proposalResponses} = nextRequest;
 
 	if (errCounter > 0) {
+		logger.error({proposalResponses});
 		throw {proposalResponses};
 	}
 	nextRequest.txId = txId;
@@ -369,7 +371,7 @@ exports.invokeCommit = async (client, nextRequest, orderer) => {
 };
 
 exports.query = async (channel, peers, {chaincodeId, fcn, args}) => {
-	const logger = logUtil.new('query');
+	const logger = logUtil.new('chaincode:query', true);
 	logger.debug({channelName: channel.getName(), peersSize: peers.length, chaincodeId, fcn, args});
 	const client = channel._clientContext;
 	const txId = client.newTransactionID();
