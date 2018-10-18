@@ -37,7 +37,7 @@ exports.hostname = os.hostname;
 
 exports.sha2_256 = require('fabric-client/lib/hash').SHA2_256;
 
-exports.sleep = (ms) => {
+exports.sleep = async (ms) => {
 	logger.info(`sleep ${ms}ms`);
 	return new Promise(resolve => setTimeout(resolve, ms));
 };
