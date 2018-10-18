@@ -323,6 +323,7 @@ exports.invoke = async (channel, peers, eventHubs, {chaincodeId, fcn, args, tran
 	return {txEventResponses, proposalResponses};
 };
 /**
+ * also be used as query
  * @param {Client} client
  * @param {Peer[]} targets
  * @param {string} channelId
@@ -371,21 +372,4 @@ exports.invokeCommit = async (client, nextRequest, orderer) => {
 	nextRequest.orderer = orderer;
 	const dummyChannel = ChannelUtil.newDummy(client);
 	return dummyChannel.sendTransaction(nextRequest);
-};
-
-exports.query = async (channel, peers, {chaincodeId, fcn, args}) => {
-	const logger = logUtil.new('chaincode:query', true);
-	logger.debug({channelName: channel.getName(), peersSize: peers.length, chaincodeId, fcn, args});
-	const client = channel._clientContext;
-	const txId = client.newTransactionID();
-
-	const request = {
-		chaincodeId,
-		fcn,
-		args,
-		txId,
-		targets: peers //optional: use channel.getPeers() as default
-	};
-	const results = await channel.queryByChaincode(request);
-	return results.map(e => e.toString());
 };
