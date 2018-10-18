@@ -297,9 +297,10 @@ const txTimerPromise = (eventHub, {txId}, eventWaitTime) => {
  * @param {Number} eventWaitTime optional, default to use 30000 ms
  * @return {Promise<{txEventResponses: any[], proposalResponses}>}
  */
-exports.invoke = async (channel, peers, eventHubs, {chaincodeId, fcn, args, transientMap}, orderer, eventWaitTime) => {
+exports.invoke = async (channel, peers, eventHubs, {chaincodeId, fcn, args, transientMap}, orderer, proposalTimeout, eventWaitTime) => {
 	const logger = logUtil.new('chaincode:invoke', true);
 	logger.debug({channel: channel.getName(), peersSize: peers.length, chaincodeId, fcn, args});
+	if (!proposalTimeout) proposalTimeout = 30000;
 	if (!eventWaitTime) eventWaitTime = 30000;
 	const client = channel._clientContext;
 
@@ -308,7 +309,7 @@ exports.invoke = async (channel, peers, eventHubs, {chaincodeId, fcn, args, tran
 		fcn,
 		args,
 		transientMap: exports.transientMap(transientMap)
-	});
+	}, proposalTimeout);
 
 	const {txId, proposalResponses} = nextRequest;
 	const promises = [];
@@ -357,6 +358,32 @@ exports.invokeProposal = async (client, targets, channelId, {chaincodeId, fcn, a
 	}
 	nextRequest.txId = txId;
 	return nextRequest;
+};
+/**
+ *
+ * @param {Channel} channel
+ * @param {Peer[]} peers
+ * @param {string} chaincodeId
+ * @param {string} fcn
+ * @param {string[]} args
+ * @param {Object} transientMap jsObject of key<string> --> value<Buffer>
+ * @param {number} proposalTimeout
+ * @returns {Promise<{txEventResponses: {tx}[], proposalResponses: Array}>}
+ */
+exports.query = async (channel, peers, {chaincodeId, fcn, args, transientMap}, proposalTimeout) => {
+	const logger = logUtil.new('chaincode:query', true);
+	logger.debug({channel: channel.getName(), peersSize: peers.length, chaincodeId, fcn, args});
+	const client = channel._clientContext;
+	if (!proposalTimeout) proposalTimeout = 30000;
+
+	const nextRequest = await exports.invokeProposal(client, peers, channel.getName(), {
+		chaincodeId,
+		fcn,
+		args,
+		transientMap: exports.transientMap(transientMap)
+	}, proposalTimeout);
+	const {txId, proposalResponses} = nextRequest;
+	return {txEventResponses: [{tx: txId}], proposalResponses};// make it suitable for reducer
 };
 /**
  *
