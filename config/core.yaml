@@ -14,7 +14,7 @@ logging:
 
     # Valid logging levels are case-insensitive strings chosen from
 
-    #     CRITICAL | ERROR | WARNING | NOTICE | INFO | DEBUG
+    #     FATAL | PANIC | ERROR | WARNING | INFO | DEBUG
 
     # The overall default logging level can be specified in various ways,
     # listed below from strongest to weakest:
@@ -39,14 +39,9 @@ logging:
     # The overall default values mentioned above can be overridden for the
     # specific components listed in the override section below.
 
-    # Override levels for various peer modules. These levels will be
-    # applied once the peer has completely started. They are applied at this
-    # time in order to be sure every logger has been registered with the
-    # logging package.
-    # Note: the modules listed below are the only acceptable modules at this
-    #       time.
+    # Override log levels for various peer modules.
     cauthdsl:   warning
-    gossip:     warning
+    gossip:     info
     grpc:       error
     ledger:     info
     msp:        warning
@@ -237,34 +232,14 @@ peer:
             # This helps a newly joined peer catch up to current
             # blockchain height quicker.
             btlPullMargin: 10
-
-    # EventHub related configuration
-    events:
-        # The address that the Event service will be enabled on the peer
-        address: 0.0.0.0:7053
-
-        # total number of events that could be buffered without blocking send
-        buffersize: 100
-
-        # timeout configures how long to block when attempting to add an event to a full buffer:
-        #   when timeout < 0 then discard the event and continue
-        #   when timeout = 0 then block until event is added to the buffer
-        #   when timeout > 0 then block and discard the event if the timeout expires
-        timeout: 10ms
-
-        # timewindow is the acceptable difference between the peer's current
-        # time and the client's time as specified in a registration event
-        timewindow: 15m
-
-        # Keepalive settings for peer server and clients
-        keepalive:
-            # MinInterval is the minimum permitted time in seconds which clients
-            # can send keepalive pings.  If clients send pings more frequently,
-            # the events server will disconnect them
-            minInterval: 60s
-
-        # the timeout to send events over the GRPC stream to clients
-        sendTimeout: 60s
+            # the process of reconciliation is done in an endless loop, while in each iteration reconciler tries to
+            # pull from the other peers the most recent missing blocks with a maximum batch size limitation.
+            # reconcileBatchSize determines the maximum batch size of missing private data that will be reconciled in a
+            # single iteration.
+            reconcileBatchSize: 10
+            # reconcileSleepInterval determines the time reconciler sleeps from end of an iteration until the beginning
+            # of the next reconciliation iteration.
+            reconcileSleepInterval: 5m
 
     # TLS Settings
     # Note that peer-chaincode connections through chaincodeListenAddress is
@@ -550,8 +525,7 @@ chaincode:
         # tools added for java shim layer packaging.
         # This image is packed with shim layer libraries that are necessary
         # for Java chaincode runtime.
-        Dockerfile:  |
-            from $(DOCKER_NS)/fabric-javaenv:$(ARCH)-1.1.0
+        runtime: $(DOCKER_NS)/fabric-javaenv:$(ARCH)-$(PROJECT_VERSION)
 
     node:
         # need node.js engine at runtime, currently available in baseimage
@@ -588,6 +562,7 @@ chaincode:
     # whitelist, add "myscc: enable" to the list below, and register in
     # chaincode/importsysccs.go
     system:
+        +lifecycle: enable
         cscc: enable
         lscc: enable
         escc: enable
@@ -632,6 +607,8 @@ ledger:
     # goleveldb - default state database stored in goleveldb.
     # CouchDB - store state database in CouchDB
     stateDatabase: goleveldb
+    # Limit on the number of records to return per query
+    totalQueryLimit: 100000
     couchDBConfig:
        # It is recommended to run CouchDB on the same server as the peer, and
        # not map the CouchDB container port to a server port in docker-compose.
@@ -648,11 +625,14 @@ ledger:
        # Number of retries for CouchDB errors
        maxRetries: 3
        # Number of retries for CouchDB errors during peer startup
-       maxRetriesOnStartup: 10
+       maxRetriesOnStartup: 12
        # CouchDB request timeout (unit: duration, e.g. 20s)
        requestTimeout: 35s
-       # Limit on the number of records to return per query
-       queryLimit: 10000
+       # Limit on the number of records per each CouchDB query
+       # Note that chaincode queries are only bound by totalQueryLimit.
+       # Internally the chaincode may execute multiple CouchDB queries,
+       # each of size internalQueryLimit.
+       internalQueryLimit: 1000
        # Limit on the number of records per CouchDB bulk update batch
        maxBatchUpdateSize: 1000
        # Warm indexes after every N blocks.
@@ -663,6 +643,10 @@ ledger:
        # Increasing the value may improve write efficiency of peer and CouchDB,
        # but may degrade query response time.
        warmIndexesAfterNBlocks: 1
+       # Create the _global_changes system database
+       # This is optional.  Creating the global changes database will require
+       # additional system resources to track changes and maintain the database
+       createGlobalChangesDB: false
 
   history:
     # enableHistoryDatabase - options are true or false

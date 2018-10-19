@@ -94,7 +94,6 @@ exports.join = async (channel, peer, orderer, waitTime) => {
 
 	const channelClient = channel._clientContext;
 	const genesis_block = await channel.getGenesisBlock({orderer});
-	logger.debug('signature identity', channelClient.getUserContext().getName());
 	const request = {
 		targets: [peer],
 		txId: channelClient.newTransactionID(),
