@@ -12,13 +12,13 @@ exports.new = (moduleName, dev) => {
 				level: 'debug',
 				colorize: true,
 				label: moduleName,
-				timestamp:true,
+				timestamp: true,
 			})
 		]
 	});
 };
-exports.setGlobal = () => {
-	const hfcLogger = exports.new('hfc');
+exports.setGlobal = (dev) => {
+	const hfcLogger = exports.new('hfc', dev);
 	global.hfc = {
 		logger: hfcLogger
 	};
