@@ -112,25 +112,23 @@ function golang1_10() {
 	if [ "$1" == "remove" ]; then
 		if [ $(uname) == "Darwin" ]; then
 			brew uninstall go || true
-			return
+		else
+			sudo apt-get -y remove golang-go
 		fi
-		sudo apt-get -y remove golang-go
-		sudo add-apt-repository --remove -y ppa:longsleep/golang-backports
+
 	else
 		if [ $(uname) == "Darwin" ]; then
 			brew install go || true
-			return
-		fi
-		sudo add-apt-repository -y ppa:longsleep/golang-backports
-		sudo apt-get update
-		sudo apt-get -y install golang-go
-		GOPATH=$(go env GOPATH)
-		if ! grep "$GOPATH/bin" $bashProfile; then
-			echo "...To set GOPATH/bin and GOBIN"
-			sudo sed -i "1 i\export PATH=\$PATH:$GOPATH/bin" $bashProfile
-			sudo sed -i "1 i\export GOBIN=$GOPATH/bin" $bashProfile
 		else
-			echo "GOPATH/bin found in $bashProfile"
+			sudo apt-get -y install golang-go
+			GOPATH=$(go env GOPATH)
+			if ! grep "$GOPATH/bin" $bashProfile; then
+				echo "...To set GOPATH/bin and GOBIN"
+				sudo sed -i "1 i\export PATH=\$PATH:$GOPATH/bin" $bashProfile
+				sudo sed -i "1 i\export GOBIN=$GOPATH/bin" $bashProfile
+			else
+				echo "GOPATH/bin found in $bashProfile"
+			fi
 		fi
 	fi
 }
