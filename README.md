@@ -20,6 +20,10 @@ see [Build 1.1](./BUILD1.1.md)
 
 # TODO
 - instantiate chaincode on Mac, context canceled
+- migrate into common nodejs modules without fabric context
+    - winston logger
+    - other helper
+    - model: KVDBInterface, other API define  
 
 # Fabric weakness
 - gossip timeline is outside of blockchain,  for massive data scenario, gossip will fall behind transaction event  
