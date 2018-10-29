@@ -145,10 +145,7 @@ exports.BlockWaiter = async (eventHub, minHeight) => {
 	return block;
 };
 
-const txEventCode = {
-	valid: 'VALID',
-	invalidEndorser: 'ENDORSEMENT_POLICY_FAILURE',
-};
+const txEventCode = ['VALID', 'ENDORSEMENT_POLICY_FAILURE', 'MVCC_READ_CONFLICT'];
 exports.txEventCode = txEventCode;
 /**
  *
@@ -163,7 +160,7 @@ exports.txEvent = (eventHub, {txId}, validator, onSuccess, onError = defaultOnEr
 	const logger = Logger.new('txEvent');
 	if (!validator) {
 		validator = ({tx, code}) => {
-			return {valid: code === txEventCode.valid, interrupt: true};
+			return {valid: code === txEventCode[0], interrupt: true};
 		};
 	}
 	const transactionID = txId.getTransactionID();

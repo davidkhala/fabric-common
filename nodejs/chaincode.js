@@ -1,5 +1,4 @@
 const logUtil = require('./logger');
-const logger = logUtil.new('chaincode', true);
 const Channel = require('fabric-client/lib/Channel');
 const Orderer = require('fabric-client/lib/Orderer');
 const ChannelUtil = require('./channel');
@@ -40,6 +39,7 @@ exports.transientMap = (jsObject) => {
  * @return {function(*[]): ProposalResult}
  */
 exports.chaincodeProposalAdapter = (actionString, validator, verbose, log) => {
+	const logger = logUtil.new(`chaincodeProposalAdapter:${actionString}`, true);
 	const _validator = validator ? validator : ({response}) => {
 		return {isValid: response && response.status === 200, isSwallowed: false};
 	};
@@ -70,12 +70,12 @@ exports.chaincodeProposalAdapter = (actionString, validator, verbose, log) => {
 			const {isValid, isSwallowed} = _validator(proposalResponse);
 
 			if (isValid) {
-				if (log) logger.info(`${actionString} is good for [${i}]`, stringify(proposalResponse, verbose));
+				if (log) logger.info(`good for [${i}]`, stringify(proposalResponse, verbose));
 				if (isSwallowed) {
 					swallowCounter++;
 				}
 			} else {
-				logger.error(`${actionString} is bad for [${i}]`, stringify(proposalResponse, verbose));
+				logger.error(`bad for [${i}]`, stringify(proposalResponse, verbose));
 				errCounter++;
 			}
 		}
@@ -260,9 +260,10 @@ exports.instantiateOrUpgrade = async (
 
 
 const txTimerPromise = (eventHub, {txId}, eventWaitTime) => {
+	const logger = logUtil.new('newTxEvent', true);
 	const validator = ({tx, code}) => {
-		logger.debug('newTxEvent', {tx, code});
-		return {valid: code === txEventCode.valid, interrupt: true};
+		logger.debug({tx, code});
+		return {valid: code === txEventCode[0], interrupt: true};
 	};
 	return new Promise((resolve, reject) => {
 		const onSuccess = ({tx, code, interrupt}) => {
