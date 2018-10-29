@@ -36,6 +36,21 @@ exports.simplePolicyBuilder = (identities, n) => {
 		}
 	};
 };
+/**
+ * only `OR` is allowed in collection policy, see in https://hyperledger-fabric.readthedocs.io/en/release-1.2/private-data-arch.html
+ *  ----
+ *  policy: Defines the organization peers allowed to persist the collection data expressed using the Signature policy syntax,
+ *      with each member being included in an OR signature policy list.
+ *  ----
+ */
+exports.collectionPolicyBuilder = (identities) => {
+	return {
+		identities,
+		policy: {
+			['1-of']: identities.map((e, i) => ({'signed-by': i}))
+		}
+	};
+};
 
 const MSPRoleType = ['member', 'admin', 'client', 'peer'];
 
