@@ -109,17 +109,20 @@ function golang1_7() {
 	fi
 }
 function golang1_10() {
-	if [ "$1" == "remove" ]; then
+	if [[ "$1" == "remove" ]]; then
 		if [ $(uname) == "Darwin" ]; then
 			brew uninstall go || true
 		else
 			sudo apt-get -y remove golang-go
+			sudo add-apt-repository --remove -y ppa:longsleep/golang-backports
 		fi
 
 	else
 		if [ $(uname) == "Darwin" ]; then
 			brew install go || true
 		else
+			sudo add-apt-repository -y ppa:longsleep/golang-backports
+			sudo apt-get update
 			sudo apt-get -y install golang-go
 			GOPATH=$(go env GOPATH)
 			if ! grep "$GOPATH/bin" $bashProfile; then
@@ -142,21 +145,21 @@ function install_libtool() {
 
 function golang_dep() {
 	echo "install dep..."
-	if [ $(uname) == "Darwin" ]; then
+	if [[ $(uname) == "Darwin" ]]; then
 		brew install dep
-		return
-	fi
-	if [ -z "$GOBIN" ]; then
-		if [ -z "$GOPATH" ]; then
-			echo install dep failed: GOPATH not found
-			exit 1
+	else
+		if [ -z "$GOBIN" ]; then
+			if [ -z "$GOPATH" ]; then
+				echo install dep failed: GOPATH not found
+				exit 1
+			fi
+			export GOBIN=$GOPATH/bin/
 		fi
-		export GOBIN=$GOPATH/bin/
-	fi
-	mkdir -p $GOBIN
-	curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-	if echo $PATH | grep "$GOBIN" >/dev/null; then
-		export PATH=$PATH:$GOBIN # ephemeral
+		mkdir -p $GOBIN
+		curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+		if ! echo $PATH | grep "$GOBIN"; then
+			export PATH=$PATH:$GOBIN # ephemeral
+		fi
 	fi
 	dep version
 }
