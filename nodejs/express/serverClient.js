@@ -21,27 +21,6 @@ exports.RequestPromise = ({url, body, method = 'POST', formData}, otherOptions =
 	});
 };
 
-//TODO have not cover all API yet
-exports.ping = async (serverBaseUrl) => {
-	const retryMax = 5;
-	let retryCounter = 0;
-	const aTry = () => new Promise((resolve, reject) => {
-		exports.RequestPromise({
-			url: `${serverBaseUrl}/`,
-			method: 'GET'
-		}).then(body => resolve(body)).catch(err => {
-			if (err.code === 'ECONNREFUSED' && retryCounter < retryMax) {
-				logger.warn('ping retry', retryCounter);
-				setTimeout(() => {
-					retryCounter++;
-					resolve(aTry());
-				}, 200);
-			} else reject(err);
-		});
-	});
-	return aTry();
-
-};
 exports.leader = {
 	update: (serverBaseUrl, {ip, hostname, managerToken, workerToken}) => {
 		return exports.RequestPromise({
