@@ -72,42 +72,6 @@ function golang1_9() {
 	echo "path (effective in new shell) $PATH"
 }
 
-function golang1_7() {
-	local goVersion=go1.7.6
-	if go version; then
-		echo "current go version " $(go version) " exist, skip install"
-		return
-	fi
-	local GOPATH=$HOME/go
-
-	echo install golang $goVersion
-
-	# write GOROOT to $PATH
-	if ! grep "/usr/local/go/bin" $bashProfile; then
-		echo "...To set GOROOT"
-		sudo sed -i "1 i\export PATH=\$PATH:/usr/local/go/bin" $bashProfile
-	else
-		echo "GOROOT found in $bashProfile"
-	fi
-
-	goTar=$goVersion.linux-amd64.tar.gz
-	wget https://redirector.gvt1.com/edgedl/go/${goTar}
-	sudo tar -C /usr/local -xzf ${goTar}
-	rm -f ${goTar}
-
-	# write GOPATH
-	if ! grep "$GOPATH" $bashProfile; then
-		echo "...To set GOPATH"
-		echo "export GOPATH=${GOPATH}" | sudo tee -a $bashProfile
-	fi
-	# write $GOPATH/bin to $PATH
-	if ! grep "$GOPATH/bin" $bashProfile; then
-		echo "...To set GOPATH/bin"
-		sudo sed -i "1 i\export PATH=\$PATH:$GOPATH/bin" $bashProfile
-	else
-		echo "GOPATH/bin found in $bashProfile"
-	fi
-}
 function golang1_10() {
 	if [[ "$1" == "remove" ]]; then
 		if [ $(uname) == "Darwin" ]; then
@@ -166,6 +130,12 @@ function golang_dep() {
 function gitSync() {
 	git pull
 	git submodule update --init --recursive
+}
+function java8() {
+	sudo add-apt-repository -y ppa:webupd8team/java
+	sudo apt update
+	sudo apt install -y oracle-java8-installer
+	sudo apt install -y oracle-java8-set-default
 }
 
 if [ -n "$fcn" ]; then
