@@ -2,7 +2,7 @@ const caUtil = require('./ca');
 const userUtil = require('./user');
 const logger = require('./logger').new('ca-crypto-gen');
 const affiliationUtil = require('./affiliationService');
-const commonHelper = require('./helper');
+const {sleep} = require('khala-nodeutils/helper');
 const clientUtil = require('./client');
 /**
  *
@@ -61,7 +61,7 @@ exports.init = async (caService, adminCryptoPath, nodeType, mspId, {TLS, affilia
 			if (e.toString().includes('Calling enrollment endpoint failed with error')) {
 				const ms = 1000;
 				logger.warn(`ca ${caUtil.toString(caService)} might not be ready, sleep and retry`);
-				await commonHelper.sleep(ms);
+				await sleep(ms);
 				return initAdminRetry();
 			}
 			throw e;

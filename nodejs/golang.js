@@ -1,4 +1,4 @@
-const {exec} = require('./helper');
+const {exec} = require('khala-nodeutils/helper');
 const logger = require('./logger').new('golang');
 exports.getGOPATH = async () => {
 	const {stdout, stderr} = await exec('go env GOPATH');

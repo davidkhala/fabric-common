@@ -2,7 +2,7 @@ const logger = require('./logger').new('configtxlator');
 
 const fs = require('fs');
 const agent = require('./agent2configtxlator');
-const {JSONEqual} = require('./helper');
+const {JSONEqual} = require('khala-nodeutils/helper');
 exports.ConfigFactory = class {
 	constructor(original_config) {
 		this.newConfig = JSON.parse(original_config);

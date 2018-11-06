@@ -9,7 +9,7 @@ const couchdbUtil = require('./couchdb');
 const {fsExtra} = require('./path');
 const userUtil = require('./user');
 const yaml = require('js-yaml');
-const commonHelper = require('./helper');
+const dockerHelper = require('../docker/nodejs/helper');
 
 /**
  * TODO not mature
@@ -27,12 +27,12 @@ exports.swarmRenew = async () => {
 	}
 };
 exports.swarmIPJoin = async ({AdvertiseAddr, JoinToken}) => {
-	const ip = commonHelper.ip();
+	const ip = dockerHelper.ip();
 	await dockerUtil.swarmJoin({AdvertiseAddr, JoinToken}, ip);
 };
 exports.swarmIPInit = async (AdvertiseAddr) => {
 	if (!AdvertiseAddr) {
-		const ip = commonHelper.ip();
+		const ip = dockerHelper.ip();
 		AdvertiseAddr = `${ip}:2377`;
 	}
 	logger.debug('swarmIPInit', AdvertiseAddr);
