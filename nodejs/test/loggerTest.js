@@ -1,4 +1,8 @@
 const path = require('path');
 const logFile = path.resolve(__dirname, 'debug.log');
-const logger = require('khala-nodeutils/logger').newFile('logFile', logFile);
-logger.debug(' a new message');
+const Logger = require('khala-nodeutils/logger');
+const label = 'test';
+const fileLogger = Logger.newFile(label, logFile);
+fileLogger.debug(' a new message');
+const logger = Logger.new(label);
+logger.debug('console ');
