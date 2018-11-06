@@ -378,11 +378,11 @@ exports.deployPeer = async ({
 	});
 };
 exports.runPeer = ({
-	container_name, port, network, imageTag,
-	msp: {
-		id, volumeName,
-		configPath
-	}, peerHostName, tls, couchDB
+	                   container_name, port, network, imageTag,
+	                   msp: {
+		                   id, volumeName,
+		                   configPath
+	                   }, peerHostName, tls, couchDB, stateVolume
 }) => {
 	const Image = `hyperledger/fabric-peer:${imageTag}`;
 	const Cmd = ['peer', 'node', 'start'];
@@ -397,7 +397,7 @@ exports.runPeer = ({
 		Env,
 		Volumes: {
 			[peerUtil.container.dockerSock]: {},
-			[peerUtil.container.MSPROOT]: {}
+			[peerUtil.container.MSPROOT]: {},
 		},
 		Cmd,
 		Image,
@@ -424,6 +424,10 @@ exports.runPeer = ({
 			}
 		}
 	};
+	if (stateVolume) {
+		createOptions.Volumes[peerUtil.container.state] = {};
+		createOptions.Hostconfig.Binds.push(`${stateVolume}:${peerUtil.container.state}`);
+	}
 	return dockerUtil.containerStart(createOptions);
 };
 

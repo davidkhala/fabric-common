@@ -2,6 +2,7 @@ const logger = require('./logger').new('channel');
 const fs = require('fs');
 const {signs} = require('./multiSign');
 const Channel = require('fabric-client/lib/Channel');
+const {sleep} = require('khala-nodeutils/helper');
 exports.setClientContext = (channel, clientContext) => {
 	channel._clientContext = clientContext;
 };
@@ -83,13 +84,14 @@ exports.create = async (signClients, channel, channelConfigFile, orderer) => {
 
 /**
  * to be atomic, join 1 peer each time
- * @param channel
- * @param peer
- * @param orderer
+ * @param {Channel} channel
+ * @param {Peer} peer
+ * @param {Orderer} orderer
+ * @param {number} waitTime default 1000, if set to false, will not retry channel join
  * @returns {Promise<*>}
  */
-exports.join = async (channel, peer, orderer, waitTime) => {
-	const logger = require('./logger').new('join-channel');
+exports.join = async (channel, peer, orderer, waitTime = 1000) => {
+	const logger = require('./logger').new('join-channel', true);
 	logger.debug({channelName: channel.getName(), peer: peer._name});
 
 	const channelClient = channel._clientContext;
@@ -101,31 +103,28 @@ exports.join = async (channel, peer, orderer, waitTime) => {
 	};
 
 	const data = await channel.joinChannel(request);
-	const joinedBeforeSymptom = 'Cannot create ledger from genesis block, due to LedgerID already exists';
+	const joinedBeforeSymptom = 'LedgerID already exists';
 	const dataEntry = data[0];
 
 	if (dataEntry instanceof Error) {
-		if (waitTime && Number.isInteger(waitTime) && waitTime > 0) {
-			const errString = dataEntry.toString();
-			if (errString.includes('Invalid results returned ::NOT_FOUND') || errString.includes('UNAVAILABLE')) {
-				logger.warn('loopJoinChannel...', errString);
-				await new Promise(resolve => {
-					setTimeout(() => {
-						resolve(exports.join(channel, peer, orderer, waitTime));
-					}, waitTime);
-				});
-			}
-		} else throw dataEntry;
-	}
-	const {response: {status, message}} = dataEntry;
-	if (status !== 200) {
-		//swallow 'joined before' error
-		if (message === joinedBeforeSymptom) {
+		logger.warn(dataEntry);
+		const errString = dataEntry.toString();
+		if (errString.includes('Stream removed') && waitTime) {
+			logger.warn('loopJoinChannel...', errString);
+			await sleep(waitTime);
+			return await exports.join(channel, peer, orderer, waitTime);
+		}
+		if (errString.includes(joinedBeforeSymptom)) {
+			//swallow 'joined before' error
 			logger.info('peer joined before', peer._name);
 			return;
-		} else {
-			throw {status, message};
 		}
+		throw dataEntry;
+	}
+
+	const {response: {status, message}} = dataEntry;
+	if (status !== 200) {
+		throw {status, message};
 	}
 	return dataEntry;
 

@@ -20,7 +20,7 @@ see [Build 1.1](./BUILD1.1.md)
 
 # TODO
 - instantiate chaincode on Mac, context canceled
-- migrate into common nodejs modules without fabric context
+- migrate into npm `khala-nodeutils` 
     - winston logger
     - other helper
     - model: KVDBInterface, other API define  
