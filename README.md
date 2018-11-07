@@ -25,5 +25,7 @@ see [Build 1.1](./BUILD1.1.md)
     - other helper
     - model: KVDBInterface, other API define  
 
+
 # Fabric weakness
 - gossip timeline is outside of blockchain,  for massive data scenario, gossip will fall behind transaction event  
+- update Anchor peer will not create new block?

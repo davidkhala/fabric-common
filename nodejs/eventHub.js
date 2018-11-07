@@ -1,4 +1,6 @@
 const Logger = require('./logger');
+const ChannelEventHub = require('fabric-client/lib/ChannelEventHub');
+const Query = require('./query');
 exports.unRegisterAllEvents = (eventHub) => {
 	eventHub._chaincodeRegistrants = {};
 	eventHub._blockOnEvents = {};
@@ -14,12 +16,25 @@ exports.unRegisterAllEvents = (eventHub) => {
  * @returns {ChannelEventHub}
  */
 exports.newEventHub = (channel, peer, inlineConnected) => {
-	const eventHub = channel.newChannelEventHub(peer);
+	const eventHub = new ChannelEventHub(channel, peer);
 	if (inlineConnected) {
 		eventHub.connect(true);
 	}
 	return eventHub;
 };
+/**
+ * return internal properties
+ * @param eventHub
+ * @return {*}
+ */
+const propertiesOf = (eventHub) => {
+	return {
+		client: eventHub._clientContext,
+		peer: eventHub._peer,
+		channel: eventHub._channel
+	};
+};
+exports.propertiesOf = propertiesOf;
 const defaultOnError = (err) => {
 	throw err;
 };
@@ -114,7 +129,7 @@ exports.blockEvent = (eventHub, validator, onSuccess, onError = defaultOnError) 
 
 	return block_registration_number;
 };
-exports.BlockWaiter = async (eventHub, minHeight) => {
+const blockWaiter = async (eventHub, minHeight) => {
 	const logger = Logger.new('blockWaiter');
 	const {block} = await new Promise((resolve, reject) => {
 		const onSucc = ({block, interrupt}) => {
@@ -144,7 +159,13 @@ exports.BlockWaiter = async (eventHub, minHeight) => {
 	});
 	return block;
 };
+exports.blockWaiter = blockWaiter;
+exports.nextBlockWaiter = async (eventHub) => {
+	const {peer, channel} = propertiesOf(eventHub);
+	const {pretty: {height}} = await Query.chain(peer, channel);
+	await blockWaiter(eventHub, height+1);//TODO anchor peer will not create new block?
 
+};
 const txEventCode = ['VALID', 'ENDORSEMENT_POLICY_FAILURE', 'MVCC_READ_CONFLICT'];
 exports.txEventCode = txEventCode;
 /**
