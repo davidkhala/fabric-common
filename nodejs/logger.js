@@ -1,4 +1,4 @@
-const winston = require('winston');
+const Logger = require('khala-nodeutils/logger');
 /**
  *
  * @param moduleName
@@ -12,31 +12,7 @@ exports.new = (moduleName, dev) => {
 		logger.level = 'debug';
 		return logger;
 	}
-	return new (winston.Logger)({
-		transports: [
-			new (winston.transports.Console)({
-				level: 'debug',
-				colorize: true,
-				label: moduleName,
-				timestamp: true,
-			})
-		]
-	});
-};
-exports.newFile = (moduleName, logFile) => {
-	return new (winston.Logger)({
-		transports: [
-			new (winston.transports.File)({
-				//property name: https://github.com/winstonjs/winston/tree/2.x#multiple-transports-of-the-same-type
-				level: 'debug',
-				label: moduleName,
-				filename: logFile,
-				timestamp: true,
-				json: false,
-				colorize: false
-			})
-		]
-	});
+	return Logger.new(moduleName);
 };
 exports.setGlobal = (dev) => {
 	const hfcLogger = exports.new('hfc', dev);

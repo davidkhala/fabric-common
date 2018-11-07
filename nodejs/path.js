@@ -1,10 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 const fsExtra = require('fs-extra');
-const os = require('os');
-exports.homeResolve = (relativePath, ...tokens) => {
-	return path.resolve(os.homedir(), relativePath, ...tokens);
-};
 exports.findKeyfiles = (dir) => {
 	const files = fs.readdirSync(dir);
 	return files.filter((fileName) => fileName.endsWith('_sk')).map((fileName) => path.resolve(dir, fileName));
