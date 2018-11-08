@@ -161,10 +161,11 @@ const blockWaiter = async (eventHub, minHeight) => {
 };
 exports.blockWaiter = blockWaiter;
 exports.nextBlockWaiter = async (eventHub) => {
+	const logger = Logger.new('nextBlockWaiter');
 	const {peer, channel} = propertiesOf(eventHub);
 	const {pretty: {height}} = await Query.chain(peer, channel);
-	await blockWaiter(eventHub, height+1);//TODO anchor peer will not create new block?
-
+	logger.info(peer.toString(), `current block height ${height}`);//blockHeight indexing from 1
+	await blockWaiter(eventHub, height);//blockNumber indexing from 0
 };
 const txEventCode = ['VALID', 'ENDORSEMENT_POLICY_FAILURE', 'MVCC_READ_CONFLICT'];
 exports.txEventCode = txEventCode;
