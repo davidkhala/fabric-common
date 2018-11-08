@@ -2,7 +2,7 @@ const {exec} = require('khala-nodeutils/helper');
 
 const Logger = require('khala-nodeutils/logger');
 const path = require('path');
-const binShellDir = path.resolve('../bin-manage');
+const binShellDir = path.resolve(__dirname, '../bin-manage');
 exports.configtxlator = async (action = '') => {
 	const logger = Logger.new('configtxlator server');
 	const shellScript = path.resolve(binShellDir, `runConfigtxlator.sh ${action}`);
@@ -12,7 +12,7 @@ exports.configtxlator = async (action = '') => {
 	return stdout;
 };
 
-exports.genAnchorPeers = async (configtxYaml,channelName,orgName, anchorTxOutputFile) => {
+exports.genAnchorPeers = async (configtxYaml, channelName, orgName, anchorTxOutputFile) => {
 	const config_dir = path.dirname(configtxYaml);
 	const runConfigtxGenShell = path.resolve(binShellDir, 'runConfigtxgen.sh');
 	const PROFILE = 'anchorPeers';
