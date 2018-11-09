@@ -16,16 +16,11 @@ see [Build 1.1](./BUILD1.1.md)
     - means package name for golang-chaincode entrance is not `main`   
 - blockHeight(got from queryChain) indexing from 1, blockNumber in blockEvent starting from 0
 # DONE
-- fabric-sdk-node: add timeStamp for default winston logger
 
 # TODO
 - instantiate chaincode on Mac, context canceled
-- migrate into npm `khala-nodeutils` 
-    - winston logger
-    - other helper
-    - model: KVDBInterface, other API define  
+- cannot disseminate privateData to non-anchor peers?  
 
 
 # Fabric weakness
 - gossip timeline is outside of blockchain,  for massive data scenario, gossip will fall behind transaction event  
-- update Anchor peer will not create new block?
