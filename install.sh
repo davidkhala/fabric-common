@@ -102,9 +102,9 @@ function golang1_10() {
 function install_libtool() {
 	if [ $(uname) == "Darwin" ]; then
 		brew install libtool
-		return
+	else
+		sudo apt-get install -y libtool
 	fi
-	sudo apt-get install -y libtool
 }
 
 function golang_dep() {
