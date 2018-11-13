@@ -15,6 +15,8 @@ see [Build 1.1](./BUILD1.1.md)
 - `failed to invoke chaincode name:"lscc" , error: API error (400): OCI runtime create failed: container_linux.go:348: starting container process caused "exec: \"chaincode\": executable file not found in $PATH": unknown`
     - means package name for golang-chaincode entrance is not `main`   
 - blockHeight(got from queryChain) indexing from 1, blockNumber in blockEvent starting from 0
+- requirePeerCount <= peerCount - 1 (1 for peer itself)
+- "2-of" collectionPolicy is not allowed 
 # DONE
 
 # TODO
