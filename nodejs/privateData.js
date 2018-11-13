@@ -1,6 +1,11 @@
 const sideDB = require('fabric-client/lib/SideDB');
 const {RoleIdentity, simplePolicyBuilder} = require('./policy');
+const logger = require('./logger').new('privateData');
 exports.collectionConfig = ({name, policy, requiredPeerCount, maxPeerCount, blockToLive = 0}) => {
+	const {identities} = policy;
+	if (requiredPeerCount < identities.length - 1) {
+		logger.warn(`[recommend] collectionConfig ${name}:requiredPeerCount > ${identities.length - 2} is suggested in production`);
+	}
 	return sideDB.checkCollectionConfig({name, policy, requiredPeerCount, maxPeerCount, blockToLive});
 };
 
