@@ -3,7 +3,7 @@ const Long = require('long');
  *
  * @param {Peer} peer
  * @param {Channel} channel
- * @returns {Promise|Promise<{height, currentBlockHash, previousBlockHash,pretty}>}
+ * @returns {Promise<{height, currentBlockHash, previousBlockHash,pretty}>}
  */
 exports.chain = async (peer, channel) => {
 	const message = await channel.queryInfo(peer);
@@ -17,17 +17,19 @@ exports.chain = async (peer, channel) => {
 	//npm long:to parse{ low: 4, high: 0, unsigned: true }
 	return message;
 };
-exports.chaincodes = {
-	installed: (peer, client) => client.queryInstalledChaincodes(peer),// FIXME:clumsy design in fabric peer or [peer]
-	instantiated: (peer, channel) => channel.queryInstantiatedChaincodes(peer)
-};
-exports.block = {
-	//NOTE blockchain is a summary of all chaincode
-	hash: (peer, channel, hashBuffer) => channel.queryBlockByHash(hashBuffer, peer),
-	height: (peer, channel, blockNumber) => channel.queryBlock(parseInt(blockNumber), peer)
-};
-exports.channel = {
-	joined: (peer, client) => client.queryChannels(peer) //FIXME peer or [peer] bug design here:Failed Channels Query. Error: Error: Too many results returned	at /fabric-client/lib/Client.js:786:29
+/**
+ * // [ { name: 'adminChaincode',
+	// 	version: 'v0',
+	// 	path: 'github.com/admin',
+	// 	input: '',
+	// 	escc: '',
+	// 	vscc: '' } ]
+ */
+exports.chaincodesInstalled = async (peer, client) => client.queryInstalledChaincodes(peer);// FIXME:clumsy design in fabric peer or [peer]
+exports.chaincodesInstantiated = async (peer, channel) => channel.queryInstantiatedChaincodes(peer);
 
-};
-exports.tx = (peer, channel, txId) => channel.queryTransaction(txId, peer);
+exports.blockFromHash = async (peer, channel, hashHex) => channel.queryBlockByHash(Buffer.from(hashHex, 'hex'), peer);
+exports.blockFromHeight = async (peer, channel, blockNumber) => channel.queryBlock(parseInt(blockNumber), peer);
+exports.channelJoined = async (peer, client) => client.queryChannels(peer); //FIXME peer or [peer] bug design here:Failed Channels Query. Error: Error: Too many results returned	at /fabric-client/lib/Client.js:786:29
+
+exports.tx = async (peer, channel, txId) => channel.queryTransaction(txId, peer);
