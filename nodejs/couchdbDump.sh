@@ -4,12 +4,12 @@ CURRENT=$(cd $(dirname ${BASH_SOURCE}) && pwd)
 backupDir=$CURRENT/backup/
 function backupDB() {
 	local port=${1:-5984}
-    local host=${2:-localhost}
-    local protocol=${3:-http}
+	local host=${2:-localhost}
+	local protocol=${3:-http}
 	if [ ! -d ${backupDir} ]; then
 		mkdir -p $backupDir
 	fi
-	
+
 	local url="$protocal://${host}:${port}/_all_dbs"
 	local response=$(curl -s -X GET $url)
 	if [ -z $response ]; then
@@ -27,8 +27,8 @@ function backupDB() {
 
 function loadDB() {
 	local port=${1:-5984}
-    local host=${2:-localhost}
-    local protocol=${3:-http}
+	local host=${2:-localhost}
+	local protocol=${3:-http}
 	local url="$protocal://${host}:${port}/_all_dbs"
 
 	# local response=$(curl -s -X GET $url) # TODO: logical error here
