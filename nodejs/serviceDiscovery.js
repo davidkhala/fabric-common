@@ -12,5 +12,8 @@ exports.pretty = (discoveries) => {
 	return result;
 };
 
+exports.globalPeers = async (client, peer) => {
+	return client.queryPeers({target: peer, useAdmin: false});
+};
 
 
