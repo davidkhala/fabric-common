@@ -293,7 +293,10 @@ exports.chaincodeClean = async (prune) => {
 		}));
 	}
 };
-exports.runOrderer = ({container_name, imageTag, port, network, BLOCK_FILE, CONFIGTXVolume, msp: {id, configPath, volumeName}, kafkas, tls}) => {
+exports.runOrderer = ({
+	container_name, imageTag, port, network, BLOCK_FILE, CONFIGTXVolume,
+	msp: {id, configPath, volumeName}, kafkas, tls, stateVolume
+}) => {
 	const Image = `hyperledger/fabric-orderer:${imageTag}`;
 	const Cmd = ['orderer'];
 	const Env = ordererUtil.envBuilder({
@@ -335,6 +338,10 @@ exports.runOrderer = ({container_name, imageTag, port, network, BLOCK_FILE, CONF
 			}
 		}
 	};
+	if (stateVolume) {
+		createOptions.Volumes[ordererUtil.container.state] = {};
+		createOptions.Hostconfig.Binds.push(`${stateVolume}:${ordererUtil.container.state}`);
+	}
 	return dockerUtil.containerStart(createOptions);
 };
 

@@ -76,9 +76,15 @@ exports.create = async (signClients, channel, channelConfigFile, orderer) => {
 	//The client application must poll the orderer to discover whether the channel has been created completely or not.
 	const results = await channelClient.createChannel(request);
 	const {status, info} = results;
-	logger.debug('channel created', {status, info}, results);
+	logger.debug('response', {status, info}, results);
 	if (status === 'SUCCESS') return results;
-	else throw results;
+	else {
+		if (status === 'SERVICE_UNAVAILABLE' && info === 'will not enqueue, consenter for this channel hasn\'t started yet') {
+			logger.warn('loop retry..');
+			await sleep(1000);
+			return exports.create(signClients, channel, channelConfigFile, orderer);
+		} else throw results;
+	}
 };
 
 
