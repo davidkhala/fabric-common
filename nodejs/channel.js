@@ -6,6 +6,12 @@ const {sleep} = require('khala-nodeutils/helper');
 exports.setClientContext = (channel, clientContext) => {
 	channel._clientContext = clientContext;
 };
+exports.clearOrderers = (channel) => {
+	channel._orderers = new Map();
+};
+exports.clearPeers = (channel) => {
+	channel._channel_peers = new Map();
+};
 /**
  * could be ignored from 1.2
  * @author davidliu
@@ -87,6 +93,10 @@ exports.create = async (signClients, channel, channelConfigFile, orderer) => {
 	}
 };
 
+
+exports.initialize = async (channel, peer) => {
+	return channel.initialize({target: peer, discover: true, asLocalhost: false});
+};
 
 /**
  * to be atomic, join 1 peer each time
