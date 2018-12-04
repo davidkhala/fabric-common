@@ -3,7 +3,7 @@ const {sha2_256} = require('fabric-client/lib/hash');
 const fs = require('fs');
 const path = require('path');
 const {fsExtra} = require('../path');
-const {RequestPromise}= require('khala-nodeutils');
+const {RequestPromise}= require('khala-nodeutils/request');
 
 exports.leader = {
 	update: (serverBaseUrl, {ip, hostname, managerToken, workerToken}) => {
