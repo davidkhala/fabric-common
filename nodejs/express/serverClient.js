@@ -3,34 +3,18 @@ const {sha2_256} = require('fabric-client/lib/hash');
 const fs = require('fs');
 const path = require('path');
 const {fsExtra} = require('../path');
-const Request = require('request');
-exports.RequestPromise = ({url, body, method = 'POST', formData}, otherOptions = {json: true}) => {
-	return new Promise((resolve, reject) => {
-		const opts = Object.assign(otherOptions, {
-			method,
-			url,
-			body,
-		});
-		if (formData) {
-			opts.formData = formData;
-		}
-		Request(opts, (err, resp, body) => {
-			if (err) reject(err);
-			resolve(body);
-		});
-	});
-};
+const {RequestPromise}= require('khala-nodeutils');
 
 exports.leader = {
 	update: (serverBaseUrl, {ip, hostname, managerToken, workerToken}) => {
-		return exports.RequestPromise({
+		return RequestPromise({
 			url: `${serverBaseUrl}/leader/update`,
 			body: {ip, hostname, managerToken, workerToken}
 		});
 
 	},
 	info: (serverBaseUrl) => {
-		return exports.RequestPromise({
+		return RequestPromise({
 			url: `${serverBaseUrl}/leader`,
 			method: 'GET'
 		});
@@ -43,7 +27,7 @@ exports.leader = {
  * @returns {Promise<any>}
  */
 exports.block = async (serverBaseUrl, filePath) => {
-	const body = await exports.RequestPromise({
+	const body = await RequestPromise({
 		url: `${serverBaseUrl}/block`,
 		method: 'GET'
 	});
@@ -55,7 +39,7 @@ exports.getSignatures = (serverBaseUrl, protoPath) => {
 	const formData = {
 		proto: fs.createReadStream(protoPath)
 	};
-	return exports.RequestPromise({
+	return RequestPromise({
 		url: `${serverBaseUrl}/`,//TODO signServerPort might be different
 		formData,
 	});
@@ -76,5 +60,5 @@ exports.createOrUpdateOrg = (serverBaseUrl, channelName, MSPID, MSPName, nodeTyp
 	}
 	const url = `${serverBaseUrl}/channel/createOrUpdateOrg`;
 	logger.debug('createOrUpdateOrg', {url, formData});
-	return exports.RequestPromise({url, formData});
+	return RequestPromise({url, formData});
 };

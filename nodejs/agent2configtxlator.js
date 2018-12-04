@@ -1,5 +1,5 @@
 const logger = require('./logger').new('configtxlator agent');
-const {RequestPromise} = require('./express/serverClient');
+const {RequestPromise} = require('khala-nodeutils/request');
 
 const requestPost = (opt) => {
 	return RequestPromise(opt, {
