@@ -6,7 +6,8 @@ const logger = require('./logger').new('client');
 
 const {cryptoKeyStore} = require('./package');
 const cryptoKeyStorePath = path.resolve(__dirname, cryptoKeyStore);
-fsExtra.ensureDirSync(cryptoKeyStorePath);
+fsExtra.ensureDirSync(cryptoKeyStorePath);//TODO
+const User = require('fabric-client/lib/User');
 exports.new = (persist) => {
 	const client = new Client();
 	const newCryptoSuite = exports.newCryptoSuite({persist});
@@ -18,6 +19,11 @@ exports.setChannel = (client, channelName, channel) => {
 };
 exports.deleteChannel = (client, channelName) => {
 	client._channels.delete(channelName);
+};
+exports.setUser = (client, user) => {
+	if (user instanceof User) {
+		client._userContext = user;
+	}
 };
 /**
  * configuration is set in package.json
