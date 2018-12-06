@@ -4,7 +4,7 @@
   "dependencies": {
     "fabric-ca-client": "1.3.0",
     "fabric-client": "1.3.0",
-    "khala-nodeutils": "^0.0.4"
+    "khala-nodeutils": "^0.1.0"
   },
   "cryptoKeyStore": "../keyStoreCache",
   "devDependencies": {

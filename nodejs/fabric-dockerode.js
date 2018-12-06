@@ -8,7 +8,7 @@ const zookeeperUtil = require('./zookeeper');
 const couchdbUtil = require('./couchdb');
 const {fsExtra} = require('./path');
 const userUtil = require('./user');
-const yaml = require('js-yaml');
+const yaml = require('khala-nodeutils/yaml');
 const dockerHelper = require('../docker/nodejs/helper');
 
 /**
@@ -164,7 +164,7 @@ exports.runCA = ({
 			},
 
 		};
-		fsExtra.outputFileSync(configFile, yaml.safeDump(config, {lineWidth: 180}));
+		yaml.write(config, configFile);
 
 		createOptions.Volumes = {
 			[caUtil.container.CONFIG]: {},
