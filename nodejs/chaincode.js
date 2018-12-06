@@ -289,7 +289,7 @@ const txTimerPromise = (eventHub, {txId}, eventWaitTime) => {
  *        error open /var/hyperledger/production/chaincodes/adminChaincode.v0: no such file or directory
  * @param channel
  * @param peers
- * @param eventHubs
+ * @param {ChannelEventHub[]} eventHubs
  * @param chaincodeId
  * @param {string} fcn
  * @param {string[]} args
@@ -371,11 +371,10 @@ exports.invokeProposal = async (client, targets, channelId, {chaincodeId, fcn, a
  * @param {number} proposalTimeout
  * @returns {Promise<{txEventResponses: {tx}[], proposalResponses: Array}>}
  */
-exports.query = async (channel, peers, {chaincodeId, fcn, args, transientMap}, proposalTimeout) => {
+exports.query = async (channel, peers, {chaincodeId, fcn, args, transientMap}, proposalTimeout = 30000) => {
 	const logger = logUtil.new('chaincode:query', true);
 	logger.debug({channel: channel.getName(), peersSize: peers.length, chaincodeId, fcn, args});
 	const client = channel._clientContext;
-	if (!proposalTimeout) proposalTimeout = 30000;
 
 	const nextRequest = await exports.invokeProposal(client, peers, channel.getName(), {
 		chaincodeId,

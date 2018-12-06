@@ -23,7 +23,8 @@ exports.deleteChannel = (client, channelName) => {
 exports.setUser = (client, user) => {
 	if (user instanceof User) {
 		client._userContext = user;
-	}
+	} else throw Error(`${user} is not instanceof User`);
+
 };
 exports.getUser = (client) => {
 	return client._userContext;

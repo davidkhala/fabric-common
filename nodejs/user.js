@@ -18,9 +18,10 @@ exports.loadFromLocal = async (cryptoPath, nodeType, mspid, cryptoSuite = client
 	if (!exist) return;
 	const {keystore, signcerts} = exist;
 
-	const user = await exports.build(username, {key: fs.readFileSync(keystore), certificate: fs.readFileSync(signcerts)}, mspid, cryptoSuite);
-
-	return user;
+	return await exports.build(username, {
+		key: fs.readFileSync(keystore),
+		certificate: fs.readFileSync(signcerts)
+	}, mspid, cryptoSuite);
 };
 exports.build = async (username, {key, certificate}, mspid, cryptoSuite = clientUtil.newCryptoSuite()) => {
 	const user = new User(username);
