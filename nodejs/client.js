@@ -25,6 +25,9 @@ exports.setUser = (client, user) => {
 		client._userContext = user;
 	}
 };
+exports.getUser = (client) => {
+	return client._userContext;
+};
 /**
  * configuration is set in package.json
  * @param path
