@@ -29,12 +29,12 @@ exports.initAdmin = async (caService, cryptoPath, nodeType, mspId, TLS) => {
 	}
 
 	const result = await caService.enroll({enrollmentID, enrollmentSecret});
-	caUtil.toMSP(result, cryptoPath, type);
-	caUtil.org.saveAdmin(result, cryptoPath, nodeType);
+	cryptoPath.toMSP(result, type);
+	cryptoPath.org.saveAdmin(result, nodeType);
 	if (TLS) {
 		const tlsResult = await caService.enroll({enrollmentID, enrollmentSecret, profile: 'tls'});
-		caUtil.toTLS(tlsResult, cryptoPath, type);
-		caUtil.org.saveTLS(tlsResult, cryptoPath, nodeType);
+		cryptoPath.toTLS(tlsResult, type);
+		cryptoPath.org.saveTLS(tlsResult, nodeType);
 	}
 
 	return await userUtil.build(userFull, result, mspId, cryptoSuite);
@@ -103,7 +103,7 @@ exports.genOrderer = async (caService, cryptoPath, admin, {TLS, affiliationRoot}
 	const enrollmentID = ordererHostName;
 	let enrollmentSecret = cryptoPath.password;
 	const certificate = userUtil.getCertificate(admin);
-	caUtil.toAdminCerts({certificate}, cryptoPath, type);
+	cryptoPath.toAdminCerts({certificate}, type);
 	const {enrollmentSecret: newSecret} = await caUtil.register(caService, {
 		enrollmentID,
 		enrollmentSecret,
@@ -113,11 +113,11 @@ exports.genOrderer = async (caService, cryptoPath, admin, {TLS, affiliationRoot}
 	enrollmentSecret = newSecret;
 
 	const result = await caService.enroll({enrollmentID, enrollmentSecret});
-	caUtil.toMSP(result, cryptoPath, type);
+	cryptoPath.toMSP(result, type);
 	if (TLS) {
 		const tlsResult = await caService.enroll({enrollmentID, enrollmentSecret, profile: 'tls'});
-		caUtil.toTLS(tlsResult, cryptoPath, type);
-		caUtil.org.saveTLS(tlsResult, cryptoPath, type);
+		cryptoPath.toTLS(tlsResult, type);
+		cryptoPath.org.saveTLS(tlsResult, type);
 	}
 	return admin;
 
@@ -145,7 +145,7 @@ exports.genPeer = async (caService, cryptoPath, admin, {TLS, affiliationRoot} = 
 	const enrollmentID = peerHostName;
 	let enrollmentSecret = cryptoPath.password;
 	const certificate = userUtil.getCertificate(admin);
-	caUtil.toAdminCerts({certificate}, cryptoPath, type);
+	cryptoPath.toAdminCerts({certificate}, type);
 	const {enrollmentSecret: newSecret} = await caUtil.register(caService, {
 		enrollmentID,
 		enrollmentSecret,
@@ -154,11 +154,11 @@ exports.genPeer = async (caService, cryptoPath, admin, {TLS, affiliationRoot} = 
 	}, admin);
 	enrollmentSecret = newSecret;
 	const result = await caService.enroll({enrollmentID, enrollmentSecret});
-	caUtil.toMSP(result, cryptoPath, type);
+	cryptoPath.toMSP(result, type);
 	if (TLS) {
 		const tlsResult = await caService.enroll({enrollmentID, enrollmentSecret, profile: 'tls'});
-		caUtil.toTLS(tlsResult, cryptoPath, type);
-		caUtil.org.saveTLS(tlsResult, cryptoPath, type);
+		cryptoPath.toTLS(tlsResult, type);
+		cryptoPath.org.saveTLS(tlsResult, type);
 	}
 };
 /**
@@ -195,10 +195,10 @@ exports.genUser = async (caService, cryptoPath, nodeType, admin, {TLS, affiliati
 	}, admin);
 	enrollmentSecret = newSecret;
 	const result = await caService.enroll({enrollmentID, enrollmentSecret});
-	caUtil.toMSP(result, cryptoPath, type);
+	cryptoPath.toMSP(result, type);
 	if (TLS) {
 		const tlsResult = await caService.enroll({enrollmentID, enrollmentSecret, profile: 'tls'});
-		caUtil.toTLS(tlsResult, cryptoPath, type);
+		cryptoPath.toTLS(tlsResult, type);
 	}
 	user = await userUtil.loadFromLocal(cryptoPath, nodeType, mspId, undefined);
 	return user;

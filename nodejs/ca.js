@@ -4,7 +4,7 @@
  * exceeds the maximum character limit of 64"}]]
  */
 const path = require('path');
-const logger = require('./logger').new('ca-core');
+const logger = require('./logger').new('CA core');
 const CAClient = require('fabric-ca-client/lib/FabricCAServices');
 const {fsExtra} = require('./path');
 const FABRIC_CA_HOME = '/etc/hyperledger/fabric-ca-server';
@@ -16,11 +16,6 @@ exports.container = {
 	caKey: path.resolve(FABRIC_CA_HOME, 'ca-key.pem'),
 	caCert: path.resolve(FABRIC_CA_HOME, 'ca-cert.pem'),
 	tlsCert: path.resolve(FABRIC_CA_HOME, 'tls-cert.pem'),
-};
-
-exports.toAdminCerts = ({certificate}, cryptoPath, type) => {
-	const {admincerts} = cryptoPath.MSPFile(type);
-	fsExtra.outputFileSync(admincerts, certificate);
 };
 
 exports.intermediateCA = {
@@ -68,35 +63,6 @@ exports.pkcs11_key = {
 		fsExtra.outputFileSync(path, key.toBytes());
 	}
 
-};
-//TODO move to CryptoPath
-exports.toMSP = ({key, certificate, rootCertificate}, cryptoPath, type) => {
-	const {cacerts, keystore, signcerts} = cryptoPath.MSPFile(type);
-	fsExtra.outputFileSync(signcerts, certificate);
-	exports.pkcs11_key.toKeystore(key, keystore);
-	fsExtra.outputFileSync(cacerts, rootCertificate);
-};
-exports.org = {
-	saveAdmin: ({certificate, rootCertificate}, cryptoPath, nodeType) => {
-		const {ca, msp: {admincerts, cacerts}} = cryptoPath.OrgFile(nodeType);
-
-		fsExtra.outputFileSync(cacerts, rootCertificate);
-		fsExtra.outputFileSync(ca, rootCertificate);
-		fsExtra.outputFileSync(admincerts, certificate);
-	},
-	saveTLS: ({rootCertificate}, cryptoPath, nodeType) => {
-		const {msp: {tlscacerts}, tlsca} = cryptoPath.OrgFile(nodeType);
-		fsExtra.outputFileSync(tlsca, rootCertificate);
-		fsExtra.outputFileSync(tlscacerts, rootCertificate);
-	}
-};
-exports.toTLS = ({key, certificate, rootCertificate}, cryptoPath, type) => {
-	const {caCert, cert, key: serverKey} = cryptoPath.TLSFile(type);
-	const {tlscacerts} = cryptoPath.MSPFile(type);//TLS in msp folder
-	exports.pkcs11_key.save(serverKey, key);
-	fsExtra.outputFileSync(cert, certificate);
-	fsExtra.outputFileSync(caCert, rootCertificate);
-	fsExtra.outputFileSync(tlscacerts, rootCertificate);
 };
 
 exports.register = registerIfNotExist;

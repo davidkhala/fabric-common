@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const fsExtra = require('fs-extra');
+const {pkcs11_key} = require('./ca');
 exports.findKeyfiles = (dir) => {
 	const files = fs.readdirSync(dir);
 	return files.filter((fileName) => fileName.endsWith('_sk')).map((fileName) => path.resolve(dir, fileName));
@@ -44,15 +45,15 @@ exports.CryptoPath = class {
 		const result = path.resolve(...tokens);
 		const dir = path.dirname(result);
 		switch (this.react) {
-		case 'throw':
-			if (!fsExtra.pathExistsSync(dir)) {
-				throw new Error(`${dir} not exist`);
-			}
-			break;
-		case 'mkdir':
-			fsExtra.ensureDirSync(dir);
-			break;
-		default:
+			case 'throw':
+				if (!fsExtra.pathExistsSync(dir)) {
+					throw new Error(`${dir} not exist`);
+				}
+				break;
+			case 'mkdir':
+				fsExtra.ensureDirSync(dir);
+				break;
+			default:
 		}
 		return result;
 	}
@@ -157,5 +158,42 @@ exports.CryptoPath = class {
 		if (!fsExtra.pathExistsSync(keystore)) return;
 		return {keystore, signcerts};
 	}
+
+	toAdminCerts({certificate}, type) {
+		const {admincerts} = this.MSPFile(type);
+		fsExtra.outputFileSync(admincerts, certificate);
+	}
+
+	toMSP({key, certificate, rootCertificate}, type) {
+		const {cacerts, keystore, signcerts} = this.MSPFile(type);
+		fsExtra.outputFileSync(signcerts, certificate);
+		pkcs11_key.toKeystore(key, keystore);
+		fsExtra.outputFileSync(cacerts, rootCertificate);
+	};
+
+	toTLS({key, certificate, rootCertificate}, type) {
+		const {caCert, cert, key: serverKey} = this.TLSFile(type);
+		const {tlscacerts} = this.MSPFile(type);//TLS in msp folder
+		pkcs11_key.save(serverKey, key);
+		fsExtra.outputFileSync(cert, certificate);
+		fsExtra.outputFileSync(caCert, rootCertificate);
+		fsExtra.outputFileSync(tlscacerts, rootCertificate);
+	};
+
+	org = {
+		saveAdmin: ({certificate, rootCertificate}, nodeType) => {
+			const {ca, msp: {admincerts, cacerts}} = this.OrgFile(nodeType);
+
+			fsExtra.outputFileSync(cacerts, rootCertificate);
+			fsExtra.outputFileSync(ca, rootCertificate);
+			fsExtra.outputFileSync(admincerts, certificate);
+		},
+		saveTLS: ({rootCertificate}, nodeType) => {
+			const {msp: {tlscacerts}, tlsca} = this.OrgFile(nodeType);
+			fsExtra.outputFileSync(tlsca, rootCertificate);
+			fsExtra.outputFileSync(tlscacerts, rootCertificate);
+		}
+	};
+
 };
 exports.fsExtra = fsExtra;
