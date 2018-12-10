@@ -98,6 +98,14 @@ exports.initialize = async (channel, peer) => {
 	return channel.initialize({target: peer, discover: true, asLocalhost: false});
 };
 
+exports.getOrderers = (channel) => {
+	const result = {};
+	for (const [key, value] of channel._orderers) {
+		result[key] = value;
+	}
+	return result;
+};
+
 /**
  * to be atomic, join 1 peer each time
  * @param {Channel} channel
@@ -175,4 +183,13 @@ exports.updateAnchorPeers = async (channel, anchorPeerTxFile, orderer) => {
 
 	logger.info('set anchor peers', result);
 	return result;
+};
+exports.pretty = (channel) => {
+	return {
+		name: channel._name,
+		peers: channel._channel_peers,
+		anchorPeers: channel._anchor_peers,
+		orderers: channel._orderers,
+		kafkas: channel._kafka_brokers,
+	};
 };

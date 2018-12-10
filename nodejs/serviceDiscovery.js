@@ -25,4 +25,16 @@ exports.globalPeers = async (client, peer) => {
 	return discoveries;
 };
 
-
+/**
+ * TODO: inspect the result structure
+ * Return the discovery results.
+ * Discovery results are only available if this channel has been initialized.
+ * If the results are too old, they will be refreshed
+ * @param {Channel} channel
+ * @param {DiscoveryChaincodeInterest[]} endorsement_hints - Indicate to discovery
+ *        how to calculate the endorsement plans.
+ * @returns {Promise<DiscoveryResults>}
+ */
+exports.getDiscoveryResults = async (channel, endorsement_hints) => {
+	return channel.getDiscoveryResults(endorsement_hints);
+};
