@@ -30,11 +30,11 @@ exports.initAdmin = async (caService, cryptoPath, nodeType, mspId, TLS) => {
 
 	const result = await caService.enroll({enrollmentID, enrollmentSecret});
 	cryptoPath.toMSP(result, type);
-	cryptoPath.org.saveAdmin(result, nodeType);
+	cryptoPath.toOrgAdmin(result, nodeType);
 	if (TLS) {
 		const tlsResult = await caService.enroll({enrollmentID, enrollmentSecret, profile: 'tls'});
 		cryptoPath.toTLS(tlsResult, type);
-		cryptoPath.org.saveTLS(tlsResult, nodeType);
+		cryptoPath.toOrgTLS(tlsResult, nodeType);
 	}
 
 	return await userUtil.build(userFull, result, mspId, cryptoSuite);
@@ -117,7 +117,7 @@ exports.genOrderer = async (caService, cryptoPath, admin, {TLS, affiliationRoot}
 	if (TLS) {
 		const tlsResult = await caService.enroll({enrollmentID, enrollmentSecret, profile: 'tls'});
 		cryptoPath.toTLS(tlsResult, type);
-		cryptoPath.org.saveTLS(tlsResult, type);
+		cryptoPath.toOrgTLS(tlsResult, type);
 	}
 	return admin;
 
@@ -158,7 +158,7 @@ exports.genPeer = async (caService, cryptoPath, admin, {TLS, affiliationRoot} = 
 	if (TLS) {
 		const tlsResult = await caService.enroll({enrollmentID, enrollmentSecret, profile: 'tls'});
 		cryptoPath.toTLS(tlsResult, type);
-		cryptoPath.org.saveTLS(tlsResult, type);
+		cryptoPath.toOrgTLS(tlsResult, type);
 	}
 };
 /**

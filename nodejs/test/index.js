@@ -1,0 +1,2 @@
+require('./loggerTest');
+require('./helperTest');

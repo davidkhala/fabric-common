@@ -180,20 +180,19 @@ exports.CryptoPath = class {
 		fsExtra.outputFileSync(tlscacerts, rootCertificate);
 	};
 
-	org = {
-		saveAdmin: ({certificate, rootCertificate}, nodeType) => {
-			const {ca, msp: {admincerts, cacerts}} = this.OrgFile(nodeType);
+	toOrgAdmin({certificate, rootCertificate}, nodeType) {
+		const {ca, msp: {admincerts, cacerts}} = this.OrgFile(nodeType);
 
-			fsExtra.outputFileSync(cacerts, rootCertificate);
-			fsExtra.outputFileSync(ca, rootCertificate);
-			fsExtra.outputFileSync(admincerts, certificate);
-		},
-		saveTLS: ({rootCertificate}, nodeType) => {
-			const {msp: {tlscacerts}, tlsca} = this.OrgFile(nodeType);
-			fsExtra.outputFileSync(tlsca, rootCertificate);
-			fsExtra.outputFileSync(tlscacerts, rootCertificate);
-		}
-	};
+		fsExtra.outputFileSync(cacerts, rootCertificate);
+		fsExtra.outputFileSync(ca, rootCertificate);
+		fsExtra.outputFileSync(admincerts, certificate);
+	}
+
+	toOrgTLS({rootCertificate}, nodeType) {
+		const {msp: {tlscacerts}, tlsca} = this.OrgFile(nodeType);
+		fsExtra.outputFileSync(tlsca, rootCertificate);
+		fsExtra.outputFileSync(tlscacerts, rootCertificate);
+	}
 
 };
 exports.fsExtra = fsExtra;
