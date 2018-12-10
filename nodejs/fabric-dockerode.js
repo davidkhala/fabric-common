@@ -6,7 +6,6 @@ const kafkaUtil = require('./kafka');
 const ordererUtil = require('./orderer');
 const zookeeperUtil = require('./zookeeper');
 const couchdbUtil = require('./couchdb');
-const {fsExtra} = require('./path');
 const userUtil = require('./user');
 const yaml = require('khala-nodeutils/yaml');
 const dockerHelper = require('../docker/nodejs/helper');

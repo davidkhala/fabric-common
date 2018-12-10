@@ -2,7 +2,7 @@ const logger = require('../logger').new('ServerClient');
 const {sha2_256} = require('fabric-client/lib/hash');
 const fs = require('fs');
 const path = require('path');
-const {fsExtra} = require('../path');
+const {fsExtra} = require('khala-nodeutils/helper');
 const {RequestPromise}= require('khala-nodeutils/request');
 
 exports.leader = {

@@ -1,5 +1,5 @@
 const Peer = require('fabric-client/lib/Peer');
-const {fsExtra} = require('./path');
+const {fsExtra} = require('khala-nodeutils/helper');
 const logger = require('./logger').new('peer');
 exports.new = ({peerPort, peerHostName, cert, pem, host}) => {
 	const Host = host ? host : 'localhost';

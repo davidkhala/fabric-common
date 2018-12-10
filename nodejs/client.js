@@ -1,7 +1,7 @@
 const BaseClient = require('fabric-client/lib/BaseClient');
 const Client = require('fabric-client');
 const path = require('path');
-const fsExtra = require('fs-extra');
+const {fsExtra} = require('khala-nodeutils/helper');
 const logger = require('./logger').new('client');
 
 const {cryptoKeyStore} = require('./package');

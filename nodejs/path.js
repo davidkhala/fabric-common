@@ -1,9 +1,8 @@
-const fs = require('fs');
 const path = require('path');
-const fsExtra = require('fs-extra');
+const {fsExtra} = require('khala-nodeutils/helper');
 const {pkcs11_key} = require('./ca');
 exports.findKeyfiles = (dir) => {
-	const files = fs.readdirSync(dir);
+	const files = fsExtra.readdirSync(dir);
 	return files.filter((fileName) => fileName.endsWith('_sk')).map((fileName) => path.resolve(dir, fileName));
 };
 exports.CryptoPath = class {
@@ -195,4 +194,3 @@ exports.CryptoPath = class {
 	}
 
 };
-exports.fsExtra = fsExtra;

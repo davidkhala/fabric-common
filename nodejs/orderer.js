@@ -8,7 +8,7 @@ exports.new = ({ordererPort, cert, pem, ordererHostName, host}) => {
 	let orderer_url = `grpcs://${Host}:${ordererPort}`;
 	if (!pem) {
 		if (fs.existsSync(cert)) {
-			pem = fs.readFileSync(cert).toString();
+			pem = fs.readFileSync(cert).toString(); //TODO could we migrate to use fsExtra
 		}
 	}
 	if (pem) {
