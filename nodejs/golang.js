@@ -1,5 +1,9 @@
 const {exec} = require('khala-nodeutils/helper');
 const logger = require('./logger').new('golang');
+/**
+ * make sure at least 4G RAM, otherwise "Error: spawn ENOMEM"
+ * @returns {Promise<string>} stdout:GOPATH
+ */
 exports.getGOPATH = async () => {
 	const {stdout, stderr} = await exec('go env GOPATH');
 	if (stderr) {
