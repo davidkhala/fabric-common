@@ -9,6 +9,13 @@ exports.setClientContext = (channel, clientContext) => {
 exports.clearOrderers = (channel) => {
 	channel._orderers = new Map();
 };
+exports.getOrderers = (channel) => {
+	const result = {};
+	for (const [key, value] of channel._orderers) {
+		result[key] = value;
+	}
+	return result;
+};
 exports.clearPeers = (channel) => {
 	channel._channel_peers = new Map();
 };
@@ -48,7 +55,9 @@ exports.new = (client, channelName) => {
 exports.newDummy = (client) => {
 	return exports.new(client, 'dummy');
 };
+
 exports.genesis = 'testchainid';
+
 
 /**
  *
@@ -93,17 +102,8 @@ exports.create = async (signClients, channel, channelConfigFile, orderer) => {
 	}
 };
 
-
 exports.initialize = async (channel, peer) => {
 	return channel.initialize({target: peer, discover: true, asLocalhost: false});
-};
-
-exports.getOrderers = (channel) => {
-	const result = {};
-	for (const [key, value] of channel._orderers) {
-		result[key] = value;
-	}
-	return result;
 };
 
 /**
@@ -183,6 +183,9 @@ exports.updateAnchorPeers = async (channel, anchorPeerTxFile, orderer) => {
 
 	logger.info('set anchor peers', result);
 	return result;
+};
+exports.toString = (channel) => {
+	return channel.toString();
 };
 exports.pretty = (channel) => {
 	return {
