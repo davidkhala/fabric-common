@@ -35,6 +35,22 @@ exports.host = {
 	dockerSock: '/run/docker.sock'
 };
 
+/**
+ * Valid logging levels are case-insensitive string
+ * @type {string[]}
+ */
+exports.loggingLevels = ['FATAL', 'PANIC', 'ERROR', 'WARNING', 'INFO', 'DEBUG'];
+/**
+ *
+ * @param network
+ * @param configPath
+ * @param id
+ * @param peerHostName
+ * @param tls
+ * @param couchDB
+ * @param {number} loggingLevel index of [loggerLevels]{@link loggingLevels}
+ * @returns {string[]}
+ */
 exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchDB}, loggingLevel) => {
 	const tlsParams = tls ? [
 		`CORE_PEER_TLS_KEY_FILE=${tls.key}`,
@@ -55,7 +71,7 @@ exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchD
 		[
 			`CORE_VM_ENDPOINT=unix://${exports.container.dockerSock}`,
 			`CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${network}`,
-			`CORE_LOGGING_LEVEL=${loggingLevel ? loggingLevel.toUpperCase() : 'INFO'}`,
+			`CORE_LOGGING_LEVEL=${loggingLevel ? exports.loggingLevels[loggingLevel] : 'INFO'}`,
 			'CORE_LEDGER_HISTORY_ENABLEHISTORYDATABASE=true',
 			'CORE_PEER_GOSSIP_USELEADERELECTION=true',
 			'CORE_PEER_GOSSIP_ORGLEADER=false',
@@ -66,7 +82,7 @@ exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchD
 			`CORE_PEER_ID=${peerHostName}`,
 			`CORE_PEER_ADDRESS=${peerHostName}:7051`,
 			'CORE_CHAINCODE_EXECUTETIMEOUT=180s',
-			`CORE_CHAINCODE_LOGGING_LEVEL=${loggingLevel ? loggingLevel.toUpperCase() : 'DEBUG'}`, //used for chaincode logging
+			`CORE_CHAINCODE_LOGGING_LEVEL=${loggingLevel ? exports.loggingLevels[loggingLevel] : 'DEBUG'}`, //used for chaincode logging
 			'CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052',//for swarm mode
 			'GODEBUG=netdns=go'//NOTE aliyun only
 		].concat(tlsParams).concat(couchDBparams);

@@ -51,6 +51,16 @@ exports.fabricImagePull = async ({fabricTag, thirdPartyTag}) => {
 		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-zookeeper:${imageTag}`);
 	}
 };
+
+/**
+ * @typedef IssuerObject
+ * @property {string} CN Common Name
+ * @property {string} OU Organization Unit
+ * @property {string} O Organization Name
+ * @property {string} ST State Name
+ * @property {string} C Country
+ */
+
 /**
  * TLS enabled but no certificate or key provided, automatically generate TLS credentials
  * @param container_name
@@ -60,16 +70,19 @@ exports.fabricImagePull = async ({fabricTag, thirdPartyTag}) => {
  * @param admin
  * @param adminpw
  * @param TLS
+ * @param {IssuerObject} Issuer
+ * @param configFile
  * @returns {Promise<*>}
  */
 exports.runCA = ({
-	container_name, port, network, imageTag,
-	admin = userUtil.adminName, adminpw = userUtil.adminPwd,
-	TLS,
-}, configFile) => {
+	                 container_name, port, network, imageTag,
+	                 admin = userUtil.adminName, adminpw = userUtil.adminPwd,
+	                 TLS, Issuer
+                 }, configFile) => {
 
 	const {caKey, caCert} = caUtil.container;
-	const cmdAppend = configFile ? '' : `-d -b ${admin}:${adminpw} ${TLS ? '--tls.enabled' : ''} --csr.cn=${container_name}`;
+	const {CN, OU, O, ST, C, L} = Issuer;
+	const cmdAppend = configFile ? '' : `-d -b ${admin}:${adminpw} ${TLS ? '--tls.enabled' : ''} --csr.cn=${CN}`;
 	const Cmd = ['sh', '-c', `rm ${caKey}; rm ${caCert};fabric-ca-server start ${cmdAppend}`];
 
 	const createOptions = {
@@ -102,13 +115,13 @@ exports.runCA = ({
 		const config = {
 			debug: true,
 			csr: {
-				cn: container_name,
+				cn: CN,
 				names: [{
-					C: 'HKSAR',
-					ST: 'NT',
-					L: 'HKSTP',
-					O: 'ASTRI',
-					OU: '',
+					C,
+					ST,
+					L,
+					O,
+					OU,
 				}],
 
 				hosts: [
@@ -293,9 +306,9 @@ exports.chaincodeClean = async (prune) => {
 	}
 };
 exports.runOrderer = ({
-	container_name, imageTag, port, network, BLOCK_FILE, CONFIGTXVolume,
-	msp: {id, configPath, volumeName}, kafkas, tls, stateVolume
-}) => {
+	                      container_name, imageTag, port, network, BLOCK_FILE, CONFIGTXVolume,
+	                      msp: {id, configPath, volumeName}, kafkas, tls, stateVolume
+                      }) => {
 	const Image = `hyperledger/fabric-orderer:${imageTag}`;
 	const Cmd = ['orderer'];
 	const Env = ordererUtil.envBuilder({
@@ -345,9 +358,9 @@ exports.runOrderer = ({
 };
 
 exports.deployOrderer = async ({
-	Name, network, imageTag, Constraints, port,
-	msp: {volumeName, configPath, id}, CONFIGTXVolume, BLOCK_FILE, kafkas, tls
-}) => {
+	                               Name, network, imageTag, Constraints, port,
+	                               msp: {volumeName, configPath, id}, CONFIGTXVolume, BLOCK_FILE, kafkas, tls
+                               }) => {
 	const serviceName = dockerUtil.swarmServiceName(Name);
 	if (!Constraints) Constraints = await dockerUtil.constraintSelf();
 
@@ -363,9 +376,9 @@ exports.deployOrderer = async ({
 	});
 };
 exports.deployPeer = async ({
-	Name, network, imageTag, Constraints, port,
-	msp: {volumeName, configPath, id}, peerHostName, tls
-}) => {
+	                            Name, network, imageTag, Constraints, port,
+	                            msp: {volumeName, configPath, id}, peerHostName, tls
+                            }) => {
 	const serviceName = dockerUtil.swarmServiceName(Name);
 	if (!Constraints) Constraints = await dockerUtil.constraintSelf();
 	return await dockerUtil.serviceCreateIfNotExist({
@@ -389,7 +402,7 @@ exports.runPeer = ({
 		                   id, volumeName,
 		                   configPath
 	                   }, peerHostName, tls, couchDB, stateVolume
-}) => {
+                   }) => {
 	const Image = `hyperledger/fabric-peer:${imageTag}`;
 	const Cmd = ['peer', 'node', 'start'];
 	const Env = peerUtil.envBuilder({
