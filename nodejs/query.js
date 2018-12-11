@@ -25,7 +25,7 @@ exports.chain = async (peer, channel) => {
 	// 	escc: '',
 	// 	vscc: '' } ]
  */
-exports.chaincodesInstalled = async (peer, client) => client.queryInstalledChaincodes(peer);// FIXME:clumsy design in fabric peer or [peer]
+exports.chaincodesInstalled = async (peer, client) => client.queryInstalledChaincodes(peer);
 exports.chaincodesInstantiated = async (peer, channel) => channel.queryInstantiatedChaincodes(peer);
 
 exports.blockFromHash = async (peer, channel, hashHex) => channel.queryBlockByHash(Buffer.from(hashHex, 'hex'), peer);

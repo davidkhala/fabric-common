@@ -73,3 +73,16 @@ exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, kafkas, tls}) => {
 	].concat(tlsParams).concat(kafkaEnv);
 	return env;
 };
+/**
+ * basic health check for an orderer
+ * @param {Orderer} orderer
+ */
+exports.connect = async (orderer) => {
+	try {
+		return await orderer.waitForReady(orderer._ordererClient);
+	} catch (err) {
+		if (err.toString().includes('Failed to connect before the deadline')) {
+			return false;
+		} else throw err;
+	}
+};
