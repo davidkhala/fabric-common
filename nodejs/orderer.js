@@ -28,7 +28,8 @@ exports.new = ({ordererPort, cert, pem, ordererHostName, host}) => {
 };
 exports.container = {
 	CONFIGTX: '/etc/hyperledger/configtx',
-	state: '/var/hyperledger/production/orderer/'
+	state: '/var/hyperledger/production/orderer/',
+	config: '/etc/hyperledger/'
 };
 /**
  * if no blockFile:

@@ -29,7 +29,8 @@ exports.container =
 	{
 		MSPROOT: '/etc/hyperledger/crypto-config',
 		dockerSock: '/host/var/run/docker.sock',
-		state: '/var/hyperledger/production'
+		state: '/var/hyperledger/production',
+		config: '/etc/hyperledger/'
 	};
 exports.host = {
 	dockerSock: '/run/docker.sock'
