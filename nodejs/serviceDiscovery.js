@@ -11,13 +11,12 @@
  * @returns {Promise<PeerQueryResponse>}
  */
 exports.globalPeers = async (client, peer) => {
-	const discoveries = client.queryPeers({target: peer, useAdmin: false});
+	const discoveries = await client.queryPeers({target: peer, useAdmin: false});
 	const {peers_by_org} = discoveries;
 	const result = {};
 	for (const org in peers_by_org) {
 		const {peers} = peers_by_org[org];
 		result[org] = {
-			mspid: peers[0].mspid,
 			peers: peers.map(peer => peer.endpoint)
 		};
 	}
@@ -26,7 +25,7 @@ exports.globalPeers = async (client, peer) => {
 };
 
 /**
- * TODO: inspect the result structure
+ * TODO: inspect the result structure, check the differnce from this._discovery_results
  * Return the discovery results.
  * Discovery results are only available if this channel has been initialized.
  * If the results are too old, they will be refreshed
@@ -36,5 +35,5 @@ exports.globalPeers = async (client, peer) => {
  * @returns {Promise<DiscoveryResults>}
  */
 exports.getDiscoveryResults = async (channel, endorsement_hints) => {
-	return channel.getDiscoveryResults(endorsement_hints);
+	return await channel.getDiscoveryResults(endorsement_hints);
 };

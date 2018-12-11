@@ -184,9 +184,6 @@ exports.updateAnchorPeers = async (channel, anchorPeerTxFile, orderer) => {
 	logger.info('set anchor peers', result);
 	return result;
 };
-exports.toString = (channel) => {
-	return channel.toString();
-};
 exports.pretty = (channel) => {
 	return {
 		name: channel._name,
