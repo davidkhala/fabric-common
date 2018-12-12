@@ -79,7 +79,8 @@ exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, kafkas, tls}) => {
  */
 exports.connect = async (orderer) => {
 	try {
-		return await orderer.waitForReady(orderer._ordererClient);
+		await orderer.waitForReady(orderer._ordererClient);
+		return true;
 	} catch (err) {
 		if (err.toString().includes('Failed to connect before the deadline')) {
 			return false;
