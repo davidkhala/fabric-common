@@ -8,11 +8,11 @@ exports.new = ({ordererPort, cert, pem, ordererHostName, host}) => {
 	let orderer_url = `grpcs://${Host}:${ordererPort}`;
 	if (!pem) {
 		if (fs.existsSync(cert)) {
-			pem = fs.readFileSync(cert).toString(); //TODO could we migrate to use fsExtra
+			pem = fs.readFileSync(cert).toString();
 		}
 	}
 	if (pem) {
-		//tls enabled
+		// tls enabled
 		const orderer = new Orderer(orderer_url, {
 			pem,
 			'ssl-target-name-override': ordererHostName
@@ -20,7 +20,7 @@ exports.new = ({ordererPort, cert, pem, ordererHostName, host}) => {
 		orderer.pem = pem;
 		return orderer;
 	} else {
-		//tls disaled
+		// tls disabled
 		orderer_url = `grpc://${Host}:${ordererPort}`;
 		return new Orderer(orderer_url);
 	}
@@ -63,7 +63,7 @@ exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, kafkas, tls}) => {
 		'ORDERER_KAFKA_VERBOSE=true'] : [];
 	const env = [
 		'ORDERER_GENERAL_LOGLEVEL=debug',
-		'ORDERER_GENERAL_LISTENADDRESS=0.0.0.0',// TODO useless checking
+		'ORDERER_GENERAL_LISTENADDRESS=0.0.0.0', // TODO useless checking
 		`ORDERER_GENERAL_TLS_ENABLED=${!!tls}`,
 		'ORDERER_GENERAL_GENESISMETHOD=file',
 		`ORDERER_GENERAL_GENESISFILE=${exports.container.CONFIGTX}/${BLOCK_FILE}`,
@@ -84,6 +84,8 @@ exports.connect = async (orderer) => {
 	} catch (err) {
 		if (err.toString().includes('Failed to connect before the deadline')) {
 			return false;
-		} else throw err;
+		} else {
+			throw err;
+		}
 	}
 };
