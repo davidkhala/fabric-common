@@ -138,6 +138,15 @@ function java8() {
 	sudo apt install -y oracle-java8-set-default
 }
 
+function sync() {
+	$CURRENT/docker/nodejs/install.sh packageLock false
+	cd $CURRENT/nodejs
+	npm install
+	cd -
+	cd $CURRENT/docker/nodejs
+	npm install
+	cd -
+}
 if [ -n "$fcn" ]; then
 	$fcn $remain_params
 else
@@ -150,11 +159,5 @@ else
 
 	$CURRENT/docker/install.sh
 	$CURRENT/docker/nodejs/install.sh
-	$CURRENT/docker/nodejs/install.sh packageLock false
-	cd $CURRENT/nodejs
-	npm install
-	cd -
-	cd $CURRENT/docker/nodejs
-	npm install
-	cd -
+	sync
 fi
