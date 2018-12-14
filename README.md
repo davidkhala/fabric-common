@@ -21,7 +21,7 @@ see [Build 1.1](./BUILD1.1.md)
 
 # TODO
 - instantiate chaincode on Mac, context canceled
-- cannot disseminate privateData to non-anchor peers?
+- discovery service, endorsement hints
 - npm couchdb-dump in nodejs/couchdbDump.sh
 
 
