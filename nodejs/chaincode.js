@@ -4,6 +4,7 @@ const Orderer = require('fabric-client/lib/Orderer');
 const ChannelUtil = require('./channel');
 const {txEvent, txEventCode} = require('./eventHub');
 
+exports.chaincodeTypes = ['golang', 'car', 'node', 'java'];
 exports.reducer = ({txEventResponses, proposalResponses}) => ({
 	txs: txEventResponses.map(entry => entry.tx),
 	responses: proposalResponses.map((entry) => entry.response.payload.toString())
@@ -49,15 +50,21 @@ exports.chaincodeProposalAdapter = (actionString, validator, verbose, log) => {
 		}
 		const copy = Object.assign({}, proposalResponse);
 		const {response} = copy;
-		if (!response) return copy;
+		if (!response) {
+			return copy;
+		}
 		const {payload: r_payload} = response;
 		const {endorsement} = copy;
 		if (endorsement) {
 			copy.endorsement = Object.assign({}, proposalResponse.endorsement);
 			copy.endorsement.endorser = copy.endorsement.endorser.toString();
 		}
-		if (verbose) copy.response.payload = r_payload.toString();
-		if (!verbose) delete copy.payload;
+		if (verbose) {
+			copy.response.payload = r_payload.toString();
+		}
+		if (!verbose) {
+			delete copy.payload;
+		}
 		return copy;
 	};
 	return ([responses, proposal]) => {
@@ -70,7 +77,9 @@ exports.chaincodeProposalAdapter = (actionString, validator, verbose, log) => {
 			const {isValid, isSwallowed} = _validator(proposalResponse);
 
 			if (isValid) {
-				if (log) logger.info(`good for [${i}]`, stringify(proposalResponse, verbose));
+				if (log) {
+					logger.info(`good for [${i}]`, stringify(proposalResponse, verbose));
+				}
 				if (isSwallowed) {
 					swallowCounter++;
 				}
@@ -198,7 +207,9 @@ exports.instantiateOrUpgrade = async (
 	}
 
 	const client = channel._clientContext;
-	if (!eventWaitTime) eventWaitTime = 30000;
+	if (!eventWaitTime) {
+		eventWaitTime = 30000;
+	}
 	logger.debug({channelName: channel.getName()}, opts);
 
 	exports.versionMatcher(chaincodeVersion, true);
@@ -224,7 +235,9 @@ exports.instantiateOrUpgrade = async (
 	logger.info('got proposalReponse: ', responses.length);
 	const ccHandler = exports.chaincodeProposalAdapter(command, proposalResponse => {
 		const {response} = proposalResponse;
-		if (response && response.status === 200) return {isValid: true, isSwallowed: false};
+		if (response && response.status === 200) {
+			return {isValid: true, isSwallowed: false};
+		}
 		if (proposalResponse instanceof Error && proposalResponse.toString().includes(existSymptom)) {
 			logger.warn('swallow when existence');
 			return {isValid: true, isSwallowed: true};
@@ -301,8 +314,12 @@ const txTimerPromise = (eventHub, {txId}, eventWaitTime) => {
 exports.invoke = async (channel, peers, eventHubs, {chaincodeId, fcn, args, transientMap}, orderer, proposalTimeout, eventWaitTime) => {
 	const logger = logUtil.new('chaincode:invoke', true);
 	logger.debug({channel: channel.getName(), peersSize: peers.length, chaincodeId, fcn, args});
-	if (!proposalTimeout) proposalTimeout = 30000;
-	if (!eventWaitTime) eventWaitTime = 30000;
+	if (!proposalTimeout) {
+		proposalTimeout = 30000;
+	}
+	if (!eventWaitTime) {
+		eventWaitTime = 30000;
+	}
 	const client = channel._clientContext;
 
 	const nextRequest = await exports.invokeProposal(client, peers, channel.getName(), {
