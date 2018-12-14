@@ -17,6 +17,9 @@ see [Build 1.1](./BUILD1.1.md)
 - blockHeight(got from queryChain) indexing from 1, blockNumber in blockEvent starting from 0
 - requirePeerCount <= peerCount - 1 (1 for peer itself)
 - "2-of" collectionPolicy is not allowed
+- dep could only be run under system $GOPATH,
+- nodejs chaincode take longer time in install chaincode only.
+
 # DONE
 
 # TODO
