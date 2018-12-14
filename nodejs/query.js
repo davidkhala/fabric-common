@@ -14,7 +14,7 @@ exports.chain = async (peer, channel) => {
 		currentBlockHash: currentBlockHash.toString('hex'),
 		previousBlockHash: previousBlockHash.toString('hex')
 	};
-	//npm long:to parse{ low: 4, high: 0, unsigned: true }
+	// npm long:to parse{ low: 4, high: 0, unsigned: true }
 	return message;
 };
 /**
@@ -30,6 +30,6 @@ exports.chaincodesInstantiated = async (peer, channel) => channel.queryInstantia
 
 exports.blockFromHash = async (peer, channel, hashHex) => channel.queryBlockByHash(Buffer.from(hashHex, 'hex'), peer);
 exports.blockFromHeight = async (peer, channel, blockNumber) => channel.queryBlock(parseInt(blockNumber), peer);
-exports.channelJoined = async (peer, client) => client.queryChannels(peer); //FIXME peer or [peer] bug design here:Failed Channels Query. Error: Error: Too many results returned	at /fabric-client/lib/Client.js:786:29
+exports.channelJoined = async (peer, client) => client.queryChannels(peer);
 
 exports.tx = async (peer, channel, txId) => channel.queryTransaction(txId, peer);
