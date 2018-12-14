@@ -143,7 +143,9 @@ exports.CryptoPath = class {
 	MSPKeystore(type) {
 		const dir = this.MSPFile(type).keystore;
 		const files = exports.findKeyfiles(dir);
-		if (files.length > 0) return files[0];
+		if (files.length > 0) {
+			return files[0];
+		}
 	}
 
 	MSP(type) {
@@ -152,9 +154,13 @@ exports.CryptoPath = class {
 
 	cryptoExistLocal(type) {
 		const signcerts = this.MSPFile(type).signcerts;
-		if (!fsExtra.pathExistsSync(signcerts)) return;
+		if (!fsExtra.pathExistsSync(signcerts)) {
+			return;
+		}
 		const keystore = this.MSPKeystore(type);
-		if (!fsExtra.pathExistsSync(keystore)) return;
+		if (!fsExtra.pathExistsSync(keystore)) {
+			return;
+		}
 		return {keystore, signcerts};
 	}
 
@@ -168,16 +174,16 @@ exports.CryptoPath = class {
 		fsExtra.outputFileSync(signcerts, certificate);
 		pkcs11_key.toKeystore(key, keystore);
 		fsExtra.outputFileSync(cacerts, rootCertificate);
-	};
+	}
 
 	toTLS({key, certificate, rootCertificate}, type) {
 		const {caCert, cert, key: serverKey} = this.TLSFile(type);
-		const {tlscacerts} = this.MSPFile(type);//TLS in msp folder
+		const {tlscacerts} = this.MSPFile(type);// TLS in msp folder
 		pkcs11_key.save(serverKey, key);
 		fsExtra.outputFileSync(cert, certificate);
 		fsExtra.outputFileSync(caCert, rootCertificate);
 		fsExtra.outputFileSync(tlscacerts, rootCertificate);
-	};
+	}
 
 	toOrgAdmin({certificate, rootCertificate}, nodeType) {
 		const {ca, msp: {admincerts, cacerts}} = this.OrgFile(nodeType);

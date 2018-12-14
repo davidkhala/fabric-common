@@ -1,6 +1,5 @@
 const Peer = require('fabric-client/lib/Peer');
 const {fsExtra} = require('khala-nodeutils/helper');
-const logger = require('./logger').new('peer');
 exports.new = ({peerPort, peerHostName, cert, pem, host}) => {
 	const Host = host ? host : 'localhost';
 	let peerUrl = `grpcs://${Host}:${peerPort}`;
@@ -10,7 +9,7 @@ exports.new = ({peerPort, peerHostName, cert, pem, host}) => {
 		}
 	}
 	if (pem) {
-		//tls enabled
+		// tls enabled
 		const peer = new Peer(peerUrl, {
 			pem,
 			'ssl-target-name-override': peerHostName
@@ -18,7 +17,7 @@ exports.new = ({peerPort, peerHostName, cert, pem, host}) => {
 		peer.pem = pem;
 		return peer;
 	} else {
-		//tls disaled
+		// tls disaled
 		peerUrl = `grpc://${Host}:${peerPort}`;
 		return new Peer(peerUrl);
 	}
@@ -83,10 +82,10 @@ exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchD
 			`CORE_PEER_ID=${peerHostName}`,
 			`CORE_PEER_ADDRESS=${peerHostName}:7051`,
 			'CORE_CHAINCODE_EXECUTETIMEOUT=180s',
-			`CORE_CHAINCODE_LOGGING_LEVEL=${loggingLevel ? exports.loggingLevels[loggingLevel] : 'DEBUG'}`, //used for chaincode logging
-			'CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052',//for swarm mode
-			'GODEBUG=netdns=go'//NOTE aliyun only
+			`CORE_CHAINCODE_LOGGING_LEVEL=${loggingLevel ? exports.loggingLevels[loggingLevel] : 'DEBUG'}`, // used for chaincode logging
+			'CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052', // for swarm mode
+			'GODEBUG=netdns=go'// NOTE aliyun only
 		].concat(tlsParams).concat(couchDBparams);
-	//CORE_CHAINCODE_LOGGING_SHIM :used for fabric logging
+	// CORE_CHAINCODE_LOGGING_SHIM :used for fabric logging
 	return environment;
 };

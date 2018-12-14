@@ -10,7 +10,7 @@ exports.envBuilder = (user = '', password = '') => {
 exports.queryBuilder = (sorts = [], direction = 0) => {
 
 	const selector = {};
-	const sort = []; //see in http://docs.couchdb.org/en/stable/api/database/find.html#sort-syntax
+	const sort = []; // see in http://docs.couchdb.org/en/stable/api/database/find.html#sort-syntax
 
 	const directions = ['asc', 'desc'];
 	for (const sortCol of sorts) {

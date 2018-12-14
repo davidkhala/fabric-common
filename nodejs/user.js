@@ -15,7 +15,9 @@ const User = require('fabric-client/lib/User');
 exports.loadFromLocal = async (cryptoPath, nodeType, mspid, cryptoSuite = clientUtil.newCryptoSuite()) => {
 	const username = cryptoPath.userName;
 	const exist = cryptoPath.cryptoExistLocal(`${nodeType}User`);
-	if (!exist) return;
+	if (!exist) {
+		return;
+	}
 	const {keystore, signcerts} = exist;
 
 	return await exports.build(username, {
@@ -29,7 +31,7 @@ exports.build = async (username, {key, certificate}, mspid, cryptoSuite = client
 	if (key instanceof ECDSA_KEY) {
 		privateKey = key;
 	} else {
-		//FIXME: importKey.then is not function in some case;
+		// FIXME: importKey.then is not function in some case;
 		privateKey = await cryptoSuite.importKey(key, {ephemeral: true});
 	}
 	user.setCryptoSuite(cryptoSuite);

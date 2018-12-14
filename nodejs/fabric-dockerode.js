@@ -84,7 +84,7 @@ exports.runCA = ({
 	                 container_name, port, network, imageTag,
 	                 admin = userUtil.adminName, adminpw = userUtil.adminPwd,
 	                 TLS, Issuer
-                 }, configFile) => {
+}, configFile) => {
 
 	const {caKey, caCert} = caUtil.container;
 	const {CN, OU, O, ST, C, L} = Issuer;
@@ -169,8 +169,8 @@ exports.runCA = ({
 					{
 						tls: {
 							usage: [
-								'server auth',//Extended key usage
-								'client auth',//Extended key usage
+								'server auth', // Extended key usage
+								'client auth', // Extended key usage
 								// 'signing',
 								'digital signature',
 								'key encipherment',
@@ -320,7 +320,7 @@ exports.chaincodeClean = async (prune) => {
 exports.runOrderer = ({
 	                      container_name, imageTag, port, network, BLOCK_FILE, CONFIGTXVolume,
 	                      msp: {id, configPath, volumeName}, kafkas, tls, stateVolume
-                      }) => {
+}) => {
 	const Image = `hyperledger/fabric-orderer:${imageTag}`;
 	const Cmd = ['orderer'];
 	const Env = ordererUtil.envBuilder({
@@ -372,7 +372,7 @@ exports.runOrderer = ({
 exports.deployOrderer = async ({
 	                               Name, network, imageTag, Constraints, port,
 	                               msp: {volumeName, configPath, id}, CONFIGTXVolume, BLOCK_FILE, kafkas, tls
-                               }) => {
+}) => {
 	const serviceName = dockerUtil.swarmServiceName(Name);
 	if (!Constraints) {
 		Constraints = await dockerUtil.constraintSelf();
@@ -392,7 +392,7 @@ exports.deployOrderer = async ({
 exports.deployPeer = async ({
 	                            Name, network, imageTag, Constraints, port,
 	                            msp: {volumeName, configPath, id}, peerHostName, tls
-                            }) => {
+}) => {
 	const serviceName = dockerUtil.swarmServiceName(Name);
 	if (!Constraints) {
 		Constraints = await dockerUtil.constraintSelf();
@@ -418,7 +418,7 @@ exports.runPeer = ({
 		                   id, volumeName,
 		                   configPath
 	                   }, peerHostName, tls, couchDB, stateVolume
-                   }) => {
+}) => {
 	const Image = `hyperledger/fabric-peer:${imageTag}`;
 	const Cmd = ['peer', 'node', 'start'];
 	const Env = peerUtil.envBuilder({
@@ -466,7 +466,7 @@ exports.runPeer = ({
 	return dockerUtil.containerStart(createOptions);
 };
 
-//TODO deployCouchDB
+// TODO deployCouchDB
 exports.runCouchDB = async ({imageTag, container_name, port, network, user, password}) => {
 	const Image = `hyperledger/fabric-couchdb:${imageTag}`;
 	const Env = couchdbUtil.envBuilder(user, password);

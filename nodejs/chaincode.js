@@ -44,7 +44,7 @@ exports.chaincodeProposalAdapter = (actionString, validator, verbose, log) => {
 	const _validator = validator ? validator : ({response}) => {
 		return {isValid: response && response.status === 200, isSwallowed: false};
 	};
-	const stringify = (proposalResponse, verbose) => {
+	const stringify = (proposalResponse) => {
 		if (proposalResponse instanceof Error) {
 			return proposalResponse;
 		}
@@ -153,7 +153,8 @@ exports.install = async (peers, {chaincodeId, chaincodePath, chaincodeVersion, c
 			if (status === 200) {
 				return {
 					isValid: true,
-					isSwallowed: false
+					isSwallowed: false,
+					message
 				};
 			}
 		} else {
@@ -222,7 +223,7 @@ exports.instantiateOrUpgrade = async (
 		args,
 		fcn,
 		txId,
-		targets: peers,// optional: if not set, targets will be channel.getPeers
+		targets: peers, // optional: if not set, targets will be channel.getPeers
 		'endorsement-policy': endorsementPolicy,
 		'collections-config': collectionConfig,
 		chaincodeType,
@@ -372,7 +373,7 @@ exports.invokeProposal = async (client, targets, channelId, {chaincodeId, fcn, a
 
 	if (errCounter > 0) {
 		logger.error({proposalResponses});
-		throw {proposalResponses};
+		throw {proposalResponses};//TODO fix for eslint
 	}
 	nextRequest.txId = txId;
 	return nextRequest;

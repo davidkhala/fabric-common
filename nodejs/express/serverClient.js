@@ -3,7 +3,7 @@ const {sha2_256} = require('fabric-client/lib/hash');
 const fs = require('fs');
 const path = require('path');
 const {fsExtra} = require('khala-nodeutils/helper');
-const {RequestPromise}= require('khala-nodeutils/request');
+const {RequestPromise} = require('khala-nodeutils/request');
 
 exports.leader = {
 	update: (serverBaseUrl, {ip, hostname, managerToken, workerToken}) => {
@@ -40,7 +40,7 @@ exports.getSignatures = (serverBaseUrl, protoPath) => {
 		proto: fs.createReadStream(protoPath)
 	};
 	return RequestPromise({
-		url: `${serverBaseUrl}/`,//TODO signServerPort might be different
+		url: `${serverBaseUrl}/`, // TODO signServerPort might be different
 		formData,
 	});
 };
@@ -48,12 +48,12 @@ exports.getSignatures = (serverBaseUrl, protoPath) => {
 exports.createOrUpdateOrg = (serverBaseUrl, channelName, MSPID, MSPName, nodeType, {admins, root_certs, tls_root_certs}, skip) => {
 	const formData = {
 		MSPID, MSPName, nodeType,
-		admins: admins.map(path => fs.createReadStream(path)),
-		root_certs: root_certs.map(path => fs.createReadStream(path)),
-		tls_root_certs: tls_root_certs.map(path => fs.createReadStream(path)),
+		admins: admins.map(filePath => fs.createReadStream(filePath)),
+		root_certs: root_certs.map(filePath => fs.createReadStream(filePath)),
+		tls_root_certs: tls_root_certs.map(filePath => fs.createReadStream(filePath)),
 	};
 	if (skip) {
-		formData.skip = 'y'; //boolean in formData will trigger  "throw new TypeError('First argument must be a string or Buffer');"
+		formData.skip = 'y'; // boolean in formData will trigger  "throw new TypeError('First argument must be a string or Buffer');"
 	}
 	if (nodeType === 'peer') {
 		formData.channelName = channelName;

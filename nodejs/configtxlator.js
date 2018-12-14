@@ -16,9 +16,15 @@ exports.ConfigFactory = class {
 
 	_getTarget(nodeType) {
 		let target;
-		if (nodeType === 'orderer') target = 'Orderer';
-		if (nodeType === 'peer') target = 'Application';
-		if (!target) throw `invalid nodeType ${nodeType}`;
+		if (nodeType === 'orderer') {
+			target = 'Orderer';
+		}
+		if (nodeType === 'peer') {
+			target = 'Application';
+		}
+		if (!target) {
+			throw `invalid nodeType ${nodeType}`;
+		}
 		return target;
 	}
 
@@ -240,14 +246,14 @@ exports.getChannelConfigReadable = async (channel, peer) => {
 		configEnvelope = await channel.getChannelConfigFromOrderer();
 	}
 
-	//NOTE JSON.stringify(data) :TypeError: Converting circular structure to JSON
+	// NOTE JSON.stringify(data) :TypeError: Converting circular structure to JSON
 	const original_config_proto = configEnvelope.config.toBuffer();
 
 	const body = await agent.decode.config(original_config_proto);
 
 	return {
 		original_config_proto,
-		original_config: JSON.stringify(JSON.parse(body)),//body is a Buffer,
+		original_config: JSON.stringify(JSON.parse(body)), // body is a Buffer,
 	};
 };
 /**

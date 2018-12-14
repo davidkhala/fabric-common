@@ -70,7 +70,7 @@ exports.chaincodeEvent = (eventHub, validator, {chaincodeId, eventName}, onSucce
 	}
 	const listener = eventHub.registerChaincodeEvent(chaincodeId, eventName, (chaincodeEvent, blockNum, txId, status) => {
 		blockNum = parseInt(blockNum);
-		const {payload} = chaincodeEvent; //event hub connect to full block is required to get payload
+		const {payload} = chaincodeEvent; // event hub connect to full block is required to get payload
 		if (payload) {
 			chaincodeEvent.payload = payload.toString();
 		}
@@ -131,7 +131,7 @@ exports.blockEvent = (eventHub, validator, onSuccess, onError = defaultOnError) 
 };
 const blockWaiter = async (eventHub, minHeight) => {
 	const logger = Logger.new('blockWaiter');
-	const {block} = await new Promise((resolve, reject) => {
+	const result = await new Promise((resolve, reject) => {
 		const onSucc = ({block, interrupt}) => {
 			if (interrupt) {
 				resolve({block});
@@ -157,15 +157,15 @@ const blockWaiter = async (eventHub, minHeight) => {
 		}
 		exports.blockEvent(eventHub, validator, onSucc, onErr);
 	});
-	return block;
+	return result.block;
 };
 exports.blockWaiter = blockWaiter;
 exports.nextBlockWaiter = async (eventHub) => {
 	const logger = Logger.new('nextBlockWaiter');
 	const {peer, channel} = propertiesOf(eventHub);
 	const {pretty: {height}} = await Query.chain(peer, channel);
-	logger.info(peer.toString(), `current block height ${height}`);//blockHeight indexing from 1
-	await blockWaiter(eventHub, height);//blockNumber indexing from 0
+	logger.info(peer.toString(), `current block height ${height}`);// blockHeight indexing from 1
+	await blockWaiter(eventHub, height);// blockNumber indexing from 0
 };
 const txEventCode = ['VALID', 'ENDORSEMENT_POLICY_FAILURE', 'MVCC_READ_CONFLICT'];
 exports.txEventCode = txEventCode;

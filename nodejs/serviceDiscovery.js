@@ -17,7 +17,7 @@ exports.globalPeers = async (client, peer) => {
 	for (const org in peers_by_org) {
 		const {peers} = peers_by_org[org];
 		result[org] = {
-			peers: peers.map(peer => peer.endpoint)
+			peers: peers.map(p => p.endpoint)
 		};
 	}
 	discoveries.pretty = result;

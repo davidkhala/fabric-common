@@ -43,7 +43,7 @@ exports.getAll = async (identityService, admin) => {
  * @param caname
  * @returns {Promise<*>}
  */
-exports.update = async (identityService, admin, {enrollmentID,role, affiliation, maxEnrollments, attrs, enrollmentSecret, caname}) => {
+exports.update = async (identityService, admin, {enrollmentID, role, affiliation, maxEnrollments, attrs, enrollmentSecret, caname}) => {
 	const allowedType = Object.values(IdentityService.HFCAIdentityType);
 	if (!allowedType.includes(role)) {
 		throw Error(`invalid role:${role},should be one of ${allowedType}`);

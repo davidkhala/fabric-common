@@ -51,8 +51,10 @@ exports.initAdmin = async (caService, cryptoPath, nodeType, mspId, TLS) => {
 exports.init = async (caService, adminCryptoPath, nodeType, mspId, {TLS, affiliationRoot} = {}) => {
 	logger.debug('init', {mspId, nodeType}, adminCryptoPath);
 	const {[`${nodeType}OrgName`]: domain} = adminCryptoPath;
-	if (!affiliationRoot) affiliationRoot = domain;
-	const force = true;//true to create recursively
+	if (!affiliationRoot) {
+		affiliationRoot = domain;
+	}
+	const force = true;// true to create recursively
 
 	const initAdminRetry = async () => {
 		try {
@@ -91,7 +93,9 @@ exports.genOrderer = async (caService, cryptoPath, admin, {TLS, affiliationRoot}
 
 	const type = 'orderer';
 	const {ordererHostName, ordererOrgName: domain} = cryptoPath;
-	if (!affiliationRoot) affiliationRoot = domain;
+	if (!affiliationRoot) {
+		affiliationRoot = domain;
+	}
 	const ordererMSPRoot = cryptoPath.MSP(type);
 
 	const exist = cryptoPath.cryptoExistLocal(type);
@@ -133,7 +137,9 @@ exports.genPeer = async (caService, cryptoPath, admin, {TLS, affiliationRoot} = 
 	const type = 'peer';
 
 	const {peerHostName, peerOrgName: domain} = cryptoPath;
-	if (!affiliationRoot) affiliationRoot = domain;
+	if (!affiliationRoot) {
+		affiliationRoot = domain;
+	}
 	const peerMSPRoot = cryptoPath.MSP(type);
 
 	const exist = cryptoPath.cryptoExistLocal(type);
@@ -174,7 +180,9 @@ exports.genPeer = async (caService, cryptoPath, admin, {TLS, affiliationRoot} = 
 exports.genUser = async (caService, cryptoPath, nodeType, admin, {TLS, affiliationRoot} = {}) => {
 
 	const type = `${nodeType}User`;
-	if (!affiliationRoot) affiliationRoot = cryptoPath[`${nodeType}OrgName`];
+	if (!affiliationRoot) {
+		affiliationRoot = cryptoPath[`${nodeType}OrgName`];
+	}
 
 	const mspId = userUtil.getMSPID(admin);
 	let user = await userUtil.loadFromLocal(cryptoPath, nodeType, mspId, undefined);
