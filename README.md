@@ -19,6 +19,7 @@ see [Build 1.1](./BUILD1.1.md)
 - "2-of" collectionPolicy is not allowed
 - dep could only be run under system $GOPATH,
 - nodejs chaincode take longer time in install chaincode only.
+- peer.response in chaincode.Init cannot be recovered from proposal response. stub.GetState is meaningless in Init 
 
 # DONE
 
