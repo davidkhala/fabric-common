@@ -18,3 +18,7 @@ exports.envBuilder = ({N, M, BROKER_ID}, zookeeperHostnames) => {
 exports.container = {
 	log: '/opt/kafka/logs/'
 };
+/**
+ * @type {string} default bootstrap command
+ */
+exports.Cmd = '/opt/kafka/bin/kafka-server-start.sh';
