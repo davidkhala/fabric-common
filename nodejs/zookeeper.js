@@ -6,3 +6,6 @@ exports.envBuilder = (MY_ID, zookeepersConfig, swarm) => {
 	}
 	return [`ZOO_MY_ID=${MY_ID}`, `ZOO_SERVERS=${ZOO_SERVERS.join(' ')}`];
 };
+exports.container = {
+	log: '/datalog/'
+};
