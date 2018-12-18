@@ -9,3 +9,7 @@ exports.envBuilder = (MY_ID, zookeepersConfig, swarm) => {
 exports.container = {
 	log: '/datalog/'
 };
+/**
+ * @type {string} default bootstrap command
+ */
+exports.Cmd = 'zkServer.sh start-foreground';
