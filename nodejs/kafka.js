@@ -15,3 +15,6 @@ exports.envBuilder = ({N, M, BROKER_ID}, zookeeperHostnames) => {
 	];
 	return environment;
 };
+exports.container = {
+	log: '/opt/kafka/logs/'
+};
