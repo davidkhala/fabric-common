@@ -251,7 +251,7 @@ exports.instantiateOrUpgrade = async (
 		for (const eventHub of eventHubs) {
 			eventHub.disconnect();
 		}
-		throw {proposalResponses};
+		throw Error(JSON.stringify({proposalResponses}));
 	}
 	if (swallowCounter === proposalResponses.length) {
 		logger.warn('[final] swallow when existence');
@@ -373,7 +373,7 @@ exports.invokeProposal = async (client, targets, channelId, {chaincodeId, fcn, a
 
 	if (errCounter > 0) {
 		logger.error({proposalResponses});
-		throw {proposalResponses};//TODO fix for eslint
+		throw Error(JSON.stringify({proposalResponses}));
 	}
 	nextRequest.txId = txId;
 	return nextRequest;

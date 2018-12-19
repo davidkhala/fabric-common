@@ -92,7 +92,7 @@ exports.create = async (signClients, channel, channelConfigFile, orderer) => {
 			logger.warn('loop retry..');
 			await sleep(1000);
 			return exports.create(signClients, channel, channelConfigFile, orderer);
-		} else throw results;
+		} else throw Error(results);
 	}
 };
 
@@ -153,7 +153,7 @@ exports.join = async (channel, peer, orderer, waitTime = 1000) => {
 
 	const {response: {status, message}} = dataEntry;
 	if (status !== 200) {
-		throw {status, message};
+		throw Error(JSON.stringify({status, message}));
 	}
 	return dataEntry;
 
@@ -183,7 +183,7 @@ exports.updateAnchorPeers = async (channel, anchorPeerTxFile, orderer) => {
 
 	const result = await client.updateChannel(request);
 	if (result.status !== 'SUCCESS') {
-		throw JSON.stringify(result);
+		throw Error(JSON.stringify(result));
 	}
 
 	logger.info('set anchor peers', result);

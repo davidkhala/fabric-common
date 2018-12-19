@@ -36,7 +36,11 @@ const propertiesOf = (eventHub) => {
 };
 exports.propertiesOf = propertiesOf;
 const defaultOnError = (err) => {
-	throw err;
+	if (err instanceof Error) {
+		throw err;
+	} else {
+		throw Error(err);
+	}
 };
 /**
  * @callback evenHubErrorCB

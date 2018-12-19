@@ -7,7 +7,7 @@ const logger = require('./logger').new('golang');
 exports.getGOPATH = async () => {
 	const {stdout, stderr} = await exec('go env GOPATH');
 	if (stderr) {
-		throw stderr;
+		throw Error(stderr);
 	}
 	return stdout.trim();
 };

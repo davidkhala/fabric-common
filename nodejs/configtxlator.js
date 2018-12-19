@@ -9,27 +9,28 @@ exports.ConfigFactory = class {
 	}
 
 	deleteMSP(MSPName, nodeType) {
-		const target = this._getTarget(nodeType);
+		const target = ConfigFactory._getTarget(nodeType);
 		delete this.newConfig.channel_group.groups[target].groups[MSPName];
 		return this;
 	}
 
-	_getTarget(nodeType) {
+	static _getTarget(nodeType) {
 		let target;
-		if (nodeType === 'orderer') {
-			target = 'Orderer';
-		}
-		if (nodeType === 'peer') {
-			target = 'Application';
-		}
-		if (!target) {
-			throw `invalid nodeType ${nodeType}`;
+		switch (nodeType) {
+			case 'orderer':
+				target = 'Orderer';
+				break;
+			case 'peer':
+				target = 'Application';
+				break;
+			default:
+				throw Error(`invalid nodeType ${nodeType}`);
 		}
 		return target;
 	}
 
 	assignDictator(MSPID, nodeType) {
-		const target = this._getTarget(nodeType);
+		const target = ConfigFactory._getTarget(nodeType);
 		this.newConfig.channel_group.groups[target].policies.Admins.policy = {
 			type: 1,
 			value: {
@@ -58,7 +59,7 @@ exports.ConfigFactory = class {
 	}
 
 	getOrg(MSPName, nodeType) {
-		const target = this._getTarget(nodeType);
+		const target = ConfigFactory._getTarget(nodeType);
 		return this.newConfig.channel_group.groups[target].groups[MSPName];
 	}
 
@@ -67,7 +68,7 @@ exports.ConfigFactory = class {
 			logger.error(MSPName, 'not exist, addAdmin skipped');
 			return this;
 		}
-		const target = this._getTarget(nodeType);
+		const target = ConfigFactory._getTarget(nodeType);
 		const adminCert = fs.readFileSync(admin).toString('base64');
 		const admins = this.newConfig.channel_group.groups[target].groups[MSPName].values.MSP.value.config.admins;
 		if (admins.find(adminCert)) {
@@ -92,7 +93,7 @@ exports.ConfigFactory = class {
 			logger.info(MSPName, 'exist, createOrUpdateOrg skipped');
 			return this;
 		}
-		const target = this._getTarget(nodeType);
+		const target = ConfigFactory._getTarget(nodeType);
 		this.newConfig.channel_group.groups[target].groups[MSPName] = {
 			'mod_policy': 'Admins',
 			'policies': {
@@ -310,7 +311,7 @@ exports.channelUpdate = async (channel, orderer, peer, mspCB, signatureCollectCB
 
 	const updateChannelResp = await client.updateChannel(request);
 	if (updateChannelResp.status !== 'SUCCESS') {
-		throw JSON.stringify(updateChannelResp);
+		throw Error(JSON.stringify(updateChannelResp));
 	}
 	logger.info('updateChannel', updateChannelResp);
 	return updateChannelResp;
