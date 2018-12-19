@@ -27,6 +27,7 @@ see [Build 1.1](./BUILD1.1.md)
 - instantiate chaincode on Mac, context canceled
 - discovery service, endorsement hints
 - npm couchdb-dump in nodejs/couchdbDump.sh
+- throw error enhance: `throw {proposalResponses}`
 
 
 # Fabric weakness
