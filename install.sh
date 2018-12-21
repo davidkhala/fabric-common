@@ -142,9 +142,11 @@ function sync() {
 	$CURRENT/docker/nodejs/install.sh packageLock false
 	cd $CURRENT/nodejs
 	npm install
+	npm prune
 	cd -
 	cd $CURRENT/docker/nodejs
 	npm install
+	npm prune
 	cd -
 }
 if [ -n "$fcn" ]; then
