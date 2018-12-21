@@ -398,10 +398,11 @@ exports.invokeProposal = async (client, targets, channelId, {
  * @param {string} fcn
  * @param {string[]} args
  * @param {Object} transientMap jsObject of key<string> --> value<Buffer>
+ * @param {callback} proposalResponsesHandler
  * @param {number} proposalTimeout
  * @returns {Promise<{txEventResponses: {tx}[], proposalResponses: Array}>}
  */
-exports.query = async (channel, peers, {chaincodeId, fcn, args, transientMap}, proposalTimeout = 30000) => {
+exports.query = async (channel, peers, {chaincodeId, fcn, args, transientMap, proposalResponsesHandler}, proposalTimeout = 30000) => {
 	const logger = logUtil.new('chaincode:query', true);
 	logger.debug({channel: channel.getName(), peersSize: peers.length, chaincodeId, fcn, args});
 	const client = channel._clientContext;
@@ -410,7 +411,8 @@ exports.query = async (channel, peers, {chaincodeId, fcn, args, transientMap}, p
 		chaincodeId,
 		fcn,
 		args,
-		transientMap: exports.transientMap(transientMap)
+		transientMap: exports.transientMap(transientMap),
+		proposalResponsesHandler
 	}, proposalTimeout);
 	const {txId, proposalResponses} = nextRequest;
 	return {txEventResponses: [{tx: txId}], proposalResponses};// make it suitable for reducer
