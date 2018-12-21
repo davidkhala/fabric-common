@@ -6,7 +6,7 @@ const {txEvent, txEventCode} = require('./eventHub');
 
 exports.chaincodeTypes = ['golang', 'car', 'node', 'java'];
 exports.reducer = ({txEventResponses, proposalResponses}) => ({
-	txs: txEventResponses.map(entry => entry.tx),
+	txs: txEventResponses ? txEventResponses.map(entry => entry.tx) : [],
 	responses: proposalResponses.map((entry) => entry.response.payload.toString())
 });
 exports.transientMap = (jsObject) => {
@@ -308,11 +308,16 @@ const txTimerPromise = (eventHub, {txId}, eventWaitTime) => {
  * @param {string} fcn
  * @param {string[]} args
  * @param {Object} transientMap key<string> -> value<string>
+ * @param {callback<>} proposalResponsesHandler
  * @param {Orderer} orderer target orderer, default to pick one in channel
+ * @param proposalTimeout
  * @param {Number} eventWaitTime optional, default to use 30000 ms
  * @return {Promise<{txEventResponses: any[], proposalResponses}>}
  */
-exports.invoke = async (channel, peers, eventHubs, {chaincodeId, fcn, args, transientMap}, orderer, proposalTimeout, eventWaitTime) => {
+exports.invoke = async (channel, peers, eventHubs, {
+	chaincodeId, fcn, args, transientMap,
+	proposalResponsesHandler
+}, orderer, proposalTimeout, eventWaitTime) => {
 	const logger = logUtil.new('chaincode:invoke', true);
 	logger.debug({channel: channel.getName(), peersSize: peers.length, chaincodeId, fcn, args});
 	if (!proposalTimeout) {
@@ -327,7 +332,8 @@ exports.invoke = async (channel, peers, eventHubs, {chaincodeId, fcn, args, tran
 		chaincodeId,
 		fcn,
 		args,
-		transientMap: exports.transientMap(transientMap)
+		transientMap: exports.transientMap(transientMap),
+		proposalResponsesHandler
 	}, proposalTimeout);
 
 	const {txId, proposalResponses} = nextRequest;
@@ -351,10 +357,14 @@ exports.invoke = async (channel, peers, eventHubs, {chaincodeId, fcn, args, tran
  * @param {string} fcn
  * @param {string[]} args
  * @param {Object} transientMap jsObject of key<string> --> value<Buffer>
+ * @param {callback} proposalResponsesHandler
  * @param {number} proposalTimeout
  * @return {Promise<TransactionRequest>}
  */
-exports.invokeProposal = async (client, targets, channelId, {chaincodeId, fcn, args, transientMap}, proposalTimeout) => {
+exports.invokeProposal = async (client, targets, channelId, {
+	chaincodeId, fcn, args, transientMap,
+	proposalResponsesHandler
+}, proposalTimeout) => {
 	const logger = logUtil.new('chaincode:invokeProposal', true);
 	const txId = client.newTransactionID();
 	const request = {
@@ -373,7 +383,9 @@ exports.invokeProposal = async (client, targets, channelId, {chaincodeId, fcn, a
 
 	if (errCounter > 0) {
 		logger.error({proposalResponses});
-		throw Error(JSON.stringify({proposalResponses}));
+		if (proposalResponsesHandler) {
+			proposalResponsesHandler({proposalResponses});
+		} else throw Error(JSON.stringify({proposalResponses}));
 	}
 	nextRequest.txId = txId;
 	return nextRequest;
