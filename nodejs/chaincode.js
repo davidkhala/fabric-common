@@ -308,7 +308,6 @@ const txTimerPromise = (eventHub, {txId}, eventWaitTime) => {
  * @param {string} fcn
  * @param {string[]} args
  * @param {Object} transientMap key<string> -> value<string>
- * @param {callback<>} proposalResponsesHandler
  * @param {Orderer} orderer target orderer, default to pick one in channel
  * @param proposalTimeout
  * @param {Number} eventWaitTime optional, default to use 30000 ms
@@ -316,7 +315,6 @@ const txTimerPromise = (eventHub, {txId}, eventWaitTime) => {
  */
 exports.invoke = async (channel, peers, eventHubs, {
 	chaincodeId, fcn, args, transientMap,
-	proposalResponsesHandler
 }, orderer, proposalTimeout, eventWaitTime) => {
 	const logger = logUtil.new('chaincode:invoke', true);
 	logger.debug({channel: channel.getName(), peersSize: peers.length, chaincodeId, fcn, args});
@@ -332,8 +330,7 @@ exports.invoke = async (channel, peers, eventHubs, {
 		chaincodeId,
 		fcn,
 		args,
-		transientMap: exports.transientMap(transientMap),
-		proposalResponsesHandler
+		transientMap,
 	}, proposalTimeout);
 
 	const {txId, proposalResponses} = nextRequest;
@@ -348,6 +345,7 @@ exports.invoke = async (channel, peers, eventHubs, {
 	const txEventResponses = await Promise.all(promises);
 	return {txEventResponses, proposalResponses};
 };
+
 /**
  * also be used as query
  * @param {Client} client
@@ -356,14 +354,12 @@ exports.invoke = async (channel, peers, eventHubs, {
  * @param {string} chaincodeId
  * @param {string} fcn
  * @param {string[]} args
- * @param {Object} transientMap jsObject of key<string> --> value<Buffer>
- * @param {callback} proposalResponsesHandler
+ * @param {Object} transientMap jsObject of key<string> --> value<string>
  * @param {number} proposalTimeout
  * @return {Promise<TransactionRequest>}
  */
 exports.invokeProposal = async (client, targets, channelId, {
 	chaincodeId, fcn, args, transientMap,
-	proposalResponsesHandler
 }, proposalTimeout) => {
 	const logger = logUtil.new('chaincode:invokeProposal', true);
 	const txId = client.newTransactionID();
@@ -373,7 +369,7 @@ exports.invokeProposal = async (client, targets, channelId, {
 		args,
 		txId,
 		targets,
-		transientMap
+		transientMap: exports.transientMap(transientMap),
 	};
 
 	const [responses, proposal] = await Channel.sendTransactionProposal(request, channelId, client, proposalTimeout);
@@ -383,9 +379,9 @@ exports.invokeProposal = async (client, targets, channelId, {
 
 	if (errCounter > 0) {
 		logger.error({proposalResponses});
-		if (proposalResponsesHandler) {
-			proposalResponsesHandler({proposalResponses});
-		} else throw Error(JSON.stringify({proposalResponses}));
+		const err = Error(JSON.stringify({proposalResponses}));
+		err.code = 'invokeProposal';
+		throw err;
 	}
 	nextRequest.txId = txId;
 	return nextRequest;
@@ -397,12 +393,11 @@ exports.invokeProposal = async (client, targets, channelId, {
  * @param {string} chaincodeId
  * @param {string} fcn
  * @param {string[]} args
- * @param {Object} transientMap jsObject of key<string> --> value<Buffer>
- * @param {callback} proposalResponsesHandler
+ * @param {Object} transientMap jsObject of key<string> --> value<string>
  * @param {number} proposalTimeout
  * @returns {Promise<{txEventResponses: {tx}[], proposalResponses: Array}>}
  */
-exports.query = async (channel, peers, {chaincodeId, fcn, args, transientMap, proposalResponsesHandler}, proposalTimeout = 30000) => {
+exports.query = async (channel, peers, {chaincodeId, fcn, args, transientMap}, proposalTimeout = 30000) => {
 	const logger = logUtil.new('chaincode:query', true);
 	logger.debug({channel: channel.getName(), peersSize: peers.length, chaincodeId, fcn, args});
 	const client = channel._clientContext;
@@ -411,8 +406,7 @@ exports.query = async (channel, peers, {chaincodeId, fcn, args, transientMap, pr
 		chaincodeId,
 		fcn,
 		args,
-		transientMap: exports.transientMap(transientMap),
-		proposalResponsesHandler
+		transientMap,
 	}, proposalTimeout);
 	const {txId, proposalResponses} = nextRequest;
 	return {txEventResponses: [{tx: txId}], proposalResponses};// make it suitable for reducer
@@ -430,5 +424,5 @@ exports.invokeCommit = async (client, nextRequest, orderer) => {
 	}
 	nextRequest.orderer = orderer;
 	const dummyChannel = ChannelUtil.newDummy(client);
-	return dummyChannel.sendTransaction(nextRequest);
+	return dummyChannel.sendTransaction(nextRequest);//TODO fix sdk
 };
