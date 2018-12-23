@@ -5,7 +5,11 @@ const ChannelUtil = require('./channel');
 const {txEvent, txEventCode} = require('./eventHub');
 
 exports.chaincodeTypes = ['golang', 'car', 'node', 'java'];
-exports.proposalToString = (proposalResponses) => proposalResponses.map((entry) => entry.response.payload.toString());
+exports.proposalStringify = (proposalResponse) => {
+	proposalResponse.response.payload = proposalResponse.response.payload.toString();
+	return proposalResponse;
+};
+exports.proposalFlatten = proposal => proposal.response.payload;
 exports.transientMap = (jsObject) => {
 	if (!jsObject) {
 		return jsObject;
@@ -56,7 +60,7 @@ exports.chaincodeProposalAdapter = (actionString, validator, verbose, log) => {
 			copy.endorsement.endorser = copy.endorsement.endorser.toString();
 		}
 		if (verbose) {
-			copy.response.payload = response.payload.toString();
+			exports.proposalStringify(copy);
 		}
 		if (!verbose) {
 			delete copy.payload;
@@ -375,15 +379,7 @@ exports.invokeProposal = async (client, targets, channelName, {
 
 	if (errCounter > 0) {
 		logger.error({proposalResponses});
-		const obj = {
-			proposalResponses: proposalResponses.map(entry => {
-				return {
-					response: {
-						payload: entry.response.payload.toString()
-					}
-				};
-			})
-		};
+		const obj = {proposalResponses: proposalResponses.map(exports.proposalStringify)};
 		const err = Error(JSON.stringify(obj));
 		err.code = 'invokeProposal';
 		throw err;
