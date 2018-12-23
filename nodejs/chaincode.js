@@ -5,10 +5,7 @@ const ChannelUtil = require('./channel');
 const {txEvent, txEventCode} = require('./eventHub');
 
 exports.chaincodeTypes = ['golang', 'car', 'node', 'java'];
-exports.reducer = ({txEventResponses, proposalResponses}) => ({
-	txs: txEventResponses ? txEventResponses.map(entry => entry.tx) : [],
-	responses: proposalResponses.map((entry) => entry.response.payload.toString())
-});
+exports.proposalToString = (proposalResponses) => proposalResponses.map((entry) => entry.response.payload.toString());
 exports.transientMap = (jsObject) => {
 	if (!jsObject) {
 		return jsObject;
@@ -48,19 +45,18 @@ exports.chaincodeProposalAdapter = (actionString, validator, verbose, log) => {
 		if (proposalResponse instanceof Error) {
 			return proposalResponse;
 		}
-		const copy = Object.assign({}, proposalResponse);
-		const {response} = copy;
+		const {response} = proposalResponse;
 		if (!response) {
-			return copy;
+			return proposalResponse;
 		}
-		const {payload: r_payload} = response;
-		const {endorsement} = copy;
+		const {endorsement} = proposalResponse;
+		const copy = Object.assign({}, proposalResponse);
 		if (endorsement) {
 			copy.endorsement = Object.assign({}, proposalResponse.endorsement);
 			copy.endorsement.endorser = copy.endorsement.endorser.toString();
 		}
 		if (verbose) {
-			copy.response.payload = r_payload.toString();
+			copy.response.payload = response.payload.toString();
 		}
 		if (!verbose) {
 			delete copy.payload;
@@ -360,7 +356,7 @@ exports.invoke = async (channel, peers, eventHubs, {
  */
 exports.invokeProposal = async (client, targets, channelName, {
 	chaincodeId, fcn, args, transientMap,
-}, proposalTimeout=30000) => {
+}, proposalTimeout = 30000) => {
 	const logger = logUtil.new('chaincode:invokeProposal', true);
 	const txId = client.newTransactionID();
 	const request = {
@@ -373,7 +369,7 @@ exports.invokeProposal = async (client, targets, channelName, {
 	};
 
 	const [responses, proposal] = await Channel.sendTransactionProposal(request, channelName, client, proposalTimeout);
-	const ccHandler = exports.chaincodeProposalAdapter('invoke');
+	const ccHandler = exports.chaincodeProposalAdapter('invoke', undefined, true);
 	const {nextRequest, errCounter} = ccHandler([responses, proposal]);
 	const {proposalResponses} = nextRequest;
 
