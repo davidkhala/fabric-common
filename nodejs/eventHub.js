@@ -191,6 +191,7 @@ exports.txEvent = (eventHub, {txId}, validator, onSuccess, onError = defaultOnEr
 	}
 	const transactionID = txId.getTransactionID();
 	eventHub.registerTxEvent(transactionID, (tx, code) => {
+		//TODO check onEvent param list
 		const {valid, interrupt} = validator({tx, code});
 		if (interrupt) {
 			eventHub.unregisterTxEvent(transactionID, true);
