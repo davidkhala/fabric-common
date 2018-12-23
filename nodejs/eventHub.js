@@ -22,21 +22,20 @@ exports.newEventHub = (channel, peer, inlineConnected) => {
 	}
 	return eventHub;
 };
+exports.disconnect = (eventHub) => {
+	if (eventHub.isconnected()) {
+		eventHub.disconnect();
+	}
+};
 const pretty = (eventHub) => {
 	return {
+		isConnected: eventHub._connected,
 		client: eventHub._clientContext,
 		peer: eventHub._peer,
 		channel: eventHub._channel
 	};
 };
 exports.pretty = pretty;
-const defaultOnError = (err) => {
-	if (err instanceof Error) {
-		throw err;
-	} else {
-		throw Error(err);
-	}
-};
 /**
  * @callback evenHubErrorCB
  * @param {Error} err
@@ -98,7 +97,7 @@ exports.chaincodeEvent = (eventHub, validator, {chaincodeId, eventName}, onSucce
  * @param {evenHubErrorCB} onError
  * @returns {number}
  */
-exports.blockEvent = (eventHub, validator, onSuccess, onError = defaultOnError) => {
+exports.blockEvent = (eventHub, validator, onSuccess, onError) => {
 	const logger = Logger.new('blockEvent');
 	if (!validator) {
 		validator = ({block}) => {
@@ -177,7 +176,7 @@ exports.txEventCode = txEventCode;
  * @param {evenHubErrorCB} onError
  * @returns {string} transaction id string
  */
-exports.txEvent = (eventHub, {txId}, validator, onSuccess, onError = defaultOnError) => {
+exports.txEvent = (eventHub, {txId}, validator, onSuccess, onError) => {
 	const logger = Logger.new('txEvent');
 	if (!validator) {
 		validator = ({tx, code, blockNum}) => {
