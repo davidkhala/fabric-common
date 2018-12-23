@@ -22,6 +22,14 @@ exports.newEventHub = (channel, peer, inlineConnected) => {
 	}
 	return eventHub;
 };
+/**
+ *
+ * Disconnects the ChannelEventHub from the peer event source.
+ * Will close all event listeners and send an Error object
+ * with the message "ChannelEventHub has been shutdown" to
+ * all listeners that provided an "onError" callback.
+ * @param {ChannelEventHub} eventHub
+ */
 exports.disconnect = (eventHub) => {
 	if (eventHub.isconnected()) {
 		eventHub.disconnect();

@@ -15,7 +15,7 @@ const txTimerPromise = (eventHub, {txId}, eventWaitTime) => {
 		return {valid: code === txEventCode[0], interrupt: true};
 	};
 	return new Promise((resolve, reject) => {
-		const transactionID = txEvent(eventHub, {txId}, validator, (data) => {
+		txEvent(eventHub, {txId}, validator, (data) => {
 			clearTimeout(timerID);
 			const {tx, code, interrupt} = data;
 			logger.debug('??', data);

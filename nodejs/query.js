@@ -18,14 +18,16 @@ exports.chain = async (peer, channel) => {
 	return message;
 };
 /**
- * // [ { name: 'adminChaincode',
-	// 	version: 'v0',
-	// 	path: 'github.com/admin',
-	// 	input: '',
-	// 	escc: '',
-	// 	vscc: '' } ]
+ * @param peer
+ * @param client
+ * @return {Promise<Client.ChaincodeQueryResponse>}
  */
 exports.chaincodesInstalled = async (peer, client) => client.queryInstalledChaincodes(peer);
+/**
+ * @param peer
+ * @param channel
+ * @return {Promise<Client.ChaincodeQueryResponse>}
+ */
 exports.chaincodesInstantiated = async (peer, channel) => channel.queryInstantiatedChaincodes(peer);
 
 exports.blockFromHash = async (peer, channel, hashHex) => channel.queryBlockByHash(Buffer.from(hashHex, 'hex'), peer);
