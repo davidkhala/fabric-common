@@ -368,7 +368,6 @@ exports.invoke = async (channel, peers, eventHubs, {
  */
 exports.invokeProposal = async (client, targets, channelName, {
 	chaincodeId, fcn, args, transientMap,
-	errorStringify = (e) => ({response:{payload:e.toString()}})
 }, proposalTimeout = 30000) => {
 	const logger = logUtil.new('chaincode:invokeProposal', true);
 	const txId = client.newTransactionID();
@@ -388,8 +387,8 @@ exports.invokeProposal = async (client, targets, channelName, {
 
 	if (errCounter > 0) {
 		logger.error({proposalResponses});
-		//TODO how to convert error array into serializable
-		const err = Error(JSON.stringify({proposalResponses: proposalResponses.map(errorStringify)}));
+		const err = Error('isProposalResponse');
+		err.proposalResponses = proposalResponses;
 		err.code = 'invokeProposal';
 		throw err;
 	}
