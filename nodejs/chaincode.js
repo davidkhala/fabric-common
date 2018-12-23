@@ -350,7 +350,7 @@ exports.invoke = async (channel, peers, eventHubs, {
  * also be used as query
  * @param {Client} client
  * @param {Peer[]} targets
- * @param {string} channelId
+ * @param {string} channelName
  * @param {string} chaincodeId
  * @param {string} fcn
  * @param {string[]} args
@@ -358,9 +358,9 @@ exports.invoke = async (channel, peers, eventHubs, {
  * @param {number} proposalTimeout
  * @return {Promise<TransactionRequest>}
  */
-exports.invokeProposal = async (client, targets, channelId, {
+exports.invokeProposal = async (client, targets, channelName, {
 	chaincodeId, fcn, args, transientMap,
-}, proposalTimeout) => {
+}, proposalTimeout=30000) => {
 	const logger = logUtil.new('chaincode:invokeProposal', true);
 	const txId = client.newTransactionID();
 	const request = {
@@ -372,7 +372,7 @@ exports.invokeProposal = async (client, targets, channelId, {
 		transientMap: exports.transientMap(transientMap),
 	};
 
-	const [responses, proposal] = await Channel.sendTransactionProposal(request, channelId, client, proposalTimeout);
+	const [responses, proposal] = await Channel.sendTransactionProposal(request, channelName, client, proposalTimeout);
 	const ccHandler = exports.chaincodeProposalAdapter('invoke');
 	const {nextRequest, errCounter} = ccHandler([responses, proposal]);
 	const {proposalResponses} = nextRequest;
@@ -385,31 +385,6 @@ exports.invokeProposal = async (client, targets, channelId, {
 	}
 	nextRequest.txId = txId;
 	return nextRequest;
-};
-/**
- *
- * @param {Channel} channel
- * @param {Peer[]} peers
- * @param {string} chaincodeId
- * @param {string} fcn
- * @param {string[]} args
- * @param {Object} transientMap jsObject of key<string> --> value<string>
- * @param {number} proposalTimeout
- * @returns {Promise<{txEventResponses: {tx}[], proposalResponses: Array}>}
- */
-exports.query = async (channel, peers, {chaincodeId, fcn, args, transientMap}, proposalTimeout = 30000) => {
-	const logger = logUtil.new('chaincode:query', true);
-	logger.debug({channel: channel.getName(), peersSize: peers.length, chaincodeId, fcn, args});
-	const client = channel._clientContext;
-
-	const nextRequest = await exports.invokeProposal(client, peers, channel.getName(), {
-		chaincodeId,
-		fcn,
-		args,
-		transientMap,
-	}, proposalTimeout);
-	const {txId, proposalResponses} = nextRequest;
-	return {txEventResponses: [{tx: txId}], proposalResponses};// make it suitable for reducer
 };
 /**
  *

@@ -191,6 +191,7 @@ exports.updateAnchorPeers = async (channel, anchorPeerTxFile, orderer) => {
 };
 exports.pretty = (channel) => {
 	return {
+		client: channel._clientContext,
 		name: channel._name,
 		peers: channel._channel_peers,
 		anchorPeers: channel._anchor_peers,
