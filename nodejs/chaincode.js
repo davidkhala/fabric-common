@@ -375,7 +375,16 @@ exports.invokeProposal = async (client, targets, channelName, {
 
 	if (errCounter > 0) {
 		logger.error({proposalResponses});
-		const err = Error(JSON.stringify({proposalResponses}));
+		const obj = {
+			proposalResponses: proposalResponses.map(entry => {
+				return {
+					response: {
+						payload: entry.response.payload.toString()
+					}
+				};
+			})
+		};
+		const err = Error(JSON.stringify(obj));
 		err.code = 'invokeProposal';
 		throw err;
 	}
