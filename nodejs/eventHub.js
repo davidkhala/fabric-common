@@ -22,19 +22,14 @@ exports.newEventHub = (channel, peer, inlineConnected) => {
 	}
 	return eventHub;
 };
-/**
- * return internal properties
- * @param eventHub
- * @return {*}
- */
-const propertiesOf = (eventHub) => {
+const pretty = (eventHub) => {
 	return {
 		client: eventHub._clientContext,
 		peer: eventHub._peer,
 		channel: eventHub._channel
 	};
 };
-exports.propertiesOf = propertiesOf;
+exports.pretty = pretty;
 const defaultOnError = (err) => {
 	if (err instanceof Error) {
 		throw err;
@@ -166,7 +161,7 @@ const blockWaiter = async (eventHub, minHeight) => {
 exports.blockWaiter = blockWaiter;
 exports.nextBlockWaiter = async (eventHub) => {
 	const logger = Logger.new('nextBlockWaiter');
-	const {peer, channel} = propertiesOf(eventHub);
+	const {peer, channel} = pretty(eventHub);
 	const {pretty: {height}} = await Query.chain(peer, channel);
 	logger.info(peer.toString(), `current block height ${height}`);// blockHeight indexing from 1
 	await blockWaiter(eventHub, height);// blockNumber indexing from 0
@@ -185,22 +180,21 @@ exports.txEventCode = txEventCode;
 exports.txEvent = (eventHub, {txId}, validator, onSuccess, onError = defaultOnError) => {
 	const logger = Logger.new('txEvent');
 	if (!validator) {
-		validator = ({tx, code}) => {
+		validator = ({tx, code, blockNum}) => {
 			return {valid: code === txEventCode[0], interrupt: true};
 		};
 	}
 	const transactionID = txId.getTransactionID();
-	eventHub.registerTxEvent(transactionID, (tx, code) => {
-		//TODO check onEvent param list
-		const {valid, interrupt} = validator({tx, code});
+	eventHub.registerTxEvent(transactionID, (tx, code, blockNum) => {
+		const {valid, interrupt} = validator({tx, code, blockNum});
 		if (interrupt) {
 			eventHub.unregisterTxEvent(transactionID, true);
 			eventHub.disconnect();
 		}
 		if (valid) {
-			onSuccess({tx, code, interrupt});
+			onSuccess({tx, code, blockNum, interrupt});
 		} else {
-			onError({tx, code, interrupt});
+			onError({tx, code, blockNum, interrupt});
 		}
 	}, err => {
 		logger.error(err);
