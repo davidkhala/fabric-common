@@ -6,7 +6,7 @@ const {txEventCode, txEvent, disconnect} = require('./eventHub');
  * @param eventHub
  * @param txId
  * @param eventWaitTime
- * @return {Promise<any>}
+ * @return {Promise<{tx,code,err}>}
  */
 const txTimerPromise = (eventHub, {txId}, eventWaitTime) => {
 	const logger = Logger.new('newTxEvent', true);
@@ -28,7 +28,7 @@ const txTimerPromise = (eventHub, {txId}, eventWaitTime) => {
 				disconnect(eventHub);
 			}
 			clearTimeout(timerID);
-			reject(err);
+			reject({err});
 		});
 		const timerID = setTimeout(() => {
 			disconnect(eventHub);
@@ -84,7 +84,6 @@ exports.instantiateOrUpgrade = async (
 	const response = await channel.sendTransaction(nextRequest);
 	logger.info('channel.sendTransaction', response);
 	return Promise.all(promises);
-	//	NOTE result parser is not required here, because the payload in proposalresponse is in form of garbled characters.
 };
 
 
