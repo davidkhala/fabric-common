@@ -204,7 +204,7 @@ exports.install = async (peers, {chaincodeId, chaincodePath, chaincodeVersion, c
 exports.transactionProposal = async (client, targets, channelName, {
 	chaincodeId, fcn, args, transientMap,
 }, proposalTimeout = 30000) => {
-	const logger = Logger.new('chaincode:invokeProposal', true);
+	const logger = Logger.new('chaincode:transactionProposal', true);
 	const txId = client.newTransactionID();
 	const request = {
 		chaincodeId,
