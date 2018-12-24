@@ -139,7 +139,7 @@ exports.versionMatcher = (ccVersionName, toThrow) => {
  */
 exports.install = async (peers, {chaincodeId, chaincodePath, chaincodeVersion, chaincodeType = 'golang', metadataPath}, client) => {
 	const logger = Logger.new('chaincode:install', true);
-	logger.debug({peers_length: peers.length, chaincodeId, chaincodePath, chaincodeVersion});
+	logger.debug({peers_length: peers.length, chaincodeId, chaincodePath, chaincodeVersion, chaincodeType, metadataPath});
 
 	exports.nameMatcher(chaincodeId, true);
 	exports.versionMatcher(chaincodeVersion, true);
