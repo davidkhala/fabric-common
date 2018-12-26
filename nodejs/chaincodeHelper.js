@@ -10,15 +10,14 @@ const {txEventCode, txEvent, disconnect} = require('./eventHub');
  */
 const txTimerPromise = (eventHub, {txId}, eventWaitTime) => {
 	const logger = Logger.new('newTxEvent', true);
-	const validator = ({tx, code}) => {
-		logger.debug({tx, code});
+	const validator = ({tx, code, blockNum}) => {
+		logger.debug({tx, code, blockNum});
 		return {valid: code === txEventCode[0], interrupt: true};
 	};
 	return new Promise((resolve, reject) => {
 		txEvent(eventHub, {txId}, validator, (data) => {
 			clearTimeout(timerID);
 			const {tx, code, interrupt} = data;
-			logger.debug('??', data);
 			if (interrupt) {
 				disconnect(eventHub);
 			}
@@ -65,7 +64,6 @@ exports.instantiateOrUpgrade = async (
 	eventWaitTime = 30000,
 ) => {
 	const logger = Logger.new(`${command}-chaincode`, true);
-
 	const nextRequest = await chaincodeProposal(command, channel, peers, opts, proposalTimeOut);
 
 	const {txId} = nextRequest;

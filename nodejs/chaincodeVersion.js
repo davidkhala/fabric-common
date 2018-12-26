@@ -6,13 +6,14 @@ const Query = require('./query');
  *
  * @param {Client.ChaincodeInfo[]} chaincodes
  * @param {string} chaincodeId
+ * @param {versionComparator} comparator
  * @return {Client.ChaincodeInfo}
  */
-exports.findLatest = (chaincodes, chaincodeId) => {
+exports.findLatest = (chaincodes, chaincodeId, comparator = newerVersion) => {
 	const foundChaincodes = chaincodes.filter((element) => element.name === chaincodeId);
 
 	const reducer = (lastChaincode, currentValue) => {
-		if (!lastChaincode || newerVersion(currentValue.version, lastChaincode.version)) {
+		if (!lastChaincode || comparator(currentValue.version, lastChaincode.version)) {
 			return currentValue;
 		} else {
 			return lastChaincode;
@@ -37,6 +38,7 @@ exports.incrementInstall = async (peer, {chaincodeId, chaincodePath, chaincodeTy
 		chaincodeVersion = nextVersion(lastChaincode.version, incrementLevel);
 	}
 
-	return install([peer], {chaincodeId, chaincodePath, chaincodeVersion, chaincodeType, metadataPath}, client);
-
+	const result = await install([peer], {chaincodeId, chaincodePath, chaincodeVersion, chaincodeType, metadataPath}, client);
+	result.chaincodeVersion = chaincodeVersion;
+	return result;
 };
