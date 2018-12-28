@@ -31,3 +31,4 @@ see [Build 1.1](./BUILD1.1.md)
 
 # Fabric weakness
 - gossip timeline is outside of blockchain,  for massive data scenario, gossip will fall behind transaction event
+- `args.push(Buffer.from(request.fcn ? request.fcn : 'init', 'utf8'));` we should use fcn ='' as default
