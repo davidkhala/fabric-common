@@ -77,12 +77,12 @@ exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, kafkas, tls}) => {
  * basic health check for an orderer
  * @param {Orderer} orderer
  */
-exports.connect = async (orderer) => {
+exports.ping = async (orderer) => {
 	try {
 		await orderer.waitForReady(orderer._ordererClient);
 		return true;
 	} catch (err) {
-		if (err.toString().includes('Failed to connect before the deadline')) {
+		if (err.message.includes('Failed to connect before the deadline')) {
 			return false;
 		} else {
 			throw err;

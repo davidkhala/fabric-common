@@ -89,3 +89,22 @@ exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchD
 	// CORE_CHAINCODE_LOGGING_SHIM :used for fabric logging
 	return environment;
 };
+
+
+/**
+ * basic health check (by discoveryClient)
+ * @param {Peer} peer
+ * @return {Promise<boolean>} false if connect trial failed
+ */
+exports.ping = async (peer) => {
+	try {
+		await peer.waitForReady(peer._discoveryClient);
+		return true;
+	} catch (err) {
+		if (err.message.includes('Failed to connect before the deadline')) {
+			return false;
+		} else {
+			throw err;
+		}
+	}
+};
