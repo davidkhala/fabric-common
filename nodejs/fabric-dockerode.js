@@ -81,9 +81,9 @@ exports.fabricImagePull = async ({fabricTag, thirdPartyTag, chaincodeType = 'gol
  * @returns {Promise<*>}
  */
 exports.runCA = ({
-	                 container_name, port, network, imageTag,
-	                 admin = userUtil.adminName, adminpw = userUtil.adminPwd,
-	                 TLS, Issuer
+	container_name, port, network, imageTag,
+	admin = userUtil.adminName, adminpw = userUtil.adminPwd,
+	TLS, Issuer
 }, configFile) => {
 
 	const {caKey, caCert} = caUtil.container;
@@ -318,8 +318,8 @@ exports.chaincodeClean = async (prune) => {
 	}
 };
 exports.runOrderer = ({
-	                      container_name, imageTag, port, network, BLOCK_FILE, CONFIGTXVolume,
-	                      msp: {id, configPath, volumeName}, kafkas, tls, stateVolume
+	container_name, imageTag, port, network, BLOCK_FILE, CONFIGTXVolume,
+	msp: {id, configPath, volumeName}, kafkas, tls, stateVolume
 }) => {
 	const Image = `hyperledger/fabric-orderer:${imageTag}`;
 	const Cmd = ['orderer'];
@@ -370,8 +370,8 @@ exports.runOrderer = ({
 };
 
 exports.deployOrderer = async ({
-	                               Name, network, imageTag, Constraints, port,
-	                               msp: {volumeName, configPath, id}, CONFIGTXVolume, BLOCK_FILE, kafkas, tls
+	Name, network, imageTag, Constraints, port,
+	msp: {volumeName, configPath, id}, CONFIGTXVolume, BLOCK_FILE, kafkas, tls
 }) => {
 	const serviceName = dockerUtil.swarmServiceName(Name);
 	if (!Constraints) {
@@ -390,8 +390,8 @@ exports.deployOrderer = async ({
 	});
 };
 exports.deployPeer = async ({
-	                            Name, network, imageTag, Constraints, port,
-	                            msp: {volumeName, configPath, id}, peerHostName, tls
+	Name, network, imageTag, Constraints, port,
+	msp: {volumeName, configPath, id}, peerHostName, tls
 }) => {
 	const serviceName = dockerUtil.swarmServiceName(Name);
 	if (!Constraints) {
@@ -413,11 +413,11 @@ exports.deployPeer = async ({
 	});
 };
 exports.runPeer = ({
-	                   container_name, port, network, imageTag,
-	                   msp: {
-		                   id, volumeName,
-		                   configPath
-	                   }, peerHostName, tls, couchDB, stateVolume
+	container_name, port, network, imageTag,
+	msp: {
+		id, volumeName,
+		configPath
+	}, peerHostName, tls, couchDB, stateVolume
 }) => {
 	const Image = `hyperledger/fabric-peer:${imageTag}`;
 	const Cmd = ['peer', 'node', 'start'];
