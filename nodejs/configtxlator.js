@@ -3,7 +3,8 @@ const logger = require('./logger').new('configtxlator');
 const fs = require('fs');
 const agent = require('./agent2configtxlator');
 const {JSONEqual} = require('khala-nodeutils/helper');
-exports.ConfigFactory = class {
+
+class ConfigFactory {
 	constructor(original_config) {
 		this.newConfig = JSON.parse(original_config);
 	}
@@ -230,7 +231,7 @@ exports.ConfigFactory = class {
 	build() {
 		return JSON.stringify(this.newConfig);
 	}
-};
+}
 
 
 /**
@@ -318,3 +319,4 @@ exports.channelUpdate = async (channel, orderer, peer, mspCB, signatureCollectCB
 };
 
 
+exports.ConfigFactory = ConfigFactory;

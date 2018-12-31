@@ -6,7 +6,7 @@ const logger = require('./logger').new('client');
 
 const {cryptoKeyStore} = require('./package');
 const cryptoKeyStorePath = path.resolve(__dirname, cryptoKeyStore);
-fsExtra.ensureDirSync(cryptoKeyStorePath);//TODO
+fsExtra.ensureDirSync(cryptoKeyStorePath);// TODO
 const User = require('fabric-client/lib/User');
 exports.new = (persist) => {
 	const client = new Client();
@@ -23,7 +23,9 @@ exports.deleteChannel = (client, channelName) => {
 exports.setUser = (client, user) => {
 	if (user instanceof User) {
 		client._userContext = user;
-	} else throw Error(`${user} is not instanceof User`);
+	} else {
+		throw Error(`${user} is not instanceof User`);
+	}
 
 };
 exports.getUser = (client) => {
@@ -40,7 +42,9 @@ exports.newCryptoSuite = ({path, persist} = {}) => {
 	if (!persist) {
 		logger.debug('ephemeral cryptoKeystore without cache storage');
 	} else {
-		if (!path) path = cryptoKeyStorePath;
+		if (!path) {
+			path = cryptoKeyStorePath;
+		}
 		newCryptoSuite.setCryptoKeyStore(BaseClient.newCryptoKeyStore(undefined, {path}));
 		logger.debug('cryptoKeystore cache files:', fsExtra.readdirSync(path).length);
 	}

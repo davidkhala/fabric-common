@@ -1,8 +1,10 @@
+const Orderer = require('fabric-client/lib/Orderer');
+const fs = require('fs');
+const Logger = require('./logger');
+const logger = Logger.new('orderer');
 exports.find = ({orderers, ordererUrl}) => {
 	return ordererUrl ? orderers.find((orderer) => orderer.getUrl() === ordererUrl) : orderers[0];
 };
-const Orderer = require('fabric-client/lib/Orderer');
-const fs = require('fs');
 exports.new = ({ordererPort, cert, pem, ordererHostName, host}) => {
 	const Host = host ? host : 'localhost';
 	let orderer_url = `grpcs://${Host}:${ordererPort}`;
@@ -85,6 +87,7 @@ exports.ping = async (orderer) => {
 		if (err.message.includes('Failed to connect before the deadline')) {
 			return false;
 		} else {
+			logger.error(err);
 			throw err;
 		}
 	}

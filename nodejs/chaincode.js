@@ -310,5 +310,5 @@ exports.invokeCommit = async (client, nextRequest, orderer) => {
 	}
 	nextRequest.orderer = orderer;
 	const dummyChannel = ChannelUtil.newDummy(client);
-	return dummyChannel.sendTransaction(nextRequest);//TODO fix sdk
+	return dummyChannel.sendTransaction(nextRequest);// TODO fix sdk
 };

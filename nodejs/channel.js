@@ -1,9 +1,11 @@
-const logger = require('./logger').new('channel');
+const Logger = require('./logger');
+const logger = Logger.new('channel');
 const fs = require('fs');
 const {signs} = require('./multiSign');
 const Channel = require('fabric-client/lib/Channel');
 const {sleep} = require('khala-nodeutils/helper');
 const FabricUtils = require('fabric-client/lib/utils');
+const OrdererUtil = require('./orderer');
 exports.setClientContext = (channel, clientContext) => {
 	channel._clientContext = clientContext;
 };
@@ -12,6 +14,25 @@ exports.clearOrderers = (channel) => {
 };
 exports.clearPeers = (channel) => {
 	channel._channel_peers = new Map();
+};
+exports.getOrderers = async (channel, healthyOnly) => {
+	const orderers = channel.getOrderers();
+	if (healthyOnly) {
+		const result = [];
+		for (const orderer of orderers) {
+			try {
+				const isAlive = await OrdererUtil.ping(orderer);
+				if (isAlive) {
+					result.push(orderer);
+				}
+			} catch (e) {
+				return false;
+			}
+		}
+		return result;
+	} else {
+		return orderers;
+	}
 };
 /**
  * could be ignored from 1.2
@@ -62,7 +83,7 @@ exports.genesis = 'testchainid';
  * @returns {Promise<T>}
  */
 exports.create = async (signClients, channel, channelConfigFile, orderer) => {
-	const logger = require('./logger').new('create-channel');
+	const logger = Logger.new('create-channel');
 	const channelName = channel.getName();
 	logger.debug({channelName, channelConfigFile});
 
@@ -82,17 +103,20 @@ exports.create = async (signClients, channel, channelConfigFile, orderer) => {
 	};
 	logger.debug('signatures', signatures.length);
 
-	//The client application must poll the orderer to discover whether the channel has been created completely or not.
+	// The client application must poll the orderer to discover whether the channel has been created completely or not.
 	const results = await channelClient.createChannel(request);
 	const {status, info} = results;
 	logger.debug('response', {status, info}, results);
-	if (status === 'SUCCESS') return results;
-	else {
+	if (status === 'SUCCESS') {
+		return results;
+	} else {
 		if (status === 'SERVICE_UNAVAILABLE' && info === 'will not enqueue, consenter for this channel hasn\'t started yet') {
 			logger.warn('loop retry..');
 			await sleep(1000);
 			return exports.create(signClients, channel, channelConfigFile, orderer);
-		} else throw Error(results);
+		} else {
+			throw Error(results);
+		}
 	}
 };
 
@@ -119,8 +143,8 @@ exports.initialize = async (channel, peer, {asLocalhost, TLS} = {}) => {
  * @param {number} waitTime default 1000, if set to false, will not retry channel join
  * @returns {Promise<*>}
  */
-exports.join = async (channel, peer, orderer, waitTime = 1000) => {
-	const logger = require('./logger').new('join-channel', true);
+const join = async (channel, peer, orderer, waitTime = 1000) => {
+	const logger = Logger.new('join-channel', true);
 	logger.debug({channelName: channel.getName(), peer: peer._name});
 
 	const channelClient = channel._clientContext;
@@ -137,14 +161,16 @@ exports.join = async (channel, peer, orderer, waitTime = 1000) => {
 
 	if (dataEntry instanceof Error) {
 		logger.warn(dataEntry);
-		const errString = dataEntry.toString();
-		if (errString.includes('Stream removed') && waitTime) {
-			logger.warn('loopJoinChannel...', errString);
+		const errMessage = dataEntry.message;
+		const swallowSymptoms = ['NOT_FOUND', 'UNAVAILABLE', 'Stream removed'];
+
+		if (swallowSymptoms.reduce((result, symptom) => result || errMessage.includes(symptom), false) && waitTime) {
+			logger.warn('loopJoinChannel...', errMessage);
 			await sleep(waitTime);
-			return await exports.join(channel, peer, orderer, waitTime);
+			return await join(channel, peer, orderer, waitTime);
 		}
-		if (errString.includes(joinedBeforeSymptom)) {
-			//swallow 'joined before' error
+		if (errMessage.includes(joinedBeforeSymptom)) {
+			// swallow 'joined before' error
 			logger.info('peer joined before', peer._name);
 			return;
 		}
@@ -158,6 +184,8 @@ exports.join = async (channel, peer, orderer, waitTime = 1000) => {
 	return dataEntry;
 
 };
+
+exports.join = join;
 
 /**
  * take effect in next block, it is recommended to register a block event after
@@ -196,6 +224,6 @@ exports.pretty = (channel) => {
 		peers: channel._channel_peers,
 		anchorPeers: channel._anchor_peers,
 		orderers: channel._orderers,
-		kafkas: channel._kafka_brokers,
+		kafkas: channel._kafka_brokers
 	};
 };
