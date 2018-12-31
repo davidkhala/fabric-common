@@ -85,7 +85,7 @@ exports.genesis = 'testchainid';
 exports.create = async (signClients, channel, channelConfigFile, orderer) => {
 	const logger = Logger.new('create-channel');
 	const channelName = channel.getName();
-	logger.debug({channelName, channelConfigFile});
+	logger.debug({channelName, channelConfigFile, orderer: orderer.toString()});
 
 	const channelClient = channel._clientContext;
 	const channelConfig_envelop = fs.readFileSync(channelConfigFile);
@@ -104,18 +104,22 @@ exports.create = async (signClients, channel, channelConfigFile, orderer) => {
 	logger.debug('signatures', signatures.length);
 
 	// The client application must poll the orderer to discover whether the channel has been created completely or not.
-	const results = await channelClient.createChannel(request);
-	const {status, info} = results;
-	logger.debug('response', {status, info}, results);
+	const result = await channelClient.createChannel(request);
+	const {status, info} = result;
 	if (status === 'SUCCESS') {
-		return results;
+		logger.info('response', result);
+		return result;
 	} else {
 		if (status === 'SERVICE_UNAVAILABLE' && info === 'will not enqueue, consenter for this channel hasn\'t started yet') {
-			logger.warn('loop retry..');
+			logger.warn('loop retry..', result);
 			await sleep(1000);
 			return exports.create(signClients, channel, channelConfigFile, orderer);
+		} else if (status === 'BAD_REQUEST' && info === 'error authorizing update: error validating ReadSet: readset expected key [Group]  /Channel/Application at version 0, but got version 1') {
+			logger.warn('exist swallow', result);
+			return result;
 		} else {
-			throw Error(results);
+			const err = Object.assign(Error('create channel'), result);
+			throw err;
 		}
 	}
 };
@@ -210,8 +214,10 @@ exports.updateAnchorPeers = async (channel, anchorPeerTxFile, orderer) => {
 	};
 
 	const result = await client.updateChannel(request);
-	if (result.status !== 'SUCCESS') {
-		throw Error(JSON.stringify(result));
+	const {status, info} = result;
+	if (status !== 'SUCCESS') {
+		const err = Object.assign(Error('updateAnchorPeer'), {status, info});
+		throw err;
 	}
 
 	logger.info('set anchor peers', result);
