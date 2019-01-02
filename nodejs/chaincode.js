@@ -100,8 +100,8 @@ exports.chaincodeProposalAdapter = (actionString, validator, verbose, log) => {
 			errCounter,
 			swallowCounter,
 			nextRequest: {
-				proposalResponses: responses, proposal,
-			},
+				proposalResponses: responses, proposal
+			}
 		};
 
 	};
@@ -139,7 +139,14 @@ exports.versionMatcher = (ccVersionName, toThrow) => {
  */
 exports.install = async (peers, {chaincodeId, chaincodePath, chaincodeVersion, chaincodeType = 'golang', metadataPath}, client) => {
 	const logger = Logger.new('chaincode:install', true);
-	logger.debug({peers_length: peers.length, chaincodeId, chaincodePath, chaincodeVersion, chaincodeType, metadataPath});
+	logger.debug({
+		peers_length: peers.length,
+		chaincodeId,
+		chaincodePath,
+		chaincodeVersion,
+		chaincodeType,
+		metadataPath
+	});
 
 	exports.nameMatcher(chaincodeId, true);
 	exports.versionMatcher(chaincodeVersion, true);
@@ -202,7 +209,7 @@ exports.install = async (peers, {chaincodeId, chaincodePath, chaincodeVersion, c
  * @return {Promise<TransactionRequest>}
  */
 exports.transactionProposal = async (client, targets, channelName, {
-	chaincodeId, fcn, args, transientMap,
+	chaincodeId, fcn, args, transientMap
 }, proposalTimeout = 30000) => {
 	const logger = Logger.new('chaincode:transactionProposal', true);
 	const txId = client.newTransactionID();
@@ -212,7 +219,7 @@ exports.transactionProposal = async (client, targets, channelName, {
 		args,
 		txId,
 		targets,
-		transientMap: exports.transientMap(transientMap),
+		transientMap: exports.transientMap(transientMap)
 	};
 
 	const [responses, proposal] = await Channel.sendTransactionProposal(request, channelName, client, proposalTimeout);
@@ -262,9 +269,9 @@ exports.chaincodeProposal = async (
 		targets: peers, // optional: if not set, targets will be channel.getPeers
 		'endorsement-policy': endorsementPolicy,
 		'collections-config': collectionConfig,
-		chaincodeType,
+		chaincodeType
 	};
-	const existSymptom = 'exists';
+	const existSymptom = 'exists';// TODO stronger limitation
 
 
 	// TODO sdk enhance
@@ -275,8 +282,8 @@ exports.chaincodeProposal = async (
 		if (response && response.status === 200) {
 			return {isValid: true, isSwallowed: false};
 		}
-		if (proposalResponse instanceof Error && proposalResponse.toString().includes(existSymptom)) {
-			logger.warn('swallow when existence');
+		if (proposalResponse instanceof Error && proposalResponse.message.includes(existSymptom)) {
+			logger.warn('swallow when existence', proposalResponse.message);
 			return {isValid: true, isSwallowed: true};
 		}
 		return {isValid: false, isSwallowed: false};

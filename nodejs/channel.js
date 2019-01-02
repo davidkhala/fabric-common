@@ -4,7 +4,6 @@ const fs = require('fs');
 const {signs} = require('./multiSign');
 const Channel = require('fabric-client/lib/Channel');
 const {sleep} = require('khala-nodeutils/helper');
-const FabricUtils = require('fabric-client/lib/utils');
 const OrdererUtil = require('./orderer');
 exports.setClientContext = (channel, clientContext) => {
 	channel._clientContext = clientContext;
@@ -124,20 +123,7 @@ exports.create = async (signClients, channel, channelConfigFile, orderer) => {
 	}
 };
 
-/**
- * FIXME: sdk doc WARNING
- * In the case when multiple orderers within single host, meanwhile asLocalhost is true, the orderer names will overlap
- *  (all using localhost:7050). It leads to only one orderer is found in channel.getOrderers after channel.initialize
- * @param channel
- * @param peer
- * @param {boolean} asLocalhost   FIXME:ugly undefined checking in fabric-sdk-node
- * @param TLS
- * @returns {Promise<*|void>}
- */
-exports.initialize = async (channel, peer, {asLocalhost, TLS} = {}) => {
-	FabricUtils.setConfigSetting('discovery-protocol', TLS ? 'grpcs' : 'grpc');
-	return await channel.initialize({target: peer, discover: true, asLocalhost});
-};
+
 
 /**
  * to be atomic, join 1 peer each time
