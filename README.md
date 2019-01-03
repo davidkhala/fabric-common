@@ -35,3 +35,4 @@ see [Build 1.1](./BUILD1.1.md)
 - chaos in discoveryRequest.interests
 - keystore object un-promisify
 - endpoint ping
+- fabric RSA key support 
