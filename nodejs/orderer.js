@@ -85,9 +85,9 @@ exports.ping = async (orderer) => {
 		return true;
 	} catch (err) {
 		if (err.message.includes('Failed to connect before the deadline')) {
+			logger.warn('ping:dead', orderer.getName());
 			return false;
 		} else {
-			logger.error(err);
 			throw err;
 		}
 	}

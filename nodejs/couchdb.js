@@ -47,9 +47,9 @@ exports.couchDBIndex = (metaINFPath, fileName, ...fields) => {
 	const target = path.resolve(metaINFPath, 'statedb', 'couchdb', 'indexes', fileName);
 	const object = {
 		index: {
-			fields,
-			type: 'json'
-		}
+			fields
+		},
+		type: 'json'
 	};
 	fsExtra.outputJsonSync(target, object);
 };

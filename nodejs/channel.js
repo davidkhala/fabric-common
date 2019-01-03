@@ -19,15 +19,12 @@ exports.getOrderers = async (channel, healthyOnly) => {
 	if (healthyOnly) {
 		const result = [];
 		for (const orderer of orderers) {
-			try {
-				const isAlive = await OrdererUtil.ping(orderer);
-				if (isAlive) {
-					result.push(orderer);
-				}
-			} catch (e) {
-				return false;
+			const isAlive = await OrdererUtil.ping(orderer);
+			if (isAlive) {
+				result.push(orderer);
 			}
 		}
+		logger.debug(`${result.length} alive in ${channel.getName()}`);
 		return result;
 	} else {
 		return orderers;
@@ -123,7 +120,19 @@ exports.create = async (signClients, channel, channelConfigFile, orderer) => {
 	}
 };
 
-
+const getGenesisBlock = async (channel, orderer, waitTime = 1000) => {
+	try {
+		return await channel.getGenesisBlock({orderer});
+	} catch (e) {
+		if (e.message.includes('SERVICE_UNAVAILABLE')) {
+			await sleep(waitTime);
+			return getGenesisBlock(channel, orderer, waitTime);
+		} else {
+			throw e;
+		}
+	}
+};
+exports.getGenesisBlock = getGenesisBlock;
 
 /**
  * to be atomic, join 1 peer each time
@@ -135,10 +144,11 @@ exports.create = async (signClients, channel, channelConfigFile, orderer) => {
  */
 const join = async (channel, peer, orderer, waitTime = 1000) => {
 	const logger = Logger.new('join-channel', true);
-	logger.debug({channelName: channel.getName(), peer: peer._name});
+	logger.debug({channelName: channel.getName(), peer: peer.getName(), orderer: orderer.getName()});
 
 	const channelClient = channel._clientContext;
-	const genesis_block = await channel.getGenesisBlock({orderer});
+	const genesis_block = await getGenesisBlock(channel, orderer);
+	logger.info('got genesis_block');
 	const request = {
 		targets: [peer],
 		txId: channelClient.newTransactionID(),
@@ -152,7 +162,7 @@ const join = async (channel, peer, orderer, waitTime = 1000) => {
 	if (dataEntry instanceof Error) {
 		logger.warn(dataEntry);
 		const errMessage = dataEntry.message;
-		const swallowSymptoms = ['NOT_FOUND', 'UNAVAILABLE', 'Stream removed'];
+		const swallowSymptoms = ['NOT_FOUND', 'Stream removed'];
 
 		if (swallowSymptoms.reduce((result, symptom) => result || errMessage.includes(symptom), false) && waitTime) {
 			logger.warn('loopJoinChannel...', errMessage);
