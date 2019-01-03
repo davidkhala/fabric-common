@@ -22,13 +22,16 @@ see [Build 1.1](./BUILD1.1.md)
 - peer.response in chaincode.Init cannot be recovered from proposal response. stub.GetState is meaningless in Init 
 
 # DONE
+- discovery service, endorsement hints
 
 # TODO
 - instantiate chaincode on Mac, context canceled
-- discovery service, endorsement hints
 - npm couchdb-dump in nodejs/couchdbDump.sh
 
 
 # Fabric weakness
 - gossip timeline is outside of blockchain,  for massive data scenario, gossip will fall behind transaction event
 - `args.push(Buffer.from(request.fcn ? request.fcn : 'init', 'utf8'));` we should use fcn ='' as default
+- chaos in discoveryRequest.interests
+- keystore object un-promisify
+- endpoint ping
