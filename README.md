@@ -25,9 +25,8 @@ see [Build 1.1](./BUILD1.1.md)
 - discovery service, endorsement hints
 
 # TODO
-- instantiate chaincode on Mac, context canceled
 - npm couchdb-dump in nodejs/couchdbDump.sh
-
+- is transient map included context when cross chaincode?
 
 # Fabric weakness
 - gossip timeline is outside of blockchain,  for massive data scenario, gossip will fall behind transaction event
