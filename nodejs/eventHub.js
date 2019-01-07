@@ -1,4 +1,5 @@
 const Logger = require('./logger');
+const logger = Logger.new('eventHub');
 const ChannelEventHub = require('fabric-client/lib/ChannelEventHub');
 const Query = require('./query');
 exports.unRegisterAllEvents = (eventHub) => {
@@ -30,11 +31,12 @@ exports.newEventHub = (channel, peer, inlineConnected) => {
  * all listeners that provided an "onError" callback.
  * @param {ChannelEventHub} eventHub
  */
-exports.disconnect = (eventHub) => {
+const disconnect = (eventHub) => {
 	if (eventHub.isconnected()) {
 		eventHub.disconnect();
 	}
 };
+exports.disconnect = disconnect;
 const pretty = (eventHub) => {
 	return {
 		isConnected: eventHub._connected,
@@ -83,7 +85,7 @@ exports.chaincodeEvent = (eventHub, validator, {chaincodeId, eventName}, onSucce
 		const {valid, interrupt} = validator({chaincodeEvent, blockNum, status});
 		if (interrupt) {
 			eventHub.unregisterChaincodeEvent(listener, true);
-			eventHub.disconnect();
+			disconnect(eventHub);
 		}
 		if (valid) {
 			onSuccess({chaincodeEvent, blockNum, status, interrupt});
@@ -93,7 +95,7 @@ exports.chaincodeEvent = (eventHub, validator, {chaincodeId, eventName}, onSucce
 	}, (err) => {
 		logger.error(err);
 		eventHub.unregisterChaincodeEvent(listener, true);
-		eventHub.disconnect();
+		disconnect(eventHub);
 		onError({err, interrupt: true});
 	});
 	return listener;
@@ -119,7 +121,7 @@ exports.blockEvent = (eventHub, validator, onSuccess, onError) => {
 		const {valid, interrupt} = validator({block});
 		if (interrupt) {
 			eventHub.unregisterBlockEvent(block_registration_number, true);
-			eventHub.disconnect();
+			disconnect(eventHub);
 		}
 		if (valid) {
 			onSuccess({block, interrupt});
@@ -129,7 +131,7 @@ exports.blockEvent = (eventHub, validator, onSuccess, onError) => {
 	}, (err) => {
 		logger.error(err);
 		eventHub.unregisterBlockEvent(block_registration_number, true);
-		eventHub.disconnect();
+		disconnect(eventHub);
 		onError({err, interrupt: true});
 	});
 
@@ -196,7 +198,7 @@ exports.txEvent = (eventHub, {txId}, validator, onSuccess, onError) => {
 		const {valid, interrupt} = validator({tx, code, blockNum});
 		if (interrupt) {
 			eventHub.unregisterTxEvent(transactionID, true);
-			eventHub.disconnect();
+			disconnect(eventHub);
 		}
 		if (valid) {
 			onSuccess({tx, code, blockNum, interrupt});
@@ -206,7 +208,7 @@ exports.txEvent = (eventHub, {txId}, validator, onSuccess, onError) => {
 	}, err => {
 		logger.error(err);
 		eventHub.unregisterTxEvent(transactionID, true);
-		eventHub.disconnect();
+		disconnect(eventHub);
 		onError({err, interrupt: true});
 	});
 	return transactionID;
