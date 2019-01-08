@@ -28,6 +28,8 @@ see [Build 1.1](./BUILD1.1.md)
 # TODO
 - npm couchdb-dump in nodejs/couchdbDump.sh
 - is transient map included context when cross chaincode?
+- level db navigator(https://github.com/Level/level or https://github.com/syndtr/goleveldb) and richQuery for leveldb
+- peer leveldb analyzer
 
 # Fabric weakness
 - gossip timeline is outside of blockchain,  for massive data scenario, gossip will fall behind transaction event
