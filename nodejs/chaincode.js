@@ -12,7 +12,7 @@ exports.proposalStringify = (proposalResponse) => {
 };
 exports.proposalFlatten = proposalResponse => {
 	if (proposalResponse instanceof Error) {
-		return proposalResponse.toString();
+		return proposalResponse.message;
 	} else {
 		return proposalResponse.response.payload;
 	}
