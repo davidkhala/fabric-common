@@ -20,6 +20,7 @@ see [Build 1.1](./BUILD1.1.md)
 - dep could only be run under system $GOPATH,
 - nodejs chaincode take longer time in install chaincode only.
 - peer.response in chaincode.Init cannot be recovered from proposal response. stub.GetState is meaningless in Init 
+- playback conference: https://wiki.hyperledger.org/doku.php?id=projects/fabric/playbacks
 
 # DONE
 - discovery service, endorsement hints
