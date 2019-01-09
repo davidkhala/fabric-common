@@ -1,4 +1,5 @@
-const Logger = require('khala-nodeutils/logger');
+const DevLogger = require('khala-nodeutils').devLogger;
+const Logger = require('khala-nodeutils').logger();
 /**
  *
  * @param moduleName
@@ -7,10 +8,7 @@ const Logger = require('khala-nodeutils/logger');
  */
 exports.new = (moduleName, dev) => {
 	if (dev) {
-		const Log4j = require('log4js');
-		const logger = Log4j.getLogger(moduleName);
-		logger.level = 'debug';
-		return logger;
+		return DevLogger(moduleName);
 	}
 	return Logger.new(moduleName);
 };
