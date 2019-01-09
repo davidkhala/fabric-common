@@ -34,6 +34,22 @@ exports.container =
 exports.host = {
 	dockerSock: '/run/docker.sock'
 };
+exports.statePath = {
+	chaincodes: undefined, // diagnose.0.0.0
+	ledgersData: {
+		bookkeeper: {}, // leveldb
+		chains: {
+			chains: [],// channel names // allchannel/blockfile_000000
+			index: {}// leveldb
+		},
+		configHistory: {}, // leveldb
+		historyLeveldb: {}, // leveldb
+		ledgerProvider: {}, // leveldb
+		pvtdataStore: {}, // leveldb
+		stateLeveldb: {} // leveldb
+	},
+	transientStore: {}// leveldb
+};
 
 /**
  * Valid logging levels are case-insensitive string
