@@ -61,7 +61,7 @@ const txTimerPromise = (eventHub, {txId}, eventWaitTime) => {
 exports.instantiateOrUpgrade = async (
 	command, channel, peers, eventHubs,
 	opts, proposalTimeOut,
-	eventWaitTime = 30000,
+	eventWaitTime = 30000
 ) => {
 	const logger = Logger.new(`${command}-chaincode`, true);
 	const nextRequest = await chaincodeProposal(command, channel, peers, opts, proposalTimeOut);
@@ -100,10 +100,10 @@ exports.instantiateOrUpgrade = async (
  * @return {Promise<{txEventResponses: any[], proposalResponses}>}
  */
 exports.invoke = async (channel, peers, eventHubs, {
-	chaincodeId, fcn, args, transientMap,
+	chaincodeId, fcn, args, transientMap
 }, orderer, proposalTimeout, eventWaitTime) => {
 	const logger = Logger.new('chaincode:invoke', true);
-	logger.debug({channel: channel.getName(), peersSize: peers.length, chaincodeId, fcn, args});
+	logger.debug({channel: channel.getName(), peersSize: peers.length, chaincodeId, fcn, args, transientMap});
 	if (!proposalTimeout) {
 		proposalTimeout = 30000;
 	}
@@ -116,7 +116,7 @@ exports.invoke = async (channel, peers, eventHubs, {
 		chaincodeId,
 		fcn,
 		args,
-		transientMap,
+		transientMap
 	}, proposalTimeout);
 
 	const {txId, proposalResponses} = nextRequest;
