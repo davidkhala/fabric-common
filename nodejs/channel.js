@@ -115,6 +115,7 @@ exports.create = async (signClients, channel, channelConfigFile, orderer) => {
 			return result;
 		} else {
 			const err = Object.assign(Error('create channel'), result);
+			logger.error(result);
 			throw err;
 		}
 	}

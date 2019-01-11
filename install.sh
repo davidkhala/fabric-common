@@ -138,6 +138,9 @@ function java8() {
 	sudo apt install -y oracle-java8-set-default
 }
 
+fabricInstall(){
+    curl -sSL http://bit.ly/2ysbOFE | bash -s 1.4.0 1.4.0 0.4.14
+}
 function sync() {
 	$CURRENT/docker/nodejs/install.sh packageLock false
 	cd $CURRENT/nodejs
