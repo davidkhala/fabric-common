@@ -41,6 +41,24 @@ exports.simplePolicyBuilder = (identities, n) => {
 		}
 	};
 };
+exports.configtxPolicies = {
+	implicit: {
+		Policies: {
+			Readers: {
+				Type: 'ImplicitMeta',
+				Rule: 'ANY Readers'
+			},
+			Writers: {
+				Type: 'ImplicitMeta',
+				Rule: 'ANY Writers'
+			},
+			Admins: {
+				Type: 'ImplicitMeta',
+				Rule: 'MAJORITY Admins'
+			}
+		}
+	}
+};
 
 
 
