@@ -4,7 +4,7 @@ CURRENT=$(cd $(dirname ${BASH_SOURCE}) && pwd)
 Parent=$(dirname $CURRENT)
 cd $Parent
 
-VERSION=${1:-1.3.0}
+VERSION=${1:-1.4.0}
 
 ARCH=$(echo "$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/mingw64_nt.*/windows/')-$(uname -m | sed 's/x86_64/amd64/g')")
 
