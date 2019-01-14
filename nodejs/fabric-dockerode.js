@@ -81,10 +81,10 @@ exports.fabricImagePull = async ({fabricTag, thirdPartyTag, chaincodeType = 'gol
  * @returns {Promise<*>}
  */
 exports.runCA = ({
-	container_name, port, network, imageTag,
-	admin = userUtil.adminName, adminpw = userUtil.adminPwd,
-	TLS, Issuer
-}, configFile) => {
+	                 container_name, port, network, imageTag,
+	                 admin = userUtil.adminName, adminpw = userUtil.adminPwd,
+	                 TLS, Issuer
+                 }, configFile) => {
 
 	const {caKey, caCert} = caUtil.container;
 	const {CN, OU, O, ST, C, L} = Issuer;
@@ -106,7 +106,7 @@ exports.runCA = ({
 						HostPort: port.toString()
 					}
 				]
-			},
+			}
 
 		},
 		NetworkingConfig: {
@@ -127,12 +127,12 @@ exports.runCA = ({
 					ST,
 					L,
 					O,
-					OU,
+					OU
 				}],
 
 				hosts: [
 					'localhost', container_name
-				],
+				]
 			},
 			tls: {
 				enabled: !!TLS
@@ -160,9 +160,9 @@ exports.runCA = ({
 				default: {
 					usage:
 						[
-							'digital signature',
+							'digital signature'
 						],
-					expiry: '8760h',
+					expiry: '8760h'
 				},
 
 				profiles:
@@ -176,19 +176,19 @@ exports.runCA = ({
 								'key encipherment',
 								'key agreement'
 							],
-							expiry: '8760h',
-						},
+							expiry: '8760h'
+						}
 					}
-			},
+			}
 
 		};
 		yaml.write(config, configFile);
 
 		createOptions.Volumes = {
-			[caUtil.container.CONFIG]: {},
+			[caUtil.container.CONFIG]: {}
 		};
 		createOptions.Hostconfig.Binds = [
-			`${configFile}:${caUtil.container.CONFIG}`,
+			`${configFile}:${caUtil.container.CONFIG}`
 		];
 	}
 	return dockerUtil.containerStart(createOptions);
@@ -205,7 +205,7 @@ exports.deployZookeeper = async ({Name, network, imageTag, Constraints, MY_ID}, 
 		Constraints,
 		ports: [{container: 2888}, {container: 3888}, {container: 2181}],
 		Env: zookeeperUtil.envBuilder(MY_ID, zookeepersConfig, true),
-		Aliases: [Name],
+		Aliases: [Name]
 	});
 };
 exports.deployKafka = async ({Name, network, imageTag, Constraints, BROKER_ID}, zookeepers, {N, M}) => {
@@ -219,7 +219,7 @@ exports.deployKafka = async ({Name, network, imageTag, Constraints, BROKER_ID}, 
 		Constraints,
 		ports: [{container: 9092}],
 		Env: kafkaUtil.envBuilder({N, M, BROKER_ID}, zookeepers),
-		Aliases: [Name],
+		Aliases: [Name]
 	});
 };
 
@@ -241,7 +241,7 @@ exports.deployCA = async ({Name, network, imageTag, Constraints, port, admin = u
 		Constraints,
 		ports: [{host: port, container: 7054}],
 		Env: caUtil.envBuilder(),
-		Aliases: [Name],
+		Aliases: [Name]
 	});
 };
 exports.runKafka = ({container_name, network, imageTag, BROKER_ID}, zookeepers, {N, M}) => {
@@ -259,7 +259,7 @@ exports.runKafka = ({container_name, network, imageTag, BROKER_ID}, zookeepers, 
 		},
 		Hostconfig: {
 			PublishAllPorts: true
-		},
+		}
 	};
 	return dockerUtil.containerStart(createOptions);
 };
@@ -277,7 +277,7 @@ exports.runZookeeper = ({container_name, network, imageTag, MY_ID}, zookeepersCo
 		},
 		Hostconfig: {
 			PublishAllPorts: true
-		},
+		}
 	};
 	return dockerUtil.containerStart(createOptions);
 };
@@ -318,28 +318,29 @@ exports.chaincodeClean = async (prune) => {
 	}
 };
 exports.runOrderer = ({
-	container_name, imageTag, port, network, BLOCK_FILE, CONFIGTXVolume,
-	msp: {id, configPath, volumeName}, kafkas, tls, stateVolume
-}) => {
+	                      container_name, imageTag, port, network, BLOCK_FILE, CONFIGTXVolume,
+	                      msp: {id, configPath, volumeName}, kafkas, tls, stateVolume
+                      }, operationPort) => {
 	const Image = `hyperledger/fabric-orderer:${imageTag}`;
 	const Cmd = ['orderer'];
 	const Env = ordererUtil.envBuilder({
 		BLOCK_FILE, msp: {
 			configPath, id
 		}, kafkas, tls
-	});
+	}, undefined, operationPort);
 
 	const createOptions = {
 		name: container_name,
 		Env,
 		Volumes: {
 			[peerUtil.container.MSPROOT]: {},
-			[ordererUtil.container.CONFIGTX]: {},
+			[ordererUtil.container.CONFIGTX]: {}
 		},
 		Cmd,
 		Image,
 		ExposedPorts: {
 			'7050': {},
+			'8443': {}
 		},
 		Hostconfig: {
 			Binds: [
@@ -351,8 +352,9 @@ exports.runOrderer = ({
 					{
 						HostPort: port.toString()
 					}
-				]
-			},
+				],
+				'8443': []
+			}
 		},
 		NetworkingConfig: {
 			EndpointsConfig: {
@@ -366,13 +368,16 @@ exports.runOrderer = ({
 		createOptions.Volumes[ordererUtil.container.state] = {};
 		createOptions.Hostconfig.Binds.push(`${stateVolume}:${ordererUtil.container.state}`);
 	}
+	if (operationPort) {
+		createOptions.Hostconfig.PortBindings['8443'].push({HostPort: operationPort.toString()});
+	}
 	return dockerUtil.containerStart(createOptions);
 };
 
 exports.deployOrderer = async ({
-	Name, network, imageTag, Constraints, port,
-	msp: {volumeName, configPath, id}, CONFIGTXVolume, BLOCK_FILE, kafkas, tls
-}) => {
+	                               Name, network, imageTag, Constraints, port,
+	                               msp: {volumeName, configPath, id}, CONFIGTXVolume, BLOCK_FILE, kafkas, tls
+                               }) => {
 	const serviceName = dockerUtil.swarmServiceName(Name);
 	if (!Constraints) {
 		Constraints = await dockerUtil.constraintSelf();
@@ -390,9 +395,9 @@ exports.deployOrderer = async ({
 	});
 };
 exports.deployPeer = async ({
-	Name, network, imageTag, Constraints, port,
-	msp: {volumeName, configPath, id}, peerHostName, tls
-}) => {
+	                            Name, network, imageTag, Constraints, port,
+	                            msp: {volumeName, configPath, id}, peerHostName, tls
+                            }) => {
 	const serviceName = dockerUtil.swarmServiceName(Name);
 	if (!Constraints) {
 		Constraints = await dockerUtil.constraintSelf();
@@ -406,38 +411,39 @@ exports.deployPeer = async ({
 			Type: 'bind', volumeName: peerUtil.host.dockerSock, volume: peerUtil.container.dockerSock
 		}],
 		ports: [
-			{host: port, container: 7051},
+			{host: port, container: 7051}
 		],
 		Env: peerUtil.envBuilder({network, msp: {configPath, id, peerHostName}, tls}),
-		Aliases: [Name, peerHostName],
+		Aliases: [Name, peerHostName]
 	});
 };
 exports.runPeer = ({
-	container_name, port, network, imageTag,
-	msp: {
-		id, volumeName,
-		configPath
-	}, peerHostName, tls, couchDB, stateVolume
-}) => {
+	                   container_name, port, network, imageTag,
+	                   msp: {
+		                   id, volumeName,
+		                   configPath
+	                   }, peerHostName, tls, couchDB, stateVolume
+                   }, operationPort) => {
 	const Image = `hyperledger/fabric-peer:${imageTag}`;
 	const Cmd = ['peer', 'node', 'start'];
 	const Env = peerUtil.envBuilder({
 		network, msp: {
 			configPath, id, peerHostName
 		}, tls, couchDB
-	});
+	}, undefined, operationPort);
 
 	const createOptions = {
 		name: container_name,
 		Env,
 		Volumes: {
 			[peerUtil.container.dockerSock]: {},
-			[peerUtil.container.MSPROOT]: {},
+			[peerUtil.container.MSPROOT]: {}
 		},
 		Cmd,
 		Image,
 		ExposedPorts: {
 			'7051': {},
+			'9443': {}
 		},
 		Hostconfig: {
 			Binds: [
@@ -449,7 +455,8 @@ exports.runPeer = ({
 						HostPort: port.toString()
 					}
 				],
-			},
+				'9443': []
+			}
 		},
 		NetworkingConfig: {
 			EndpointsConfig: {
@@ -459,6 +466,9 @@ exports.runPeer = ({
 			}
 		}
 	};
+	if (operationPort) {
+		createOptions.Hostconfig.PortBindings['9443'].push({HostPort: operationPort.toString()});
+	}
 	if (stateVolume) {
 		createOptions.Volumes[peerUtil.container.state] = {};
 		createOptions.Hostconfig.Binds.push(`${stateVolume}:${peerUtil.container.state}`);
@@ -484,7 +494,7 @@ exports.runCouchDB = async ({imageTag, container_name, port, network, user, pass
 	};
 	if (port) {
 		createOptions.ExposedPorts = {
-			'5984': {},
+			'5984': {}
 		};
 		createOptions.Hostconfig = {
 			PortBindings: {
@@ -493,7 +503,7 @@ exports.runCouchDB = async ({imageTag, container_name, port, network, user, pass
 						HostPort: port.toString()
 					}
 				]
-			},
+			}
 		};
 	}
 	return dockerUtil.containerStart(createOptions);

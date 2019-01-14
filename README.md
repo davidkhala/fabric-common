@@ -30,6 +30,8 @@ see [Build 1.1](./BUILD1.1.md)
 - is transient map included context when cross chaincode?
 - level db navigator(https://github.com/Level/level or https://github.com/syndtr/goleveldb) and richQuery for leveldb
 - peer leveldb analyzer
+- 1.4 operation enhance: 
+The /metrics endpoint allows operators to utilize Prometheus to pull operational metrics from peer and orderer nodes. Metrics can also be pushed to StatsD.
 
 # Fabric weakness
 - gossip timeline is outside of blockchain,  for massive data scenario, gossip will fall behind transaction event
@@ -44,3 +46,4 @@ see [Build 1.1](./BUILD1.1.md)
  
     "They are different, instantiate policy gets packaged with a chaincode and specifies who can instantiate the chaincode, 
     see the doc starting at: https://hyperledger-fabric.readthedocs.io/en/latest/chaincode4noah.html#packaging"  
+- TODO collectionConfig.memberOnlyRead is not implemented in sdk-node 

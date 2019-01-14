@@ -1,5 +1,6 @@
 const Peer = require('fabric-client/lib/Peer');
 const {fsExtra} = require('khala-nodeutils/helper');
+const {RequestPromise} = require('khala-nodeutils/request');
 exports.new = ({peerPort, peerHostName, cert, pem, host}) => {
 	const Host = host ? host : 'localhost';
 	let peerUrl = `grpcs://${Host}:${peerPort}`;
@@ -39,7 +40,7 @@ exports.statePath = {
 	ledgersData: {
 		bookkeeper: {}, // leveldb
 		chains: {
-			chains: [],// channel names // allchannel/blockfile_000000
+			chains: [], // channel names // allchannel/blockfile_000000
 			index: {}// leveldb
 		},
 		configHistory: {}, // leveldb
@@ -65,29 +66,15 @@ exports.loggingLevels = ['FATAL', 'PANIC', 'ERROR', 'WARNING', 'INFO', 'DEBUG'];
  * @param tls
  * @param couchDB
  * @param {number} loggingLevel index of [loggerLevels]{@link loggingLevels}
+ * @param operationOpts
  * @returns {string[]}
  */
-exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchDB}, loggingLevel) => {
-	const tlsParams = tls ? [
-		`CORE_PEER_TLS_KEY_FILE=${tls.key}`,
-		`CORE_PEER_TLS_CERT_FILE=${tls.cert}`,
-		`CORE_PEER_TLS_ROOTCERT_FILE=${tls.caCert}`] : [];
-
-	let couchDBparams = [];
-	if (couchDB) {
-		const {container_name, user = '', password = ''} = couchDB;
-		couchDBparams = [
-			'CORE_LEDGER_STATE_STATEDATABASE=CouchDB',
-			`CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=${container_name}:5984`,
-			`CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=${user}`,
-			`CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=${password}`
-		];
-	}
-	const environment =
+exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchDB}, loggingLevel, operationOpts) => {
+	let environment =
 		[
 			`CORE_VM_ENDPOINT=unix://${exports.container.dockerSock}`,
 			`CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${network}`,
-			`CORE_LOGGING_LEVEL=${loggingLevel ? exports.loggingLevels[loggingLevel] : 'INFO'}`,
+			`FABRIC_LOGGING_SPEC=${loggingLevel ? exports.loggingLevels[loggingLevel] : 'INFO'}`,
 			'CORE_LEDGER_HISTORY_ENABLEHISTORYDATABASE=true',
 			'CORE_PEER_GOSSIP_USELEADERELECTION=true',
 			'CORE_PEER_GOSSIP_ORGLEADER=false',
@@ -101,14 +88,36 @@ exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchD
 			`CORE_CHAINCODE_LOGGING_LEVEL=${loggingLevel ? exports.loggingLevels[loggingLevel] : 'DEBUG'}`, // used for chaincode logging
 			'CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052', // for swarm mode
 			'GODEBUG=netdns=go'// NOTE aliyun only
-		].concat(tlsParams).concat(couchDBparams);
+		];
+	if (tls) {
+		environment = environment.concat([
+			`CORE_PEER_TLS_KEY_FILE=${tls.key}`,
+			`CORE_PEER_TLS_CERT_FILE=${tls.cert}`,
+			`CORE_PEER_TLS_ROOTCERT_FILE=${tls.caCert}`]);
+	}
 	// CORE_CHAINCODE_LOGGING_SHIM :used for fabric logging
+	if (couchDB) {
+		const {container_name, user = '', password = ''} = couchDB;
+		environment = environment.concat([
+			'CORE_LEDGER_STATE_STATEDATABASE=CouchDB',
+			`CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=${container_name}:5984`,
+			`CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=${user}`,
+			`CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=${password}`
+		]);
+	}
+	if (operationOpts) {
+		const {tls} = operationOpts; // TODO another set of TLS
+		// omit the ip/domain in listenAddress will allow all traffic
+		environment = environment.concat([
+			'CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9443'
+		]);
+	}
 	return environment;
 };
 
 
 /**
- * basic health check (by discoveryClient)
+ * basic health check by discoveryClient
  * @param {Peer} peer
  * @return {Promise<boolean>} false if connect trial failed
  */
@@ -123,4 +132,30 @@ exports.ping = async (peer) => {
 			throw err;
 		}
 	}
+};
+
+/**
+ * /healthz official health check, for peer and orderer
+ * TODO to support https
+ * -- introduced from 1.4
+ * @param baseUrl ${domain:port}
+ * @param otherOptions
+ * @returns {Promise<void>}
+ */
+exports.health = async (baseUrl, otherOptions) => {
+	const url = `${baseUrl}/healthz`;
+	const result = await RequestPromise({url, method: 'GET'}, otherOptions);
+	if (result.status === 'OK') {
+		return result;
+	} else {
+		let err = Error('healthz check');
+		err.url = url;
+		err = Object.assign(err, result);
+		throw err;
+	}
+};
+exports.getLogLevel = async (baseUrl, otherOptions) => {
+	const url = `${baseUrl}/logspec`;
+	const {spec} = await RequestPromise({url, method: 'GET'}, otherOptions);
+	return spec;
 };

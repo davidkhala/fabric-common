@@ -38,33 +38,18 @@ exports.container = {
  * panic: Unable to bootstrap orderer. Error reading genesis block file: open /etc/hyperledger/fabric/genesisblock: no such file or directory
  * when ORDERER_GENERAL_GENESISMETHOD=provisional  ORDERER_GENERAL_GENESISPROFILE=SampleNoConsortium
  *  -> panic: No system chain found.  If bootstrapping, does your system channel contain a consortiums group definition
+ * @param BLOCK_FILE
  * @param tls
  * @param configPath
  * @param id
  * @param kafkas
+ * @param loggingLevel
+ * @param operationOpts
  * @returns {string[]}
  */
-exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, kafkas, tls}) => {
-	let tlsParams;
-	if (tls) {
-		let rootCAs = [];
-		rootCAs.push(tls.caCert);
-		if (Array.isArray(tls.rootCAs)) {
-			rootCAs = rootCAs.concat(tls.rootCAs);
-		}
-		tlsParams = [
-			`ORDERER_GENERAL_TLS_PRIVATEKEY=${tls.key}`,
-			`ORDERER_GENERAL_TLS_CERTIFICATE=${tls.cert}`,
-			`ORDERER_GENERAL_TLS_ROOTCAS=[${rootCAs.join(',')}]`];
-	} else {
-		tlsParams = [];
-	}
-
-	const kafkaEnv = kafkas ? ['ORDERER_KAFKA_RETRY_SHORTINTERVAL=1s',
-		'ORDERER_KAFKA_RETRY_SHORTTOTAL=30s',
-		'ORDERER_KAFKA_VERBOSE=true'] : [];
-	const env = [
-		'ORDERER_GENERAL_LOGLEVEL=debug',
+exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, kafkas, tls}, loggingLevel, operationOpts) => {
+	let env = [
+		`FABRIC_LOGGING_SPEC=${loggingLevel ? exports.loggingLevels[loggingLevel] : 'DEBUG'}`,
 		'ORDERER_GENERAL_LISTENADDRESS=0.0.0.0', // TODO useless checking
 		`ORDERER_GENERAL_TLS_ENABLED=${!!tls}`,
 		'ORDERER_GENERAL_GENESISMETHOD=file',
@@ -72,7 +57,34 @@ exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, kafkas, tls}) => {
 		`ORDERER_GENERAL_LOCALMSPID=${id}`,
 		`ORDERER_GENERAL_LOCALMSPDIR=${configPath}`,
 		'GODEBUG=netdns=go' // aliyun only
-	].concat(tlsParams).concat(kafkaEnv);
+	];
+
+	if (tls) {
+		let rootCAs = [];
+		rootCAs.push(tls.caCert);
+		if (Array.isArray(tls.rootCAs)) {
+			rootCAs = rootCAs.concat(tls.rootCAs);
+		}
+		env = env.concat([
+			`ORDERER_GENERAL_TLS_PRIVATEKEY=${tls.key}`,
+			`ORDERER_GENERAL_TLS_CERTIFICATE=${tls.cert}`,
+			`ORDERER_GENERAL_TLS_ROOTCAS=[${rootCAs.join(',')}]`]);
+
+	}
+	if (kafkas) {
+		env = env.concat([
+			'ORDERER_KAFKA_RETRY_SHORTINTERVAL=1s',
+			'ORDERER_KAFKA_RETRY_SHORTTOTAL=30s',
+			'ORDERER_KAFKA_VERBOSE=true'
+		]);
+
+	}
+	if (operationOpts) {
+		const {TLS} = operationOpts;// TODO TLS
+		env = env.concat([
+			'ORDERER_OPERATIONS_LISTENADDRESS=0.0.0.0:8443'
+		]);
+	}
 	return env;
 };
 /**
