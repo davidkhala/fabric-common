@@ -37,4 +37,10 @@ see [Build 1.1](./BUILD1.1.md)
 - chaos in discoveryRequest.interests
 - keystore object un-promisify
 - endpoint ping
-- fabric RSA key support 
+- fabric RSA key support
+- `instantiate policy` is not `endorsemnet policy`, it is used during chaincode packaging/install determining who is able
+ to instantiate/upgrade chaincode, it is partially supported in nodejs with chaincode package binary(byte[]) as input. 
+ quoted from Dave Enyeart: 
+ 
+    "They are different, instantiate policy gets packaged with a chaincode and specifies who can instantiate the chaincode, 
+    see the doc starting at: https://hyperledger-fabric.readthedocs.io/en/latest/chaincode4noah.html#packaging"  
