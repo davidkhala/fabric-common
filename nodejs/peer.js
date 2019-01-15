@@ -1,4 +1,5 @@
 const Peer = require('fabric-client/lib/Peer');
+const fs = require('fs');
 const {fsExtra} = require('khala-nodeutils/helper');
 const {RequestPromise} = require('khala-nodeutils/request');
 exports.new = ({peerPort, peerHostName, cert, pem, host}) => {
@@ -23,6 +24,18 @@ exports.new = ({peerPort, peerHostName, cert, pem, host}) => {
 		return new Peer(peerUrl);
 	}
 };
+
+exports.buildPeer = (client, peerUrl, peerHostName, peerTlsCaPemPath) => {
+    const newData = fs.readFileSync(peerTlsCaPemPath);
+    return client.newPeer(
+        peerUrl,
+        {
+            pem: Buffer.from(newData).toString(),
+            'ssl-target-name-override': peerHostName
+        }
+    );
+}
+
 exports.formatPeerName = (peerName, domain) => `${peerName}.${domain}`;
 
 exports.container =

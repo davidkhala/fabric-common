@@ -1,6 +1,7 @@
 const Logger = require('./logger');
 
-const {chaincodeProposal, transactionProposal, invokeCommit} = require('./chaincode');
+const {chaincodeProposal, transactionProposal, invokeCommit,
+	transactionProposalEnhanced, invokeCommitEnhanced} = require('./chaincode');
 const {txEventCode, txEvent, disconnect} = require('./eventHub');
 /**
  * @param eventHub
@@ -33,7 +34,9 @@ const txTimerPromise = (eventHub, {txId}, eventWaitTime) => {
 			disconnect(eventHub);
 			reject({err: 'txTimeout'});
 		}, eventWaitTime);
-	});
+
+        eventHub.connect();
+    });
 };
 
 
@@ -130,4 +133,106 @@ exports.invoke = async (channel, peers, eventHubs, {
 
 	const txEventResponses = await Promise.all(promises);
 	return {txEventResponses, proposalResponses};
+};
+
+/**
+ * Invoke chaincode in an complete transaction flow:
+ * 1. send transaction proposal to endorsers
+ * 2. validate and combine the proposal response, then send the transaction to orderer
+ * 3. wait until the transaction event received
+ *
+ * @param channel
+ * @param targets: Optional. use the peers included in the "targets" to endorse the proposal. If there is no "targets" parameter, the endorsement request will be handled by the endorsement handler.
+ * @param required: Optional. An array of strings that represent the names of peers that are required for the endorsement. These will be the only peers which the proposal will be sent. This list only applies to endorsements using the discovery service.
+ * @param ignore: Optional. An array of strings that represent the names of peers that should be ignored by the endorsement. This list only applies to endorsements using the discovery service.
+ * @param preferred: Optional. An array of strings that represent the names of peers that should be given priority by the endorsement. Priority means that these peers will be chosen first for endorsements when an endorsement plan has more peers in a group then needed to satisfy the endorsement policy. This list only applies to endorsements using the discovery service.
+ * @param requiredOrgs: Optional. An array of strings that represent the names of an organization's MSP id that are required for the endorsement. Only peers in these organizations will be sent the proposal. This list only applies to endorsements using the discovery service.
+ * @param ignoreOrgs: Optional. An array of strings that represent the names of an organization's MSP id that should be ignored by the endorsement. This list only applies to endorsements using the discovery service.
+ * @param preferredOrgs: Optional. An array of strings that represent the names of an organization's MSP id that should be given priority by the endorsement. Peers within an organization may have their ledger height considered using the optional property preferredHeightGap before being added to the priority list. This list only applies to endorsements using the discovery service.
+ * @param chaincodeId
+ * @param fcn
+ * @param args
+ * @param transientMap
+ * @param proposalTimeout
+ * @param eventWaitTime
+ * @returns {Promise<{txEventResponses: any[], proposalResponses: TransactionRequest.proposalResponses}>}
+ */
+exports.invokeEnhanced = async (channel,
+								targets,
+                                {required, ignore, preferred, requiredOrgs, ignoreOrgs, preferredOrgs},
+								{chaincodeId, fcn, args, transientMap},
+								proposalTimeout = 30000,
+								eventWaitTime = 30000) => {
+    const logger = Logger.new('chaincode:invokeEnhanced', true);
+    logger.info('Invoke chaincode [%s::%s]', chaincodeId, fcn);
+
+    const nextRequest = await transactionProposalEnhanced(
+        channel,
+        targets,
+        {required, ignore, preferred, requiredOrgs, ignoreOrgs, preferredOrgs},
+        {
+            chaincodeId,
+            fcn,
+            args,
+            transientMap
+        },
+        proposalTimeout
+    );
+
+    const {txId, proposalResponses} = nextRequest;
+    const promises = [];
+
+    const eventHubs = channel.getOrganizations().map(
+        msp => channel.getChannelEventHubsForOrg(msp.id)
+    ).reduce(( c1, c2) => c1.concat(c2));
+
+    for (const eventHub of eventHubs) {
+        promises.push(txTimerPromise(eventHub, {txId}, eventWaitTime));
+    }
+
+    const res = await invokeCommitEnhanced(channel, nextRequest);
+    logger.info('SendTransaction response: ', res.status);
+    const txEventResponses = await Promise.all(promises);
+
+    return {txEventResponses, proposalResponses};
+};
+
+/**
+ * Query chaincode without sending transaction. It uses the service discovery feature to do endorsement.
+ *
+ * @param channel
+ * @param targets: Optional. use the peers included in the "targets" to endorse the proposal. If there is no "targets" parameter, the endorsement request will be handled by the endorsement handler.
+ * @param required: Optional. An array of strings that represent the names of peers that are required for the endorsement. These will be the only peers which the proposal will be sent. This list only applies to endorsements using the discovery service.
+ * @param ignore: Optional. An array of strings that represent the names of peers that should be ignored by the endorsement. This list only applies to endorsements using the discovery service.
+ * @param preferred: Optional. An array of strings that represent the names of peers that should be given priority by the endorsement. Priority means that these peers will be chosen first for endorsements when an endorsement plan has more peers in a group then needed to satisfy the endorsement policy. This list only applies to endorsements using the discovery service.
+ * @param requiredOrgs: Optional. An array of strings that represent the names of an organization's MSP id that are required for the endorsement. Only peers in these organizations will be sent the proposal. This list only applies to endorsements using the discovery service.
+ * @param ignoreOrgs: Optional. An array of strings that represent the names of an organization's MSP id that should be ignored by the endorsement. This list only applies to endorsements using the discovery service.
+ * @param preferredOrgs: Optional. An array of strings that represent the names of an organization's MSP id that should be given priority by the endorsement. Peers within an organization may have their ledger height considered using the optional property preferredHeightGap before being added to the priority list. This list only applies to endorsements using the discovery service.
+ * @param chaincodeId
+ * @param fcn
+ * @param args
+ * @param transientMap
+ * @param proposalTimeout
+ * @returns {Promise<*>}
+ */
+exports.queryEnhanced = async (channel,
+							   targets,
+                               {required, ignore, preferred, requiredOrgs, ignoreOrgs, preferredOrgs},
+                               {chaincodeId, fcn, args, transientMap},
+							   proposalTimeout = 30000) => {
+    const logger = Logger.new('chaincode:queryEnhanced', true);
+    logger.info('Query chaincode [%s::%s]', chaincodeId, fcn);
+
+    return await transactionProposalEnhanced(
+		channel,
+		targets,
+		{},
+		{
+			chaincodeId,
+			fcn,
+			args,
+			transientMap
+		},
+		proposalTimeout
+	);
 };
