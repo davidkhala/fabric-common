@@ -32,6 +32,7 @@ see [Build 1.1](./BUILD1.1.md)
 - peer leveldb analyzer
 - 1.4 operation enhance: 
 The /metrics endpoint allows operators to utilize Prometheus to pull operational metrics from peer and orderer nodes. Metrics can also be pushed to StatsD.
+- NodeOUs enable
 
 # Fabric weakness
 - gossip timeline is outside of blockchain,  for massive data scenario, gossip will fall behind transaction event
