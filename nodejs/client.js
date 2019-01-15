@@ -1,8 +1,9 @@
 const BaseClient = require('fabric-client/lib/BaseClient');
 const Client = require('fabric-client');
 const path = require('path');
+const fs = require('fs');
 const {fsExtra} = require('khala-nodeutils/helper');
-const logger = require('./logger').new('client');
+const logger = require('./logger').new('client',true);
 
 const {cryptoKeyStore} = require('./package');
 const cryptoKeyStorePath = path.resolve(__dirname, cryptoKeyStore);
@@ -54,3 +55,28 @@ exports.newCryptoSuite = ({path, persist} = {}) => {
 exports.clean = () => {
 	fsExtra.emptyDirSync(cryptoKeyStorePath);
 };
+
+exports.newClientWithUser = async ({username, mspId, keyPath, certPath}) => {
+    const client = new Client();
+    logger.info('Loading key/cert of user [%s]', username);
+
+    const keyPEM = fs.readFileSync(keyPath).toString();
+    const certPEM = fs.readFileSync(certPath);
+
+    const cryptoSuite = Client.newCryptoSuite();
+    cryptoSuite.setCryptoKeyStore(Client.newCryptoKeyStore({path: path.join(__dirname, "./")}));
+    client.setCryptoSuite(cryptoSuite);
+
+    // will set user context of client
+    await client.createUser({
+        username: username,
+        mspid: mspId,
+        cryptoContent: {
+            privateKeyPEM: keyPEM.toString(),
+            signedCertPEM: certPEM.toString(),
+        },
+        skipPersistence: true
+    });
+
+    return client;
+}
