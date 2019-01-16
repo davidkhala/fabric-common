@@ -3,7 +3,7 @@ const Logger = require('./logger');
 const logger = Logger.new('service discovery', true);
 /**
  * @typedef {Object} PeerQueryResponse
- * @property {Object} peers_by_org
+ * @property {Object} local_peers
  * @property {Object} pretty
  */
 
@@ -15,13 +15,11 @@ const logger = Logger.new('service discovery', true);
  */
 exports.globalPeers = async (client, peer) => {
 	const discoveries = await client.queryPeers({target: peer, useAdmin: false});
-	const {peers_by_org} = discoveries;
+	const {local_peers} = discoveries;
 	const result = {};
-	for (const org in peers_by_org) {
-		const {peers} = peers_by_org[org];
-		result[org] = {
-			peers: peers.map(p => p.endpoint)
-		};
+	for (const org in local_peers) {
+		const {peers} = local_peers[org];
+		result[org] = peers.map(p => p.endpoint);
 	}
 	discoveries.pretty = result;
 	return discoveries;
