@@ -24,10 +24,10 @@ see [Build 1.1](./BUILD1.1.md)
 
 # DONE
 - discovery service, endorsement hints
+- transient map context keep persistent when cross chaincode
 
 # TODO
 - npm couchdb-dump in nodejs/couchdbDump.sh
-- is transient map included context when cross chaincode?
 - level db navigator(https://github.com/Level/level or https://github.com/syndtr/goleveldb) and richQuery for leveldb
 - peer leveldb analyzer
 - 1.4 operation enhance: 

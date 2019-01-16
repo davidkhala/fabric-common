@@ -17,7 +17,7 @@ exports.proposalFlatten = proposalResponse => {
 		return proposalResponse.response.payload;
 	}
 };
-exports.transientMapTransform = (jsObject) => {
+const transientMapTransform = (jsObject) => {
 	if (!jsObject) {
 		return jsObject;
 	}
@@ -27,6 +27,7 @@ exports.transientMapTransform = (jsObject) => {
 	}
 	return result;
 };
+exports.transientMapTransform = transientMapTransform;
 /**
  * @typedef {Object} ProposalResult
  * @property {number} errCounter
@@ -219,7 +220,7 @@ exports.transactionProposal = async (client, targets, channelName, {
 		args,
 		txId,
 		targets,
-		transientMap: exports.transientMap(transientMap)
+		transientMap: transientMapTransform(transientMap)
 	};
 
 	const [responses, proposal] = await Channel.sendTransactionProposal(request, channelName, client, proposalTimeout);

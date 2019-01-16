@@ -2,9 +2,9 @@
   "name": "nodejs",
   "version": "1.4.0",
   "dependencies": {
-    "fabric-ca-client": "^1.3.0",
-    "fabric-client": "^1.3.0",
-    "khala-nodeutils": "^0.2.7"
+    "fabric-ca-client": "^1.4.0",
+    "fabric-client": "^1.4.0",
+    "khala-nodeutils": "^0.2.9"
   },
   "cryptoKeyStore": "../keyStoreCache"
 }
