@@ -1,6 +1,7 @@
 const Logger = require('./logger');
 
-const {chaincodeProposal, transactionProposal, invokeCommit} = require('./chaincode');
+const {chaincodeProposal, transactionProposal,
+	invokeCommit, transientMapTransform, chaincodeProposalAdapter} = require('./chaincode');
 const {txEventCode, txEvent, disconnect} = require('./eventHub');
 /**
  * @param eventHub
@@ -163,12 +164,12 @@ const transactionProposalDefault = async (channel,
 		chaincodeId,
 		fcn,
 		args,
-		transientMap: exports.transientMap(transientMap),
+		transientMap: transientMapTransform(transientMap),
 		required, ignore, preferred, requiredOrgs, ignoreOrgs, preferredOrgs
 	};
 
 	const [responses, proposal] = await channel.sendTransactionProposal(request, proposalTimeout);
-	const ccHandler = exports.chaincodeProposalAdapter('invoke', undefined, true);
+	const ccHandler = chaincodeProposalAdapter('invoke', undefined, true);
 	const {nextRequest, errCounter} = ccHandler([responses, proposal]);
 	const {proposalResponses} = nextRequest;
 
