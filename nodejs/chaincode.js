@@ -17,7 +17,7 @@ exports.proposalFlatten = proposalResponse => {
 		return proposalResponse.response.payload;
 	}
 };
-exports.transientMap = (jsObject) => {
+exports.transientMapTransform = (jsObject) => {
 	if (!jsObject) {
 		return jsObject;
 	}
