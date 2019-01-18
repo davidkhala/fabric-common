@@ -5,6 +5,7 @@ const logger = require('../logger').new('test:peer', true);
 const flow = async () => {
 	let isHealth, logLevel;
 	isHealth = await peerUtil.health(peerUrl);
+	await peerUtil.setLogLevel(peerUrl,'warn');
 	logLevel = await peerUtil.getLogLevel(peerUrl);
 	logger.info(peerUrl, isHealth, logLevel);
 	isHealth = await peerUtil.health(ordererUrl);
