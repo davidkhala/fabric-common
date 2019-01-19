@@ -34,7 +34,7 @@ exports.container =
 		config: '/etc/hyperledger/'
 	};
 exports.host = {
-	dockerSock: '/run/docker.sock'
+	dockerSock: '/var/run/docker.sock' //mac system, only  /var/run/docker.sock exist.
 };
 exports.statePath = {
 	chaincodes: undefined, // diagnose.0.0.0
