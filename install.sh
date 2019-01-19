@@ -142,7 +142,6 @@ fabricInstall(){
     curl -sSL http://bit.ly/2ysbOFE | bash -s 1.4.0 1.4.0 0.4.14
 }
 function sync() {
-	$CURRENT/docker/nodejs/install.sh packageLock false
 	cd $CURRENT/nodejs
 	npm install
 	npm prune
@@ -165,4 +164,5 @@ else
 	$CURRENT/docker/install.sh
 	$CURRENT/docker/nodejs/install.sh
 	sync
+	$CURRENT/docker/nodejs/install.sh packageLock false
 fi
