@@ -163,6 +163,6 @@ else
 
 	$CURRENT/docker/install.sh
 	$CURRENT/docker/nodejs/install.sh
-	sync
 	$CURRENT/docker/nodejs/install.sh packageLock false
+	sync
 fi
