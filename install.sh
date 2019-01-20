@@ -38,40 +38,6 @@ function golangRemove() {
 	source $bashProfile
 
 }
-function golang1_9() {
-	local goVersion=go1.9.2
-
-	if go version; then
-		echo "current go version " $(go version) " exist, skip install"
-		return
-	fi
-	echo install golang $goVersion
-
-	goTar=$goVersion.linux-amd64.tar.gz
-	wget https://redirector.gvt1.com/edgedl/go/${goTar}
-	sudo tar -C /usr/local -xzf ${goTar}
-	rm -f ${goTar}
-
-	# write GOROOT to $PATH
-	if ! grep "/usr/local/go/bin" $bashProfile; then
-		echo "...To set GOROOT"
-		sudo sed -i "1 i\export PATH=\$PATH:/usr/local/go/bin" $bashProfile
-	else
-		echo "GOROOT found in $bashProfile"
-	fi
-
-	export PATH=$PATH:/usr/local/go/bin # ephemeral
-	# write $GOPATH/bin to $PATH
-	GOPATH=$(go env GOPATH)
-	if ! grep "$GOPATH/bin" $bashProfile; then
-		echo "...To set GOPATH/bin"
-		sudo sed -i "1 i\export PATH=\$PATH:$GOPATH/bin" $bashProfile
-	else
-		echo "GOPATH/bin found in $bashProfile"
-	fi
-	echo "path (effective in new shell) $PATH"
-}
-
 function golang1_10() {
 	if [[ "$1" == "remove" ]]; then
 		if [ $(uname) == "Darwin" ]; then
@@ -137,7 +103,30 @@ function java8() {
 	sudo apt install -y oracle-java8-installer
 	sudo apt install -y oracle-java8-set-default
 }
-
+function softHSM(){
+    if [ $(uname) == "Darwin" ]; then
+        brew install softhsm
+#        A CA file has been bootstrapped using certificates from the SystemRoots
+#keychain. To add additional certificates (e.g. the certificates added in
+#the System keychain), place .pem files in
+#  /usr/local/etc/openssl/certs
+#
+#and run
+#  /usr/local/opt/openssl/bin/c_rehash
+#
+#openssl is keg-only, which means it was not symlinked into /usr/local,
+#because Apple has deprecated use of OpenSSL in favor of its own TLS and crypto libraries.
+#
+#If you need to have openssl first in your PATH run:
+#  echo 'export PATH="/usr/local/opt/openssl/bin:$PATH"' >> ~/.bash_profile
+#
+#For compilers to find openssl you may need to set:
+#  export LDFLAGS="-L/usr/local/opt/openssl/lib"
+#  export CPPFLAGS="-I/usr/local/opt/openssl/include"
+    else
+        :
+    fi
+}
 fabricInstall(){
     curl -sSL http://bit.ly/2ysbOFE | bash -s 1.4.0 1.4.0 0.4.14
 }
