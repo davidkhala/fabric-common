@@ -1,4 +1,8 @@
 const dockerUtil = require('../docker/nodejs/dockerode-util');
+const {
+	constraintSelf, taskDeadWaiter, taskLiveWaiter, swarmServiceName, serviceCreateIfNotExist, swarmInit,swarmJoin,
+	swarmTouch,swarmLeave,swarmBelongs,taskList,findTask
+} = require('../docker/nodejs/dockerode-swarm-util');
 const logger = require('./logger').new('dockerode');
 const peerUtil = require('./peer');
 const caUtil = require('./ca');
@@ -15,10 +19,10 @@ const dockerHelper = require('../docker/nodejs/helper');
  * @returns {Promise<void>}
  */
 exports.swarmRenew = async () => {
-	const {result, reason} = await dockerUtil.swarmTouch();
+	const {result, reason} = await swarmTouch();
 	if (!result) {
 		if (reason === 'consensus') {
-			await dockerUtil.swarmLeave();
+			await swarmLeave();
 			await exports.swarmIPInit();
 		} else if (reason === 'noexist') {
 			await exports.swarmIPInit();
@@ -27,7 +31,7 @@ exports.swarmRenew = async () => {
 };
 exports.swarmIPJoin = async ({AdvertiseAddr, JoinToken}) => {
 	const ip = dockerHelper.ip();
-	await dockerUtil.swarmJoin({AdvertiseAddr, JoinToken}, ip);
+	await swarmJoin({AdvertiseAddr, JoinToken}, ip);
 };
 exports.swarmIPInit = async (AdvertiseAddr) => {
 	if (!AdvertiseAddr) {
@@ -35,7 +39,7 @@ exports.swarmIPInit = async (AdvertiseAddr) => {
 		AdvertiseAddr = `${ip}:2377`;
 	}
 	logger.debug('swarmIPInit', AdvertiseAddr);
-	return await dockerUtil.swarmInit({AdvertiseAddr});
+	return await swarmInit({AdvertiseAddr});
 };
 exports.fabricImagePull = async ({fabricTag, thirdPartyTag, chaincodeType = 'golang'}) => {
 	if (fabricTag) {
@@ -196,9 +200,9 @@ exports.runCA = ({
 ;
 exports.deployZookeeper = async ({Name, network, imageTag, Constraints, MY_ID}, zookeepersConfig) => {
 	if (!Constraints) {
-		Constraints = await dockerUtil.constraintSelf();
+		Constraints = await constraintSelf();
 	}
-	return dockerUtil.serviceCreateIfNotExist({
+	return serviceCreateIfNotExist({
 		Image: `hyperledger/fabric-zookeeper:${imageTag}`,
 		Name,
 		network,
@@ -210,9 +214,9 @@ exports.deployZookeeper = async ({Name, network, imageTag, Constraints, MY_ID}, 
 };
 exports.deployKafka = async ({Name, network, imageTag, Constraints, BROKER_ID}, zookeepers, {N, M}) => {
 	if (!Constraints) {
-		Constraints = await dockerUtil.constraintSelf();
+		Constraints = await constraintSelf();
 	}
-	return dockerUtil.serviceCreateIfNotExist({
+	return serviceCreateIfNotExist({
 		Name,
 		Image: `hyperledger/fabric-kafka:${imageTag}`,
 		network,
@@ -224,16 +228,16 @@ exports.deployKafka = async ({Name, network, imageTag, Constraints, BROKER_ID}, 
 };
 
 exports.deployCA = async ({Name, network, imageTag, Constraints, port, admin = userUtil.adminName, adminpw = userUtil.adminPwd, TLS}) => {
-	const serviceName = dockerUtil.swarmServiceName(Name);
+	const serviceName = swarmServiceName(Name);
 	const tlsOptions = TLS ? '--tls.enabled' : '';
 
 	const {caKey, caCert} = caUtil.container;
 
 	const Cmd = ['sh', '-c', `rm ${caKey}; rm ${caCert}; fabric-ca-server start -d -b ${admin}:${adminpw} ${tlsOptions}  --csr.cn=${Name}`];
 	if (!Constraints) {
-		Constraints = await dockerUtil.constraintSelf();
+		Constraints = await constraintSelf();
 	}
-	return await dockerUtil.serviceCreateIfNotExist({
+	return await serviceCreateIfNotExist({
 		Image: `hyperledger/fabric-ca:${imageTag}`,
 		Name: serviceName,
 		Cmd,
@@ -378,12 +382,12 @@ exports.deployOrderer = async ({
 	                               Name, network, imageTag, Constraints, port,
 	                               msp: {volumeName, configPath, id}, CONFIGTXVolume, BLOCK_FILE, kafkas, tls
                                }) => {
-	const serviceName = dockerUtil.swarmServiceName(Name);
+	const serviceName = swarmServiceName(Name);
 	if (!Constraints) {
-		Constraints = await dockerUtil.constraintSelf();
+		Constraints = await constraintSelf();
 	}
 
-	return await dockerUtil.serviceCreateIfNotExist({
+	return await serviceCreateIfNotExist({
 		Cmd: ['orderer'],
 		Image: `hyperledger/fabric-orderer:${imageTag}`,
 		Name: serviceName, network, Constraints,
@@ -398,11 +402,11 @@ exports.deployPeer = async ({
 	                            Name, network, imageTag, Constraints, port,
 	                            msp: {volumeName, configPath, id}, peerHostName, tls
                             }) => {
-	const serviceName = dockerUtil.swarmServiceName(Name);
+	const serviceName = swarmServiceName(Name);
 	if (!Constraints) {
-		Constraints = await dockerUtil.constraintSelf();
+		Constraints = await constraintSelf();
 	}
-	return await dockerUtil.serviceCreateIfNotExist({
+	return await serviceCreateIfNotExist({
 		Image: `hyperledger/fabric-peer:${imageTag}`,
 		Cmd: ['peer', 'node', 'start'],
 		Name: serviceName, network, Constraints, volumes: [{
@@ -517,18 +521,18 @@ exports.runCouchDB = async ({imageTag, container_name, port, network, user, pass
  */
 exports.tasksWaitUntilDead = async ({nodes, services} = {}) => {
 	const ids = services.map(service => service.ID);
-	const tasks = (await dockerUtil.taskList({nodes})).filter(task => {
+	const tasks = (await taskList({nodes})).filter(task => {
 		const {ServiceID} = task;
 		return ids.find(id => id === ServiceID);
 	});
 
 	logger.debug('tasksWaitUtilDead', tasks.length);
 	for (const task of tasks) {
-		await dockerUtil.taskDeadWaiter(task);
+		await taskDeadWaiter(task);
 	}
 };
 exports.tasksWaitUntilLive = async (services) => {
 	for (const service of services) {
-		await dockerUtil.taskLiveWaiter(service);
+		await taskLiveWaiter(service);
 	}
 };
