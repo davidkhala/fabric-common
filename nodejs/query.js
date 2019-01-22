@@ -18,14 +18,19 @@ exports.chain = async (peer, channel) => {
 	return message;
 };
 /**
- * @param peer
- * @param client
+ * @param {Peer} peer
+ * @param {Client} client
  * @return {Promise<Client.ChaincodeQueryResponse>}
  */
-exports.chaincodesInstalled = async (peer, client) => client.queryInstalledChaincodes(peer);
+exports.chaincodesInstalled = async (peer, client) => {
+	const {chaincodes} = await client.queryInstalledChaincodes(peer);
+	const pretty = chaincodes.map(({name, version, path}) => ({name, version, path}));
+	return {chaincodes, pretty};
+};
 /**
- * @param peer
- * @param channel
+ * TODO chaincodes pretty
+ * @param {Peer} peer
+ * @param {Channel} channel
  * @return {Promise<Client.ChaincodeQueryResponse>}
  */
 exports.chaincodesInstantiated = async (peer, channel) => channel.queryInstantiatedChaincodes(peer);

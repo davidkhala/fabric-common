@@ -1,7 +1,7 @@
 const {newerVersion, nextVersion} = require('khala-nodeutils/version');
 const {install} = require('./chaincode');
 const Logger = require('./logger');
-const Query = require('./query');
+const {chaincodesInstalled} = require('./query');
 /**
  *
  * @param {Client.ChaincodeInfo[]} chaincodes
@@ -11,7 +11,6 @@ const Query = require('./query');
  */
 exports.findLatest = (chaincodes, chaincodeId, comparator = newerVersion) => {
 	const foundChaincodes = chaincodes.filter((element) => element.name === chaincodeId);
-
 	const reducer = (lastChaincode, currentValue) => {
 		if (!lastChaincode || comparator(currentValue.version, lastChaincode.version)) {
 			return currentValue;
@@ -23,9 +22,9 @@ exports.findLatest = (chaincodes, chaincodeId, comparator = newerVersion) => {
 };
 
 
-exports.incrementInstall = async (peer, {chaincodeId, chaincodePath, chaincodeType, metadataPath}, client, incrementLevel = 'patch') => {
+exports.incrementInstall = async (peer, {chaincodeId, chaincodePath, chaincodeType, metadataPath}, client, incrementLevel) => {
 	const logger = Logger.new(`install version ${incrementLevel}`);
-	const {chaincodes} = await Query.chaincodesInstalled(peer, client);
+	const {chaincodes} = await chaincodesInstalled(peer, client);
 	let chaincodeVersion;
 
 
@@ -38,7 +37,13 @@ exports.incrementInstall = async (peer, {chaincodeId, chaincodePath, chaincodeTy
 		chaincodeVersion = nextVersion(lastChaincode.version, incrementLevel);
 	}
 
-	const result = await install([peer], {chaincodeId, chaincodePath, chaincodeVersion, chaincodeType, metadataPath}, client);
+	const result = await install([peer], {
+		chaincodeId,
+		chaincodePath,
+		chaincodeVersion,
+		chaincodeType,
+		metadataPath
+	}, client);
 	result.chaincodeVersion = chaincodeVersion;
 	return result;
 };
