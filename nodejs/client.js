@@ -39,9 +39,7 @@ exports.getUser = (client) => {
  */
 exports.newCryptoSuite = ({path, persist} = {}) => {
 	const newCryptoSuite = BaseClient.newCryptoSuite();
-	if (!persist) {
-		logger.debug('ephemeral cryptoKeystore without cache storage');
-	} else {
+	if (persist) {
 		if (!path) {
 			path = cryptoKeyStorePath;
 		}
