@@ -18,10 +18,16 @@ Latest version 1.4.0
 - nodejs chaincode take longer time in install chaincode only.
 - peer.response in chaincode.Init cannot be recovered from proposal response. stub.GetState is meaningless in Init 
 - playback conference: https://wiki.hyperledger.org/doku.php?id=projects/fabric/playbacks
+- Note that collections cannot be deleted, 
+    as there may be prior private data hashes on the channel’s blockchain that cannot be removed.
 
 # DONE
 - discovery service, endorsement hints
 - transient map context keep persistent when cross chaincode
+
+# In progress
+- collectionConfig.memberOnlyRead is not implemented in sdk-node 
+
 
 # TODO
 - npm couchdb-dump in nodejs/couchdbDump.sh
@@ -45,4 +51,3 @@ The /metrics endpoint allows operators to utilize Prometheus to pull operational
  
     "They are different, instantiate policy gets packaged with a chaincode and specifies who can instantiate the chaincode, 
     see the doc starting at: https://hyperledger-fabric.readthedocs.io/en/latest/chaincode4noah.html#packaging"  
-- TODO collectionConfig.memberOnlyRead is not implemented in sdk-node 
