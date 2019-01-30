@@ -1,5 +1,13 @@
-exports.envBuilder = (user = '', password = '') => {
-	return [`COUCHDB_USER=${user}`, `COUCHDB_PASSWORD=${password}`];
+exports.envBuilder = (user = '', password = '', clusterOpt) => {
+	let env = [`COUCHDB_USER=${user}`, `COUCHDB_PASSWORD=${password}`];
+	if (clusterOpt) {
+		const {nodeName, flag} = clusterOpt;
+		env = env.concat([
+			`NODENAME=${nodeName}`,
+			`ERL_FLAGS=-setcookie "${flag}"`
+		]);
+	}
+	return env;
 };
 /**
  * query syntax http://docs.couchdb.org/en/stable/api/database/find.html
@@ -39,7 +47,9 @@ exports.couchDBIndex = (metaINFPath, fileName, ...fields) => {
 		fileName = 'index.json';
 	} else {
 		if (!fileName.endsWith('.json')) {
-			const err = Error(`fileName should endsWith ".json", but got ${fileName}`);
+			const err = Error(
+				`fileName should endsWith ".json", but got ${fileName}`
+			);
 			err.code = 'couchdb';
 			throw err;
 		}
