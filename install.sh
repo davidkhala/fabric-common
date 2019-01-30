@@ -11,34 +11,7 @@ for ((i = 2; i <= ${#}; i++)); do
 	remain_params="$remain_params $j"
 done
 
-function golangRemove() {
-	local goVersion=$1 # go1.9.2
-	local purge=$2
-	if ! go version; then
-		echo go not found, skip remove
-		return
-	fi
-	if ! go version | grep $goVersion; then
-		echo current go version=$(go version), not $goVersion, skip remove
-		return
-	fi
-	GOROOT=$(go env GOROOT)
-	GOPATH=$(go env GOPATH)
-	echo remove golang $goVersion at $GOROOT
-
-	sudo sed -i "\|${GOROOT}|d" $bashProfile
-	sudo sed -i "\|${GOPATH}|d" $bashProfile
-	if [ -n "$purge" ]; then
-		echo ...and PURGE, GOPATH:$GOPATH is nuke!!!
-		sudo rm -rf $GOPATH
-	else
-		echo "legacy files exists in GOPATH : $GOPATH"
-	fi
-	sudo rm -rf $GOROOT
-	source $bashProfile
-
-}
-function golang1_10() {
+function golang1_11() {
 	if [[ "$1" == "remove" ]]; then
 		if [ $(uname) == "Darwin" ]; then
 			brew uninstall go || true
