@@ -1,5 +1,4 @@
-const LevelDB = require('khala-nodeutils/leveldb');
-const {statePath} = require('./peer');
+const LevelDB = require('khala-level');
 const path = require('path');
 
 const fs = require('fs');
