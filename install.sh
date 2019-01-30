@@ -13,7 +13,7 @@ done
 
 function golang1_11() {
 	if [[ "$1" == "remove" ]]; then
-		if [ $(uname) == "Darwin" ]; then
+		if [[ $(uname) == "Darwin" ]]; then
 			brew uninstall go || true
 		else
 			sudo apt-get -y remove golang-go
@@ -21,7 +21,7 @@ function golang1_11() {
 		fi
 
 	else
-		if [ $(uname) == "Darwin" ]; then
+		if [[ $(uname) == "Darwin" ]]; then
 			brew install go || true
 		else
 			sudo add-apt-repository -y ppa:longsleep/golang-backports
@@ -39,7 +39,7 @@ function golang1_11() {
 	fi
 }
 function install_libtool() {
-	if [ $(uname) == "Darwin" ]; then
+	if [[ $(uname) == "Darwin" ]]; then
 		brew install libtool
 	else
 		sudo apt-get install -y libtool
@@ -51,8 +51,8 @@ function golang_dep() {
 	if [[ $(uname) == "Darwin" ]]; then
 		brew install dep
 	else
-		if [ -z "$GOBIN" ]; then
-			if [ -z "$GOPATH" ]; then
+		if [[ -z "$GOBIN" ]]; then
+			if [[ -z "$GOPATH" ]]; then
 				echo install dep failed: GOPATH not found
 				exit 1
 			fi
@@ -77,7 +77,7 @@ function java8() {
 	sudo apt install -y oracle-java8-set-default
 }
 function softHSM(){
-    if [ $(uname) == "Darwin" ]; then
+    if [[ $(uname) == "Darwin" ]]; then
         brew install softhsm
 #        A CA file has been bootstrapped using certificates from the SystemRoots
 #keychain. To add additional certificates (e.g. the certificates added in
@@ -113,11 +113,11 @@ function sync() {
 	npm prune
 	cd -
 }
-if [ -n "$fcn" ]; then
+if [[ -n "$fcn" ]]; then
 	$fcn $remain_params
 else
 	# install home brew
-	if [ $(uname) == "Darwin" ]; then
+	if [[ $(uname) == "Darwin" ]]; then
 		if ! brew config >/dev/null; then
 			/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 		fi
