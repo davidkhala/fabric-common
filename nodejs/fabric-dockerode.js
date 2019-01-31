@@ -1,7 +1,7 @@
 const dockerUtil = require('../docker/nodejs/dockerode-util');
 const {
-	constraintSelf, taskDeadWaiter, taskLiveWaiter, swarmServiceName, serviceCreateIfNotExist, swarmInit,swarmJoin,
-	swarmTouch,swarmLeave,swarmBelongs,taskList,findTask
+	constraintSelf, taskDeadWaiter, taskLiveWaiter, swarmServiceName, serviceCreateIfNotExist, swarmInit, swarmJoin,
+	swarmTouch, swarmLeave, taskList
 } = require('../docker/nodejs/dockerode-swarm-util');
 const logger = require('./logger').new('dockerode');
 const peerUtil = require('./peer');
