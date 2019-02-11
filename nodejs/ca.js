@@ -1,8 +1,3 @@
-/**
- * [[{"code":0,
- * "message":"The CN 'david.repeat(20)@Merchant'
- * exceeds the maximum character limit of 64"}]]
- */
 const path = require('path');
 const logger = require('./logger').new('CA core');
 const CAClient = require('fabric-ca-client/lib/FabricCAServices');
@@ -54,19 +49,19 @@ const registerIfNotExist = async (caService, {enrollmentID, enrollmentSecret, af
 		}
 	}
 };
-/**
- * TODO migrate to key.js
- * @type {{save: save, toKeystore: toKeystore, generate: (function(*): (Promise<Client.ICryptoKey> | PromiseLike<CryptoKeyPair> | PromiseLike<CryptoKey> | PromiseLike<CryptoKeyPair | CryptoKey>))}}
- */
+
+const ECDSAPRIV = require('./key');
 exports.pkcs11_key = {
 	generate: (cryptoSuite) => cryptoSuite.generateKey({ephemeral: !cryptoSuite._cryptoKeyStore}),
 	toKeystore: (key, dirName) => {
-		const filename = `${key._key.prvKeyHex}_sk`;
+		const ecdsaKey = new ECDSAPRIV(key);
+		const filename = ecdsaKey.filename();
 		const absolutePath = path.resolve(dirName, filename);
 		exports.pkcs11_key.save(absolutePath, key);
 	},
 	save: (filePath, key) => {
-		fsExtra.outputFileSync(filePath, key.toBytes());
+		const ecdsaKey = new ECDSAPRIV(key);
+		fsExtra.outputFileSync(filePath, ecdsaKey.pem());
 	}
 
 };
