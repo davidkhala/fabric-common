@@ -4,7 +4,8 @@
   "dependencies": {
     "fabric-ca-client": "^1.4.0",
     "fabric-client": "^1.4.0",
-    "khala-nodeutils": "^0.3.4"
+    "khala-nodeutils": "^0.3.4",
+    "khala-logger": "^0.0.0"
   },
   "description": "fabric-sdk-node utils",
   "repository": {

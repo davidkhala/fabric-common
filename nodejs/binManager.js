@@ -1,6 +1,6 @@
 const {exec} = require('khala-nodeutils/helper');
 
-const Logger = require('khala-nodeutils/logger');
+const Logger = require('./logger');
 const path = require('path');
 const yaml = require('khala-nodeutils/yaml');
 const binShellDir = path.resolve(__dirname, '../bin-manage');
