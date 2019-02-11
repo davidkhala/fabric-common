@@ -1,10 +1,14 @@
 {
-  "name": "nodejs",
+  "name": "khala-fabric-sdk-node",
   "version": "1.4.0",
   "dependencies": {
     "fabric-ca-client": "^1.4.0",
     "fabric-client": "^1.4.0",
     "khala-nodeutils": "^0.3.4"
+  },
+  "description": "fabric-sdk-node utils",
+  "repository": {
+    "url": "davidkhala/fabric-common"
   },
   "cryptoKeyStore": "../keyStoreCache"
 }
