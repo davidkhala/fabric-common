@@ -40,5 +40,12 @@ exports.build = async (username, {key, certificate}, mspid, cryptoSuite = client
 };
 exports.getCertificate = (user) => user.getSigningIdentity()._certificate;
 exports.getMSPID = (user) => user._mspId;
+/**
+ * TODO migrate to key.js
+ * @param user
+ * @returns {{pem: number[] | string, key: *}}
+ */
+exports.getPrivateKey = (user) => user._signingIdentity._signer._key;
+
 exports.adminName = 'Admin';
 exports.adminPwd = 'passwd';
