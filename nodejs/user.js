@@ -25,8 +25,9 @@ exports.loadFromLocal = async (cryptoPath, nodeType, mspid, cryptoSuite = client
 		certificate: fs.readFileSync(signcerts)
 	}, mspid, cryptoSuite);
 };
-exports.build = async (username, {key, certificate}, mspid, cryptoSuite = clientUtil.newCryptoSuite()) => {
-	const user = new User(username);
+exports.build = async (name, {key, certificate}, mspid, cryptoSuite = clientUtil.newCryptoSuite(), {roles, affiliation} = {}) => {
+
+	const user = new User({name, roles, affiliation});
 	let privateKey;
 	if (key instanceof ECDSA_KEY) {
 		privateKey = key;
@@ -40,7 +41,7 @@ exports.build = async (username, {key, certificate}, mspid, cryptoSuite = client
 };
 exports.getCertificate = (user) => user.getSigningIdentity()._certificate;
 exports.getMSPID = (user) => user._mspId;
-exports.getPrivateKey = (user) => user._signingIdentity._signer._key;
+exports.getPrivateKey = (user) => user.getSigningIdentity()._signer._key;
 
 exports.adminName = 'Admin';
 exports.adminPwd = 'passwd';
