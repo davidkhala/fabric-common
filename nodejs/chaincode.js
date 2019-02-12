@@ -252,7 +252,7 @@ exports.chaincodeProposal = async (
 	command, channel, peers, opts, proposalTimeOut
 ) => {
 	const logger = Logger.new(`${command}-chaincode:proposal`, true);
-	const {chaincodeId, chaincodeVersion, args, fcn, endorsementPolicy, collectionConfig, chaincodeType} = opts;
+	const {chaincodeId, chaincodeVersion, args, fcn, endorsementPolicy, collectionConfig, chaincodeType, transientMap} = opts;
 
 	const client = channel._clientContext;
 	logger.debug({channelName: channel.getName()}, opts);
@@ -261,6 +261,9 @@ exports.chaincodeProposal = async (
 
 	const txId = client.newTransactionID();
 
+	/**
+	 * @type {ChaincodeInstantiateUpgradeRequest}
+	 */
 	const request = {
 		chaincodeId,
 		chaincodeVersion,
@@ -270,7 +273,8 @@ exports.chaincodeProposal = async (
 		targets: peers, // optional: if not set, targets will be channel.getPeers
 		'endorsement-policy': endorsementPolicy,
 		'collections-config': collectionConfig,
-		chaincodeType
+		chaincodeType,
+		transientMap: transientMapTransform(transientMap)
 	};
 	const existSymptom = 'exists';// TODO stronger limitation
 
