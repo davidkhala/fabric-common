@@ -8,11 +8,11 @@ const User = require('fabric-client/lib/User');
  *
  * @param cryptoPath
  * @param nodeType
- * @param mspid
+ * @param mspId
  * @param cryptoSuite
  * @returns {Promise<User>}
  */
-exports.loadFromLocal = async (cryptoPath, nodeType, mspid, cryptoSuite = clientUtil.newCryptoSuite()) => {
+exports.loadFromLocal = async (cryptoPath, nodeType, mspId, cryptoSuite = clientUtil.newCryptoSuite()) => {
 	const username = cryptoPath.userName;
 	const exist = cryptoPath.cryptoExistLocal(`${nodeType}User`);
 	if (!exist) {
@@ -23,9 +23,9 @@ exports.loadFromLocal = async (cryptoPath, nodeType, mspid, cryptoSuite = client
 	return await exports.build(username, {
 		key: fs.readFileSync(keystore),
 		certificate: fs.readFileSync(signcerts)
-	}, mspid, cryptoSuite);
+	}, mspId, cryptoSuite);
 };
-exports.build = async (name, {key, certificate}, mspid, cryptoSuite = clientUtil.newCryptoSuite(), {roles, affiliation} = {}) => {
+exports.build = async (name, {key, certificate}, mspId, cryptoSuite = clientUtil.newCryptoSuite(), {roles, affiliation} = {}) => {
 
 	const user = new User({name, roles, affiliation});
 	let privateKey;
@@ -36,7 +36,7 @@ exports.build = async (name, {key, certificate}, mspid, cryptoSuite = clientUtil
 		privateKey = await cryptoSuite.importKey(key, {ephemeral: true});
 	}
 	user.setCryptoSuite(cryptoSuite);
-	await user.setEnrollment(privateKey, certificate, mspid);
+	await user.setEnrollment(privateKey, certificate, mspId);
 	return user;
 };
 exports.getCertificate = (user) => user.getSigningIdentity()._certificate;
