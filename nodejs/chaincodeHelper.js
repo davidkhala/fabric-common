@@ -48,6 +48,7 @@ const txTimerPromise = (eventHub, {txId}, eventWaitTime) => {
  * @property {string} fcn
  * @property {Object} endorsementPolicy
  * @property {Object} collectionConfig
+ * @property {Object} transientMap
  * @property {string} chaincodeType Type of chaincode. One of 'golang', 'car', 'java' or 'node'.
  */
 
