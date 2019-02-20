@@ -1,7 +1,9 @@
 const Logger = require('./logger');
 
-const {chaincodeProposal, transactionProposal,
-	invokeCommit, transientMapTransform, chaincodeProposalAdapter} = require('./chaincode');
+const {
+	chaincodeProposal, transactionProposal,
+	invokeCommit, transientMapTransform, chaincodeProposalAdapter
+} = require('./chaincode');
 const {txEventCode, txEvent, disconnect} = require('./eventHub');
 /**
  * @param eventHub
@@ -203,6 +205,7 @@ const invokeCommitDefault = async (channel, nextRequest, timeout = 30000) => {
  * @param targets: Optional. use the peers included in the "targets" to endorse the proposal. If there is no "targets" parameter, the endorsement request will be handled by the endorsement handler.
  * @param required: Optional. An array of strings that represent the names of peers that are required for the endorsement. These will be the only peers which the proposal will be sent. This list only applies to endorsements using the discovery service.
  * @param discoveryRestrictions
+ * @param {string[]} [mspids] optional target mspid array for eventHub
  * @param chaincodeId
  * @param fcn
  * @param args
@@ -214,11 +217,12 @@ const invokeCommitDefault = async (channel, nextRequest, timeout = 30000) => {
 exports.invokeDefault = async (channel,
                                targets,
                                discoveryRestrictions,
+                               mspids,
                                {chaincodeId, fcn, args, transientMap},
                                proposalTimeout = 30000,
                                eventWaitTime = 30000) => {
 	const logger = Logger.new('chaincode:invokeEnhanced', true);
-	logger.info('Invoke chaincode [%s::%s]', chaincodeId, fcn);
+	logger.info(`Invoke chaincode [${chaincodeId}::${fcn}]`);
 
 	const nextRequest = await transactionProposalDefault(
 		channel,
@@ -236,8 +240,9 @@ exports.invokeDefault = async (channel,
 	const {txId, proposalResponses} = nextRequest;
 	const promises = [];
 
-	const eventHubs = channel.getOrganizations().map(
-		msp => channel.getChannelEventHubsForOrg(msp.id)
+	mspids = mspids ? mspids : channel.getOrganizations().map(({id}) => id);
+	const eventHubs = mspids.map(
+		mspid => channel.getChannelEventHubsForOrg(mspid)
 	).reduce((c1, c2) => c1.concat(c2));
 
 	for (const eventHub of eventHubs) {
