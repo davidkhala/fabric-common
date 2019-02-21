@@ -241,7 +241,7 @@ exports.invokeDefault = async (channel,
 	const {txId, proposalResponses} = nextRequest;
 	const promises = [];
 
-	mspids = mspids ? mspids : channel.getOrganizations().map(({id}) => id);
+	mspids = Array.isArray(mspids) && mspids.length > 0 ? mspids : channel.getOrganizations().map(({id}) => id);
 	const eventHubs = mspids.map(
 		mspid => channel.getChannelEventHubsForOrg(mspid)
 	).reduce((c1, c2) => c1.concat(c2));
