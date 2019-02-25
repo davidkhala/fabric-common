@@ -38,6 +38,8 @@ The /metrics endpoint allows operators to utilize Prometheus to pull operational
 - NodeOUs enable
 - dig into block event: 
         Dave Enyeart: The block event includes the full transactions of the block, including the read/write sets, which in the case of private data includes the hashes of the private key/values.
+- join channel with provisional genesis block, and why txId is required.
+- channelEventHub.disconnect status sync        
 # Fabric weakness
 - gossip timeline is outside of blockchain,  for massive data scenario, gossip will fall behind transaction event
 - `args.push(Buffer.from(request.fcn ? request.fcn : 'init', 'utf8'));` we should use fcn ='' as default
