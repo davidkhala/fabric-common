@@ -20,11 +20,11 @@ Latest version 1.4.0
 - playback conference: https://wiki.hyperledger.org/doku.php?id=projects/fabric/playbacks
 - Note that collections cannot be deleted, 
     as there may be prior private data hashes on the channel’s blockchain that cannot be removed.
-
+- `txId` is required in peer join channel because: [bret Harrison]There is a transaction proposal to the system chaincode, so a transaction id is required. 
 # DONE
 - discovery service, endorsement hints
 - transient map context keep persistent when cross chaincode
-
+- [FABN-1130] Stop using "init" as default function name 
 # In progress
 - collectionConfig.memberOnlyRead is not implemented in sdk-node 
 
@@ -38,14 +38,14 @@ The /metrics endpoint allows operators to utilize Prometheus to pull operational
 - NodeOUs enable
 - dig into block event: 
         Dave Enyeart: The block event includes the full transactions of the block, including the read/write sets, which in the case of private data includes the hashes of the private key/values.
-- join channel with provisional genesis block, and why txId is required.
+- join channel with provisional genesis block, 
 - channelEventHub.disconnect status sync        
 # Fabric weakness
 - gossip timeline is outside of blockchain,  for massive data scenario, gossip will fall behind transaction event
-- `args.push(Buffer.from(request.fcn ? request.fcn : 'init', 'utf8'));` we should use fcn ='' as default
-- chaos in discoveryRequest.interests
-- keystore object un-promisify
-- endpoint ping
+
+- chaos in discoveryRequest.interests: https://gerrit.hyperledger.org/r/#/c/28446/
+- keystore object un-promisify: https://gerrit.hyperledger.org/r/#/c/24749/
+- endpoint ping: https://gerrit.hyperledger.org/r/#/c/28115/
 - fabric RSA key support
 - `instantiate policy` is not `endorsemnet policy`, it is used during chaincode packaging/install determining who is able
  to instantiate/upgrade chaincode, it is partially supported in nodejs with chaincode package binary(byte[]) as input. 
