@@ -20,7 +20,8 @@ Latest version 1.4.0
 - playback conference: https://wiki.hyperledger.org/doku.php?id=projects/fabric/playbacks
 - Note that collections cannot be deleted, 
     as there may be prior private data hashes on the channel’s blockchain that cannot be removed.
-- `txId` is required in peer join channel because: [bret Harrison]There is a transaction proposal to the system chaincode, so a transaction id is required. 
+- `txId` is required in peer join channel because: [bret Harrison]There is a transaction proposal to the system chaincode, so a transaction id is required.
+- impossible: join channel without orderer 
 # DONE
 - discovery service, endorsement hints
 - transient map context keep persistent when cross chaincode
@@ -38,7 +39,6 @@ The /metrics endpoint allows operators to utilize Prometheus to pull operational
 - NodeOUs enable
 - dig into block event: 
         Dave Enyeart: The block event includes the full transactions of the block, including the read/write sets, which in the case of private data includes the hashes of the private key/values.
-- join channel with provisional genesis block, 
 - channelEventHub.disconnect status sync        
 # Fabric weakness
 - gossip timeline is outside of blockchain,  for massive data scenario, gossip will fall behind transaction event
