@@ -172,7 +172,7 @@ const join = async (channel, peer, orderer, waitTime = 1000) => {
 		}
 		if (errMessage.includes(joinedBeforeSymptom)) {
 			// swallow 'joined before' error
-			logger.info('peer joined before', peer._name);
+			logger.info('peer joined before', peer.getName());
 			return;
 		}
 		throw dataEntry;
