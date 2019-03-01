@@ -160,7 +160,6 @@ const transactionProposalDefault = async (channel,
                                           {required, ignore, preferred, requiredOrgs, ignoreOrgs, preferredOrgs},
                                           {chaincodeId, fcn, args, transientMap},
                                           proposalTimeout) => {
-	const logger = Logger.new('chaincode:transactionProposalEnhanced', true);
 	const txId = channel._clientContext.newTransactionID();
 	const request = {
 		txId,
@@ -171,17 +170,11 @@ const transactionProposalDefault = async (channel,
 		required, ignore, preferred, requiredOrgs, ignoreOrgs, preferredOrgs
 	};
 
-	const [responses, proposal] = await channel.sendTransactionProposal(request, proposalTimeout);
-	const ccHandler = chaincodeProposalAdapter('invoke', undefined, true);
-	const {nextRequest, errCounter} = ccHandler([responses, proposal]);
-	const {proposalResponses} = nextRequest;
+	const [proposalResponses, proposal] = await channel.sendTransactionProposal(request, proposalTimeout);
 
-	if (errCounter > 0) {
-		logger.error({proposalResponses});
-		throw {proposalResponses};
-	}
-	nextRequest.txId = txId;
-	return nextRequest;
+	return {
+		proposalResponses, proposal, txId
+	};
 };
 exports.queryDefault = transactionProposalDefault;
 /**
