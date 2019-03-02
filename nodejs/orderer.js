@@ -80,9 +80,11 @@ exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, kafkas, tls}, loggingL
 
 	}
 	if (operationOpts) {
-		const {TLS} = operationOpts;// TODO TLS
+		// metrics provider is one of statsd, prometheus, or disabled
+		const {tls,metrics = 'disabled'} = operationOpts;// TODO TLS
 		env = env.concat([
-			'ORDERER_OPERATIONS_LISTENADDRESS=0.0.0.0:8443'
+			'ORDERER_OPERATIONS_LISTENADDRESS=0.0.0.0:8443',
+			`ORDERER_METRICS_PROVIDER=${metrics}`
 		]);
 	}
 	return env;

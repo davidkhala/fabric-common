@@ -107,15 +107,12 @@ exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchD
 		]);
 	}
 	if (operationOpts) {
-		// metrics:
-		// # metrics provider is one of statsd, prometheus, or disabled
-		// provider: disabled
-		const {tls, metrics, statsd} = operationOpts; // TODO another set of TLS,
-		// TODO test metrics.prometheus
+		// metrics provider is one of statsd, prometheus, or disabled
+		const {tls, metrics = 'disabled', statsd} = operationOpts; // TODO another set of TLS,
 		// omit the ip/domain in listenAddress will allow all traffic
 		environment = environment.concat([
 			'CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9443',
-			`CORE_METRICS_PROVIDER=${metrics ? metrics : 'disabled'}`
+			`CORE_METRICS_PROVIDER=${metrics}`
 		]);
 	}
 	return environment;

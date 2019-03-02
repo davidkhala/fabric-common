@@ -26,6 +26,8 @@ Latest version 1.4.0
 - discovery service, endorsement hints
 - transient map context keep persistent when cross chaincode
 - [FABN-1130] Stop using "init" as default function name 
+- 1.4 operation enhance: 
+The /metrics endpoint allows operators to utilize Prometheus to pull operational metrics from peer and orderer nodes.
 # In progress
 - collectionConfig.memberOnlyRead is not implemented in sdk-node 
 
@@ -35,7 +37,7 @@ Latest version 1.4.0
 - level db navigator(https://github.com/Level/level or https://github.com/syndtr/goleveldb) and richQuery for leveldb
 - peer leveldb analyzer
 - 1.4 operation enhance: 
-The /metrics endpoint allows operators to utilize Prometheus to pull operational metrics from peer and orderer nodes. Metrics can also be pushed to StatsD.
+Metrics can also be pushed to StatsD.
 - NodeOUs enable
 - dig into block event: 
         Dave Enyeart: The block event includes the full transactions of the block, including the read/write sets, which in the case of private data includes the hashes of the private key/values.

@@ -324,14 +324,14 @@ exports.chaincodeClean = async (prune) => {
 exports.runOrderer = ({
 	                      container_name, imageTag, port, network, BLOCK_FILE, CONFIGTXVolume,
 	                      msp: {id, configPath, volumeName}, kafkas, tls, stateVolume
-                      }, operationPort) => {
+                      }, operations) => {
 	const Image = `hyperledger/fabric-orderer:${imageTag}`;
 	const Cmd = ['orderer'];
 	const Env = ordererUtil.envBuilder({
 		BLOCK_FILE, msp: {
 			configPath, id
 		}, kafkas, tls
-	}, undefined, operationPort);
+	}, undefined, operations);
 
 	const createOptions = {
 		name: container_name,
@@ -372,8 +372,8 @@ exports.runOrderer = ({
 		createOptions.Volumes[ordererUtil.container.state] = {};
 		createOptions.Hostconfig.Binds.push(`${stateVolume}:${ordererUtil.container.state}`);
 	}
-	if (operationPort) {
-		createOptions.Hostconfig.PortBindings['8443'].push({HostPort: operationPort.toString()});
+	if (operations) {
+		createOptions.Hostconfig.PortBindings['8443'].push({HostPort: operations.port.toString()});
 	}
 	return dockerUtil.containerStart(createOptions);
 };
@@ -427,14 +427,14 @@ exports.runPeer = ({
 		                   id, volumeName,
 		                   configPath
 	                   }, peerHostName, tls, couchDB, stateVolume
-                   }, operationPort) => {
+                   }, operations) => {
 	const Image = `hyperledger/fabric-peer:${imageTag}`;
 	const Cmd = ['peer', 'node', 'start'];
 	const Env = peerUtil.envBuilder({
 		network, msp: {
 			configPath, id, peerHostName
 		}, tls, couchDB
-	}, undefined, operationPort);
+	}, undefined, operations);
 
 	const createOptions = {
 		name: container_name,
@@ -470,8 +470,8 @@ exports.runPeer = ({
 			}
 		}
 	};
-	if (operationPort) {
-		createOptions.Hostconfig.PortBindings['9443'].push({HostPort: operationPort.toString()});
+	if (operations) {
+		createOptions.Hostconfig.PortBindings['9443'].push({HostPort: operations.port.toString()});
 	}
 	if (stateVolume) {
 		createOptions.Volumes[peerUtil.container.state] = {};
