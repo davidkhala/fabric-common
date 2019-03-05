@@ -79,7 +79,7 @@ exports.new = (caUrl, trustedRoots = [], cryptoSuite = ClientUtil.newCryptoSuite
 		trustedRoots,
 		verify: trustedRoots.length > 0
 	};
-	return new CAClient(caUrl, tlsOptions, undefined, cryptoSuite);
+	return new CAClient(caUrl, tlsOptions, '', cryptoSuite);
 };
 exports.envBuilder = () => {
 	return [

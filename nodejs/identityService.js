@@ -21,14 +21,31 @@ exports.create = async (identityService, admin, {
 	return await identityService.create(req, admin);
 };
 /**
+ * @typedef {Object} Identity
+ * @property {string} id
+ * @property {string} type
+ * @property {Object[]} attrs
+ * @property {number} max_enrollments
+ */
+
+
+/**
  * no password in return
  * @param identityService
  * @param admin
- * @returns {Promise<any>}
+ * @returns {Promise<Identity[]>}
  */
 exports.getAll = async (identityService, admin) => {
-	const result = await identityService.getAll(admin);
-	return result.identities;
+	const {result, errors, messages, success} = await identityService.getAll(admin);
+	if (!success) {
+		const err = Error('identityService:getAll');
+		err.result = result;
+		err.errors = errors;
+		err.messages = messages;
+		throw err;
+	}
+	const {identities} = result;
+	return identities;
 };
 /**
  * update password is supported
