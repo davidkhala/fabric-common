@@ -11,7 +11,7 @@ const clientUtil = require('./client');
  * @param {string} nodeType
  * @param {string} mspId
  * @param TLS
- * @returns {Promise<*>}
+ * @returns {Promise<User>}
  */
 exports.initAdmin = async (caService, cryptoPath, nodeType, mspId, TLS) => {
 	const enrollmentID = cryptoPath.userName;
