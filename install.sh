@@ -26,7 +26,7 @@ function golang1_11() {
 		else
 			sudo add-apt-repository -y ppa:longsleep/golang-backports
 			sudo apt-get update
-			sudo apt-get -y install golang-go
+			sudo apt-get -y install golang-1.11
 			GOPATH=$(go env GOPATH)
 			if ! grep "$GOPATH/bin" $bashProfile; then
 				echo "...To set GOPATH/bin and GOBIN"
