@@ -22,6 +22,7 @@ Latest version 1.4.0
     as there may be prior private data hashes on the channel’s blockchain that cannot be removed.
 - `txId` is required in peer join channel because: [bret Harrison]There is a transaction proposal to the system chaincode, so a transaction id is required.
 - impossible: join channel without orderer 
+- backup recovery: at least 1 anchor peer for each organization should be resumed to recover transaction process   
 # DONE
 - discovery service, endorsement hints
 - transient map context keep persistent when cross chaincode
