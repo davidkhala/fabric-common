@@ -17,9 +17,6 @@ function channelList() {
     if [[ -n ${ordererHostname} ]]; then
         CMD="$CMD --ordererTLSHostnameOverride=$ordererHostname"
     fi
-    if [[ -n ${ordererEndpoint} ]]; then
-        CMD="$CMD -o=$ordererEndpoint"
-    fi
     echo $CMD
     $CMD
 
