@@ -17,6 +17,10 @@ function channelList() {
     $CMD
 
 }
+
+#Usage:
+#  peer channel fetch <newest|oldest|config|(number)> [outputfile] [flags]
+
 function channelConfig() {
     local channelName=$1
     local ordererEndPoint=$2
@@ -25,7 +29,7 @@ function channelConfig() {
         echo " 'ordererEndPoint' as 2nd parameter is required, otherwise: Error: can't read the block: &{NOT_FOUND}"
         exit 1
     fi
-    local CMD="peer channel fetch --tls --cafile=$CORE_PEER_TLS_ROOTCERT_FILE --certfile=$CORE_PEER_TLS_CERT_FILE --keyfile=$CORE_PEER_TLS_KEY_FILE -c=$channelName -o=$ordererEndPoint"
+    local CMD="peer channel fetch config --tls --cafile=$CORE_PEER_TLS_ROOTCERT_FILE --certfile=$CORE_PEER_TLS_CERT_FILE --keyfile=$CORE_PEER_TLS_KEY_FILE -c=$channelName -o=$ordererEndPoint"
     if [[ -n ${ordererHostname} ]]; then
         CMD="$CMD --ordererTLSHostnameOverride=$ordererHostname"
     fi
