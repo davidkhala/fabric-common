@@ -10,7 +10,7 @@ function channelList(){
     if [[ -n ${ordererHostname} ]];then
         CMD="$CMD --ordererTLSHostnameOverride=$ordererHostname"
     fi
-
+    $CMD
 
 }
 function channelConfig(){
@@ -21,4 +21,5 @@ function channelConfig(){
     if [[ -n ${ordererHostname} ]];then
         CMD="$CMD --ordererTLSHostnameOverride=$ordererHostname"
     fi
+    $CMD
 }
