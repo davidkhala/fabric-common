@@ -148,7 +148,7 @@ const blockWaiter = async (eventHub, minHeight) => {
 		};
 		const onErr = (e) => reject(e);
 		let validator;
-		if (Number.isInteger(minHeight)) {
+		if (Number.isSafeInteger(minHeight)) {
 			validator = ({block}) => {
 				const {number, previous_hash, data_hash} = block.header;
 				const {data} = block.data;
