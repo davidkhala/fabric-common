@@ -29,6 +29,10 @@ Latest version 1.4.0
 Error: collection config not define for namespace [node]  
 See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f897a80898abf6a1e45
 - transient map context keep persistent when cross chaincode
+- it is allowed that chaincode invoker, target peers belongs to differed organization.
+- chaincode partial update: when not all peers upgrade to latest chaincode, is it possible that old chaincode still work
+    with inappropriate endorsement config; while with appropriate endorsement policy, we get chaincode fingerprint mismatch error
+
 # DONE
 - discovery service, endorsement hints
 - [FABN-1130] Stop using "init" as default function name 
