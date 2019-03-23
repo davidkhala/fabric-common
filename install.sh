@@ -11,7 +11,7 @@ for ((i = 2; i <= ${#}; i++)); do
 	remain_params="$remain_params $j"
 done
 
-function golang1_11() {
+function golang() {
 	if [[ "$1" == "remove" ]]; then
 		if [[ $(uname) == "Darwin" ]]; then
 			brew uninstall go || true
@@ -25,8 +25,8 @@ function golang1_11() {
 			brew install go || true
 		else
 			sudo add-apt-repository -y ppa:longsleep/golang-backports
-			sudo apt-get update
-			sudo apt-get -y install golang-1.11
+			sudo apt update
+			sudo apt install -y golang-go
 			GOPATH=$(go env GOPATH)
 			if ! grep "$GOPATH/bin" $bashProfile; then
 				echo "...To set GOPATH/bin and GOBIN"
