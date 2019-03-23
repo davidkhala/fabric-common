@@ -32,6 +32,7 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
 - it is allowed that chaincode invoker, target peers belongs to differed organization.
 - chaincode partial update: when not all peers upgrade to latest chaincode, is it possible that old chaincode still work
     with inappropriate endorsement config; while with appropriate endorsement policy, we get chaincode fingerprint mismatch error
+- node-gyp rebuild require `make` and `g++` 
 
 # DONE
 - discovery service, endorsement hints
