@@ -65,3 +65,4 @@ Metrics can also be pushed to StatsD.
  
     "They are different, instantiate policy gets packaged with a chaincode and specifies who can instantiate the chaincode, 
     see the doc starting at: https://hyperledger-fabric.readthedocs.io/en/latest/chaincode4noah.html#packaging"  
+- new Feature required: GetPrivateStateByRangeWithPagination: https://jira.hyperledger.org/browse/FAB-11732
