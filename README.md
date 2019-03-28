@@ -49,7 +49,8 @@ The /metrics endpoint allows operators to utilize Prometheus to pull operational
 - level db navigator(https://github.com/Level/level or https://github.com/syndtr/goleveldb) and richQuery for leveldb
 - peer leveldb analyzer
 - [1.4] operation enhance: 
-Metrics can also be pushed to StatsD.
+    - Metrics can also be pushed to StatsD.
+    - check this reference: https://hyperledger-fabric.readthedocs.io/en/release-1.4/metrics_reference.html
 - NodeOUs enable
 - dig into block event: 
         Dave Enyeart: The block event includes the full transactions of the block, including the read/write sets, which in the case of private data includes the hashes of the private key/values.
