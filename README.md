@@ -39,6 +39,7 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
 - [FABN-1130] Stop using "init" as default function name 
 - [1.4] operation enhance: 
 The /metrics endpoint allows operators to utilize Prometheus to pull operational metrics from peer and orderer nodes.
+- private data will automatic sync on new peer(process last for seconds)
 # In progress
 - collectionConfig.memberOnlyRead is not implemented in sdk-node 
 
@@ -54,7 +55,8 @@ The /metrics endpoint allows operators to utilize Prometheus to pull operational
 - NodeOUs enable
 - dig into block event: 
         Dave Enyeart: The block event includes the full transactions of the block, including the read/write sets, which in the case of private data includes the hashes of the private key/values.
-- channelEventHub.disconnect status sync        
+- channelEventHub.disconnect status sync
+- is private data automatic sync on new peer, with peer amount over max peer count.        
 # Fabric weakness
 - chaos in discoveryRequest.interests: https://gerrit.hyperledger.org/r/#/c/28446/
 - keystore object un-promisify: https://gerrit.hyperledger.org/r/#/c/24749/
