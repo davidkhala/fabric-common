@@ -172,3 +172,4 @@ exports.setLogLevel = async (baseUrl, level, otherOptions) => {
 	const url = `${baseUrl}/logspec`;
 	return await RequestPromise({url, method: 'PUT', body: {spec: level}}, otherOptions);
 };
+exports.Peer = Peer;
