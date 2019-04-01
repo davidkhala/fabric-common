@@ -22,7 +22,7 @@ exports.initAdmin = async (caService, cryptoPath, nodeType, mspId, TLS) => {
 	const type = `${nodeType}User`;
 	const userFull = cryptoPath[`${nodeType}UserHostName`];
 	const cryptoSuite = clientUtil.newCryptoSuite();
-	const user = await userUtil.loadFromLocal(cryptoPath, nodeType, mspId, cryptoSuite);
+	const user = userUtil.loadFromLocal(cryptoPath, nodeType, mspId, cryptoSuite);
 	if (user) {
 		logger.info(`${domain} admin found in local`);
 		return user;
@@ -37,7 +37,7 @@ exports.initAdmin = async (caService, cryptoPath, nodeType, mspId, TLS) => {
 		cryptoPath.toOrgTLS(tlsResult, nodeType);
 	}
 
-	return await userUtil.build(userFull, result, mspId, cryptoSuite);
+	return userUtil.build(userFull, result, mspId, cryptoSuite);
 };
 /**
  * @param {FabricCAServices} caService
@@ -185,7 +185,7 @@ exports.genUser = async (caService, cryptoPath, nodeType, admin, {TLS, affiliati
 	}
 
 	const mspId = userUtil.getMSPID(admin);
-	let user = await userUtil.loadFromLocal(cryptoPath, nodeType, mspId, undefined);
+	let user = userUtil.loadFromLocal(cryptoPath, nodeType, mspId, undefined);
 	if (user) {
 		logger.info('user exist', {name: user.getName()});
 		return user;
@@ -208,7 +208,7 @@ exports.genUser = async (caService, cryptoPath, nodeType, admin, {TLS, affiliati
 		const tlsResult = await caService.enroll({enrollmentID, enrollmentSecret, profile: 'tls'});
 		cryptoPath.toTLS(tlsResult, type);
 	}
-	user = await userUtil.loadFromLocal(cryptoPath, nodeType, mspId, undefined);
+	user = userUtil.loadFromLocal(cryptoPath, nodeType, mspId, undefined);
 	return user;
 
 };
