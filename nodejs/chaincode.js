@@ -312,16 +312,17 @@ exports.chaincodeProposal = async (
 /**
  *
  * @param {Client} client
- * @param {TransactionRequest} nextRequest
+ * @param {Client.TransactionRequest} nextRequest
  * @param {Orderer} orderer
+ * @param {number} timeout
  * @return {Promise<Client.BroadcastResponse>}
  */
-exports.invokeCommit = async (client, nextRequest, orderer) => {
+exports.invokeCommit = async (client, nextRequest, orderer, timeout) => {
 	if (!(orderer instanceof Orderer)) {
 		throw Error(`orderer should be instance of Orderer, but got ${typeof orderer}`);
 	}
 	nextRequest.orderer = orderer;
 	const dummyChannel = ChannelUtil.newDummy(client);
-	return dummyChannel.sendTransaction(nextRequest);// TODO fix sdk
+	return dummyChannel.sendTransaction(nextRequest, timeout);// TODO fix sdk
 };
 
