@@ -1,4 +1,4 @@
-const FabricUtils = require('fabric-client/lib/utils');
+const {FabricConfig} = require('./helper');
 const Logger = require('./logger');
 const logger = Logger.new('service discovery', true);
 /**
@@ -53,7 +53,7 @@ exports.getDiscoveryResults = async (channel, endorsement_hints) => {
  * @returns {Promise<*|void>}
  */
 exports.initialize = async (channel, peer, {asLocalhost, TLS} = {}) => {
-	FabricUtils.setConfigSetting('discovery-protocol', TLS ? 'grpcs' : 'grpc');
+	FabricConfig.set('discovery-protocol', TLS ? 'grpcs' : 'grpc');
 	return await channel.initialize({target: peer, discover: true, asLocalhost});
 };
 
