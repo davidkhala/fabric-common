@@ -139,4 +139,4 @@ exports.invoke = async (channel, peers, eventHubs, {
 	const txEventResponses = await Promise.all(promises);
 	return {txEventResponses, proposalResponses};
 };
-
+exports.txTimerPromise = txTimerPromise;
