@@ -1,7 +1,8 @@
 const {newerVersion, nextVersion} = require('khala-nodeutils/version');
 const {install} = require('./chaincode');
 const Logger = require('./logger');
-const {chaincodesInstalled} = require('./query');
+const {chaincodesInstalled, chaincodesInstantiated} = require('./query');
+const {chaincodeClean} = require('./fabric-dockerode');
 /**
  *
  * @param {Client.ChaincodeInfo[]} chaincodes
@@ -46,4 +47,17 @@ exports.incrementInstall = async (peer, {chaincodeId, chaincodePath, chaincodeTy
 	}, client);
 	result.chaincodeVersion = chaincodeVersion;
 	return result;
+};
+
+exports.pruneChaincodeLegacy = async (peer, channel, chaincode) => {
+	let {pretty} = await chaincodesInstantiated(peer, channel);
+	console.debug(pretty);
+	if (chaincode) {
+		pretty = pretty.filter(({name}) => name === chaincode);
+	}
+	for (const {name, version} of pretty) {
+		const filter = (containerName) => containerName.includes(name) && !containerName.includes(`${name}-${version}`);
+		await chaincodeClean(false, filter);
+	}
+
 };

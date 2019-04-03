@@ -308,8 +308,11 @@ exports.chaincodeContainerList = async () => {
 	const containers = await dockerUtil.containerList();
 	return containers.filter(container => container.Names.find(name => name.startsWith('/dev-')));
 };
-exports.chaincodeClean = async (prune) => {
-	const containers = await exports.chaincodeContainerList();
+exports.chaincodeClean = async (prune, filter) => {
+	let containers = await exports.chaincodeContainerList();
+	if (typeof filter === 'function') {
+		containers = containers.filter(container => container.Names.find(filter));
+	}
 	await Promise.all(containers.map(async (container) => {
 		await dockerUtil.containerDelete(container.Id);
 		await dockerUtil.imageDelete(container.Image);

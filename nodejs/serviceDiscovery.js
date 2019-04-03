@@ -26,7 +26,7 @@ exports.globalPeers = async (client, peer) => {
 };
 
 /**
- * TODO: inspect the result structure, check the differnce from this._discovery_results
+ * TODO: inspect the result structure, check the difference from this._discovery_results
  * Return the discovery results.
  * Discovery results are only available if this channel has been initialized.
  * If the results are too old, they will be refreshed

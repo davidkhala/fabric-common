@@ -33,7 +33,11 @@ exports.chaincodesInstalled = async (peer, client) => {
  * @param {Channel} channel
  * @return {Promise<Client.ChaincodeQueryResponse>}
  */
-exports.chaincodesInstantiated = async (peer, channel) => channel.queryInstantiatedChaincodes(peer);
+exports.chaincodesInstantiated = async (peer, channel) => {
+	const {chaincodes} = await channel.queryInstantiatedChaincodes(peer);
+	const pretty = chaincodes.map(({name, version, path}) => ({name, version, path}));
+	return {chaincodes, pretty};
+};
 
 exports.blockFromHash = async (peer, channel, hashHex) => channel.queryBlockByHash(Buffer.from(hashHex, 'hex'), peer);
 exports.blockFromHeight = async (peer, channel, blockNumber) => channel.queryBlock(parseInt(blockNumber), peer);
