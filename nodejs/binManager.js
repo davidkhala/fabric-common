@@ -1,4 +1,4 @@
-const {exec} = require('khala-nodeutils').helper();
+const {exec, execResponsePrint} = require('khala-nodeutils').helper();
 
 const nodeUtils = require('khala-nodeutils');
 const path = require('path');
@@ -8,11 +8,11 @@ const defaultBinPath = path.resolve(__dirname, '../bin');
 const binManagerBashDir = path.resolve(__dirname, '../bin-manage');
 const logger = nodeUtils.devLogger('binManager');
 exports.configtxlator = async (action = '') => {
-	const shellScript = path.resolve(binManagerBashDir, `runConfigtxlator.sh ${action}`);
-	logger.info('CMD', shellScript);
-	const {stdout} = await exec(shellScript);
-	logger.info(stdout);
-	return stdout;
+	const CMD = path.resolve(binManagerBashDir, `runConfigtxlator.sh ${action}`);
+	logger.info('CMD', CMD);
+	const result = await exec(CMD);
+	execResponsePrint(result);
+	return result.stdout;
 };
 
 exports.genBlock = async (configtxYaml, outputFile, profile, channelName = 'testchainid', binPath = defaultBinPath) => {
@@ -21,7 +21,7 @@ exports.genBlock = async (configtxYaml, outputFile, profile, channelName = 'test
 	const CMD = `${binPath}/configtxgen -outputBlock ${outputFile} -profile ${profile} -channelID ${channelName}`;
 	logger.info('CMD', CMD);
 	const result = await exec(CMD);
-	logger.debug('CMD:return', result);
+	execResponsePrint(result);
 };
 
 exports.genChannel = async (configtxYaml, outputFile, profile, channelName, binPath = defaultBinPath) => {
@@ -31,8 +31,7 @@ exports.genChannel = async (configtxYaml, outputFile, profile, channelName, binP
 	const CMD = `${binPath}/configtxgen -outputCreateChannelTx ${outputFile} -profile ${profile} -channelID ${channelName}`;
 	logger.info('CMD', CMD);
 	const result = await exec(CMD);
-	logger.debug('CMD:return', result);
-
+	execResponsePrint(result);
 };
 
 exports.genAnchorPeers = async (configtxYaml, outputFile, profile, channelName, asOrg, binPath = defaultBinPath) => {
@@ -51,7 +50,7 @@ exports.genAnchorPeers = async (configtxYaml, outputFile, profile, channelName, 
 	const CMD = `${binPath}/configtxgen -outputAnchorPeersUpdate ${outputFile} -profile ${profile} -channelID ${channelName} -asOrg ${asOrg}`;
 	logger.info('CMD', CMD);
 	const result = await exec(CMD);
-	logger.debug('CMD:return', result);
+	execResponsePrint(result);
 };
 
 //TODO to test
@@ -59,12 +58,14 @@ exports.viewBlock = async (blockFile, profile, channelName = 'testchainid', view
 	const CMD = `${binPath}/configtxgen -inspectBlock ${blockFile} -profile ${profile}`;
 	logger.info('CMD', CMD);
 	const result = await exec(CMD);
-	viewOutput.info(result);
+	execResponsePrint(result);
+	viewOutput.info(result);//TODO in stdout or stderr?
 };
 //TODO to test
 exports.viewChannel = async (channelFile, profile, channelName, viewOutput = logger, binPath = defaultBinPath) => {
 	const CMD = `${binPath}/configtxgen -inspectChannelCreateTx ${channelFile} -profile ${profile} -channelID ${channelName}`;
 	logger.info('CMD', CMD);
 	const result = await exec(CMD);
+	execResponsePrint(result);
 	viewOutput.info(result);
 };

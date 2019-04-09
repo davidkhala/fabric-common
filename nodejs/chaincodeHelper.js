@@ -8,10 +8,10 @@ const {txEventCode, txEvent, disconnect} = require('./eventHub');
 /**
  * @param eventHub
  * @param txId
- * @param eventWaitTime
+ * @param eventTimeOut
  * @return {Promise<{tx,code,err}>}
  */
-const txTimerPromise = (eventHub, {txId}, eventWaitTime) => {
+const txTimerPromise = (eventHub, {txId}, eventTimeOut) => {
 	const logger = Logger.new('newTxEvent', true);
 	const validator = ({tx, code, blockNum}) => {
 		logger.debug({tx, code, blockNum});
@@ -35,7 +35,7 @@ const txTimerPromise = (eventHub, {txId}, eventWaitTime) => {
 		const timerID = setTimeout(() => {
 			disconnect(eventHub);
 			reject({err: 'txTimeout'});
-		}, eventWaitTime);
+		}, eventTimeOut);
 	});
 };
 
@@ -59,13 +59,13 @@ const txTimerPromise = (eventHub, {txId}, eventWaitTime) => {
  * @param {EventHub[]} eventHubs
  * @param {chaincodeProposalOpts} opts
  * @param {number} proposalTimeOut
- * @param {number} eventWaitTime default: 30000
+ * @param {number} eventTimeOut default: 30000
  * @returns {Promise}
  */
 exports.instantiateOrUpgrade = async (
 	command, channel, peers, eventHubs,
-	opts, proposalTimeOut,
-	eventWaitTime = 30000
+	opts, proposalTimeOut=45000*peers.length,
+	eventTimeOut = 30000
 ) => {
 	const logger = Logger.new(`${command}-chaincode`, true);
 	const nextRequest = await chaincodeProposal(command, channel, peers, opts, proposalTimeOut);
@@ -80,7 +80,7 @@ exports.instantiateOrUpgrade = async (
 
 	const promises = [];
 	for (const eventHub of eventHubs) {
-		promises.push(txTimerPromise(eventHub, {txId}, eventWaitTime));
+		promises.push(txTimerPromise(eventHub, {txId}, eventTimeOut));
 	}
 
 	const response = await channel.sendTransaction(nextRequest);

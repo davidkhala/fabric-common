@@ -34,10 +34,10 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
     with inappropriate endorsement config; while with appropriate endorsement policy, we get chaincode fingerprint mismatch error
 - node-gyp rebuild require `make` and `g++` 
 - chaincode name is not a secret, we can use combination of discovery service and query chaincode installed on peer to get them all
-
+- [FABN-1130] Stop using "init" as default function name
+- channel ID length < 250 :initializing configtx manager failed: bad channel ID: channel ID illegal, cannot be longer than 249
 # DONE
 - discovery service, endorsement hints
-- [FABN-1130] Stop using "init" as default function name 
 - [1.4] operation enhance: 
 The /metrics endpoint allows operators to utilize Prometheus to pull operational metrics from peer and orderer nodes.
 - private data will automatic sync on new peer(process last for seconds)
