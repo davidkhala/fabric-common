@@ -33,6 +33,7 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
 - chaincode partial update: when not all peers upgrade to latest chaincode, is it possible that old chaincode still work
     with inappropriate endorsement config; while with appropriate endorsement policy, we get chaincode fingerprint mismatch error
 - node-gyp rebuild require `make` and `g++` 
+- chaincode name is not a secret, we can use combination of discovery service and query chaincode installed on peer to get them all
 
 # DONE
 - discovery service, endorsement hints
@@ -45,7 +46,6 @@ The /metrics endpoint allows operators to utilize Prometheus to pull operational
 
 
 # TODO
-- discovery service: find chaincode installed on peer
 - npm couchdb-dump in nodejs/couchdbDump.sh
 - level db navigator(https://github.com/Level/level or https://github.com/syndtr/goleveldb) and richQuery for leveldb
 - peer leveldb analyzer
@@ -58,16 +58,17 @@ The /metrics endpoint allows operators to utilize Prometheus to pull operational
 - channelEventHub.disconnect status sync
 - is private data automatic sync on new peer, with peer amount over max peer count.        
 # Fabric weakness
-- chaos in discoveryRequest.interests: https://gerrit.hyperledger.org/r/#/c/28446/
 - keystore object un-promisify: https://gerrit.hyperledger.org/r/#/c/24749/
 - endpoint ping: https://gerrit.hyperledger.org/r/#/c/28115/
 - fabric RSA key support
 - `instantiate policy` is not `endorsemnet policy`, it is used during chaincode packaging/install determining who is able
  to instantiate/upgrade chaincode, it is partially supported in nodejs with chaincode package binary(byte[]) as input. 
+ 
+ *Customizing instantiate policy is not supported in fabric-sdk-node 1.x but in 2.x new chaincode lifecycle*
+ 
  quoted from Dave Enyeart: 
  
     "They are different, instantiate policy gets packaged with a chaincode and specifies who can instantiate the chaincode, 
     see the doc starting at: https://hyperledger-fabric.readthedocs.io/en/latest/chaincode4noah.html#packaging"  
 - new Feature required: GetPrivateStateByRangeWithPagination: https://jira.hyperledger.org/browse/FAB-11732
-- learn mocha-fabric-common rewire
-- aync or not: CryptoSuite importKey
+- async or not: CryptoSuite importKey
