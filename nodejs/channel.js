@@ -136,6 +136,7 @@ const getGenesisBlock = async (channel, orderer, waitTime = 1000) => {
 exports.getGenesisBlock = getGenesisBlock;
 
 /**
+ * TODO support non-orderer join
  * to be atomic, join 1 peer each time
  * @param {Channel} channel
  * @param {Peer} peer
