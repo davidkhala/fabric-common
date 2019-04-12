@@ -57,7 +57,8 @@ exports.statePath = {
  * Valid logging levels are case-insensitive string
  * @type {string[]}
  */
-exports.loggingLevels = ['FATAL', 'PANIC', 'ERROR', 'WARNING', 'INFO', 'DEBUG'];
+const loggingLevels = ['FATAL', 'PANIC', 'ERROR', 'WARNING', 'INFO', 'DEBUG'];
+exports.loggingLevels = loggingLevels;
 /**
  *
  * @param network
@@ -164,12 +165,15 @@ exports.getLogLevel = async (baseUrl, otherOptions) => {
 };
 /**
  * @param {string} baseUrl
- * @param {string} level validation will be completed by service
+ * @param {string|number} level FATAL | PANIC | ERROR | WARNING | INFO | DEBUG, validation will be completed by service
  * @param otherOptions
  * @returns {Promise<void>}
  */
 exports.setLogLevel = async (baseUrl, level, otherOptions) => {
 	const url = `${baseUrl}/logspec`;
+	if (Number.isInteger(level)) {
+		level = loggingLevels[level];
+	}
 	return await RequestPromise({url, method: 'PUT', body: {spec: level}}, otherOptions);
 };
 exports.Peer = Peer;

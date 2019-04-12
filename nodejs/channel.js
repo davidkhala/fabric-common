@@ -125,7 +125,8 @@ const getGenesisBlock = async (channel, orderer, waitTime = 1000) => {
 	try {
 		return await channel.getGenesisBlock({orderer});
 	} catch (e) {
-		if (e.message.includes('SERVICE_UNAVAILABLE')) {
+		const {message} = e;
+		if (message.includes('SERVICE_UNAVAILABLE') || message.includes('NOT_FOUND')) {
 			await sleep(waitTime);
 			return getGenesisBlock(channel, orderer, waitTime);
 		} else {
@@ -166,7 +167,7 @@ const join = async (channel, peer, orderer, waitTime = 1000) => {
 		const errMessage = dataEntry.message;
 		const swallowSymptoms = ['NOT_FOUND', 'Stream removed'];
 
-		if (swallowSymptoms.reduce((result, symptom) => result || errMessage.includes(symptom), false) && waitTime) {
+		if (swallowSymptoms.map((symptom) => errMessage.includes(symptom)).find((isMatched) => !!isMatched) && waitTime) {
 			logger.warn('loopJoinChannel...', errMessage);
 			await sleep(waitTime);
 			return await join(channel, peer, orderer, waitTime);

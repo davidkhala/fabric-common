@@ -42,12 +42,12 @@ exports.container = {
  * @param tls
  * @param configPath
  * @param id
- * @param kafkas
+ * @param {string} OrdererType solo|etcdraft|kafka
  * @param loggingLevel
  * @param operationOpts
  * @returns {string[]}
  */
-exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, kafkas, tls, raft}, loggingLevel, operationOpts) => {
+exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, tls, OrdererType}, loggingLevel, operationOpts) => {
 	let env = [
 		`FABRIC_LOGGING_SPEC=${loggingLevel ? exports.loggingLevels[loggingLevel] : 'DEBUG'}`,
 		'ORDERER_GENERAL_LISTENADDRESS=0.0.0.0', // used to self identify
@@ -59,36 +59,41 @@ exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, kafkas, tls, raft}, lo
 		'GODEBUG=netdns=go' // aliyun only
 	];
 
-	if (tls) {
-		let rootCAs = [];
-		rootCAs.push(tls.caCert);
+	const rootCAsStringBuild = (tls) => {
+		let rootCAs = [tls.caCert];
 		if (Array.isArray(tls.rootCAs)) {
 			rootCAs = rootCAs.concat(tls.rootCAs);
 		}
+		return rootCAs.join(',');
+	};
+	if (tls) {
 		env = env.concat([
 			`ORDERER_GENERAL_TLS_PRIVATEKEY=${tls.key}`,
 			`ORDERER_GENERAL_TLS_CERTIFICATE=${tls.cert}`,
-			`ORDERER_GENERAL_TLS_ROOTCAS=[${rootCAs.join(',')}]`]);
-
+			`ORDERER_GENERAL_TLS_ROOTCAS=[${rootCAsStringBuild(tls)}]`]);
 	}
-	if (kafkas) {
-		env = env.concat([
-			'ORDERER_KAFKA_RETRY_SHORTINTERVAL=1s',
-			'ORDERER_KAFKA_RETRY_SHORTTOTAL=30s',
-			'ORDERER_KAFKA_VERBOSE=true'
-		]);
-
-	}
-	if (raft) {
-		env = env.concat([
-			'ORDERER_CLUSTER_SENDBUFFERSIZE=10'
-		]);
-		if (tls) {
+	switch (OrdererType) {
+		case 'kafka':
 			env = env.concat([
-				`ORDERER_CLUSTER_CLIENTCERTIFICATE=${tls.cert}`,
-				`ORDERER_CLUSTER_CLIENTPRIVATEKEY=${tls.key}`
+				'ORDERER_KAFKA_RETRY_SHORTINTERVAL=1s',
+				'ORDERER_KAFKA_RETRY_SHORTTOTAL=30s',
+				'ORDERER_KAFKA_VERBOSE=true'
 			]);
-		}
+			break;
+		case 'etcdraft':
+			env = env.concat([
+				'ORDERER_GENERAL_CLUSTER_SENDBUFFERSIZE=10'  // maximum number of messages in the egress buffer.Consensus messages are dropped if the buffer is full, and transaction messages are waiting for space to be freed.
+			]);
+			if (tls) {
+				env = env.concat([
+					`ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=${tls.cert}`,
+					`ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=${tls.key}`,
+					`ORDERER_GENERAL_CLUSTER_ROOTCAS=[${rootCAsStringBuild(tls)}]`
+				]);
+			}
+			break;
+		case 'solo':
+			break;
 	}
 	if (operationOpts) {
 		// metrics provider is one of statsd, prometheus, or disabled
