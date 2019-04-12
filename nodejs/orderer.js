@@ -47,10 +47,10 @@ exports.container = {
  * @param operationOpts
  * @returns {string[]}
  */
-exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, kafkas, tls}, loggingLevel, operationOpts) => {
+exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, kafkas, tls, raft}, loggingLevel, operationOpts) => {
 	let env = [
 		`FABRIC_LOGGING_SPEC=${loggingLevel ? exports.loggingLevels[loggingLevel] : 'DEBUG'}`,
-		'ORDERER_GENERAL_LISTENADDRESS=0.0.0.0', // TODO useless checking
+		'ORDERER_GENERAL_LISTENADDRESS=0.0.0.0', // used to self identify
 		`ORDERER_GENERAL_TLS_ENABLED=${!!tls}`,
 		'ORDERER_GENERAL_GENESISMETHOD=file',
 		`ORDERER_GENERAL_GENESISFILE=${exports.container.CONFIGTX}/${BLOCK_FILE}`,
@@ -79,9 +79,20 @@ exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, kafkas, tls}, loggingL
 		]);
 
 	}
+	if (raft) {
+		env = env.concat([
+			'ORDERER_CLUSTER_SENDBUFFERSIZE=10'
+		]);
+		if (tls) {
+			env = env.concat([
+				`ORDERER_CLUSTER_CLIENTCERTIFICATE=${tls.cert}`,
+				`ORDERER_CLUSTER_CLIENTPRIVATEKEY=${tls.key}`
+			]);
+		}
+	}
 	if (operationOpts) {
 		// metrics provider is one of statsd, prometheus, or disabled
-		const {tls,metrics = 'disabled'} = operationOpts;// TODO TLS
+		const {tls, metrics = 'disabled'} = operationOpts;// TODO TLS
 		env = env.concat([
 			'ORDERER_OPERATIONS_LISTENADDRESS=0.0.0.0:8443',
 			`ORDERER_METRICS_PROVIDER=${metrics}`
