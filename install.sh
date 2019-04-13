@@ -101,7 +101,7 @@ function softHSM(){
     fi
 }
 fabricInstall(){
-    curl -sSL http://bit.ly/2ysbOFE | bash -s 1.4.0 1.4.0 0.4.14
+    curl -sSL http://bit.ly/2ysbOFE | bash -s -- 1.4.1 1.4.1 0.4.15
 }
 function sync() {
 	cd $CURRENT/nodejs

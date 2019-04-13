@@ -1,6 +1,6 @@
 # fabric-common
 
-Latest version 1.4.0
+Latest version 1.4.1
 # Installation
 - init submodule
     `./install gitSync`
