@@ -56,7 +56,8 @@ The /metrics endpoint allows operators to utilize Prometheus to pull operational
 - dig into block event: 
         Dave Enyeart: The block event includes the full transactions of the block, including the read/write sets, which in the case of private data includes the hashes of the private key/values.
 - channelEventHub.disconnect status sync
-- is private data automatic sync on new peer, with peer amount over max peer count.        
+- is private data automatic sync on new peer, with peer amount over max peer count.
+- what is peer_chaincode_id and peer_chaincode_path        
 # Fabric weakness
 - keystore object un-promisify: https://gerrit.hyperledger.org/r/#/c/24749/
 - endpoint ping: https://gerrit.hyperledger.org/r/#/c/28115/
