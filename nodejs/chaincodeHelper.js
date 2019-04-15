@@ -64,7 +64,7 @@ const txTimerPromise = (eventHub, {txId}, eventTimeOut) => {
  */
 exports.instantiateOrUpgrade = async (
 	command, channel, peers, eventHubs,
-	opts, proposalTimeOut=45000*peers.length,
+	opts, proposalTimeOut = 50000 * peers.length,
 	eventTimeOut = 30000
 ) => {
 	const logger = Logger.new(`${command}-chaincode`, true);
