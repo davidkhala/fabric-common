@@ -70,11 +70,11 @@ function gitSync() {
 	git pull
 	git submodule update --init --recursive
 }
-function java8() {
-	sudo add-apt-repository -y ppa:webupd8team/java
+function java11() {
+	sudo add-apt-repository -y ppa:linuxuprising/java
 	sudo apt update
-	sudo apt install -y oracle-java8-installer
-	sudo apt install -y oracle-java8-set-default
+	sudo apt install -y oracle-java11-installer
+	sudo apt install -y oracle-java11-set-default
 }
 function softHSM(){
     if [[ $(uname) == "Darwin" ]]; then
