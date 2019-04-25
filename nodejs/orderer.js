@@ -2,6 +2,7 @@ const Orderer = require('fabric-client/lib/Orderer');
 const fs = require('fs');
 const Logger = require('./logger');
 const logger = Logger.new('orderer');
+const {loggingLevels} = require('./peer');
 exports.find = ({orderers, ordererUrl}) => {
 	return ordererUrl ? orderers.find((orderer) => orderer.getUrl() === ordererUrl) : orderers[0];
 };
@@ -28,11 +29,12 @@ exports.new = ({ordererPort, cert, pem, ordererHostName, host}) => {
 	}
 
 };
-exports.container = {
+const containerDefaultPaths = {
 	CONFIGTX: '/etc/hyperledger/configtx',
 	state: '/var/hyperledger/production/orderer/',
 	config: '/etc/hyperledger/'
 };
+exports.container = containerDefaultPaths;
 /**
  * if no blockFile:
  * panic: Unable to bootstrap orderer. Error reading genesis block file: open /etc/hyperledger/fabric/genesisblock: no such file or directory
@@ -49,16 +51,18 @@ exports.container = {
  */
 exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, tls, OrdererType}, loggingLevel, operationOpts) => {
 	let env = [
-		`FABRIC_LOGGING_SPEC=${loggingLevel ? exports.loggingLevels[loggingLevel] : 'DEBUG'}`,
 		'ORDERER_GENERAL_LISTENADDRESS=0.0.0.0', // used to self identify
 		`ORDERER_GENERAL_TLS_ENABLED=${!!tls}`,
 		'ORDERER_GENERAL_GENESISMETHOD=file',
-		`ORDERER_GENERAL_GENESISFILE=${exports.container.CONFIGTX}/${BLOCK_FILE}`,
+		`ORDERER_GENERAL_GENESISFILE=${containerDefaultPaths.CONFIGTX}/${BLOCK_FILE}`,
 		`ORDERER_GENERAL_LOCALMSPID=${id}`,
 		`ORDERER_GENERAL_LOCALMSPDIR=${configPath}`,
 		'GODEBUG=netdns=go' // aliyun only
 	];
 
+	if (loggingLevel) {
+		env.push(`FABRIC_LOGGING_SPEC=${loggingLevels[loggingLevel]}`);
+	}
 	const rootCAsStringBuild = (tls) => {
 		let rootCAs = [tls.caCert];
 		if (Array.isArray(tls.rootCAs)) {
