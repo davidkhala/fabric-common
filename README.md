@@ -74,3 +74,4 @@ The /metrics endpoint allows operators to utilize Prometheus to pull operational
 - new Feature required: GetPrivateStateByRangeWithPagination: https://jira.hyperledger.org/browse/FAB-11732
 - async or not: CryptoSuite importKey
 - [1.4.1] etcdraft does not support non TLS:  consenter info in etcdraft configuration did not specify client TLS cert
+- [1.4] cleanup self and promise in fabric-ca-client, channeljs#instantiateChaincode not found
