@@ -5,6 +5,7 @@ const {signs} = require('./multiSign');
 const Channel = require('fabric-client/lib/Channel');
 const {sleep} = require('khala-nodeutils/helper');
 const OrdererUtil = require('./orderer');
+const Orderer = require('fabric-client/lib/Orderer');
 exports.setClientContext = (channel, clientContext) => {
 	channel._clientContext = clientContext;
 };
@@ -71,12 +72,13 @@ exports.genesis = 'testchainid';
 
 
 /**
+ * different from `peer channel create`, this will not response back with genesisBlock for this channel.
  *
  * @param {Client[]} signClients
  * @param {Channel} channel
  * @param {string} channelConfigFile file path
  * @param {Orderer} orderer
- * @returns {Promise<T>}
+ * @returns {Promise<Client.BroadcastResponse>}
  */
 exports.create = async (signClients, channel, channelConfigFile, orderer) => {
 	const logger = Logger.new('create-channel');
@@ -123,7 +125,9 @@ exports.create = async (signClients, channel, channelConfigFile, orderer) => {
 
 const getGenesisBlock = async (channel, orderer, waitTime = 1000) => {
 	try {
-		return await channel.getGenesisBlock({orderer});
+		const block = await channel.getGenesisBlock({orderer});
+		logger.info('getGenesisBlock', `from orderer: ${orderer.getName()}`);
+		return block;
 	} catch (e) {
 		const {message} = e;
 		if (message.includes('SERVICE_UNAVAILABLE') || message.includes('NOT_FOUND')) {
@@ -137,25 +141,32 @@ const getGenesisBlock = async (channel, orderer, waitTime = 1000) => {
 exports.getGenesisBlock = getGenesisBlock;
 
 /**
- * TODO support non-orderer join
+ * different from `peer channel join`, since we do not have genesisBlock as output of `peer channel create`, we have to prepared one before.
  * to be atomic, join 1 peer each time
  * @param {Channel} channel
  * @param {Peer} peer
- * @param {Orderer} orderer
+ * @param {Object} block genesis_block
+ * @param {Orderer} [orderer]
  * @param {number} waitTime default 1000, if set to false, will not retry channel join
  * @returns {Promise<*>}
  */
-const join = async (channel, peer, orderer, waitTime = 1000) => {
+const join = async (channel, peer, block, orderer, waitTime = 1000) => {
 	const logger = Logger.new('join-channel', true);
-	logger.debug({channelName: channel.getName(), peer: peer.getName(), orderer: orderer.getName()});
+	logger.debug({channelName: channel.getName(), peer: peer.getName()});
 
 	const channelClient = channel._clientContext;
-	const genesis_block = await getGenesisBlock(channel, orderer);
-	logger.info('got genesis_block');
+	if (!block) {
+		if (orderer instanceof Orderer) {
+			block = await getGenesisBlock(channel, orderer);
+		} else {
+			throw Error('either block: genesis_block or Orderer is required');
+		}
+	}
+
 	const request = {
 		targets: [peer],
 		txId: channelClient.newTransactionID(),
-		block: genesis_block
+		block
 	};
 
 	const data = await channel.joinChannel(request);
@@ -170,7 +181,7 @@ const join = async (channel, peer, orderer, waitTime = 1000) => {
 		if (swallowSymptoms.map((symptom) => errMessage.includes(symptom)).find((isMatched) => !!isMatched) && waitTime) {
 			logger.warn('loopJoinChannel...', errMessage);
 			await sleep(waitTime);
-			return await join(channel, peer, orderer, waitTime);
+			return await join(channel, peer, block, orderer, waitTime);
 		}
 		if (errMessage.includes(joinedBeforeSymptom)) {
 			// swallow 'joined before' error
