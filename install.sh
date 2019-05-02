@@ -108,10 +108,6 @@ function sync() {
 	npm install
 	npm prune
 	cd -
-	cd $CURRENT/docker/nodejs
-	npm install
-	npm prune
-	cd -
 }
 if [[ -n "$fcn" ]]; then
 	$fcn $remain_params
@@ -127,7 +123,8 @@ else
 	fi
 
 	$CURRENT/docker/install.sh
-	$CURRENT/docker/nodejs/install.sh
-	$CURRENT/docker/nodejs/install.sh packageLock false
+	nodejsInstall="curl --silent --show-error https://raw.githubusercontent.com/davidkhala/docker-manager/master/nodejs/install.sh"
+    $nodejsInstall | bash
+    $nodejsInstall | bash -s packageLock false
 	sync
 fi
