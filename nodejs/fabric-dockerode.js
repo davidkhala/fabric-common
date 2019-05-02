@@ -1,8 +1,9 @@
-const dockerUtil = require('../docker/nodejs/dockerode-util');
+const dockerode = require('khala-dockerode');
+const dockerUtil = dockerode.util;
 const {
 	constraintSelf, taskDeadWaiter, taskLiveWaiter, swarmServiceName, serviceCreateIfNotExist, swarmInit, swarmJoin,
 	swarmTouch, swarmLeave, taskList
-} = require('../docker/nodejs/dockerode-swarm-util');
+} = dockerode.swarmUtil;
 const logger = require('./logger').new('dockerode');
 const peerUtil = require('./peer');
 const caUtil = require('./ca');
@@ -12,7 +13,7 @@ const zookeeperUtil = require('./zookeeper');
 const couchdbUtil = require('./couchdb');
 const userUtil = require('./user');
 const yaml = require('khala-nodeutils/yaml');
-const dockerHelper = require('../docker/nodejs/helper');
+const dockerHelper = require('khala-dockerode/helper');
 
 /**
  * TODO not mature

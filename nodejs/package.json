@@ -5,7 +5,8 @@
     "fabric-ca-client": "^1.4.1",
     "fabric-client": "^1.4.1",
     "khala-nodeutils": "^0.4.12",
-    "khala-logger": "^0.0.0"
+    "khala-logger": "^0.0.0",
+    "khala-dockerode": "^0.0.1"
   },
   "description": "fabric-sdk-node utils",
   "repository": {
