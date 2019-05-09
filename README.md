@@ -36,6 +36,7 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
 - chaincode name is not a secret, we can use combination of discovery service and query chaincode installed on peer to get them all
 - [FABN-1130] Stop using "init" as default function name
 - channel ID length < 250 :initializing configtx manager failed: bad channel ID: channel ID illegal, cannot be longer than 249
+- error symptom of run richQuery on levelDB:  `GET_QUERY_RESULT failed: transaction ID: 6b53220f87f791047ba44635f32d07cb667b6439c5df95e9a208d74ab12b5ff2: ExecuteQuery not supported for leveldb`
 # DONE
 - discovery service, endorsement hints
 - [1.4] operation enhance: 
@@ -47,8 +48,7 @@ The /metrics endpoint allows operators to utilize Prometheus to pull operational
 
 # TODO
 - npm couchdb-dump in nodejs/couchdbDump.sh
-- level db navigator(https://github.com/Level/level or https://github.com/syndtr/goleveldb) and richQuery for leveldb
-- peer leveldb analyzer
+- level db navigator(https://github.com/Level/level or https://github.com/syndtr/goleveldb) and richQuery for leveldb;leveldb analyzer 
 - [1.4] operation enhance: 
     - Metrics can also be pushed to StatsD.
     - check this reference: https://hyperledger-fabric.readthedocs.io/en/release-1.4/metrics_reference.html

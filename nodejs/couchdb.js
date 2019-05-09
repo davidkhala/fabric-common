@@ -11,15 +11,14 @@ exports.envBuilder = (user = '', password = '', clusterOpt) => {
 };
 /**
  * query syntax http://docs.couchdb.org/en/stable/api/database/find.html
- * @param {Array<string>} sorts
+ * @param {Object} selector js object, see in http://docs.couchdb.org/en/stable/api/database/find.html#find-selectors
+ * @param {Array<string>} sorts see in http://docs.couchdb.org/en/stable/api/database/find.html#sort-syntax
  * @param {int} direction 0 to use "asc"(default); 1 to use "desc"
+ * @param {number} limit Maximum number of results returned
  * @returns {string}
  */
-exports.queryBuilder = (sorts = [], direction = 0) => {
-
-	const selector = {};
-	const sort = []; // see in http://docs.couchdb.org/en/stable/api/database/find.html#sort-syntax
-
+exports.queryBuilder = (selector = {}, sorts = [], direction = 0, limit = 25) => {
+	const sort = [];
 	const directions = ['asc', 'desc'];
 	for (const sortCol of sorts) {
 		sort.push({[sortCol]: directions[direction]});
@@ -29,7 +28,8 @@ exports.queryBuilder = (sorts = [], direction = 0) => {
 	}
 	const query = {
 		selector,
-		sort
+		sort,
+		limit
 	};
 	return JSON.stringify(query);
 };
