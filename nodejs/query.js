@@ -28,7 +28,6 @@ exports.chaincodesInstalled = async (peer, client) => {
 	return {chaincodes, pretty};
 };
 /**
- * TODO chaincodes pretty
  * @param {Peer} peer
  * @param {Channel} channel
  * @return {Promise<Client.ChaincodeQueryResponse>}
