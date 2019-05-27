@@ -123,8 +123,8 @@ else
 	fi
 
 	$CURRENT/docker/install.sh
-	nodejsInstall="curl --silent --show-error https://raw.githubusercontent.com/davidkhala/docker-manager/master/nodejs/install.sh"
-    $nodejsInstall | bash
+	nodejsInstall="curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/install.sh"
+    $nodejsInstall | bash -s install8
     $nodejsInstall | bash -s packageLock false
 	sync
 fi
