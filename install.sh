@@ -117,13 +117,13 @@ else
 		if ! brew config >/dev/null; then
 			/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 		fi
-	else
-	    sudo apt install -y make
-	    sudo apt install -y g++
 	fi
 
-	$CURRENT/docker/install.sh
+	dockerInstall="curl --silent --show-error https://raw.githubusercontent.com/davidkhala/docker-manager/master/install.sh"
+	$dockerInstall | bash -s installDocker
+	$dockerInstall | bash -s installjq
 	nodejsInstall="curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/install.sh"
+	$nodejsInstall | bash -s nodeGYPDependencies
     $nodejsInstall | bash -s install8
     $nodejsInstall | bash -s packageLock false
 	sync
