@@ -32,3 +32,15 @@ fabricDevServers() {
     export FABRIC_VERSION=hlfv12
     $target/downloadFabric.sh
 }
+playground(){
+    set +e
+    sudo npm install -g composer-playground@0.20
+    npm install -g composer-playground@0.20
+    set -e
+}
+utils(){
+    # Useful utility for generating application assets
+    npm install -g generator-hyperledger-composer@0.20
+    # Yeoman is a tool for generating applications, which utilises `generator-hyperledger-composer`
+    sudo npm install -g yo
+}
