@@ -11,4 +11,5 @@
     Boolean: a Boolean value, either true or false.
 ```
 - [out of maintain] composer is frozen to version fabric 1.2
-
+- no map data structure support
+- default value do not support for enum type
