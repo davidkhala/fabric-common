@@ -57,7 +57,8 @@ The /metrics endpoint allows operators to utilize Prometheus to pull operational
 - channelEventHub.disconnect status sync
 - is private data automatic sync on new peer, with peer amount over max peer count.
 - what is peer_chaincode_id and peer_chaincode_path
-- how to generate currentBlock hash: nodejs implement of: https://github.com/hyperledger/fabric/blob/master/protoutil/blockutils_test.go#L25        
+- how to generate currentBlock hash: nodejs implement of: https://github.com/hyperledger/fabric/blob/master/protoutil/blockutils_test.go#L25
+- make use of npm jsrsasign        
 # Fabric weakness
 - keystore object un-promisify: https://gerrit.hyperledger.org/r/#/c/24749/
 - endpoint ping: https://gerrit.hyperledger.org/r/#/c/28115/
