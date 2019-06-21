@@ -76,3 +76,4 @@ The /metrics endpoint allows operators to utilize Prometheus to pull operational
 - [1.4.1] etcdraft does not support non TLS:  consenter info in etcdraft configuration did not specify client TLS cert
 - [1.4] cleanup self and promise in fabric-ca-client, channeljs#instantiateChaincode not found
 - [TODO] there is not pagination in GetHistoryForKey: Error: QUERY_STATE_NEXT failed
+- client.newTransactionID(); --> new TransactionID(Identity,isAdmin)
