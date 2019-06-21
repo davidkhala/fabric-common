@@ -5,21 +5,21 @@ for ((i = 2; i <= ${#}; i++)); do
 	j=${!i}
 	remain_params="$remain_params $j"
 done
-function rmContainers() {
+rmContainers() {
 	local FILTER=${1:-dev}
 	CONTAINER_IDS=$(docker ps -a | grep "$FILTER" | awk '{ print $1 }')
 	if [ -n "$CONTAINER_IDS" ]; then
 		docker rm -f $CONTAINER_IDS
 	fi
 }
-function rmImages() {
+rmImages() {
 	local FILTER=${1:-dev}
 	DOCKER_IMAGE_IDS=$(docker images | grep "$FILTER" | awk '{print $3}')
 	if [ -n "$DOCKER_IMAGE_IDS" ]; then
 		docker image rm --force $DOCKER_IMAGE_IDS
 	fi
 }
-function couchDBIndex() {
+couchDBIndex() {
 	local metaINF=$1
 	local fileName=index.json
 	local fields=""

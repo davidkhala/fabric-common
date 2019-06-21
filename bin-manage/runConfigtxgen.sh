@@ -13,7 +13,7 @@ for ((i = 2; i <= ${#}; i++)); do
 	remain_params="$remain_params $j"
 done
 
-function genBlock() {
+genBlock() {
 	local outputFile=$1
 	local profile=$2
 	local channelName=${3:-testchainid}
@@ -22,7 +22,7 @@ function genBlock() {
 	$CMD
 }
 
-function genChannel() {
+genChannel() {
 	local outputFile=$1
 	local profile=$2
 	local channelName=$3
@@ -31,7 +31,7 @@ function genChannel() {
 	$CMD
 }
 
-function genAnchorPeers() {
+genAnchorPeers() {
 	local outputFile=$1
 	local profile=$2
 	local channelName=$3
@@ -41,7 +41,7 @@ function genAnchorPeers() {
 	$CMD
 }
 
-function viewBlock() {
+viewBlock() {
 	local blockFile=$1
 	local profile=$2
 	local channelName=${3:-testchainid}
@@ -55,7 +55,7 @@ function viewBlock() {
 	fi
 }
 
-function viewChannel() {
+viewChannel() {
 	local channelFile=$1
 	local profile=$2
 	local channelID=$3

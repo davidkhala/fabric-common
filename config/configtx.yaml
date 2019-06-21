@@ -22,6 +22,14 @@ Organizations:
         # Name can include alphanumeric characters as well as dots and dashes.
         Name: SampleOrg
 
+        # SkipAsForeign can be set to true for org definitions which are to be
+        # inherited from the orderer system channel during channel creation.  This
+        # is especially useful when an admin of a single org without access to the
+        # MSP directories of the other orgs wishes to create a channel.  Note
+        # this property must always be set to false for orgs included in block
+        # creation.
+        SkipAsForeign: false
+
         # ID is the key by which this org's MSP definition will be referenced.
         # ID can include alphanumeric characters as well as dots and dashes.
         ID: SampleOrg
@@ -48,6 +56,9 @@ Organizations:
             Admins:
                 Type: Signature
                 Rule: "OR('SampleOrg.admin')"
+            Endorsement:
+                Type: Signature
+                Rule: "OR('SampleOrg.member')"
 
         # AnchorPeers defines the location of peers which can be used for
         # cross-org gossip communication. Note, this value is only encoded in
@@ -103,12 +114,16 @@ Capabilities:
     # used with prior release orderers.
     # Set the value of the capability to true to require it.
     Application: &ApplicationCapabilities
+        # V2.0 for Application enables the new non-backwards compatible
+        # features and fixes of fabric v2.0.
+        V2_0: true
         # V1.3 for Application enables the new non-backwards compatible
-        # features and fixes of fabric v1.3.
-        V1_3: true
+        # features and fixes of fabric v1.3 (note, this need not be set if
+        # later version capabilities are set).
+        V1_3: false
         # V1.2 for Application enables the new non-backwards compatible
         # features and fixes of fabric v1.2 (note, this need not be set if
-        # later version capabilities are set)
+        # later version capabilities are set).
         V1_2: false
         # V1.1 for Application enables the new non-backwards compatible
         # features and fixes of fabric v1.1 (note, this need not be set if
@@ -133,6 +148,17 @@ Application: &ApplicationDefaults
         #
         # User's can override these defaults with their own policy mapping by defining the
         # mapping under ACLs in their channel definition
+
+        #---New Lifecycle System Chaincode (_lifecycle) function to policy mapping for access control--#
+
+        # ACL policy for _lifecycle's "CommitChaincodeDefinition" function
+        _lifecycle/CommitChaincodeDefinition: /Channel/Application/Writers
+
+        # ACL policy for _lifecycle's "QueryChaincodeDefinition" function
+        _lifecycle/QueryChaincodeDefinition: /Channel/Application/Readers
+
+        # ACL policy for _lifecycle's "QueryNamespaceDefinitions" function
+        _lifecycle/QueryNamespaceDefinitions: /Channel/Application/Readers
 
         #---Lifecycle System Chaincode (lscc) function to policy mapping for access control---#
 
@@ -200,6 +226,12 @@ Application: &ApplicationDefaults
     # For Application policies, their canonical path is
     #   /Channel/Application/<PolicyName>
     Policies: &ApplicationDefaultPolicies
+        LifecycleEndorsement:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Endorsement"
+        Endorsement:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Endorsement"
         Readers:
             Type: ImplicitMeta
             Rule: "ANY Readers"
@@ -534,11 +566,12 @@ Profiles:
     # profiles, only the 'Application' section and consortium # name are
     # considered.
     SampleSingleMSPChannel:
+        <<: *ChannelDefaults
         Consortium: SampleConsortium
         Application:
             <<: *ApplicationDefaults
             Organizations:
-                - *SampleOrg
+                - <<: *SampleOrg
 
     # SampleDevModeEtcdRaft defines a configuration that differs from the
     # SampleDevModeSolo one only in that it uses the etcd/raft-based orderer.

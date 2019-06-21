@@ -60,6 +60,7 @@ exports.fabricImagePull = async ({fabricTag, thirdPartyTag, chaincodeType = 'gol
 		const imageTag = thirdPartyTag;
 		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-kafka:${imageTag}`);
 		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-zookeeper:${imageTag}`);
+		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-couchdb:${imageTag}`);
 	}
 };
 

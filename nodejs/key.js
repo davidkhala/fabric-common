@@ -1,4 +1,4 @@
-const ECDSA_KEY = require('fabric-client/lib/impl/ecdsa/key');
+const ECDSA_KEY = require('fabric-common/lib/impl/ecdsa/key');
 
 /**
  * visualizer class for ECDSA_Key

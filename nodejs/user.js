@@ -1,13 +1,13 @@
 const fs = require('fs');
 const clientUtil = require('./client');
 const logger = require('./logger').new('userUtil');
-const ECDSA_KEY = require('fabric-client/lib/impl/ecdsa/key');
+const ECDSA_KEY = require('fabric-common/lib/impl/ecdsa/key');
 exports.formatUsername = (username, domain) => `${username}@${domain}`;
-const User = require('fabric-client/lib/User');
+const User = require('fabric-common/lib/User');
 
-const {Identity, SigningIdentity, Signer} = require('fabric-client/lib/msp/identity.js');
-
-
+const Identity = require('fabric-common/lib/Identity');
+const SigningIdentity = require('fabric-common/lib/SigningIdentity');
+const Signer = require('fabric-common/lib/Signer');
 /**
  * Set the enrollment object for this User instance
  * @param {module:api.Key} privateKey the private key object
