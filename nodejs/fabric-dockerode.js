@@ -7,9 +7,7 @@ const {
 const logger = require('./logger').new('dockerode');
 const peerUtil = require('./peer');
 const caUtil = require('./ca');
-const kafkaUtil = require('./kafka');
 const ordererUtil = require('./orderer');
-const zookeeperUtil = require('./zookeeper');
 const couchdbUtil = require('./couchdb');
 const userUtil = require('./user');
 const yaml = require('khala-nodeutils/yaml');
@@ -58,8 +56,6 @@ exports.fabricImagePull = async ({fabricTag, thirdPartyTag, chaincodeType = 'gol
 	}
 	if (thirdPartyTag) {
 		const imageTag = thirdPartyTag;
-		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-kafka:${imageTag}`);
-		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-zookeeper:${imageTag}`);
 		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-couchdb:${imageTag}`);
 	}
 };
@@ -200,34 +196,6 @@ exports.runCA = ({
 	return dockerUtil.containerStart(createOptions);
 }
 ;
-exports.deployZookeeper = async ({Name, network, imageTag, Constraints, MY_ID}, zookeepersConfig) => {
-	if (!Constraints) {
-		Constraints = await constraintSelf();
-	}
-	return serviceCreateIfNotExist({
-		Image: `hyperledger/fabric-zookeeper:${imageTag}`,
-		Name,
-		network,
-		Constraints,
-		ports: [{container: 2888}, {container: 3888}, {container: 2181}],
-		Env: zookeeperUtil.envBuilder(MY_ID, zookeepersConfig, true),
-		Aliases: [Name]
-	});
-};
-exports.deployKafka = async ({Name, network, imageTag, Constraints, BROKER_ID}, zookeepers, {N, M}) => {
-	if (!Constraints) {
-		Constraints = await constraintSelf();
-	}
-	return serviceCreateIfNotExist({
-		Name,
-		Image: `hyperledger/fabric-kafka:${imageTag}`,
-		network,
-		Constraints,
-		ports: [{container: 9092}],
-		Env: kafkaUtil.envBuilder({N, M, BROKER_ID}, zookeepers),
-		Aliases: [Name]
-	});
-};
 
 exports.deployCA = async ({Name, network, imageTag, Constraints, port, admin = userUtil.adminName, adminpw = userUtil.adminPwd, TLS}) => {
 	const serviceName = swarmServiceName(Name);
@@ -250,43 +218,7 @@ exports.deployCA = async ({Name, network, imageTag, Constraints, port, admin = u
 		Aliases: [Name]
 	});
 };
-exports.runKafka = ({container_name, network, imageTag, BROKER_ID}, zookeepers, {N, M}) => {
 
-	const createOptions = {
-		name: container_name,
-		Env: kafkaUtil.envBuilder({N, M, BROKER_ID}, zookeepers),
-		Image: `hyperledger/fabric-kafka:${imageTag}`,
-		NetworkingConfig: {
-			EndpointsConfig: {
-				[network]: {
-					Aliases: [container_name]
-				}
-			}
-		},
-		Hostconfig: {
-			PublishAllPorts: true
-		}
-	};
-	return dockerUtil.containerStart(createOptions);
-};
-exports.runZookeeper = ({container_name, network, imageTag, MY_ID}, zookeepersConfig) => {
-	const createOptions = {
-		name: container_name,
-		Env: zookeeperUtil.envBuilder(MY_ID, zookeepersConfig),
-		Image: `hyperledger/fabric-zookeeper:${imageTag}`,
-		NetworkingConfig: {
-			EndpointsConfig: {
-				[network]: {
-					Aliases: [container_name]
-				}
-			}
-		},
-		Hostconfig: {
-			PublishAllPorts: true
-		}
-	};
-	return dockerUtil.containerStart(createOptions);
-};
 /**
  * TODO not sure it is possible
  */

@@ -222,12 +222,6 @@ class ConfigFactory {
 		return this.newConfig.channel_group.values.OrdererAddresses.value.addresses;
 	}
 
-
-	getKafkaBrokers() {
-		return this.newConfig.channel_group.groups.Orderer.values.KafkaBrokers.value.brokers;
-	}
-
-
 	build() {
 		return JSON.stringify(this.newConfig);
 	}

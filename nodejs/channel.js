@@ -240,6 +240,5 @@ exports.pretty = (channel) => {
 		peers: channel._channel_peers,
 		anchorPeers: channel._anchor_peers,
 		orderers: channel._orderers,
-		kafkas: channel._kafka_brokers
 	};
 };
