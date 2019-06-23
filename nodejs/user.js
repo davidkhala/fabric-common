@@ -21,7 +21,8 @@ const setEnrollment = (user, privateKey, certificate, mspId) => {
 		user._cryptoSuite = clientUtil.new();
 	}
 
-	const pubKey = user._cryptoSuite.importKey(certificate, {ephemeral: true});
+
+	const pubKey = user._cryptoSuite.createKeyFromRaw(certificate);
 
 	user._identity = new Identity(certificate, pubKey, mspId, user._cryptoSuite);
 	user._signingIdentity = new SigningIdentity(certificate, pubKey, mspId, user._cryptoSuite, new Signer(user._cryptoSuite, privateKey));

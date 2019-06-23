@@ -5,7 +5,7 @@ exports.createIfNotExist = async (affiliationService, {name, force = false}, adm
 		logger.info('affiliationService exists', resp.result.name);
 		return resp;
 	} catch (err) {
-		if (err.toString().includes('Failed to get Affiliation')) {
+		if (err.toString().includes('Failed to get affiliation')) {
 			return await affiliationService.create({name, force}, adminUser);
 		} else {
 			throw err;
