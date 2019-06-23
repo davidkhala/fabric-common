@@ -36,6 +36,8 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
 - [FABN-1130] Stop using "init" as default function name
 - channel ID length < 250 :initializing configtx manager failed: bad channel ID: channel ID illegal, cannot be longer than 249
 - error symptom of run richQuery on levelDB:  `GET_QUERY_RESULT failed: transaction ID: 6b53220f87f791047ba44635f32d07cb667b6439c5df95e9a208d74ab12b5ff2: ExecuteQuery not supported for leveldb`
+- configtx.yaml: Organization Name and Organization ID can include alphanumeric characters as well as dots and dashes.
+- [2.0] config section for anchor peer update now need almost full information
 # DONE
 - discovery service, endorsement hints
 - [1.4] operation enhance: 
@@ -58,7 +60,8 @@ The /metrics endpoint allows operators to utilize Prometheus to pull operational
 - is private data automatic sync on new peer, with peer amount over max peer count.
 - what is peer_chaincode_id and peer_chaincode_path
 - how to generate currentBlock hash: nodejs implement of: https://github.com/hyperledger/fabric/blob/master/protoutil/blockutils_test.go#L25
-- make use of npm jsrsasign        
+- make use of npm jsrsasign
+- Error on outputBlock: could not create bootstrapper: could not create channel group: could not create orderer group: failed to create orderer org: error adding policies to orderer org group 'Delphi.com': no policies defined        
 # Fabric weakness
 - keystore object un-promisify: https://gerrit.hyperledger.org/r/#/c/24749/
 - endpoint ping: https://gerrit.hyperledger.org/r/#/c/28115/

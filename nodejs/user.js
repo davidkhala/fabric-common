@@ -36,7 +36,7 @@ const build = (name, {key, certificate}, mspId, cryptoSuite = clientUtil.newCryp
 		privateKey = key;
 	} else {
 		// FIXME: importKey.then is not function in some case;
-		privateKey = cryptoSuite.importKey(key, {ephemeral: true});
+		privateKey = cryptoSuite.createKeyFromRaw(key);
 	}
 	user.setCryptoSuite(cryptoSuite);
 	setEnrollment(user, privateKey, certificate, mspId);
