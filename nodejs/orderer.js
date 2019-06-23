@@ -44,7 +44,7 @@ exports.container = containerDefaultPaths;
  * @param tls
  * @param configPath
  * @param id
- * @param {string} OrdererType solo|etcdraft|kafka
+ * @param {string} OrdererType solo|etcdraft
  * @param loggingLevel
  * @param operationOpts
  * @returns {string[]}
@@ -77,13 +77,6 @@ exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, tls, OrdererType}, log
 			`ORDERER_GENERAL_TLS_ROOTCAS=[${rootCAsStringBuild(tls)}]`]);
 	}
 	switch (OrdererType) {
-		case 'kafka':
-			env = env.concat([
-				'ORDERER_KAFKA_RETRY_SHORTINTERVAL=1s',
-				'ORDERER_KAFKA_RETRY_SHORTTOTAL=30s',
-				'ORDERER_KAFKA_VERBOSE=true'
-			]);
-			break;
 		case 'etcdraft':
 			env = env.concat([
 				'ORDERER_GENERAL_CLUSTER_SENDBUFFERSIZE=10'  // maximum number of messages in the egress buffer.Consensus messages are dropped if the buffer is full, and transaction messages are waiting for space to be freed.
