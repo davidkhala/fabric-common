@@ -238,7 +238,9 @@ exports.pretty = (channel) => {
 		client: channel._clientContext,
 		name: channel._name,
 		peers: channel._channel_peers,
+		peerOrganization: Object.keys(channel._discovery_results.peers_by_org),
 		anchorPeers: channel._anchor_peers,
 		orderers: channel._orderers,
+		ordererOrganization: Object.keys(channel._discovery_results.orderers)
 	};
 };
