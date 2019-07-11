@@ -145,8 +145,8 @@ exports.getGenesisBlock = getGenesisBlock;
  * to be atomic, join 1 peer each time
  * @param {Channel} channel
  * @param {Peer} peer
- * @param {Object} block genesis_block
- * @param {Orderer} [orderer]
+ * @param {Object} [block] genesis_block
+ * @param {Orderer} [orderer] required if block is not provided
  * @param {number} waitTime default 1000, if set to false, will not retry channel join
  * @returns {Promise<*>}
  */
