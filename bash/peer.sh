@@ -11,7 +11,7 @@ CORE_PEER_TLS_KEY_FILE=$CORE_PEER_TLS_KEY_FILE
 CORE_PEER_TLS_CERT_FILE=$CORE_PEER_TLS_CERT_FILE
 CORE_PEER_TLS_ROOTCERT_FILE=$CORE_PEER_TLS_ROOTCERT_FILE
 
-function channelList() {
+channelList() {
     local CMD="peer channel list --tls --cafile=$CORE_PEER_TLS_ROOTCERT_FILE --certfile=$CORE_PEER_TLS_CERT_FILE --keyfile=$CORE_PEER_TLS_KEY_FILE"
     echo $CMD
     $CMD
@@ -21,7 +21,7 @@ function channelList() {
 #Usage:
 #  peer channel fetch <newest|oldest|config|(number)> [outputfile] [flags]
 
-function channelConfig() {
+channelConfig() {
     local channelName=$1
     local ordererEndPoint=$2
     local ordererHostname=$3

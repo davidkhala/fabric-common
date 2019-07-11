@@ -11,7 +11,7 @@ for ((i = 2; i <= ${#}; i++)); do
 	remain_params="$remain_params $j"
 done
 
-function golang() {
+golang() {
 	if [[ "$1" == "remove" ]]; then
 		if [[ $(uname) == "Darwin" ]]; then
 			brew uninstall go || true
@@ -38,7 +38,7 @@ function golang() {
 		fi
 	fi
 }
-function install_libtool() {
+install_libtool() {
 	if [[ $(uname) == "Darwin" ]]; then
 		brew install libtool
 	else
@@ -46,7 +46,7 @@ function install_libtool() {
 	fi
 }
 
-function golang_dep() {
+golang_dep() {
 	echo "install dep..."
 	if [[ $(uname) == "Darwin" ]]; then
 		brew install dep
@@ -66,17 +66,17 @@ function golang_dep() {
 	fi
 	dep version
 }
-function gitSync() {
+gitSync() {
 	git pull
 	git submodule update --init --recursive
 }
-function java11() {
+java11() {
 	sudo add-apt-repository -y ppa:linuxuprising/java
 	sudo apt update
 	sudo apt install -y oracle-java11-installer
 	sudo apt install -y oracle-java11-set-default
 }
-function softHSM(){
+softHSM(){
     if [[ $(uname) == "Darwin" ]]; then
         brew install softhsm
 #        A CA file has been bootstrapped using certificates from the SystemRoots
@@ -103,7 +103,7 @@ function softHSM(){
 fabricInstall(){
     curl -sSL http://bit.ly/2ysbOFE | bash -s -- 1.4.1 1.4.1 0.4.15
 }
-function sync() {
+sync() {
 	cd $CURRENT/nodejs
 	npm install
 	npm prune

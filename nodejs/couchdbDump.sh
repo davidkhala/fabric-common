@@ -2,7 +2,7 @@
 set -x
 CURRENT=$(cd $(dirname ${BASH_SOURCE}) && pwd)
 backupDir=$CURRENT/backup/
-function backupDB() {
+backupDB() {
 	local port=${1:-5984}
 	local host=${2:-localhost}
 	local protocol=${3:-http}
@@ -25,7 +25,7 @@ function backupDB() {
 	fi
 }
 
-function loadDB() {
+loadDB() {
 	local port=${1:-5984}
 	local host=${2:-localhost}
 	local protocol=${3:-http}
@@ -39,7 +39,7 @@ function loadDB() {
 	# 	fi
 	# done
 }
-function install() {
+install() {
 	sudo npm install -g couchdb-dump
 }
 fcn=$1
