@@ -1,5 +1,6 @@
 const dockerode = require('khala-dockerode');
 const dockerUtil = dockerode.util;
+const {ContainerOptsBuilder} = dockerUtil;
 const {
 	constraintSelf, taskDeadWaiter, taskLiveWaiter, swarmServiceName, serviceCreateIfNotExist, swarmInit, swarmJoin,
 	swarmTouch, swarmLeave, taskList
@@ -96,32 +97,10 @@ exports.runCA = ({
 	const cmdAppend = configFile ? '' : `-d -b ${admin}:${adminpw} ${TLS ? '--tls.enabled' : ''} --csr.cn=${CN}`;
 	const Cmd = ['sh', '-c', `rm ${caKey}; rm ${caCert};fabric-ca-server start ${cmdAppend}`];
 
-	const createOptions = {
-		name: container_name,
-		Env: caUtil.envBuilder(),
-		ExposedPorts: {
-			'7054': {}
-		},
-		Cmd,
-		Image: `hyperledger/fabric-ca:${imageTag}`,
-		Hostconfig: {
-			PortBindings: {
-				'7054': [
-					{
-						HostPort: port.toString()
-					}
-				]
-			}
 
-		},
-		NetworkingConfig: {
-			EndpointsConfig: {
-				[network]: {
-					Aliases: [container_name]
-				}
-			}
-		}
-	};
+	const builder = new ContainerOptsBuilder(`hyperledger/fabric-ca:${imageTag}`, Cmd);
+	builder.setName(container_name).setEnv(caUtil.envBuilder());
+	builder.setPortBind(`${port}:7054`).setNetwork(network, [container_name]);
 	if (configFile) {
 		const config = {
 			debug: true,
@@ -188,14 +167,10 @@ exports.runCA = ({
 
 		};
 		yaml.write(config, configFile);
-
-		createOptions.Volumes = {
-			[caUtil.container.CONFIG]: {}
-		};
-		createOptions.Hostconfig.Binds = [
-			`${configFile}:${caUtil.container.CONFIG}`
-		];
+		builder.setVolume(configFile, caUtil.container.CONFIG);
 	}
+	const createOptions = builder.build();
+
 	return dockerUtil.containerStart(createOptions);
 }
 ;
@@ -337,48 +312,19 @@ exports.runOrderer = ({
 		}, OrdererType, tls
 	}, undefined, operations);
 
-	const createOptions = {
-		name: container_name,
-		Env,
-		Volumes: {
-			[peerUtil.container.MSPROOT]: {},
-			[ordererUtil.container.CONFIGTX]: {}
-		},
-		Cmd,
-		Image,
-		ExposedPorts: {
-			'7050': {},
-			'8443': {}
-		},
-		Hostconfig: {
-			Binds: [
-				`${volumeName}:${peerUtil.container.MSPROOT}`,
-				`${CONFIGTXVolume}:${ordererUtil.container.CONFIGTX}`
-			],
-			PortBindings: {
-				'7050': [
-					{
-						HostPort: port.toString()
-					}
-				],
-				'8443': []
-			}
-		},
-		NetworkingConfig: {
-			EndpointsConfig: {
-				[network]: {
-					Aliases: [container_name]
-				}
-			}
-		}
-	};
+	const builder = new ContainerOptsBuilder(Image, Cmd);
+	builder.setName(container_name).setEnv(Env);
+	builder.setVolume(volumeName, peerUtil.container.MSPROOT);
+	builder.setVolume(CONFIGTXVolume, ordererUtil.container.CONFIGTX);
+	builder.setPortBind(`${port}:7050`).setNetwork(network, [container_name]);
+
 	if (stateVolume) {
-		createOptions.Volumes[ordererUtil.container.state] = {};
-		createOptions.Hostconfig.Binds.push(`${stateVolume}:${ordererUtil.container.state}`);
+		builder.setVolume(stateVolume, ordererUtil.container.state);
 	}
 	if (operations) {
-		createOptions.Hostconfig.PortBindings['8443'].push({HostPort: operations.port.toString()});
+		builder.setPortBind(`${operations.port}:8443`);
 	}
+	const createOptions = builder.build();
 	return dockerUtil.containerStart(createOptions);
 };
 
@@ -440,47 +386,18 @@ exports.runPeer = ({
 		}, tls, couchDB
 	}, undefined, operations);
 
-	const createOptions = {
-		name: container_name,
-		Env,
-		Volumes: {
-			[peerUtil.container.dockerSock]: {},
-			[peerUtil.container.MSPROOT]: {}
-		},
-		Cmd,
-		Image,
-		ExposedPorts: {
-			'7051': {},
-			'9443': {}
-		},
-		Hostconfig: {
-			Binds: [
-				`${peerUtil.host.dockerSock}:${peerUtil.container.dockerSock}`,
-				`${volumeName}:${peerUtil.container.MSPROOT}`],
-			PortBindings: {
-				'7051': [
-					{
-						HostPort: port.toString()
-					}
-				],
-				'9443': []
-			}
-		},
-		NetworkingConfig: {
-			EndpointsConfig: {
-				[network]: {
-					Aliases: [peerHostName]
-				}
-			}
-		}
-	};
+	const builder = new ContainerOptsBuilder(Image, Cmd);
+	builder.setName(container_name).setEnv(Env);
+	builder.setVolume(volumeName, peerUtil.container.MSPROOT);
+	builder.setVolume(peerUtil.host.dockerSock, peerUtil.container.dockerSock);
+	builder.setPortBind(`${port}:7051`).setNetwork(network, [peerHostName]);
 	if (operations) {
-		createOptions.Hostconfig.PortBindings['9443'].push({HostPort: operations.port.toString()});
+		builder.setPortBind(`${operations.port}:9443`);
 	}
 	if (stateVolume) {
-		createOptions.Volumes[peerUtil.container.state] = {};
-		createOptions.Hostconfig.Binds.push(`${stateVolume}:${peerUtil.container.state}`);
+		builder.setVolume(stateVolume, peerUtil.container.state);
 	}
+	const createOptions = builder.build();
 	return dockerUtil.containerStart(createOptions);
 };
 
@@ -488,32 +405,14 @@ exports.runPeer = ({
 exports.runCouchDB = async ({imageTag, container_name, port, network, user, password}) => {
 	const Image = `hyperledger/fabric-couchdb:${imageTag}`;
 	const Env = couchdbUtil.envBuilder(user, password);
-	const createOptions = {
-		name: container_name,
-		Env,
-		Image,
-		NetworkingConfig: {
-			EndpointsConfig: {
-				[network]: {
-					Aliases: [container_name]
-				}
-			}
-		}
-	};
+	const builder = new ContainerOptsBuilder(Image);
+	builder.setName(container_name).setEnv(Env);
+	builder.setNetwork(network, [container_name]);
+
 	if (port) {
-		createOptions.ExposedPorts = {
-			'5984': {}
-		};
-		createOptions.Hostconfig = {
-			PortBindings: {
-				'5984': [
-					{
-						HostPort: port.toString()
-					}
-				]
-			}
-		};
+		builder.setPortBind(`${port}:5984`);
 	}
+	const createOptions = builder.build();
 	return dockerUtil.containerStart(createOptions);
 };
 
