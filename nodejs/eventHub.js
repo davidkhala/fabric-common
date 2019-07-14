@@ -89,15 +89,15 @@ exports.chaincodeEvent = (eventHub, validator, {chaincodeId, eventName}, onSucce
 			disconnect(eventHub);
 		}
 		if (valid) {
-			onSuccess({chaincodeEvent, blockNum, status, interrupt});
+			onSuccess({chaincodeEvent, blockNum, status});
 		} else {
-			onError({chaincodeEvent, blockNum, status, interrupt});
+			onError({chaincodeEvent, blockNum, status});
 		}
 	}, (err) => {
 		logger.error(err);
 		eventHub.unregisterChaincodeEvent(listener, true);
 		disconnect(eventHub);
-		onError({err, interrupt: true});
+		onError({err});
 	});
 	return listener;
 };
@@ -133,7 +133,7 @@ exports.blockEvent = (eventHub, validator, onSuccess, onError) => {
 		logger.error(err);
 		eventHub.unregisterBlockEvent(block_registration_number, true);
 		disconnect(eventHub);
-		onError({err, interrupt: true});
+		onError({err});
 	});
 
 	return block_registration_number;
@@ -196,21 +196,21 @@ exports.txEvent = (eventHub, {txId}, validator, onSuccess, onError) => {
 	}
 	const transactionID = txId.getTransactionID();
 	eventHub.registerTxEvent(transactionID, (tx, code, blockNum) => {
-		const {valid, interrupt} = validator({tx, code, blockNum});
+		let {valid, interrupt} = validator({tx, code, blockNum});
 		if (interrupt) {
 			eventHub.unregisterTxEvent(transactionID, true);
 			disconnect(eventHub);
 		}
 		if (valid) {
-			onSuccess({tx, code, blockNum, interrupt});
+			onSuccess({tx, code, blockNum});
 		} else {
-			onError({tx, code, blockNum, interrupt});
+			onError({tx, code, blockNum});
 		}
 	}, err => {
 		logger.error(err);
 		eventHub.unregisterTxEvent(transactionID, true);
 		disconnect(eventHub);
-		onError({err, interrupt: true});
+		onError({err});
 	});
 	return transactionID;
 

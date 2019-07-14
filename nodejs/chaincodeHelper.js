@@ -91,24 +91,25 @@ exports.instantiateOrUpgrade = async (
 
 /**
  *
- * @param channel
- * @param peers
+ * @param {Client} client
+ * @param {string} channelName
+ * @param {Peer[]} peers
  * @param {ChannelEventHub[]} eventHubs
- * @param chaincodeId
+ * @param {string} chaincodeId
  * @param {string} fcn
  * @param {string[]} args
  * @param {Object} transientMap key<string> -> value<string>
- * @param {Orderer} orderer target orderer, default to pick one in channel
+ * @param {Orderer} orderer target orderer
  * @param {number} [proposalTimeout] default to 30000 ms
  * @param {number} [commitTimeout] default to 30000 ms
  * @param {number} [eventTimeout] default to 30000 ms
- * @return {Promise<{txEventResponses: any[], proposalResponses}>}
+ * @return {Promise<{txEventResponses: any[], proposalResponses}>} TODO what is the predefined type for txEventResponses
  */
-exports.invoke = async (channel, peers, eventHubs, {
+exports.invoke = async (client, channelName, peers, eventHubs, {
 	chaincodeId, fcn, args, transientMap
 }, orderer, proposalTimeout, commitTimeout, eventTimeout) => {
 	const logger = Logger.new('chaincode:invoke', true);
-	logger.debug({channel: channel.getName(), peersSize: peers.length, chaincodeId, fcn, args, transientMap});
+	logger.debug({channel: channelName, peersSize: peers.length, chaincodeId, fcn, args, transientMap});
 	if (!proposalTimeout) {
 		proposalTimeout = 30000;
 	}
@@ -118,9 +119,8 @@ exports.invoke = async (channel, peers, eventHubs, {
 	if (!eventTimeout) {
 		eventTimeout = 30000;
 	}
-	const client = channel._clientContext;
 
-	const nextRequest = await transactionProposal(client, peers, channel.getName(), {
+	const nextRequest = await transactionProposal(client, peers, channelName, {
 		chaincodeId,
 		fcn,
 		args,
