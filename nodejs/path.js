@@ -1,7 +1,7 @@
 const path = require('path');
 const {fsExtra} = require('khala-nodeutils/helper');
 const {pkcs11_key} = require('./ca');
-exports.findKeyfiles = (dir) => {
+exports.findKeyFiles = (dir) => {
 	const files = fsExtra.readdirSync(dir);
 	return files.filter((fileName) => fileName.endsWith('_sk')).map((fileName) => path.resolve(dir, fileName));
 };
@@ -142,7 +142,7 @@ exports.CryptoPath = class {
 
 	MSPKeystore(type) {
 		const dir = this.MSPFile(type).keystore;
-		const files = exports.findKeyfiles(dir);
+		const files = exports.findKeyFiles(dir);
 		if (files.length > 0) {
 			return files[0];
 		}
