@@ -15,5 +15,6 @@ module.exports = {
 	Policy: require('./policy'),
 	PrivateData: require('./privateData'),
 	BinaryManager: require('./binManager'),
-	Configtxlator: require('./configtxlator')
+	Configtxlator: require('./configtxlator'),
+	FabricDockerode:require('./fabric-dockerode')
 };
