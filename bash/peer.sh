@@ -36,5 +36,8 @@ channelConfig() {
     echo $CMD
     $CMD
 }
-
+chaincodeInstantiated(){
+    local channelName=$1
+    peer chaincode list --instantiated --channelID $channelName --tls --cafile=$CORE_PEER_TLS_ROOTCERT_FILE --certfile=$CORE_PEER_TLS_CERT_FILE --keyfile=$CORE_PEER_TLS_KEY_FILE
+}
 $fcn $remain_params
