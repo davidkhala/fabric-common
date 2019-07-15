@@ -1,4 +1,4 @@
-/.idea/*
+.idea
 /bin
 /java/.gradle
 /java/.idea
