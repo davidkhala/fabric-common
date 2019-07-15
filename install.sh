@@ -76,32 +76,32 @@ java11() {
 	sudo apt install -y oracle-java11-installer
 	sudo apt install -y oracle-java11-set-default
 }
-softHSM(){
-    if [[ $(uname) == "Darwin" ]]; then
-        brew install softhsm
-#        A CA file has been bootstrapped using certificates from the SystemRoots
-#keychain. To add additional certificates (e.g. the certificates added in
-#the System keychain), place .pem files in
-#  /usr/local/etc/openssl/certs
-#
-#and run
-#  /usr/local/opt/openssl/bin/c_rehash
-#
-#openssl is keg-only, which means it was not symlinked into /usr/local,
-#because Apple has deprecated use of OpenSSL in favor of its own TLS and crypto libraries.
-#
-#If you need to have openssl first in your PATH run:
-#  echo 'export PATH="/usr/local/opt/openssl/bin:$PATH"' >> ~/.bash_profile
-#
-#For compilers to find openssl you may need to set:
-#  export LDFLAGS="-L/usr/local/opt/openssl/lib"
-#  export CPPFLAGS="-I/usr/local/opt/openssl/include"
-    else
-        :
-    fi
+softHSM() {
+	if [[ $(uname) == "Darwin" ]]; then
+		brew install softhsm
+		#        A CA file has been bootstrapped using certificates from the SystemRoots
+		#keychain. To add additional certificates (e.g. the certificates added in
+		#the System keychain), place .pem files in
+		#  /usr/local/etc/openssl/certs
+		#
+		#and run
+		#  /usr/local/opt/openssl/bin/c_rehash
+		#
+		#openssl is keg-only, which means it was not symlinked into /usr/local,
+		#because Apple has deprecated use of OpenSSL in favor of its own TLS and crypto libraries.
+		#
+		#If you need to have openssl first in your PATH run:
+		#  echo 'export PATH="/usr/local/opt/openssl/bin:$PATH"' >> ~/.bash_profile
+		#
+		#For compilers to find openssl you may need to set:
+		#  export LDFLAGS="-L/usr/local/opt/openssl/lib"
+		#  export CPPFLAGS="-I/usr/local/opt/openssl/include"
+	else
+		:
+	fi
 }
-fabricInstall(){
-    curl -sSL http://bit.ly/2ysbOFE | bash -s -- 1.4.1 1.4.1 0.4.15
+fabricInstall() {
+	curl -sSL http://bit.ly/2ysbOFE | bash -s -- 1.4.1 1.4.1 0.4.15
 }
 sync() {
 	cd $CURRENT/nodejs
@@ -124,7 +124,7 @@ else
 	$dockerInstall | bash -s installjq
 	nodejsInstall="curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/install.sh"
 	$nodejsInstall | bash -s nodeGYPDependencies
-    $nodejsInstall | bash -s install8
-    $nodejsInstall | bash -s packageLock false
+	$nodejsInstall | bash -s install8
+	$nodejsInstall | bash -s packageLock false
 	sync
 fi
