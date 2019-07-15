@@ -53,4 +53,4 @@ exports.clean = () => {
 	fsExtra.emptyDirSync(cryptoKeyStorePath);
 };
 exports.getCryptoSuite = (client) => client.getCryptoSuite();
-
+exports.FabriClient = Client;
