@@ -1,9 +1,22 @@
 const path = require('path');
 const {fsExtra} = require('khala-nodeutils/helper');
 const {pkcs11_key} = require('./ca');
+const {FabricClient} = require('./client');
 exports.findKeyFiles = (dir) => {
 	const files = fsExtra.readdirSync(dir);
 	return files.filter((fileName) => fileName.endsWith('_sk')).map((fileName) => path.resolve(dir, fileName));
+};
+exports.findCertFiles = (dir) => {
+	const files = fsExtra.readdirSync(dir);
+	return files.map((fileName) => path.resolve(dir, fileName)).filter(filePath => {
+		try {
+			const pem = fsExtra.readFileSync(filePath).toString();
+			FabricClient.normalizeX509(pem);
+			return true;
+		} catch (e) {
+			return false;
+		}
+	});
 };
 exports.CryptoPath = class {
 	constructor(rootPath, {orderer, peer, user, password} = {}) {
@@ -102,7 +115,7 @@ exports.CryptoPath = class {
 			cacerts: this.resolve(mspDir, 'cacerts', caCertBaseName),
 			tlscacerts: this.resolve(mspDir, 'tlscacerts', tlscaCertBaseName),
 			keystore: this.resolve(mspDir, 'keystore'),
-			signcerts: this.resolve(mspDir, 'signcerts', `${this[`${type}HostName`]}-cert.pem`),
+			signcerts: this.resolve(mspDir, 'signcerts', `${this[`${type}HostName`]}-cert.pem`)
 		};
 	}
 
