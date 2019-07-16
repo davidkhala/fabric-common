@@ -69,15 +69,9 @@ exports.incrementInstall = async (peers, {chaincodeId, chaincodePath, chaincodeT
 	return result;
 };
 
-exports.pruneChaincodeLegacy = async (peer, channel, chaincode) => {
-	let {pretty} = await chaincodesInstantiated(peer, channel);
-	console.debug(pretty);
-	if (chaincode) {
-		pretty = pretty.filter(({name}) => name === chaincode);
-	}
-	for (const {name, version} of pretty) {
-		const filter = (containerName) => containerName.includes(name) && !containerName.includes(`${name}-${version}`);
-		await chaincodeClean(false, filter);
-	}
-
+exports.pruneChaincodeLegacy = async (peer, channel, chaincodeId) => {
+	const {pretty} = await chaincodesInstantiated(peer, channel);
+	const {version} = pretty.find(({name}) => name === chaincodeId);
+	const filter = (containerName) => containerName.includes(chaincodeId) && !containerName.includes(`${chaincodeId}-${version}`);
+	await chaincodeClean(false, filter);
 };
