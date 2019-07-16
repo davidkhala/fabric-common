@@ -8,5 +8,4 @@
 /java/out
 /golang/vendor
 /nodejs/node_modules
-/keyStoreCache
 package-lock.json

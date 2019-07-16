@@ -14,6 +14,5 @@
   "description": "fabric-sdk-node utils",
   "repository": {
     "url": "davidkhala/fabric-common"
-  },
-  "cryptoKeyStore": "../keyStoreCache"
+  }
 }
