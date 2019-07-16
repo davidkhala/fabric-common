@@ -54,17 +54,18 @@ const txTimerPromise = (eventHub, {txId}, eventTimeOut) => {
 
 /**
  * @param {string} command 'deploy' or 'upgrade'
- * @param channel
+ * @param {Channel} channel
  * @param {Peer[]} peers default: all peers in channel
  * @param {EventHub[]} eventHubs
  * @param {chaincodeProposalOpts} opts
+ * @param {Orderer} orderer
  * @param {number} proposalTimeOut
  * @param {number} eventTimeOut default: 30000
  * @returns {Promise}
  */
 exports.instantiateOrUpgrade = async (
 	command, channel, peers, eventHubs,
-	opts, proposalTimeOut = 50000 * peers.length,
+	opts, orderer, proposalTimeOut = 50000 * peers.length,
 	eventTimeOut = 30000
 ) => {
 	const logger = Logger.new(`${command}-chaincode`, true);
@@ -83,6 +84,7 @@ exports.instantiateOrUpgrade = async (
 		promises.push(txTimerPromise(eventHub, {txId}, eventTimeOut));
 	}
 
+	nextRequest.orderer = orderer;
 	const response = await channel.sendTransaction(nextRequest);
 	logger.info('channel.sendTransaction', response);
 	return Promise.all(promises);
