@@ -28,6 +28,7 @@ exports.chaincodesInstalled = async (peer, client) => {
 	return {chaincodes, pretty};
 };
 /**
+ * only one latest version entry for each chaincode, thus no need to findLast
  * @param {Peer} peer
  * @param {Channel} channel
  * @return {Promise<Client.ChaincodeQueryResponse>}

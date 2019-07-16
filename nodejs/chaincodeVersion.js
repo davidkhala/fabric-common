@@ -13,7 +13,7 @@ const {isArrayEven} = require('khala-nodeutils/helper');
  * @return {Client.ChaincodeInfo}
  */
 const findLatest = (chaincodes, chaincodeId, comparator = newerVersion) => {
-	const foundChaincodes = chaincodes.filter((element) => element.name === chaincodeId);
+	const foundChaincodes = chaincodes.filter(({name}) => name === chaincodeId);
 	const reducer = (lastChaincode, currentValue) => {
 		if (!lastChaincode || comparator(currentValue.version, lastChaincode.version)) {
 			return currentValue;
@@ -37,11 +37,11 @@ exports.findLatest = findLatest;
  * @returns {Promise<ProposalResult>}
  */
 exports.incrementInstall = async (peers, {chaincodeId, chaincodePath, chaincodeType, metadataPath}, client, incrementLevel) => {
-	const logger = Logger.new(`install version ${incrementLevel}`);
+	const logger = Logger.new(`install version ${incrementLevel}`, true);
 	const versions = [];
 	for (const peer of peers) {
-		const {chaincodes} = await chaincodesInstalled(peer, client);
-		const lastChaincode = findLatest(chaincodes, chaincodeId);
+		const {pretty} = await chaincodesInstalled(peer, client);
+		const lastChaincode = findLatest(pretty, chaincodeId);
 		versions.push(lastChaincode);
 	}
 	if (!isArrayEven(versions)) {
