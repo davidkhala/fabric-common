@@ -130,10 +130,10 @@ exports.versionMatcher = (ccVersionName, toThrow) => {
  * set golang path is required when chaincodeType is 'golang'
  * @param {Peer[]} peers
  * @param {string} chaincodeId allowedCharsChaincodeName = "[A-Za-z0-9_-]+"
- * @param chaincodePath
+ * @param {string} chaincodePath
  * @param {string} chaincodeVersion allowedCharsVersion  = "[A-Za-z0-9_.-]+"
- * @param {string} chaincodeType Optional. Type of chaincode. One of 'golang', 'car', 'node' or 'java'.
- * @param {string} metadataPath the absolute path to the directory structure containing the JSON index files. e.g<br>
+ * @param {string} [chaincodeType] Optional. Type of chaincode. One of 'golang', 'car', 'node' or 'java'.
+ * @param {string} [metadataPath] the absolute path to the directory structure containing the JSON index files. e.g<br>
  * <$metadataPath>/statedb/couchdb/indexes/<files *.json>
  * @param {Client} client
  * @returns {Promise<ProposalResult>}

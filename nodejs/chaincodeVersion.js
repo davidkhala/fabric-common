@@ -3,6 +3,8 @@ const {install} = require('./chaincode');
 const Logger = require('./logger');
 const {chaincodesInstalled, chaincodesInstantiated} = require('./query');
 const {chaincodeClean} = require('./fabric-dockerode');
+const {isArrayEven} = require('khala-nodeutils/helper');
+
 /**
  *
  * @param {Client.ChaincodeInfo[]} chaincodes
@@ -10,7 +12,7 @@ const {chaincodeClean} = require('./fabric-dockerode');
  * @param {versionComparator} comparator
  * @return {Client.ChaincodeInfo}
  */
-exports.findLatest = (chaincodes, chaincodeId, comparator = newerVersion) => {
+const findLatest = (chaincodes, chaincodeId, comparator = newerVersion) => {
 	const foundChaincodes = chaincodes.filter((element) => element.name === chaincodeId);
 	const reducer = (lastChaincode, currentValue) => {
 		if (!lastChaincode || comparator(currentValue.version, lastChaincode.version)) {
@@ -22,23 +24,41 @@ exports.findLatest = (chaincodes, chaincodeId, comparator = newerVersion) => {
 	return foundChaincodes.reduce(reducer, undefined);
 };
 
-
-exports.incrementInstall = async (peer, {chaincodeId, chaincodePath, chaincodeType, metadataPath}, client, incrementLevel) => {
+exports.findLatest = findLatest;
+/**
+ *
+ * @param {Peer[]} peers
+ * @param {string} chaincodeId
+ * @param {string} chaincodePath
+ * @param {string} [chaincodeType]
+ * @param {string} [metadataPath]
+ * @param {Client} client
+ * @param {string} incrementLevel incrementLevel major|minor|patch
+ * @returns {Promise<ProposalResult>}
+ */
+exports.incrementInstall = async (peers, {chaincodeId, chaincodePath, chaincodeType, metadataPath}, client, incrementLevel) => {
 	const logger = Logger.new(`install version ${incrementLevel}`);
-	const {chaincodes} = await chaincodesInstalled(peer, client);
+	const versions = [];
+	for (const peer of peers) {
+		const {chaincodes} = await chaincodesInstalled(peer, client);
+		const lastChaincode = findLatest(chaincodes, chaincodeId);
+		versions.push(lastChaincode);
+	}
+	if (!isArrayEven(versions)) {
+		logger.error('chaincode versions not even', versions);
+		throw Error('chaincode versions not even');
+	}
 	let chaincodeVersion;
-
-
-	const lastChaincode = exports.findLatest(chaincodes, chaincodeId);
+	const lastChaincode = versions[0];
 	if (!lastChaincode) {
-		logger.warn(`No chaincode found with name ${chaincodeId}`);
+		logger.warn(`chaincode ${chaincodeId} not found`);
 		chaincodeVersion = nextVersion();
 	} else {
 		chaincodePath = lastChaincode.path;
 		chaincodeVersion = nextVersion(lastChaincode.version, incrementLevel);
 	}
 
-	const result = await install([peer], {
+	const result = await install(peers, {
 		chaincodeId,
 		chaincodePath,
 		chaincodeVersion,
