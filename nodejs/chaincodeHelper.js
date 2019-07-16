@@ -53,7 +53,7 @@ const txTimerPromise = (eventHub, {txId}, eventTimeOut) => {
  */
 
 /**
- * @param {string} command 'deploy' or 'upgrade'
+ * @param {string} command deploy|upgrade
  * @param {Channel} channel
  * @param {Peer[]} peers default: all peers in channel
  * @param {EventHub[]} eventHubs

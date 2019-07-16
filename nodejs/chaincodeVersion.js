@@ -1,4 +1,5 @@
 const {newerVersion, nextVersion} = require('khala-nodeutils/version');
+const {instantiateOrUpgrade} = require('./chaincodeHelper');
 const {install} = require('./chaincode');
 const Logger = require('./logger');
 const {chaincodesInstalled, chaincodesInstantiated} = require('./query');
@@ -68,7 +69,20 @@ exports.incrementInstall = async (peers, {chaincodeId, chaincodePath, chaincodeT
 	result.chaincodeVersion = chaincodeVersion;
 	return result;
 };
+exports.incrementUpgrade = async (channel, peers, eventHubs, opts, orderer, proposalTimeOut, eventTimeOut) => {
+	const {chaincodeId} = opts;
 
+	const {pretty} = await chaincodesInstantiated(peers[0], channel);
+	const chaincode = pretty.find(({name}) => name === chaincodeId);
+	if (!chaincode) {
+		opts.chaincodeVersion = nextVersion();
+		await instantiateOrUpgrade('deploy', channel, peers, eventHubs, opts, orderer, proposalTimeOut, eventTimeOut);
+	} else {
+		const {version} = chaincode;
+		opts.chaincodeVersion = nextVersion(version);
+		await instantiateOrUpgrade('upgrade', channel, peers, eventHubs, opts, orderer, proposalTimeOut, eventTimeOut);
+	}
+};
 exports.pruneChaincodeLegacy = async (peer, channel, chaincodeId) => {
 	const {pretty} = await chaincodesInstantiated(peer, channel);
 	const {version} = pretty.find(({name}) => name === chaincodeId);
