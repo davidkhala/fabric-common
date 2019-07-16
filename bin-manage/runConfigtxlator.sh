@@ -13,8 +13,8 @@ up() {
 	fi
 }
 down() {
-	pid=$(netstat -pant | grep '7059' | grep 'LISTEN' | awk '{split($7, a, "/");print a[1]}')
-	if [ -n "$pid" ]; then
+	pid=$(netstat -pant | grep '7059' | grep 'LISTEN' | awk '{split($7, a, "/");print a[1]}') # TODO netstat is not native provided in ubuntu
+	if [[ -n "$pid" ]]; then
 		kill $pid # kill with no arguments: kill: usage: kill [-s sigspec | -n signum | -sigspec] pid | jobspec ... or kill -l [sigspec]
 		echo kill $pid configtxlator
 	else
