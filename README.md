@@ -45,6 +45,8 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
 - [FABN-1130] Stop using "init" as default function name
 - channel ID length < 250 :initializing configtx manager failed: bad channel ID: channel ID illegal, cannot be longer than 249
 - error symptom of run richQuery on levelDB:  `GET_QUERY_RESULT failed: transaction ID: 6b53220f87f791047ba44635f32d07cb667b6439c5df95e9a208d74ab12b5ff2: ExecuteQuery not supported for leveldb`
+- chaincode upgrade could not replace instantiate for fabric-sdk-node: ` Error: could not find chaincode with name 'diagnose'`
+
 ## DONE
 - discovery service, endorsement hints
 - [1.4] operation enhance: 
