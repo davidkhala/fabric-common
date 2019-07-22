@@ -4,6 +4,18 @@ const fs = require('fs');
 const agent = require('./agent2configtxlator');
 const {JSONEqual} = require('khala-nodeutils/helper');
 
+
+//TODO [1.4.1] configtxlator has now more commands:
+//  proto_encode --type=TYPE [<flags>]
+//     Converts a JSON document to protobuf.
+//
+//   proto_decode --type=TYPE [<flags>]
+//     Converts a proto message to JSON.
+//
+//   compute_update --channel_id=CHANNEL_ID [<flags>]
+//     Takes two marshaled common.Config messages and computes the config update which transitions between the two.
+
+
 class ConfigFactory {
 	constructor(original_config) {
 		this.newConfig = JSON.parse(original_config);

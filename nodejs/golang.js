@@ -1,4 +1,4 @@
-const {exec} = require('khala-nodeutils/helper');
+const {exec} = require('khala-nodeutils/devOps');
 const logger = require('./logger').new('golang');
 /**
  * make sure at least 4G RAM, otherwise "Error: spawn ENOMEM"
