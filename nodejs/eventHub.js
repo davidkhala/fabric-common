@@ -32,8 +32,7 @@ exports.newEventHub = (channel, peer, inlineConnected) => {
  * @param {ChannelEventHub} eventHub
  */
 const disconnect = (eventHub) => {
-	//TODO sdk prune with isStreamReady(this);
-	if (eventHub.checkConnection(false) && eventHub.isconnected()) {
+	if (eventHub.checkConnection(false) && eventHub.isconnected() && !eventHub._disconnect_running) {
 		eventHub.disconnect();
 	}
 };

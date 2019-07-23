@@ -69,25 +69,31 @@ exports.instantiateOrUpgrade = async (
 	eventTimeOut = 30000
 ) => {
 	const logger = Logger.new(`${command}-chaincode`, true);
-	const nextRequest = await chaincodeProposal(command, channel, peers, opts, proposalTimeOut);
 
-	const {txId} = nextRequest;
-	if (!txId) {// swallow case
+	try {
+		const nextRequest = await chaincodeProposal(command, channel, peers, opts, proposalTimeOut);
+		const {txId} = nextRequest;
+		if (!txId) {// swallow case
+			return;
+		}
+
+		const promises = [];
+		for (const eventHub of eventHubs) {
+			promises.push(txTimerPromise(eventHub, {txId}, eventTimeOut));
+		}
+
+		nextRequest.orderer = orderer;
+		const response = await channel.sendTransaction(nextRequest);
+		logger.info('channel.sendTransaction', response);
+		await Promise.all(promises);
+	} catch (e) {
+		throw e;
+	} finally {
 		for (const eventHub of eventHubs) {
 			disconnect(eventHub);
 		}
-		return;
 	}
 
-	const promises = [];
-	for (const eventHub of eventHubs) {
-		promises.push(txTimerPromise(eventHub, {txId}, eventTimeOut));
-	}
-
-	nextRequest.orderer = orderer;
-	const response = await channel.sendTransaction(nextRequest);
-	logger.info('channel.sendTransaction', response);
-	return Promise.all(promises);
 };
 
 
