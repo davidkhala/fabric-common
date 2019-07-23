@@ -299,7 +299,7 @@ exports.chaincodeProposal = async (
 		const err = Error('isProposalResponse:');
 		err.code = 'chaincodeProposal';
 		err.proposalResponses = proposalResponses;
-		throw Error(err);
+		throw err;
 	}
 	if (swallowCounter === proposalResponses.length) {
 		logger.warn('[final] swallow when existence');
