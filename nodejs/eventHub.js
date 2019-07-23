@@ -3,7 +3,7 @@ const logger = Logger.new('eventHub');
 const ChannelEventHub = require('fabric-client/lib/ChannelEventHub');
 const Query = require('./query');
 exports.unRegisterAllEvents = (eventHub) => {
-	eventHub._chaincodeRegistrants = {};
+	eventHub._chaincodeRegistrants = new Map();
 	eventHub._blockOnEvents = {};
 
 	eventHub._blockOnErrors = {};
@@ -18,6 +18,7 @@ exports.unRegisterAllEvents = (eventHub) => {
  */
 exports.newEventHub = (channel, peer, inlineConnected) => {
 	const eventHub = new ChannelEventHub(channel, peer);
+	logger.debug('new', {channel: channel.getName(), peer: peer.toString()});
 	if (inlineConnected) {
 		eventHub.connect(true);
 	}
@@ -33,6 +34,8 @@ exports.newEventHub = (channel, peer, inlineConnected) => {
  */
 const disconnect = (eventHub) => {
 	if (eventHub.checkConnection(false) && eventHub.isconnected() && !eventHub._disconnect_running) {
+		const {channel, peer} = pretty(eventHub);
+		logger.debug('disconnect', {peer: peer.toString(), channel: channel.getName()});
 		eventHub.disconnect();
 	}
 };
