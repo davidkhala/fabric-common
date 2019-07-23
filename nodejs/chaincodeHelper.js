@@ -1,9 +1,6 @@
 const Logger = require('./logger');
 
-const {
-	chaincodeProposal, transactionProposal,
-	invokeCommit
-} = require('./chaincode');
+const {chaincodeProposal, transactionProposal, invokeCommit} = require('./chaincode');
 const {txEventCode, txEvent, disconnect} = require('./eventHub');
 /**
  * @param eventHub
@@ -61,7 +58,6 @@ const txTimerPromise = (eventHub, {txId}, eventTimeOut) => {
  * @param {Orderer} orderer
  * @param {number} proposalTimeOut
  * @param {number} eventTimeOut default: 30000
- * @returns {Promise}
  */
 exports.instantiateOrUpgrade = async (
 	command, channel, peers, eventHubs,
