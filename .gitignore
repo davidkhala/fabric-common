@@ -7,5 +7,5 @@
 /java/gradle
 /java/out
 /golang/vendor
-/nodejs/node_modules
+node_modules
 package-lock.json
