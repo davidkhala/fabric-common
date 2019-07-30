@@ -125,6 +125,6 @@ else
 	nodejsInstall="curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/install.sh"
 	$nodejsInstall | bash -s nodeGYPDependencies
 	$nodejsInstall | bash -s install8
-	$nodejsInstall | bash -s packageLock false
+	curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/scripts/npm.sh | bash -s packageLock false
 	sync
 fi
