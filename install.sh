@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 set -e
-CURRENT=$(cd $(dirname ${BASH_SOURCE}) && pwd)
 
 fcn=$1
 
@@ -104,6 +103,7 @@ fabricInstall() {
 	curl -sSL http://bit.ly/2ysbOFE | bash -s -- 1.4.1 1.4.1 0.4.15
 }
 sync() {
+	CURRENT=$(cd $(dirname ${BASH_SOURCE}) && pwd)
 	cd $CURRENT/nodejs
 	npm install
 	npm prune
@@ -126,5 +126,4 @@ else
 	$nodejsInstall | bash -s nodeGYPDependencies
 	$nodejsInstall | bash -s install8
 	curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/scripts/npm.sh | bash -s packageLock false
-	sync
 fi
