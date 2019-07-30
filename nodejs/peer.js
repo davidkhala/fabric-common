@@ -23,7 +23,14 @@ exports.new = ({peerPort, peerHostName, cert, pem, host}) => {
 		return new Peer(peerUrl);
 	}
 };
-
+exports.getName = (peer) => {
+	const originName = peer.toString();
+	if (originName.includes('://localhost') && peer._options['grpc.ssl_target_name_override']) {
+		return peer._options['grpc.ssl_target_name_override'];
+	} else {
+		return originName;
+	}
+};
 exports.formatPeerName = (peerName, domain) => `${peerName}.${domain}`;
 
 exports.container =
@@ -34,7 +41,7 @@ exports.container =
 		config: '/etc/hyperledger/'
 	};
 exports.host = {
-	dockerSock: '/var/run/docker.sock' //mac system, only  /var/run/docker.sock exist.
+	dockerSock: '/var/run/docker.sock' // mac system, only  /var/run/docker.sock exist.
 };
 exports.statePath = {
 	chaincodes: undefined, // diagnose.0.0.0
@@ -101,7 +108,7 @@ exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchD
 			`CORE_PEER_TLS_CERT_FILE=${tls.cert}`,
 			`CORE_PEER_TLS_ROOTCERT_FILE=${tls.caCert}`]);
 	}
-	//TODO CORE_CHAINCODE_LOGGING_SHIM :used for fabric logging
+	// TODO CORE_CHAINCODE_LOGGING_SHIM :used for fabric logging
 	if (couchDB) {
 		const {container_name, user = '', password = ''} = couchDB;
 		environment = environment.concat([
