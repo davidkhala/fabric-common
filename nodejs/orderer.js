@@ -126,3 +126,4 @@ exports.ping = async (orderer) => {
 		}
 	}
 };
+exports.Orderer = Orderer;
