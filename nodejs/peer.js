@@ -1,5 +1,6 @@
 const Peer = require('fabric-client/lib/Peer');
 const {fsExtra} = require('khala-nodeutils/helper');
+const logger = require('khala-logger').new('peer');
 const {RequestPromise} = require('khala-nodeutils/request');
 exports.new = ({peerPort, peerHostName, cert, pem, host}) => {
 	const Host = host ? host : 'localhost';
@@ -138,6 +139,7 @@ exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchD
  */
 exports.ping = async (peer) => {
 	try {
+		logger.debug('ping', peer.toString());
 		await peer.waitForReady(peer._discoveryClient);
 		return true;
 	} catch (err) {
@@ -146,6 +148,8 @@ exports.ping = async (peer) => {
 		} else {
 			throw err;
 		}
+	} finally {
+		logger.debug('pong', peer.toString());
 	}
 };
 
@@ -155,7 +159,7 @@ exports.ping = async (peer) => {
  * -- introduced from 1.4
  * @param baseUrl ${domain:port}
  * @param otherOptions
- * @returns {Promise<void>}
+ * @returns {Promise}
  */
 exports.health = async (baseUrl, otherOptions) => {
 	const url = `${baseUrl}/healthz`;
@@ -163,9 +167,9 @@ exports.health = async (baseUrl, otherOptions) => {
 	if (result.status === 'OK') {
 		return result;
 	} else {
-		let err = Error('healthz check');
+		const err = Error('healthz check');
 		err.url = url;
-		err = Object.assign(err, result);
+		err.result = result;
 		throw err;
 	}
 };
