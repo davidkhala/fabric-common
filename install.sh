@@ -69,11 +69,10 @@ gitSync() {
 	git pull
 	git submodule update --init --recursive
 }
-java11() {
-	sudo add-apt-repository -y ppa:linuxuprising/java
+java() {
+	echo "[WARNING] This is to install OpenJDK, Oracle requires fee to use Java in production."
 	sudo apt update
-	sudo apt install -y oracle-java11-installer
-	sudo apt install -y oracle-java11-set-default
+	sudo apt install -y default-jdk
 }
 softHSM() {
 	if [[ $(uname) == "Darwin" ]]; then
