@@ -37,6 +37,36 @@ golang() {
 		fi
 	fi
 }
+golang11() {
+	if go version; then
+		echo "current go version " $(go version) " exist, skip install"
+		return
+	fi
+	echo install golang1.11
+	goTar=go1.11.12.linux-amd64.tar.gz
+	wget https://dl.google.com/go/${goTar}
+	sudo tar -C /usr/local -xzf ${goTar}
+	rm -f ${goTar}
+
+	# write GOROOT to $PATH
+	if ! grep "/usr/local/go/bin" $bashProfile; then
+		echo "...To set GOROOT"
+		sudo sed -i "1 i\export PATH=\$PATH:/usr/local/go/bin" $bashProfile
+	else
+		echo "GOROOT found in $bashProfile"
+	fi
+
+	export PATH=$PATH:/usr/local/go/bin # ephemeral
+	# write $GOPATH/bin to $PATH
+	GOPATH=$(go env GOPATH)
+	if ! grep "$GOPATH/bin" $bashProfile; then
+		echo "...To set GOPATH/bin"
+		sudo sed -i "1 i\export PATH=\$PATH:$GOPATH/bin" $bashProfile
+	else
+		echo "GOPATH/bin found in $bashProfile"
+	fi
+	echo "path (effective in new shell) $PATH"
+}
 install_libtool() {
 	if [[ $(uname) == "Darwin" ]]; then
 		brew install libtool
