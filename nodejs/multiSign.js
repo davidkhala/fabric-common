@@ -30,7 +30,7 @@ exports.fromBase64 = (signatures) => {
 		};
 	});
 };
-
+// TODO @deprecated
 const client_utils = require('fabric-client/lib/client-utils');
 const Channel = require('fabric-client/lib/Channel');
 exports.sendTransactionProposal = async (request, channelId, client_context, timeout) => {
