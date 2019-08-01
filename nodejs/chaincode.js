@@ -229,7 +229,7 @@ exports.transactionProposal = async (client, targets, channelName, {
 	const {proposalResponses} = nextRequest;
 
 	if (errCounter > 0) {
-		logger.error({proposalResponses});
+		logger.error('proposalResponses', proposalResponses);
 		const err = Error('isProposalResponse');
 		err.proposalResponses = proposalResponses;
 		err.code = 'transactionProposal';
