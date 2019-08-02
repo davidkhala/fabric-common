@@ -5,7 +5,7 @@ const ChannelUtil = require('./channel');
 
 exports.chaincodeTypes = ['golang', 'car', 'node', 'java'];
 exports.proposalStringify = (proposalResponse) => {
-	if (proposalResponse instanceof Error === false) {
+	if (!(proposalResponse instanceof Error)) {
 		proposalResponse.response.payload = proposalResponse.response.payload.toString();
 	}
 	return proposalResponse;
@@ -48,7 +48,7 @@ exports.transientMapTransform = transientMapTransform;
  * @param {boolean} log
  * @return {function(*[]): ProposalResult}
  */
-exports.chaincodeProposalAdapter = (actionString, validator, verbose, log) => {
+const chaincodeProposalAdapter = (actionString, validator, verbose, log) => {
 	const logger = Logger.new(`chaincodeProposalAdapter:${actionString}`, true);
 	const _validator = validator ? validator : ({response}) => {
 		return {isValid: response && response.status === 200, isSwallowed: false};
@@ -75,13 +75,13 @@ exports.chaincodeProposalAdapter = (actionString, validator, verbose, log) => {
 		}
 		return copy;
 	};
-	return ([responses, proposal]) => {
+	return ([proposalResponses, proposal]) => {
 
 		let errCounter = 0; // NOTE logic: reject only when all bad
 		let swallowCounter = 0;
 
-		for (const i in responses) {
-			const proposalResponse = responses[i];
+		for (const i in proposalResponses) {
+			const proposalResponse = proposalResponses[i];
 			const {isValid, isSwallowed} = _validator(proposalResponse);
 
 			if (isValid) {
@@ -101,13 +101,13 @@ exports.chaincodeProposalAdapter = (actionString, validator, verbose, log) => {
 			errCounter,
 			swallowCounter,
 			nextRequest: {
-				proposalResponses: responses, proposal
+				proposalResponses, proposal
 			}
 		};
 
 	};
 };
-
+exports.chaincodeProposalAdapter = chaincodeProposalAdapter;
 
 exports.nameMatcher = (chaincodeName, toThrow) => {
 	const namePattern = /^[A-Za-z0-9_-]+$/;
@@ -161,7 +161,7 @@ exports.install = async (peers, {chaincodeId, chaincodePath, chaincodeVersion, c
 	};
 
 	const [responses, proposal] = await client.installChaincode(request);
-	const ccHandler = exports.chaincodeProposalAdapter('install', (proposalResponse) => {
+	const ccHandler = chaincodeProposalAdapter('install', (proposalResponse) => {
 		const {response} = proposalResponse;
 		if (response) {
 			const {status, message} = response;
@@ -179,7 +179,7 @@ exports.install = async (peers, {chaincodeId, chaincodePath, chaincodeVersion, c
 			}
 		}
 		return {isValid: false, isSwallowed: false};
-	});
+	}, undefined, undefined);
 	const result = ccHandler([responses, proposal]);
 	const {errCounter, nextRequest: {proposalResponses}} = result;
 	if (errCounter > 0) {
@@ -193,6 +193,21 @@ exports.install = async (peers, {chaincodeId, chaincodePath, chaincodeVersion, c
 };
 
 
+const transactionProposalResponseErrorHandler = (proposalResponses, proposal) => {
+	const logger = Logger.new('chaincode:transactionProposal', true);
+	const ccHandler = chaincodeProposalAdapter('transactionProposal', undefined, true);
+	const {nextRequest, errCounter} = ccHandler([proposalResponses, proposal]);
+
+	if (errCounter > 0) {
+		logger.error('proposalResponses', proposalResponses);
+		const err = Error('isProposalResponse');
+		err.proposalResponses = proposalResponses;
+		err.code = 'transactionProposal';
+		throw err;
+	}
+	return nextRequest;
+};
+exports.transactionProposalResponseErrorHandler = transactionProposalResponseErrorHandler;
 /**
  * NOTE transaction proposal cannot be performed on peer without chaincode installed
  * Error: cannot retrieve package for chaincode adminChaincode/v0,
@@ -212,7 +227,6 @@ exports.install = async (peers, {chaincodeId, chaincodePath, chaincodeVersion, c
 exports.transactionProposal = async (client, targets, channelName, {
 	chaincodeId, fcn, args, transientMap
 }, proposalTimeout = 30000) => {
-	const logger = Logger.new('chaincode:transactionProposal', true);
 	const txId = client.newTransactionID();
 	const request = {
 		chaincodeId,
@@ -224,17 +238,7 @@ exports.transactionProposal = async (client, targets, channelName, {
 	};
 
 	const [responses, proposal] = await Channel.sendTransactionProposal(request, channelName, client, proposalTimeout);
-	const ccHandler = exports.chaincodeProposalAdapter('invoke', undefined, true);
-	const {nextRequest, errCounter} = ccHandler([responses, proposal]);
-	const {proposalResponses} = nextRequest;
-
-	if (errCounter > 0) {
-		logger.error('proposalResponses', proposalResponses);
-		const err = Error('isProposalResponse');
-		err.proposalResponses = proposalResponses;
-		err.code = 'transactionProposal';
-		throw err;
-	}
+	const nextRequest = transactionProposalResponseErrorHandler(responses, proposal);
 	nextRequest.txId = txId;
 	return nextRequest;
 };
