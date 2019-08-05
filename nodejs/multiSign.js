@@ -30,26 +30,3 @@ exports.fromBase64 = (signatures) => {
 		};
 	});
 };
-// TODO @deprecated
-const client_utils = require('fabric-client/lib/client-utils');
-const Channel = require('fabric-client/lib/Channel');
-exports.sendTransactionProposal = async (request, channelId, client_context, timeout) => {
-	const errorMsg = client_utils.checkProposalRequest(request, true);
-
-	if (errorMsg) {
-		throw new Error(errorMsg);
-	}
-	if (!request.args) {
-		// args is not optional because we need for transaction to execute
-		throw new Error('Missing "args" in Transaction proposal request');
-	}
-
-	if (!request.targets || request.targets.length < 1) {
-		throw new Error('Missing peer objects in Transaction proposal');
-	}
-
-	const proposal = Channel._buildSignedProposal(request, channelId, client_context);
-
-	const responses = await client_utils.sendPeersProposal(request.targets, proposal.signed, timeout);
-	return [responses, proposal.source];
-};
