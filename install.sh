@@ -148,7 +148,7 @@ else
 		fi
 	fi
 
-	dockerInstall="curl --silent --show-error https://raw.githubusercontent.com/davidkhala/docker-manager/17.06.2-ce/install.sh"
+	dockerInstall="curl --silent --show-error https://raw.githubusercontent.com/davidkhala/docker-manager/17/install.sh"
 	$dockerInstall | bash -s installDocker
 	$dockerInstall | bash -s installjq
 	nodejsInstall="curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/install.sh"
