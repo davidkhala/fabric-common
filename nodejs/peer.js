@@ -94,6 +94,8 @@ exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchD
 			`CORE_PEER_ID=${peerHostName}`,
 			`CORE_PEER_ADDRESS=${peerHostName}:7051`,
 			'CORE_CHAINCODE_EXECUTETIMEOUT=180s',
+			'CORE_ADDRESSAUTODETECT=true',//TODO [DEBUG] discoveryService
+			'CORE_DISCOVERY_ORGMEMBERSALLOWEDACCESS=true',//TODO [DEBUG] discoveryService
 			'CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052', // for swarm mode
 			'GODEBUG=netdns=go'// NOTE aliyun only
 		];
