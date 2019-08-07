@@ -185,7 +185,7 @@ exports.CryptoPath = class {
 	toMSP({key, certificate, rootCertificate}, type) {
 		const {cacerts, keystore, signcerts} = this.MSPFile(type);
 		fsExtra.outputFileSync(signcerts, certificate);
-		pkcs11_key.toKeystore(key, keystore);
+		pkcs11_key.toKeystore(keystore, key);
 		fsExtra.outputFileSync(cacerts, rootCertificate);
 	}
 

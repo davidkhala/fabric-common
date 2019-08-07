@@ -51,19 +51,19 @@ const registerIfNotExist = async (caService, {enrollmentID, enrollmentSecret, af
 };
 
 const ECDSAPRIV = require('./key');
+const pkcs11KeySave = (filePath, key) => {
+	const ecdsaKey = new ECDSAPRIV(key);
+	fsExtra.outputFileSync(filePath, ecdsaKey.pem());
+};
 exports.pkcs11_key = {
 	generate: (cryptoSuite) => cryptoSuite.generateKey({ephemeral: !cryptoSuite._cryptoKeyStore}),
-	toKeystore: (key, dirName) => {
+	toKeystore: (dirName, key) => {
 		const ecdsaKey = new ECDSAPRIV(key);
 		const filename = ecdsaKey.filename();
 		const absolutePath = path.resolve(dirName, filename);
-		exports.pkcs11_key.save(absolutePath, key);
+		pkcs11KeySave(absolutePath, key);
 	},
-	save: (filePath, key) => {
-		const ecdsaKey = new ECDSAPRIV(key);
-		fsExtra.outputFileSync(filePath, ecdsaKey.pem());
-	}
-
+	save: pkcs11KeySave
 };
 
 exports.register = registerIfNotExist;

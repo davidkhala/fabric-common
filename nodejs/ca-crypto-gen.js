@@ -73,6 +73,7 @@ exports.init = async (caService, adminCryptoPath, nodeType, mspId, {TLS, affilia
 	const adminUser = await initAdminRetry();
 	const affiliationService = affiliationUtil.new(caService);
 	const promises = [
+		affiliationUtil.createIfNotExist(affiliationService, {name: `${affiliationRoot}.client`, force}, adminUser),
 		affiliationUtil.createIfNotExist(affiliationService, {name: `${affiliationRoot}.user`, force}, adminUser),
 		affiliationUtil.createIfNotExist(affiliationService, {name: `${affiliationRoot}.peer`, force}, adminUser),
 		affiliationUtil.createIfNotExist(affiliationService, {name: `${affiliationRoot}.orderer`, force}, adminUser)
@@ -210,6 +211,18 @@ exports.genUser = async (caService, cryptoPath, nodeType, admin, {TLS, affiliati
 	}
 	user = userUtil.loadFromLocal(cryptoPath, nodeType, mspId, undefined);
 	return user;
-
+};
+exports.genClientKeyPair = async (caService, {enrollmentID, enrollmentSecret}, admin, affiliationRoot) => {
+	const {enrollmentSecret: newSecret} = await caUtil.register(caService, {
+		enrollmentID,
+		enrollmentSecret,
+		role: 'client',
+		affiliation: `${affiliationRoot}.client`
+	}, admin);
+	if (!enrollmentSecret) {
+		enrollmentSecret = newSecret;
+	}
+	const {key, certificate, rootCertificate} = await caService.enroll({enrollmentID, enrollmentSecret});
+	return {key, certificate, rootCertificate};
 };
 
