@@ -165,6 +165,7 @@ exports.ping = async (peer) => {
 	try {
 		logger.debug('ping', peer.toString());
 		await peer.waitForReady(peer._discoveryClient);
+		logger.debug('pong', peer.toString());
 		return true;
 	} catch (err) {
 		if (err.message.includes('Failed to connect before the deadline')) {
@@ -172,8 +173,6 @@ exports.ping = async (peer) => {
 		} else {
 			throw err;
 		}
-	} finally {
-		logger.debug('pong', peer.toString());
 	}
 };
 
