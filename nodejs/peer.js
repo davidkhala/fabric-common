@@ -2,6 +2,16 @@ const Peer = require('fabric-client/lib/Peer');
 const {fsExtra} = require('khala-nodeutils/helper');
 const logger = require('khala-logger').new('peer');
 const {RequestPromise} = require('khala-nodeutils/request');
+/**
+ * @param peerPort
+ * @param {string} [peerHostName] Used in test environment only, when the server certificate's
+ *    hostname (in the 'CN' field) does not match the actual host endpoint that the server process runs
+ *    at, the application can work around the client TLS verify failure by setting this property to the
+ *    value of the server certificate's hostname
+ * @param cert
+ * @param pem
+ * @param host
+ */
 exports.new = ({peerPort, peerHostName, cert, pem, host}) => {
 	const Host = host ? host : 'localhost';
 	let peerUrl = `grpcs://${Host}:${peerPort}`;
@@ -12,10 +22,11 @@ exports.new = ({peerPort, peerHostName, cert, pem, host}) => {
 	}
 	if (pem) {
 		// tls enabled
-		const peer = new Peer(peerUrl, {
-			pem,
-			'ssl-target-name-override': peerHostName
-		});
+		const opts = {pem};
+		if (peerHostName) {
+			opts['ssl-target-name-override'] = peerHostName;
+		}
+		const peer = new Peer(peerUrl, opts);
 		peer.pem = pem;
 		return peer;
 	} else {

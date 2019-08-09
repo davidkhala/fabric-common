@@ -6,6 +6,17 @@ const {loggingLevels} = require('./peer');
 exports.find = ({orderers, ordererUrl}) => {
 	return ordererUrl ? orderers.find((orderer) => orderer.getUrl() === ordererUrl) : orderers[0];
 };
+/**
+ *
+ * @param ordererPort
+ * @param cert
+ * @param pem
+ * @param {string} [ordererHostName] Used in test environment only, when the server certificate's
+ *    hostname (in the 'CN' field) does not match the actual host endpoint that the server process runs
+ *    at, the application can work around the client TLS verify failure by setting this property to the
+ *    value of the server certificate's hostname
+ * @param host
+ */
 exports.new = ({ordererPort, cert, pem, ordererHostName, host}) => {
 	const Host = host ? host : 'localhost';
 	let orderer_url = `grpcs://${Host}:${ordererPort}`;
@@ -16,10 +27,11 @@ exports.new = ({ordererPort, cert, pem, ordererHostName, host}) => {
 	}
 	if (pem) {
 		// tls enabled
-		const orderer = new Orderer(orderer_url, {
-			pem,
-			'ssl-target-name-override': ordererHostName
-		});
+		const opts = {pem};
+		if (ordererHostName) {
+			opts['ssl-target-name-override'] = ordererHostName;
+		}
+		const orderer = new Orderer(orderer_url, opts);
 		orderer.pem = pem;
 		return orderer;
 	} else {
