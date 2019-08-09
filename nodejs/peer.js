@@ -2,6 +2,9 @@ const Peer = require('fabric-client/lib/Peer');
 const {fsExtra} = require('khala-nodeutils/helper');
 const logger = require('khala-logger').new('peer');
 const {RequestPromise} = require('khala-nodeutils/request');
+const {loggingLevels, RemoteOptsTransform} = require('./remote');
+
+
 /**
  * @typedef {string} ClientKey The private key file, in PEM format
  *    To use with the gRPC protocol (that is, with TransportCredentials).
@@ -35,10 +38,7 @@ exports.new = ({peerPort, peerHostName, cert, pem, host, clientKey, clientCert})
 	}
 	if (pem) {
 		// tls enabled
-		const opts = {pem, clientKey, clientCert};
-		if (peerHostName) {
-			opts['ssl-target-name-override'] = peerHostName;
-		}
+		const opts = RemoteOptsTransform({pem, sslTargetNameOverride: peerHostName, clientKey, clientCert});
 		const peer = new Peer(peerUrl, opts);
 		peer.pem = pem;
 		return peer;
@@ -85,12 +85,6 @@ exports.statePath = {
 	transientStore: {}// leveldb
 };
 
-/**
- * Valid logging levels are case-insensitive string
- * @type {string[]}
- */
-const loggingLevels = ['FATAL', 'PANIC', 'ERROR', 'WARNING', 'INFO', 'DEBUG'];
-exports.loggingLevels = loggingLevels;
 /**
  *
  * @param network

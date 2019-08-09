@@ -2,7 +2,7 @@ const Orderer = require('fabric-client/lib/Orderer');
 const fs = require('fs');
 const Logger = require('./logger');
 const logger = Logger.new('orderer');
-const {loggingLevels} = require('./peer');
+const {loggingLevels, RemoteOptsTransform} = require('./remote');
 exports.find = ({orderers, ordererUrl}) => {
 	return ordererUrl ? orderers.find((orderer) => orderer.getUrl() === ordererUrl) : orderers[0];
 };
@@ -16,8 +16,8 @@ exports.find = ({orderers, ordererUrl}) => {
  *    at, the application can work around the client TLS verify failure by setting this property to the
  *    value of the server certificate's hostname
  * @param host
- * @param {ClientKey} clientKey
- * @param {ClientCert} clientCert
+ * @param {ClientKey} [clientKey]
+ * @param {ClientCert} [clientCert]
  */
 exports.new = ({ordererPort, cert, pem, ordererHostName, host, clientKey, clientCert}) => {
 	const Host = host ? host : 'localhost';
@@ -29,10 +29,7 @@ exports.new = ({ordererPort, cert, pem, ordererHostName, host, clientKey, client
 	}
 	if (pem) {
 		// tls enabled
-		const opts = {pem, clientKey, clientCert};
-		if (ordererHostName) {
-			opts['ssl-target-name-override'] = ordererHostName;
-		}
+		const opts = RemoteOptsTransform({pem, sslTargetNameOverride: ordererHostName, clientKey, clientCert});
 		const orderer = new Orderer(orderer_url, opts);
 		orderer.pem = pem;
 		return orderer;
