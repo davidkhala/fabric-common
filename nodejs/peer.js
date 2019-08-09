@@ -3,6 +3,17 @@ const {fsExtra} = require('khala-nodeutils/helper');
 const logger = require('khala-logger').new('peer');
 const {RequestPromise} = require('khala-nodeutils/request');
 /**
+ * @typedef {string} ClientKey The private key file, in PEM format
+ *    To use with the gRPC protocol (that is, with TransportCredentials).
+ *    Required when using the grpcs protocol with client certificates.
+ */
+
+/**
+ * @typedef {string} ClientCert The public certificate file, in PEM format,
+ *    To use with the gRPC protocol (that is, with TransportCredentials).
+ *    Required when using the grpcs protocol with client certificates.
+ */
+/**
  * @param peerPort
  * @param {string} [peerHostName] Used in test environment only, when the server certificate's
  *    hostname (in the 'CN' field) does not match the actual host endpoint that the server process runs
@@ -11,8 +22,10 @@ const {RequestPromise} = require('khala-nodeutils/request');
  * @param cert
  * @param pem
  * @param host
+ * @param {ClientKey} clientKey
+ * @param {ClientCert} clientCert
  */
-exports.new = ({peerPort, peerHostName, cert, pem, host}) => {
+exports.new = ({peerPort, peerHostName, cert, pem, host, clientKey, clientCert}) => {
 	const Host = host ? host : 'localhost';
 	let peerUrl = `grpcs://${Host}:${peerPort}`;
 	if (!pem) {
@@ -22,7 +35,7 @@ exports.new = ({peerPort, peerHostName, cert, pem, host}) => {
 	}
 	if (pem) {
 		// tls enabled
-		const opts = {pem};
+		const opts = {pem, clientKey, clientCert};
 		if (peerHostName) {
 			opts['ssl-target-name-override'] = peerHostName;
 		}

@@ -222,7 +222,7 @@ exports.genClientKeyPair = async (caService, {enrollmentID, enrollmentSecret}, a
 	if (!enrollmentSecret) {
 		enrollmentSecret = newSecret;
 	}
-	const {key, certificate, rootCertificate} = await caService.enroll({enrollmentID, enrollmentSecret});
+	const {key, certificate, rootCertificate} = await caService.enroll({enrollmentID, enrollmentSecret, profile: 'tls'});
 	return {key, certificate, rootCertificate};
 };
 

@@ -16,8 +16,10 @@ exports.find = ({orderers, ordererUrl}) => {
  *    at, the application can work around the client TLS verify failure by setting this property to the
  *    value of the server certificate's hostname
  * @param host
+ * @param {ClientKey} clientKey
+ * @param {ClientCert} clientCert
  */
-exports.new = ({ordererPort, cert, pem, ordererHostName, host}) => {
+exports.new = ({ordererPort, cert, pem, ordererHostName, host, clientKey, clientCert}) => {
 	const Host = host ? host : 'localhost';
 	let orderer_url = `grpcs://${Host}:${ordererPort}`;
 	if (!pem) {
@@ -27,7 +29,7 @@ exports.new = ({ordererPort, cert, pem, ordererHostName, host}) => {
 	}
 	if (pem) {
 		// tls enabled
-		const opts = {pem};
+		const opts = {pem, clientKey, clientCert};
 		if (ordererHostName) {
 			opts['ssl-target-name-override'] = ordererHostName;
 		}
