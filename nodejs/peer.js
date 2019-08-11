@@ -38,7 +38,7 @@ exports.new = ({peerPort, peerHostName, cert, pem, host, clientKey, clientCert})
 	}
 	if (pem) {
 		// tls enabled
-		const opts = RemoteOptsTransform({pem, sslTargetNameOverride: peerHostName, clientKey, clientCert});
+		const opts = RemoteOptsTransform({host, pem, sslTargetNameOverride: peerHostName, clientKey, clientCert});
 		const peer = new Peer(peerUrl, opts);
 		peer.pem = pem;
 		return peer;

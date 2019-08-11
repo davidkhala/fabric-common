@@ -17,6 +17,7 @@ Latest version 1.4.1
 
 ## Notes
 
+- [gRpcs][docker network] **host name SHOULD not include upper-case character, otherwise gRpcs ping for discovery_client will not response back with docker network DNS** 
 - `failed to invoke chaincode name:"lscc" , error: API error (400): OCI runtime create failed: container_linux.go:348: starting container process caused "exec: \"chaincode\": executable file not found in $PATH": unknown`
     - means package name for golang-chaincode entrance is not `main`
 - blockHeight(got from queryChain) indexing from 1, blockNumber in blockEvent starting from 0

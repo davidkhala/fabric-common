@@ -29,7 +29,7 @@ exports.new = ({ordererPort, cert, pem, ordererHostName, host, clientKey, client
 	}
 	if (pem) {
 		// tls enabled
-		const opts = RemoteOptsTransform({pem, sslTargetNameOverride: ordererHostName, clientKey, clientCert});
+		const opts = RemoteOptsTransform({host, pem, sslTargetNameOverride: ordererHostName, clientKey, clientCert});
 		const orderer = new Orderer(orderer_url, opts);
 		orderer.pem = pem;
 		return orderer;
