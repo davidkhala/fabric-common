@@ -1,5 +1,5 @@
 const helper = require('../../../../app/helper');
-const org = 'ASTRI.org';
+const org = 'astri.org';
 let mspid = 'ASTRIMSP';
 const peer = helper.newPeer(0, org);
 const orderer = helper.newOrderers()[0];
