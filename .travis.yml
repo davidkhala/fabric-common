@@ -6,6 +6,7 @@ matrix:
       dist: bionic
       install:
         - ./install.sh travis
+        - cd nodejs; npm install; cd -;
       script:
         - node nodejs/test
 
