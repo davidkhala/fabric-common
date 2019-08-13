@@ -1,1 +1,2 @@
 require('./helperTest');
+require('./yamlTest');

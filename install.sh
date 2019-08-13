@@ -138,6 +138,10 @@ sync() {
 	npm prune
 	cd -
 }
+travis(){
+    curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/scripts/npm.sh | bash -s packageLock false
+    ./bin-manage/pullBIN.sh
+}
 if [[ -n "$fcn" ]]; then
 	$fcn $remain_params
 else
