@@ -1,4 +1,5 @@
 # fabric-common
+[![Build Status](https://travis-ci.com/davidkhala/fabric-common.svg?branch=release-1.4)](https://travis-ci.com/davidkhala/fabric-common)
 
 Latest version 1.4.2
 ## Installation
