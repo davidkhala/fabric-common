@@ -24,7 +24,7 @@ const configtxlatorRestart = async () => {
 	await binManager.configtxlator('start');
 };
 const task = async () => {
-	await viewChannelTxTask();
+	await configtxlatorRestart();
 
 };
 
