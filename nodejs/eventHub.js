@@ -66,13 +66,13 @@ exports.pretty = pretty;
  * @param {ChannelEventHub} eventHub connection is required to be established
  * @param {function} validator
  * @param {string} chaincodeId
- * @param {string} eventName
+ * @param {string|RegExp} eventName
  * @param {CCEventSuccessCB} onSuccess
  * @param {evenHubErrorCB} onError
  * @returns {ChaincodeChannelEventHandle}
  */
 exports.chaincodeEvent = (eventHub, validator, {chaincodeId, eventName}, onSuccess, onError) => {
-	const logger = Logger.new('chaincodeEvent');
+	const logger = Logger.new('chaincodeEvent', true);
 	if (!validator) {
 		validator = (data) => {
 			logger.debug('default validator', data);
