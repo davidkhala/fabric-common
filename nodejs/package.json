@@ -1,9 +1,9 @@
 {
   "name": "khala-fabric-sdk-node",
-  "version": "1.4.1-0.5.8",
+  "version": "1.4.2-0.0.0",
   "dependencies": {
-    "fabric-ca-client": "^1.4.1",
-    "fabric-client": "^1.4.1",
+    "fabric-ca-client": "^1.4.2",
+    "fabric-client": "^1.4.2",
     "khala-nodeutils": "^0.6.1",
     "khala-logger": "^0.0.0",
     "khala-dockerode": "^17.0.2"
