@@ -1,3 +1,3 @@
 require('./helperTest');
 require('./yamlTest');
-require('./binManageTest')
+require('./binManageTest');
