@@ -9,3 +9,5 @@
 /golang/vendor
 node_modules
 package-lock.json
+*.block
+*.tx
