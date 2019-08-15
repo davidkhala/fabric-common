@@ -19,6 +19,7 @@ Latest version 1.4.2
     - [privateData]
 - [1.4]
     - [healthz]
+    - [raft]
 ## Notes
 
 - [gRpcs][docker network] **host name SHOULD not include upper-case character, otherwise gRpcs ping for discovery_client will not response back with docker network DNS** 
@@ -53,7 +54,8 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
 - [couchdb]error symptom of run richQuery on levelDB:  `GET_QUERY_RESULT failed: transaction ID: 6b53220f87f791047ba44635f32d07cb667b6439c5df95e9a208d74ab12b5ff2: ExecuteQuery not supported for leveldb`
 - [raft] [migration](https://hyperledger-fabric.readthedocs.io/en/release-1.4/kafka_raft_migration.html) requires:
     - orderer down-time tolerance
-    - orderer numbers >=5 to have HA
+- [raft] etcdraft does not support [non TLS](https://hyperledger-fabric.readthedocs.io/en/release-1.4/raft_configuration.html)
+    - Raft nodes identify each other using TLS pinning, so in order to impersonate a Raft node, an attacker needs to obtain the private key of its TLS certificate. As a result, it is not possible to run a Raft node without a valid TLS configuration.
 ## DONE
 - discovery service, endorsement hints
 - [1.4] operation enhance: 
@@ -92,7 +94,7 @@ The /metrics endpoint allows operators to utilize Prometheus to pull operational
     see the doc starting at: https://hyperledger-fabric.readthedocs.io/en/latest/chaincode4noah.html#packaging"  
 - new Feature required: GetPrivateStateByRangeWithPagination: https://jira.hyperledger.org/browse/FAB-11732
 - async or not: CryptoSuite importKey
-- [1.4.1] etcdraft does not support non TLS:  consenter info in etcdraft configuration did not specify client TLS cert
+
 - [1.4] cleanup self and promise in fabric-ca-client, channeljs#instantiateChaincode not found
 - [TODO] there is not pagination in GetHistoryForKey: Error: QUERY_STATE_NEXT failed
 - client.newTransactionID(); --> new TransactionID(Identity,isAdmin)
