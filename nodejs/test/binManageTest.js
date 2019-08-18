@@ -14,7 +14,8 @@ const blockProfiles = [
 	'SampleDevModeEtcdRaft'
 ];
 const channelProfiles = ['SampleSingleMSPChannel'];
-
+const fsExtra = require('fs-extra');
+fsExtra.ensureDirSync(path.resolve(__dirname, 'artifacts'));
 const genBlockTest = async (blockProfile) => {
 	const blockFile = path.resolve(__dirname, `artifacts/${blockProfile}.block`);
 	await binManager.configtxgen(blockProfile, configtxYaml).genBlock(blockFile);

@@ -10,7 +10,8 @@
   },
   "devDependencies": {
     "jsrsasign": "^7.2.2",
-    "log4js": "^5.0.0"
+    "log4js": "^5.0.0",
+    "fs-extra": "^8.1.0"
   },
   "description": "fabric-sdk-node utils",
   "repository": {
