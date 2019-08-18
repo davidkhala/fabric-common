@@ -4,6 +4,9 @@ matrix:
       node_js:
         - "8"
       dist: bionic
+      cache:
+        directories:
+          - nodejs/node_modules
       install:
         - ./install.sh travis
         - cd nodejs; npm install; cd -;
