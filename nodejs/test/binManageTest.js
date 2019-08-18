@@ -1,6 +1,7 @@
 const path = require('path');
 process.env.binPath = path.resolve(__dirname, '../../bin');
 const BinManager = require('../binManager');
+const {fsExtra} = require('../index');
 const binManager = new BinManager();
 const configtxYaml = path.resolve(__dirname, '../../config/configtx.yaml');
 const logger = require('../logger').new('test:binManager', true);
@@ -14,7 +15,6 @@ const blockProfiles = [
 	'SampleDevModeEtcdRaft'
 ];
 const channelProfiles = ['SampleSingleMSPChannel'];
-const fsExtra = require('fs-extra');
 fsExtra.ensureDirSync(path.resolve(__dirname, 'artifacts'));
 const genBlockTest = async (blockProfile) => {
 	const blockFile = path.resolve(__dirname, `artifacts/${blockProfile}.block`);
