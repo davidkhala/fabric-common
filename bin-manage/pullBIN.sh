@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 set -e
-CURRENT=$(cd $(dirname ${BASH_SOURCE}) && pwd)
-Parent=$(dirname $CURRENT)
-cd $Parent
+if [[ -z "$BIN_Parent" ]]; then
+	CURRENT=$(cd $(dirname ${BASH_SOURCE}) && pwd)
+	BIN_Parent=$(dirname $CURRENT)
+fi
+
+cd $BIN_Parent
 
 VERSION=${1:-1.4.2}
 

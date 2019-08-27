@@ -140,6 +140,8 @@ sync() {
 }
 travis(){
     curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/scripts/npm.sh | bash -s packageLock false
+    CURRENT=$(cd $(dirname ${BASH_SOURCE}) && pwd)
+    export BIN_Parent=$CURRENT
     ./bin-manage/pullBIN.sh
 }
 if [[ -n "$fcn" ]]; then
