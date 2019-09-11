@@ -30,7 +30,7 @@ exports.findLatest = findLatest;
  *
  * @param {Peer[]} peers
  * @param {string} chaincodeId
- * @param {string} chaincodePath
+ * @param {string} [chaincodePath] if undefined, will use `path` of latest installed chaincode (in result of [queryInstalledChaincodes]).
  * @param {string} [chaincodeType]
  * @param {string} [metadataPath]
  * @param {Client} client
@@ -55,7 +55,9 @@ exports.incrementInstall = async (peers, {chaincodeId, chaincodePath, chaincodeT
 		logger.warn(`chaincode ${chaincodeId} not found`);
 		chaincodeVersion = nextVersion();
 	} else {
-		chaincodePath = lastChaincode.path;
+		if (!chaincodePath) {
+			chaincodePath = lastChaincode.path;
+		}
 		chaincodeVersion = nextVersion(lastChaincode.version, incrementLevel);
 	}
 
