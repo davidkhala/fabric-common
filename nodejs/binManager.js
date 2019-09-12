@@ -28,7 +28,7 @@ class BinManager {
 
 	configtxgen(profile, configtxYaml, channelName) {
 
-		process.env.FABRIC_CFG_PATH = path.dirname(configtxYaml);
+		const configPath = path.dirname(configtxYaml);
 
 		return {
 
@@ -36,13 +36,13 @@ class BinManager {
 				if (!channelName) {
 					channelName = 'testchainid';
 				}
-				const CMD = `${this.binPath}/configtxgen -outputBlock ${outputFile} -profile ${profile} -channelID ${channelName}`;
+				const CMD = `${this.binPath}/configtxgen -outputBlock ${outputFile} -profile ${profile} -channelID ${channelName} -configPath ${configPath}`;
 				logger.info('CMD', CMD);
 				const result = await exec(CMD);
 				execResponsePrint(result);
 			},
 			genChannel: async (outputFile) => {
-				const CMD = `${this.binPath}/configtxgen -outputCreateChannelTx ${outputFile} -profile ${profile} -channelID ${channelName}`;
+				const CMD = `${this.binPath}/configtxgen -outputCreateChannelTx ${outputFile} -profile ${profile} -channelID ${channelName} -configPath ${configPath}`;
 				logger.info('CMD', CMD);
 				const result = await exec(CMD);
 				execResponsePrint(result);
@@ -58,20 +58,20 @@ class BinManager {
 				};
 				configtxYamlCheck();
 
-				const CMD = `${this.binPath}/configtxgen -outputAnchorPeersUpdate ${outputFile} -profile ${profile} -channelID ${channelName} -asOrg ${asOrg}`;
+				const CMD = `${this.binPath}/configtxgen -outputAnchorPeersUpdate ${outputFile} -profile ${profile} -channelID ${channelName} -asOrg ${asOrg} -configPath ${configPath}`;
 				logger.info('CMD', CMD);
 				const result = await exec(CMD);
 				execResponsePrint(result);
 			},
 			viewBlock: async (blockFile) => {
-				const CMD = `${this.binPath}/configtxgen -inspectBlock ${blockFile} -profile ${profile}`;
+				const CMD = `${this.binPath}/configtxgen -inspectBlock ${blockFile} -profile ${profile} -configPath ${configPath}`;
 				logger.info('CMD', CMD);
 				const result = await exec(CMD);
 				console.error('stderr[start]\n', result.stderr, '[end]stderr');
 				return JSON.parse(result.stdout);
 			},
 			viewChannel: async (channelFile) => {
-				const CMD = `${this.binPath}/configtxgen -inspectChannelCreateTx ${channelFile} -profile ${profile} -channelID ${channelName}`;
+				const CMD = `${this.binPath}/configtxgen -inspectChannelCreateTx ${channelFile} -profile ${profile} -channelID ${channelName} -configPath ${configPath}`;
 				logger.info('CMD', CMD);
 				const result = await exec(CMD);
 				console.error('stderr[start]\n', result.stderr, '[end]stderr');
