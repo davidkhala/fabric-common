@@ -1,7 +1,7 @@
 # fabric-common
 [![Build Status](https://travis-ci.com/davidkhala/fabric-common.svg?branch=release-1.4)](https://travis-ci.com/davidkhala/fabric-common)
 
-Latest version 1.4.2
+Current version 1.4.3
 ## Installation
 - init submodule
     `./install gitSync`
@@ -56,6 +56,7 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
     - orderer down-time tolerance
 - [raft] etcdraft does not support [non TLS](https://hyperledger-fabric.readthedocs.io/en/release-1.4/raft_configuration.html)
     - Raft nodes identify each other using TLS pinning, so in order to impersonate a Raft node, an attacker needs to obtain the private key of its TLS certificate. As a result, it is not possible to run a Raft node without a valid TLS configuration.
+- [1.4.3][orderer][FAB-7559] apply new config structure
 ## DONE
 - discovery service, endorsement hints
 - [1.4] operation enhance: 
@@ -78,7 +79,7 @@ The /metrics endpoint allows operators to utilize Prometheus to pull operational
 - is private data automatic sync on new peer, with peer amount over max peer count.
 - migrate from kafka to etcdRaft
 - make use of npm jsrsasign
-- [1.4.2] apply new config structure         
+         
 ## Fabric weakness
 - keystore object un-promisify: https://gerrit.hyperledger.org/r/#/c/24749/
 - endpoint ping: https://gerrit.hyperledger.org/r/#/c/28115/

@@ -129,7 +129,7 @@ softHSM() {
 	fi
 }
 fabricInstall() {
-	curl -sSL http://bit.ly/2ysbOFE | bash -s -- 1.4.2 1.4.2 0.4.15
+	curl -sSL http://bit.ly/2ysbOFE | bash -s -- 1.4.3 1.4.3 0.4.15
 }
 sync() {
 	CURRENT=$(cd $(dirname ${BASH_SOURCE}) && pwd)
