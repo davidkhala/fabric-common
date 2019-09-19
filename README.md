@@ -79,7 +79,7 @@ The /metrics endpoint allows operators to utilize Prometheus to pull operational
 - is private data automatic sync on new peer, with peer amount over max peer count.
 - migrate from kafka to etcdRaft
 - make use of npm jsrsasign
-         
+- make use of softHSM in node-sdk         
 ## Fabric weakness
 - keystore object un-promisify: https://gerrit.hyperledger.org/r/#/c/24749/
 - endpoint ping: https://gerrit.hyperledger.org/r/#/c/28115/
@@ -100,7 +100,7 @@ The /metrics endpoint allows operators to utilize Prometheus to pull operational
 - [TODO] there is not pagination in GetHistoryForKey: Error: QUERY_STATE_NEXT failed
 - client.newTransactionID(); --> new TransactionID(Identity,isAdmin)
 - create docker env manager to convert a env jsObject to env list(having same key checking)
-- 360 代码扫描工具扫出fabric 1000多个问题
+
 
 ## Abandoned
 - what is peer_chaincode_id and peer_chaincode_path
