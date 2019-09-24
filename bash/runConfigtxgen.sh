@@ -2,7 +2,7 @@
 CURRENT=$(cd $(dirname ${BASH_SOURCE}) && pwd)
 
 BIN_PATH="$(dirname $CURRENT)/bin"
-if [ -z "$FABRIC_CFG_PATH" ]; then
+if [[ -z "$FABRIC_CFG_PATH" ]]; then
 	export FABRIC_CFG_PATH=$CURRENT
 fi
 
