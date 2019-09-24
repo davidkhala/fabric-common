@@ -100,7 +100,10 @@ The /metrics endpoint allows operators to utilize Prometheus to pull operational
 - [TODO] there is not pagination in GetHistoryForKey: Error: QUERY_STATE_NEXT failed
 - client.newTransactionID(); --> new TransactionID(Identity,isAdmin)
 - create docker env manager to convert a env jsObject to env list(having same key checking)
-
+- `totalQueryLimit` used in following only:
+    - `GetStateByRange`[not work in leveldb]
+    - `GetStateByPartialCompositeKey` [not work in leveldb]
+    - `GetQueryResult`
 
 ## Abandoned
 - what is peer_chaincode_id and peer_chaincode_path
