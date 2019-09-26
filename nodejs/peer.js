@@ -1,6 +1,6 @@
 const Peer = require('fabric-client/lib/Peer');
 const {fsExtra} = require('khala-nodeutils/helper');
-const logger = require('khala-logger').new('peer');
+const logger = require('khala-nodeutils').logger.new('peer');
 const {RequestPromise} = require('khala-nodeutils/request');
 const {loggingLevels, RemoteOptsTransform} = require('./remote');
 

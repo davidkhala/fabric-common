@@ -1,5 +1,5 @@
 const DevLogger = require('khala-nodeutils').devLogger;
-const Logger = require('khala-nodeutils').logger();
+const {logger: Logger} = require('khala-nodeutils');
 /**
  *
  * @param moduleName
