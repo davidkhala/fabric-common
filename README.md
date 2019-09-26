@@ -41,7 +41,7 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
 - [nodejs][chaincode]nodejs chaincode take longer time in install chaincode only.
 - [golang][chaincode] `failed to invoke chaincode name:"lscc" , error: API error (400): OCI runtime create failed: container_linux.go:348: starting container process caused "exec: \"chaincode\": executable file not found in $PATH": unknown`
     - means package name for golang-chaincode entrance is not `main`
-- [reference]playback conference: https://wiki.hyperledger.org/doku.php?id=projects/fabric/playbacks
+- [reference]playback conference: https://wiki.hyperledger.org/display/fabric/Playbacks
 - [channel]`txId` is required in peer join channel because: [bret Harrison]There is a transaction proposal to the system chaincode, so a transaction id is required.
 - [channel]impossible: join channel without orderer 
 - [channel]channel ID length < 250 :initializing configtx manager failed: bad channel ID: channel ID illegal, cannot be longer than 249
