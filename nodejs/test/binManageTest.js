@@ -39,8 +39,8 @@ const viewChannelTest = async (channelProfile, channelName = channelProfile) => 
 };
 
 const configtxlatorRestart = async () => {
-	await binManager.configtxlator('start');
-	await binManager.configtxlator('down');
+	await binManager.configtxlatorRESTServer('start');
+	await binManager.configtxlatorRESTServer('down');
 };
 const taskConfigtxlator = async () => {
 	await configtxlatorRestart();
