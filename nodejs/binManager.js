@@ -5,6 +5,9 @@ const logger = devLogger('binManager');
 
 class BinManager {
 	constructor(binPath = process.env.binPath) {
+		if (!binPath) {
+			throw Error('BinManager: environment <binPath> is undefined');
+		}
 		this.binPath = binPath;
 		this.configtxlatorCMD = {
 			/**
@@ -24,16 +27,15 @@ class BinManager {
 			/**
 			 * Converts a proto message to JSON.
 			 * @param {string} type The type of protobuf structure to decode from.
-			 * @param {string} input A file containing the proto message.
-			 * @param {string} output A file to write the JSON document to.
+			 * @param {string} inputFile A file containing the proto message.
+			 * @param {string} outputFile A file to write the JSON document to.
 			 */
-			decode: async (type, {input = '/dev/stdin', output = '/dev/stdout'}) => {
+			decode: async (type, {inputFile, outputFile}) => {
 				if (!['common.Config'].includes(type)) {
 					throw Error(`Unsupported encode type: ${type}`);
 				}
-				const CMD = path.resolve(this.binPath, `configtxlator proto_decode --type=${type} --input=${input} --output=${output}`);
-				const result = await exec(CMD);
-				execResponsePrint(result);
+				const CMD = `configtxlator proto_decode --type=${type} --input=${inputFile} ${outputFile ? `--output=${outputFile}` : ''}`;
+				await exec(path.resolve(this.binPath, CMD));
 			},
 			/**
 			 * Takes two marshaled common.Config messages and computes the config update which transitions between the two.

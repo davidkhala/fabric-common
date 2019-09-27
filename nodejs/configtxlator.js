@@ -245,14 +245,14 @@ class ConfigFactory {
 	}
 }
 
-
+const path = require('path');
 /**
  * This requires 'configtxlator' tool be running locally and on port 7059
  * @param channel
  * @param {Peer} peer optional when nodeType is 'peer'
- * @returns {Promise<{original_config_proto: Buffer, original_config: *}>}
+ * @returns {Promise<{original_config_proto: Buffer, original_config: string|json}>}
  */
-exports.getChannelConfigReadable = async (channel, peer) => {
+exports.getChannelConfigReadable = async (channel, peer, viaServer) => {
 	let configEnvelope;
 	if (peer) {
 		configEnvelope = await channel.getChannelConfig(peer);
@@ -260,14 +260,32 @@ exports.getChannelConfigReadable = async (channel, peer) => {
 		configEnvelope = await channel.getChannelConfigFromOrderer();
 	}
 
-	// NOTE JSON.stringify(data) :TypeError: Converting circular structure to JSON
+	// NOTE JSON.stringify(original_config_proto) :TypeError: Converting circular structure to JSON
 	const original_config_proto = configEnvelope.config.toBuffer();
 
-	const body = await agent.decode.config(original_config_proto);
+	let original_config;
+	if (viaServer) {
+		const body = await agent.decode.config(original_config_proto);// body is a Buffer,
+		original_config = JSON.stringify(JSON.parse(body));
+	} else {
+
+		const BinManager = require('./binManager');
+		const binManager = new BinManager();
+
+		// TODO how to use streaming buffer to exec
+		const tmpFile = path.resolve(binManager.binPath, `${Date.now()}.tmp`);
+		const tmp2File = path.resolve(binManager.binPath, `${Date.now()}.json`);
+		fs.writeFileSync(tmpFile, original_config_proto);
+		await binManager.configtxlatorCMD.decode('common.Config', {inputFile: tmpFile, outputFile: tmp2File});
+		fs.unlinkSync(tmpFile);
+		original_config = JSON.stringify(require(tmp2File));
+		fs.unlinkSync(tmp2File);
+	}
+
 
 	return {
 		original_config_proto,
-		original_config: JSON.stringify(JSON.parse(body)) // body is a Buffer,
+		original_config
 	};
 };
 /**
