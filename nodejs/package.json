@@ -4,8 +4,9 @@
   "dependencies": {
     "fabric-ca-client": "^1.4.4",
     "fabric-client": "^1.4.4",
+    "khala-dockerode": "^17.0.2",
     "khala-nodeutils": "^0.7.0",
-    "khala-dockerode": "^17.0.2"
+    "tmp": "^0.1.0"
   },
   "devDependencies": {
     "jsrsasign": "^7.2.2",

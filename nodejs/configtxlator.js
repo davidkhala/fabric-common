@@ -1,5 +1,5 @@
 const logger = require('./logger').new('configtxlator');
-
+const Tmp = require('tmp');
 const fs = require('fs');
 const agent = require('./agent2configtxlator');
 const {JSONEqual} = require('khala-nodeutils/helper');
@@ -273,13 +273,14 @@ exports.getChannelConfigReadable = async (channel, peer, viaServer) => {
 		const binManager = new BinManager();
 
 		// TODO how to use streaming buffer to exec
-		const tmpFile = path.resolve(binManager.binPath, `${Date.now()}.tmp`);
-		const tmp2File = path.resolve(binManager.binPath, `${Date.now()}.json`);
-		fs.writeFileSync(tmpFile, original_config_proto);
-		await binManager.configtxlatorCMD.decode('common.Config', {inputFile: tmpFile, outputFile: tmp2File});
-		fs.unlinkSync(tmpFile);
-		original_config = JSON.stringify(require(tmp2File));
-		fs.unlinkSync(tmp2File);
+		const tmpFile = Tmp.fileSync();
+		const tmpJSONFile = Tmp.fileSync({postfix: '.json'});
+		fs.writeFileSync(tmpFile.name, original_config_proto);
+		await binManager.configtxlatorCMD.decode('common.Config', {inputFile: tmpFile.name, outputFile: tmpJSONFile.name});
+		tmpFile.removeCallback();
+
+		original_config = JSON.stringify(require(tmpJSONFile.name));
+		tmpJSONFile.removeCallback();
 	}
 
 
