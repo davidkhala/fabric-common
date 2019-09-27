@@ -65,7 +65,7 @@ class ConfigFactory {
 							}
 						]
 					}
-				},
+				}
 			}
 		};
 		return this;
@@ -108,114 +108,114 @@ class ConfigFactory {
 		}
 		const target = ConfigFactory._getTarget(nodeType);
 		this.newConfig.channel_group.groups[target].groups[MSPName] = {
-			'mod_policy': 'Admins',
-			'policies': {
-				'Admins': {
-					'mod_policy': 'Admins',
-					'policy': {
-						'type': 1,
-						'value': {
-							'identities': [
+			mod_policy: 'Admins',
+			policies: {
+				Admins: {
+					mod_policy: 'Admins',
+					policy: {
+						type: 1,
+						value: {
+							identities: [
 								{
-									'principal': {
-										'msp_identifier': MSPID,
+									principal: {
+										msp_identifier: MSPID,
 										role: 'ADMIN'
 									},
 									principal_classification: 'ROLE'
 								}
 							],
-							'rule': {
-								'n_out_of': {
-									'n': 1,
-									'rules': [
+							rule: {
+								n_out_of: {
+									n: 1,
+									rules: [
 										{
-											'signed_by': 0
+											signed_by: 0
 										}
 									]
 								}
-							},
+							}
 						}
 					}
 				},
-				'Readers': {
-					'mod_policy': 'Admins',
-					'policy': {
-						'type': 1,
-						'value': {
-							'identities': [
+				Readers: {
+					mod_policy: 'Admins',
+					policy: {
+						type: 1,
+						value: {
+							identities: [
 								{
-									'principal': {
-										'msp_identifier': MSPID,
+									principal: {
+										msp_identifier: MSPID,
 										role: 'MEMBER'
 									},
 									principal_classification: 'ROLE'
 								}
 							],
-							'rule': {
-								'n_out_of': {
-									'n': 1,
-									'rules': [
+							rule: {
+								n_out_of: {
+									n: 1,
+									rules: [
 										{
-											'signed_by': 0
+											signed_by: 0
 										}
 									]
 								}
-							},
+							}
 						}
 					}
 				},
-				'Writers': {
-					'mod_policy': 'Admins',
-					'policy': {
-						'type': 1,
-						'value': {
-							'identities': [
+				Writers: {
+					mod_policy: 'Admins',
+					policy: {
+						type: 1,
+						value: {
+							identities: [
 								{
-									'principal': {
-										'msp_identifier': MSPID,
+									principal: {
+										msp_identifier: MSPID,
 										role: 'MEMBER'
 									},
 									principal_classification: 'ROLE'
 								}
 							],
-							'rule': {
-								'n_out_of': {
-									'n': 1,
-									'rules': [
+							rule: {
+								n_out_of: {
+									n: 1,
+									rules: [
 										{
-											'signed_by': 0
+											signed_by: 0
 										}
 									]
 								}
-							},
+							}
 						}
 					}
 				}
 			},
-			'values': {
-				'MSP': {
-					'mod_policy': 'Admins',
-					'value': {
-						'config': {
+			values: {
+				MSP: {
+					mod_policy: 'Admins',
+					value: {
+						config: {
 							admins: admins.map(admin => {
 								return fs.readFileSync(admin).toString('base64');
 							}),
-							'crypto_config': {
-								'identity_identifier_hash_function': 'SHA256',
-								'signature_hash_family': 'SHA2'
+							crypto_config: {
+								identity_identifier_hash_function: 'SHA256',
+								signature_hash_family: 'SHA2'
 							},
 							name: MSPID,
-							'root_certs': root_certs.map(rootCert => {
+							root_certs: root_certs.map(rootCert => {
 								return fs.readFileSync(rootCert).toString('base64');
 							}),
-							'tls_root_certs': tls_root_certs.map(tlsRootCert => {
+							tls_root_certs: tls_root_certs.map(tlsRootCert => {
 								return fs.readFileSync(tlsRootCert).toString('base64');
 							})
 						},
 						type: 0
-					},
+					}
 				}
-			},
+			}
 
 		};
 		return this;
@@ -267,7 +267,7 @@ exports.getChannelConfigReadable = async (channel, peer) => {
 
 	return {
 		original_config_proto,
-		original_config: JSON.stringify(JSON.parse(body)), // body is a Buffer,
+		original_config: JSON.stringify(JSON.parse(body)) // body is a Buffer,
 	};
 };
 /**
