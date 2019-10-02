@@ -242,8 +242,9 @@ class ConfigFactory {
 	 * setting the ordering service into maintenance mode
 	 * @param isDirectionIn true to setting the ordering service into maintenance mode, false to back to normal mode
 	 */
-	MaintenanceMode(isDirectionIn) {
-		this.newConfig.channel_group.groups.Orderer.values.ConsensusType.State = isDirectionIn ? 'MAINTENANCE' : 'NORMAL';
+	maintenanceMode(isDirectionIn) {
+		this.newConfig.channel_group.groups.Orderer.values.ConsensusType.State = isDirectionIn ? 'STATE_MAINTENANCE' : 'STATE_NORMAL';
+	//	TODO fabric document error in `State is either NORMAL, when the channel is processing transactions, or MAINTENANCE, during the migration process.` https://hyperledger-fabric.readthedocs.io/en/release-1.4/kafka_raft_migration.html#entry-to-maintenance-mode
 	}
 
 
@@ -257,6 +258,9 @@ const path = require('path');
  * This requires 'configtxlator' tool be running locally and on port 7059
  * @param channel
  * @param {Peer} peer optional when nodeType is 'peer'
+ * @param {boolean} viaServer
+ *  true: This requires 'configtxlator' RESTful server running locally on port 7059
+ *  false: use configtxlator as command line tool
  * @returns {Promise<{original_config_proto: Buffer, original_config: string|json}>}
  */
 exports.getChannelConfigReadable = async (channel, peer, viaServer) => {
