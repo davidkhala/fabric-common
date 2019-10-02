@@ -234,9 +234,16 @@ class ConfigFactory {
 		return this.newConfig.channel_group.values.OrdererAddresses.value.addresses;
 	}
 
-
 	getKafkaBrokers() {
 		return this.newConfig.channel_group.groups.Orderer.values.KafkaBrokers.value.brokers;
+	}
+
+	/**
+	 * setting the ordering service into maintenance mode
+	 * @param isDirectionIn true to setting the ordering service into maintenance mode, false to back to normal mode
+	 */
+	MaintenanceMode(isDirectionIn) {
+		this.newConfig.channel_group.groups.Orderer.values.ConsensusType.State = isDirectionIn ? 'MAINTENANCE' : 'NORMAL';
 	}
 
 

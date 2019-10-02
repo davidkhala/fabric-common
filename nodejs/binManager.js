@@ -59,7 +59,7 @@ class BinManager {
 	 * @param port The port on which the REST server will listen
 	 * @param {string[]} CORS Allowable CORS domains, e.g. ['*'] or ['www.example.com']
 	 */
-	async configtxlatorRESTServer(action, {hostname = '0.0.0.0', port = 7059, CORS = ['*']}) {
+	async configtxlatorRESTServer(action, {hostname = '0.0.0.0', port = 7059, CORS = ['*']} = {}) {
 		if (action === 'start') {
 
 			const CORSReducer = (opt, entry) => {
