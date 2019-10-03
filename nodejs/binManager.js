@@ -71,15 +71,30 @@ class BinManager {
 			/**
 			 * Takes two marshaled common.Config messages and computes the config update which transitions between the two.
 			 * @param {string} channelID The name of the channel for this update.
-			 * @param original The original config message.(file path)
-			 * @param updated The updated config message.(file path)
-			 * @param output A file to write the proto message to. //TODO ?? or "A file to write the JSON document to."
+			 * @param {string} original The original config message.(file path)
+			 * @param {string} updated The updated config message.(file path)
+			 * @param {string} outputFile A file to write the config update message to. //TODO fabric document "A file to write the JSON document to."
 			 */
-			compute_update: async (channelID, original, updated, {output = '/dev/stdout'}) => {
-				const CMD = path.resolve(this.binPath, `configtxlator compute_update --channel_id=${channelID} --original=${original} 
-				--updated=${updated}  --output=${output}`);
-				const result = await exec(CMD);
-				execResponsePrint(result);
+			computeUpdateFile: async (channelID, original, updated, outputFile) => {
+				const CMD = path.resolve(this.binPath, `configtxlator compute_update --channel_id=${channelID} --original=${original} --updated=${updated}  --output=${outputFile}`);
+				await exec(CMD);
+			},
+			/**
+			 *
+			 * @param channelID
+			 * @param {Buffer} original_config_proto The original config message
+			 * @param {Buffer} updated_config_proto The updated config message
+			 * @return {Promise<Buffer>} modified_config_proto
+			 */
+			computeUpdate: async (channelID, original_config_proto, updated_config_proto) => {
+				const Tmp = require('tmp');
+				const tmpFileOriginal = Tmp.fileSync().name;
+				const tmpFileUpdated = Tmp.fileSync().name;
+				const tmpFileOutput = Tmp.fileSync().name;
+				fs.writeFileSync(tmpFileOriginal, original_config_proto);
+				fs.writeFileSync(tmpFileUpdated, updated_config_proto);
+				await this.configtxlatorCMD.computeUpdateFile(channelID, tmpFileOriginal, tmpFileUpdated, tmpFileOutput);
+				return fs.readFileSync(tmpFileOutput);
 			}
 		};
 	}

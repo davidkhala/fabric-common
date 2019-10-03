@@ -3,7 +3,7 @@ const {logger: Logger} = require('khala-nodeutils');
 /**
  *
  * @param moduleName
- * @param {boolean} dev true to use `log4j`, false to use `winston`
+ * @param {boolean} [dev] true to use `log4j`, false to use `winston`
  * @returns {*}
  */
 exports.new = (moduleName, dev) => {

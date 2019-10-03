@@ -31,19 +31,8 @@ exports.decode = {
 	config: async (data) => await requestPost({url: 'http://127.0.0.1:7059/protolator/decode/common.Config', body: data})
 };
 exports.compute = {
-	updateFromConfigs: async (formData) => {
-		const body = await requestPost({
-			url: 'http://127.0.0.1:7059/configtxlator/compute/update-from-configs',
-			formData
-		});
-		const bodyString = body.toString();
-
-		const noDiffErr = 'Error computing update: no differences detected between original and updated config';
-		if (bodyString.includes(noDiffErr)) {
-			logger.warn(bodyString);
-			return;
-		}
-		return body;
-
-	}
+	updateFromConfigs: async (formData) => await requestPost({
+		url: 'http://127.0.0.1:7059/configtxlator/compute/update-from-configs',
+		formData
+	})
 };

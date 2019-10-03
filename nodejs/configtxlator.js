@@ -318,17 +318,18 @@ exports.channelUpdate = async (channel, orderer, configChangeCallback, signature
 	{peer, client = channel._clientContext, viaServer} = {}) => {
 
 	const ERROR_NO_UPDATE = 'No update to original_config';
+	const channelName = channel.getName();
 	const {original_config_proto, original_config} = await exports.getChannelConfigReadable(channel, peer, viaServer);
 	const updateConfigJSON = await configChangeCallback(original_config);
 	if (JSONEqual(updateConfigJSON, original_config)) {
 		logger.warn(ERROR_NO_UPDATE);
 		return {err: ERROR_NO_UPDATE, original_config};
 	}
-	let proto;
+	let modified_config_proto;
 	if (viaServer) {
 		const updatedProto = await agent.encode.config(updateConfigJSON);
 		const formData = {
-			channel: channel.getName(),
+			channel: channelName,
 			original: {
 				value: original_config_proto,
 				options: {
@@ -344,26 +345,21 @@ exports.channelUpdate = async (channel, orderer, configChangeCallback, signature
 				}
 			}
 		};
-		const body2 = await agent.compute.updateFromConfigs(formData);
-		if (!body2) {
-			logger.warn(ERROR_NO_UPDATE, '(calculated from configtxlator)');
-			return {err: ERROR_NO_UPDATE, original_config};
-		}
-		proto = new Buffer(body2, 'binary');
+		modified_config_proto = await agent.compute.updateFromConfigs(formData);
 	} else {
 		const BinManager = require('./binManager');
 		const binManager = new BinManager();
 
 		const updatedProto = await binManager.configtxlatorCMD.encode('common.Config', updateConfigJSON);
-		//TODO WIP
-
+		modified_config_proto = await binManager.configtxlatorCMD.computeUpdate(channelName, original_config_proto, updatedProto);
 	}
+	const proto = new Buffer(modified_config_proto, 'binary');
 	const signatures = await signatureCollectCallback(proto);
 
 	const request = {
 		config: proto,
 		signatures,
-		name: channel.getName(),
+		name: channelName,
 		orderer,
 		txId: client.newTransactionID()
 	};
