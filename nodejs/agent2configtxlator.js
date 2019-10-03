@@ -1,24 +1,34 @@
-const logger = require('./logger').new('configtxlator agent');
+const moduleName = 'configtxlator agent';
+const logger = require('./logger').new(moduleName);
 const {RequestPromise} = require('khala-nodeutils/request');
 
-const requestPost = (opt) => {
-	return RequestPromise(opt, {
-		json: null,
-		encoding: null// NOTE config :returning body to be of type Buffer not String
-	});
+const requestPost = async (opt) => {
+	try {
+		return await RequestPromise(opt, {
+			json: null,
+			encoding: null// NOTE config :returning body to be of type Buffer not String
+		});
+	} catch (e) {
+		if (e.statusCode && e.statusMessage && e.body) {
+			const {statusCode, statusMessage, body} = e;
+			throw Error(`${moduleName}: ${statusCode} ${statusMessage}: ${body}`);
+		} else {
+			throw e;
+		}
+	}
+
 };
 exports.encode = {
-	configUpdate: (jsonString) =>
-		requestPost({
+	configUpdate: async (jsonString) =>
+		await requestPost({
 			url: 'http://127.0.0.1:7059/protolator/encode/common.ConfigUpdate',
 			body: jsonString
-		})
-	,
-	config: (jsonString) => requestPost(
+		}),
+	config: async (jsonString) => await requestPost(
 		{url: 'http://127.0.0.1:7059/protolator/encode/common.Config', body: jsonString})
 };
 exports.decode = {
-	config: (data) => requestPost({url: 'http://127.0.0.1:7059/protolator/decode/common.Config', body: data})
+	config: async (data) => await requestPost({url: 'http://127.0.0.1:7059/protolator/decode/common.Config', body: data})
 };
 exports.compute = {
 	updateFromConfigs: async (formData) => {
