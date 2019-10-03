@@ -64,11 +64,10 @@ exports.getDiscoveryResults = async (channel, endorsement_hints) => {
  * @param peer
  * @param {boolean} asLocalhost   FIXME:ugly undefined checking in fabric-sdk-node
  * @param TLS
- * @returns {Promise<*|void>}
  */
 exports.initialize = async (channel, peer, {asLocalhost, TLS} = {}) => {
 	FabricConfig.set('discovery-protocol', TLS ? 'grpcs' : 'grpc');
-	return await channel.initialize({target: peer, discover: true, asLocalhost});
+	return channel.initialize({target: peer, discover: true, asLocalhost});
 };
 /**
  * @param {Object} configs chaincodeID -> collectionNames
