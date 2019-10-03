@@ -260,8 +260,8 @@ class ConfigFactory {
 	 * @return {ConfigFactory}
 	 */
 	maintenanceMode(isDirectionIn) {
-		this.newConfig.channel_group.groups.Orderer.values.ConsensusType.State = isDirectionIn ? 'STATE_MAINTENANCE' : 'STATE_NORMAL';
-		//	TODO fabric document error in `State is either NORMAL, when the channel is processing transactions, or MAINTENANCE, during the migration process.` https://hyperledger-fabric.readthedocs.io/en/release-1.4/kafka_raft_migration.html#entry-to-maintenance-mode
+		this.newConfig.channel_group.groups.Orderer.values.ConsensusType.value.state = isDirectionIn ? 'STATE_MAINTENANCE' : 'STATE_NORMAL';
+		// TODO https://jira.hyperledger.org/browse/FAB-16756
 		return this;
 	}
 
@@ -314,7 +314,8 @@ exports.getChannelConfigReadable = async (channel, peer, viaServer) => {
  * @param {Peer} [peer] optional when nodeType=='peer'
  * @param {boolean} [viaServer]
  */
-exports.channelUpdate = async (channel, orderer, configChangeCallback, signatureCollectCallback, {peer, client = channel._clientContext, viaServer} = {}) => {
+exports.channelUpdate = async (channel, orderer, configChangeCallback, signatureCollectCallback,
+	{peer, client = channel._clientContext, viaServer} = {}) => {
 
 	const ERROR_NO_UPDATE = 'No update to original_config';
 	const {original_config_proto, original_config} = await exports.getChannelConfigReadable(channel, peer, viaServer);
@@ -354,6 +355,7 @@ exports.channelUpdate = async (channel, orderer, configChangeCallback, signature
 		const binManager = new BinManager();
 
 		const updatedProto = await binManager.configtxlatorCMD.encode('common.Config', updateConfigJSON);
+		//TODO WIP
 
 	}
 	const signatures = await signatureCollectCallback(proto);
