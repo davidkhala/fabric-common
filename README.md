@@ -79,7 +79,8 @@ The /metrics endpoint allows operators to utilize Prometheus to pull operational
 - is private data automatic sync on new peer, with peer amount over max peer count.
 - migrate from kafka to etcdRaft
 - make use of npm jsrsasign
-- make use of softHSM in node-sdk         
+- make use of softHSM in node-sdk
+- [nodejs] do we need `npm bytebuffer`?
 ## Fabric weakness
 - keystore object un-promisify: https://gerrit.hyperledger.org/r/#/c/24749/
 - endpoint ping: https://gerrit.hyperledger.org/r/#/c/28115/

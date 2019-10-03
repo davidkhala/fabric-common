@@ -11,6 +11,7 @@ module.exports = {
 	Policy: require('./policy'),
 	PrivateData: require('./privateData'),
 	Query: require('./query'),
+	Signature: require('./multiSign'),
 
 	CACryptoGen: require('./ca-crypto-gen'),
 	ChaincodeHelper: require('./chaincodeHelper'),

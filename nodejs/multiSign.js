@@ -2,7 +2,7 @@ const logger = require('./logger').new('multi-signature');
 /**
  * @param {Client[]} clients
  * @param proto
- * @returns {{signatures: Array, proto: *}}
+ * @returns {Client.ConfigSignature[]} signatures
  */
 exports.signs = (clients, proto) => {
 	const signatures = [];
@@ -10,7 +10,7 @@ exports.signs = (clients, proto) => {
 		logger.debug('signature identity', client._userContext.getName(), client._userContext._mspId);
 		signatures.push(client.signChannelConfig(proto));
 	}
-	return {signatures, proto};
+	return signatures;
 };
 exports.toBase64 = (signatures) => {
 	return signatures.map(({signature_header, signature}) => {

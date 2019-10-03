@@ -90,7 +90,7 @@ exports.create = async (signClients, channel, channelConfigFile, orderer) => {
 
 	// extract the channel config bytes from the envelope to be signed
 	const channelConfig = channelClient.extractChannelConfig(channelConfig_envelop);
-	const {signatures} = signs(signClients, channelConfig);
+	const signatures = signs(signClients, channelConfig);
 	const txId = channelClient.newTransactionID();
 	const request = {
 		config: channelConfig,
@@ -213,7 +213,7 @@ exports.updateAnchorPeers = async (channel, anchorPeerTxFile, orderer) => {
 	const client = channel._clientContext;
 	const channelConfig_envelop = fs.readFileSync(anchorPeerTxFile);
 	const channelConfig = client.extractChannelConfig(channelConfig_envelop);
-	const {signatures} = signs([client], channelConfig);
+	const signatures = signs([client], channelConfig);
 
 	const request = {
 		config: channelConfig,

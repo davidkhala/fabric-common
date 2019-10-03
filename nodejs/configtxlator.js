@@ -21,6 +21,11 @@ class ConfigFactory {
 		this.newConfig = JSON.parse(original_config);
 	}
 
+	/**
+	 * @param {string} MSPName
+	 * @param nodeType
+	 * @return {ConfigFactory}
+	 */
 	deleteMSP(MSPName, nodeType) {
 		const target = ConfigFactory._getTarget(nodeType);
 		delete this.newConfig.channel_group.groups[target].groups[MSPName];
@@ -76,6 +81,12 @@ class ConfigFactory {
 		return this.newConfig.channel_group.groups[target].groups[MSPName];
 	}
 
+	/**
+	 * @param MSPName
+	 * @param nodeType
+	 * @param admin
+	 * @return {ConfigFactory}
+	 */
 	addAdmin(MSPName, nodeType, admin) {
 		if (!this.getOrg(MSPName, nodeType)) {
 			logger.error(MSPName, 'not exist, addAdmin skipped');
@@ -100,6 +111,7 @@ class ConfigFactory {
 	 * @param {string[]} admins pem file path array
 	 * @param {string[]} root_certs pem file path array
 	 * @param {string[]} tls_root_certs pem file path array
+	 * @return {ConfigFactory}
 	 */
 	createOrUpdateOrg(MSPName, MSPID, nodeType, {admins = [], root_certs = [], tls_root_certs = []} = {}, skipIfExist) {
 		if (skipIfExist && this.getOrg(MSPName, nodeType)) {
@@ -221,6 +233,10 @@ class ConfigFactory {
 		return this;
 	}
 
+	/**
+	 * @param newAddr
+	 * @return {ConfigFactory}
+	 */
 	addOrdererAddress(newAddr) {
 		if (!this.newConfig.channel_group.values.OrdererAddresses.value.addresses.includes(newAddr)) {
 			this.newConfig.channel_group.values.OrdererAddresses.value.addresses.push(newAddr);
@@ -241,10 +257,12 @@ class ConfigFactory {
 	/**
 	 * setting the ordering service into maintenance mode
 	 * @param isDirectionIn true to setting the ordering service into maintenance mode, false to back to normal mode
+	 * @return {ConfigFactory}
 	 */
 	maintenanceMode(isDirectionIn) {
 		this.newConfig.channel_group.groups.Orderer.values.ConsensusType.State = isDirectionIn ? 'STATE_MAINTENANCE' : 'STATE_NORMAL';
-	//	TODO fabric document error in `State is either NORMAL, when the channel is processing transactions, or MAINTENANCE, during the migration process.` https://hyperledger-fabric.readthedocs.io/en/release-1.4/kafka_raft_migration.html#entry-to-maintenance-mode
+		//	TODO fabric document error in `State is either NORMAL, when the channel is processing transactions, or MAINTENANCE, during the migration process.` https://hyperledger-fabric.readthedocs.io/en/release-1.4/kafka_raft_migration.html#entry-to-maintenance-mode
+		return this;
 	}
 
 
@@ -253,12 +271,10 @@ class ConfigFactory {
 	}
 }
 
-const path = require('path');
 /**
- * This requires 'configtxlator' tool be running locally and on port 7059
  * @param channel
- * @param {Peer} peer optional when nodeType is 'peer'
- * @param {boolean} viaServer
+ * @param {Peer} [peer] optional when nodeType is 'peer'
+ * @param {boolean} [viaServer]
  *  true: This requires 'configtxlator' RESTful server running locally on port 7059
  *  false: use configtxlator as command line tool
  * @returns {Promise<{original_config_proto: Buffer, original_config: string|json}>}
@@ -279,21 +295,10 @@ exports.getChannelConfigReadable = async (channel, peer, viaServer) => {
 		const body = await agent.decode.config(original_config_proto);// body is a Buffer,
 		original_config = JSON.stringify(JSON.parse(body));
 	} else {
-
 		const BinManager = require('./binManager');
 		const binManager = new BinManager();
-
-		// TODO how to use streaming buffer to exec
-		const tmpFile = Tmp.fileSync();
-		const tmpJSONFile = Tmp.fileSync({postfix: '.json'});
-		fs.writeFileSync(tmpFile.name, original_config_proto);
-		await binManager.configtxlatorCMD.decode('common.Config', {inputFile: tmpFile.name, outputFile: tmpJSONFile.name});
-		tmpFile.removeCallback();
-
-		original_config = JSON.stringify(require(tmpJSONFile.name));
-		tmpJSONFile.removeCallback();
+		original_config = await binManager.configtxlatorCMD.decode('common.Config', original_config_proto);
 	}
-
 
 	return {
 		original_config_proto,
@@ -302,47 +307,56 @@ exports.getChannelConfigReadable = async (channel, peer, viaServer) => {
 };
 /**
  * @param {Channel} channel
- * @param {Orderer} orderer request send to
- * @param {Peer} peer optional when for nodeType=='peer'
- * @param {function} mspCB input: {string|json} original_config, output {string|json} update_config
- * @param {function} signatureCollectCB input: {Buffer<binary>} proto, output {{signatures:string[]}} signatures
- * @param client
- * @returns {Promise<>}
+ * @param {Orderer} orderer
+ * @param {function} configChangeCallback input: {string|json} original_config, output {string|json} update_config
+ * @param {function} signatureCollectCallback input: {Buffer<binary>} proto, output {Client.ConfigSignature[]} signatures
+ * @param {Client} [client]
+ * @param {Peer} [peer] optional when nodeType=='peer'
+ * @param {boolean} [viaServer]
  */
-exports.channelUpdate = async (channel, orderer, peer, mspCB, signatureCollectCB, client = channel._clientContext) => {
+exports.channelUpdate = async (channel, orderer, configChangeCallback, signatureCollectCallback, {peer, client = channel._clientContext, viaServer} = {}) => {
 
 	const ERROR_NO_UPDATE = 'No update to original_config';
-	const {original_config_proto, original_config} = await exports.getChannelConfigReadable(channel, peer);
-	const update_configJSONString = await mspCB(original_config);
-	if (JSONEqual(update_configJSONString, original_config)) {
+	const {original_config_proto, original_config} = await exports.getChannelConfigReadable(channel, peer, viaServer);
+	const updateConfigJSON = await configChangeCallback(original_config);
+	if (JSONEqual(updateConfigJSON, original_config)) {
 		logger.warn(ERROR_NO_UPDATE);
 		return {err: ERROR_NO_UPDATE, original_config};
 	}
-	const body = await agent.encode.config(update_configJSONString);
-	const formData = {
-		channel: channel.getName(),
-		original: {
-			value: original_config_proto,
-			options: {
-				filename: 'original.proto',
-				contentType: 'application/octet-stream'
+	let proto;
+	if (viaServer) {
+		const updatedProto = await agent.encode.config(updateConfigJSON);
+		const formData = {
+			channel: channel.getName(),
+			original: {
+				value: original_config_proto,
+				options: {
+					filename: 'original.proto',
+					contentType: 'application/octet-stream'
+				}
+			},
+			updated: {
+				value: updatedProto,
+				options: {
+					filename: 'updated.proto',
+					contentType: 'application/octet-stream'
+				}
 			}
-		},
-		updated: {
-			value: body,
-			options: {
-				filename: 'updated.proto',
-				contentType: 'application/octet-stream'
-			}
+		};
+		const body2 = await agent.compute.updateFromConfigs(formData);
+		if (!body2) {
+			logger.warn(ERROR_NO_UPDATE, '(calculated from configtxlator)');
+			return {err: ERROR_NO_UPDATE, original_config};
 		}
-	};
-	const body2 = await agent.compute.updateFromConfigs(formData);
-	if (!body2) {
-		logger.warn(ERROR_NO_UPDATE, '(calculated from configtxlator)');
-		return {err: ERROR_NO_UPDATE, original_config};
+		proto = new Buffer(body2, 'binary');
+	} else {
+		const BinManager = require('./binManager');
+		const binManager = new BinManager();
+
+		const updatedProto = await binManager.configtxlatorCMD.encode('common.Config', updateConfigJSON);
+
 	}
-	const proto = new Buffer(body2, 'binary');
-	const {signatures} = await signatureCollectCB(proto);
+	const signatures = await signatureCollectCallback(proto);
 
 	const request = {
 		config: proto,
