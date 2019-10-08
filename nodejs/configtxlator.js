@@ -252,15 +252,15 @@ class ConfigFactory {
 		return this;
 	}
 
-
 	build() {
 		return JSON.stringify(this.newConfig);
 	}
 }
 
 /**
- * @param channel
- * @param {Peer} [peer] optional when nodeType is 'peer'
+ * Note that it could be used to extract application channel from orderer
+ * @param {Client.Channel} channel
+ * @param {Client.Peer} [peer] optional when nodeType is 'peer'
  * @param {boolean} [viaServer]
  *  true: This requires 'configtxlator' RESTful server running locally on port 7059
  *  false: use configtxlator as command line tool
@@ -293,12 +293,12 @@ exports.getChannelConfigReadable = async (channel, peer, viaServer) => {
 	};
 };
 /**
- * @param {Channel} channel
- * @param {Orderer} orderer
+ * @param {Client.Channel} channel with reader client
+ * @param {Client.Orderer} orderer
  * @param {function} configChangeCallback input: {string|json} original_config, output {string|json} update_config
  * @param {function} signatureCollectCallback input: {Buffer<binary>} proto, output {Client.ConfigSignature[]} signatures
- * @param {Client} [client]
- * @param {Peer} [peer] optional when nodeType=='peer'
+ * @param {Client} [client] tx committing client
+ * @param {Client.Peer} [peer] optional when nodeType=='peer'
  * @param {boolean} [viaServer]
  */
 exports.channelUpdate = async (channel, orderer, configChangeCallback, signatureCollectCallback,

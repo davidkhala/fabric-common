@@ -45,6 +45,8 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
 - [channel]`txId` is required in peer join channel because: [bret Harrison]There is a transaction proposal to the system chaincode, so a transaction id is required.
 - [channel]impossible: join channel without orderer 
 - [channel]channel ID length < 250 :initializing configtx manager failed: bad channel ID: channel ID illegal, cannot be longer than 249
+- [1.4][nodejs][sdk] `Channel#getChannelConfigReadable` could be used to extract application channel from orderer
+    - used in migration from kafka to RAFT. When after <appChannel> config is changed to maintenance mode, peer in <appChannel> could not get the latest channel config. At that point, we could extract <appChannel> config from orderer alternatively.   
 - [disaster]backup recovery: at least 1 anchor peer for each organization should be resumed to recover transaction process   
 - [healthz] `logspec`:`{"spec":"chaincode=debug:info"}`, the logger is in debug mode and level is info.
 - [endorsement]chaincode partial update: when not all peers upgrade to latest chaincode, is it possible that old chaincode still work
@@ -98,6 +100,7 @@ The /metrics endpoint allows operators to utilize Prometheus to pull operational
 - async or not: CryptoSuite importKey
 
 - [1.4] cleanup self and promise in fabric-ca-client, channeljs#instantiateChaincode not found
+- [1.4] `Channel#getChannelConfigFromOrderer` could not specify target orderer
 - client.newTransactionID(); --> new TransactionID(Identity,isAdmin)
 - create docker env manager to convert a env jsObject to env list(having same key checking)
 - [leveldb]QUERY_STATE_NEXT in followings, and how `totalQueryLimit` works?
