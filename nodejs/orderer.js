@@ -1,7 +1,6 @@
 const Orderer = require('fabric-client/lib/Orderer');
 const fs = require('fs');
-const Logger = require('./logger');
-const logger = Logger.new('orderer');
+const logger = require('./logger').new('orderer');
 const {loggingLevels, RemoteOptsTransform} = require('./remote');
 exports.find = ({orderers, ordererUrl}) => {
 	return ordererUrl ? orderers.find((orderer) => orderer.getUrl() === ordererUrl) : orderers[0];

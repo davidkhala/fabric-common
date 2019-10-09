@@ -1,6 +1,5 @@
 const {FabricConfig} = require('./helper');
-const Logger = require('./logger');
-const logger = Logger.new('service discovery', true);
+const logger = require('./logger').new('service discovery', true);
 /**
  * @typedef {Object} PeerQueryResponse
  * @property {Object} local_peers
@@ -75,7 +74,7 @@ exports.initialize = async (channel, peer, {asLocalhost, TLS} = {}) => {
  *
  */
 exports.endorsementHintsBuilder = (configs) => {
-	return {chaincodes:Object.entries(configs).map(([name, collection_names]) => ({name, collection_names}))} ;
+	return {chaincodes: Object.entries(configs).map(([name, collection_names]) => ({name, collection_names}))};
 };
 exports.discoveryChaincodeCallBuilder = exports.endorsementHintsBuilder;
 

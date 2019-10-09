@@ -82,8 +82,6 @@ exports.instantiateOrUpgrade = async (
 		const response = await channel.sendTransaction(nextRequest);
 		logger.info('channel.sendTransaction', response);
 		await Promise.all(promises);
-	} catch (e) {
-		throw e;
 	} finally {
 		for (const eventHub of eventHubs) {
 			disconnect(eventHub);

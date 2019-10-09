@@ -1,5 +1,4 @@
-const DevLogger = require('khala-nodeutils').devLogger;
-const {logger: Logger} = require('khala-nodeutils');
+const {logger: Logger, devLogger: DevLogger} = require('khala-nodeutils');
 /**
  *
  * @param moduleName
@@ -13,7 +12,7 @@ exports.new = (moduleName, dev) => {
 	return Logger.new(moduleName);
 };
 exports.setGlobal = (dev) => {
-	const hfcLogger = exports.new('hfc', dev);
+	const hfcLogger = exports.new('fabric-sdk-node', dev);
 	global.hfc = {
 		logger: hfcLogger
 	};

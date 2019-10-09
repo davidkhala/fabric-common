@@ -27,5 +27,6 @@ module.exports = {
 	IdentityService: require('./identityService'),
 	Couchdb: require('./couchdb'),
 	Leveldb: require('./leveldb'),
-	sleep, fsExtra, homeResolve, isArrayEven
+	sleep, fsExtra, homeResolve, isArrayEven,
+	Logger: require('./logger')
 };
