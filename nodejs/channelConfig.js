@@ -1,4 +1,4 @@
-const logger = require('./logger').new('configtxlator');
+const logger = require('./logger').new('channel-config');
 const fs = require('fs');
 const agent = require('./agent2configtxlator');
 const {JSONEqual} = require('khala-nodeutils/helper');

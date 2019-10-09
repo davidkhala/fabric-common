@@ -144,7 +144,7 @@ exports.getGenesisBlock = getGenesisBlock;
  * different from `peer channel join`, since we do not have genesisBlock as output of `peer channel create`, we have to prepared one before.
  * to be atomic, join 1 peer each time
  * @param {Channel} channel
- * @param {Peer} peer
+ * @param {Client.Peer} peer
  * @param {Object} [block] genesis_block
  * @param {Orderer} [orderer] required if block is not provided
  * @param {number} waitTime default 1000, if set to false, will not retry channel join
@@ -203,9 +203,9 @@ exports.join = join;
 
 /**
  * take effect in next block, it is recommended to register a block event after
- * @param channel
- * @param anchorPeerTxFile
- * @param orderer
+ * @param {Channel} channel
+ * @param {string} anchorPeerTxFile filePath
+ * @param {Orderer} orderer
  * @returns {Promise<BroadcastResponse>}
  */
 exports.updateAnchorPeers = async (channel, anchorPeerTxFile, orderer) => {
@@ -226,8 +226,7 @@ exports.updateAnchorPeers = async (channel, anchorPeerTxFile, orderer) => {
 	const result = await client.updateChannel(request);
 	const {status, info} = result;
 	if (status !== 'SUCCESS') {
-		const err = Object.assign(Error('updateAnchorPeer'), {status, info});
-		throw err;
+		throw Object.assign(Error('updateAnchorPeer'), {status, info});
 	}
 
 	logger.info('set anchor peers', result);
