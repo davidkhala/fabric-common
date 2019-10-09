@@ -20,7 +20,7 @@ module.exports = {
 	Golang: require('./golang'),
 	Path: require('./path'),
 	BinaryManager: require('./binManager'),
-	Configtxlator: require('./configtxlator'),
+	ChannelConfig: require('./channelConfig'),
 	FabricDockerode: require('./fabric-dockerode'),
 	ServiceDiscovery: require('./serviceDiscovery'),
 	AffiliationService: require('./affiliationService'),
