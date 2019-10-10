@@ -58,6 +58,11 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
     - orderer down-time tolerance
 - [raft] etcdraft does not support [non TLS](https://hyperledger-fabric.readthedocs.io/en/release-1.4/raft_configuration.html)
     - Raft nodes identify each other using TLS pinning, so in order to impersonate a Raft node, an attacker needs to obtain the private key of its TLS certificate. As a result, it is not possible to run a Raft node without a valid TLS configuration.
+    - `[orderer.common.server] initializeClusterClientConfig -> PANI 004 TLS is required for running ordering nodes of type etcdraft.`
+    - `ClientTLSCert`, `ServerTLSCert` have to be tls cert, if using orderer's own signcert, it will say:
+        ```shell script
+        I do not belong to channel testchainid or am forbidden pulling it (not in the channel), skipping chain retrieval
+        ```
 - [1.4.3][orderer][FAB-7559] apply new config structure
 ## DONE
 - discovery service, endorsement hints

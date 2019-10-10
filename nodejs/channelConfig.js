@@ -8,6 +8,10 @@ class ConfigFactory {
 		this.newConfig = JSON.parse(original_config);
 	}
 
+	static _toBase64(pem) {
+		return fs.readFileSync(pem).toString('base64');
+	}
+
 	/**
 	 * @param {string} MSPName
 	 * @param nodeType
@@ -196,20 +200,14 @@ class ConfigFactory {
 					mod_policy: 'Admins',
 					value: {
 						config: {
-							admins: admins.map(admin => {
-								return fs.readFileSync(admin).toString('base64');
-							}),
+							admins: admins.map(ConfigFactory._toBase64),
 							crypto_config: {
 								identity_identifier_hash_function: 'SHA256',
 								signature_hash_family: 'SHA2'
 							},
 							name: MSPID,
-							root_certs: root_certs.map(rootCert => {
-								return fs.readFileSync(rootCert).toString('base64');
-							}),
-							tls_root_certs: tls_root_certs.map(tlsRootCert => {
-								return fs.readFileSync(tlsRootCert).toString('base64');
-							})
+							root_certs: root_certs.map(ConfigFactory._toBase64),
+							tls_root_certs: tls_root_certs.map(ConfigFactory._toBase64)
 						},
 						type: 0
 					}
@@ -239,6 +237,36 @@ class ConfigFactory {
 
 	getKafkaBrokers() {
 		return this.newConfig.channel_group.groups.Orderer.values.KafkaBrokers.value.brokers;
+	}
+
+	setConsensusMetadata(consenters, options) {
+		const {metadata} = this.newConfig.channel_group.groups.Orderer.values.ConsensusType.value;
+		if (metadata) {
+			if (options) {
+				metadata.options = options;
+			}
+			if (consenters) {
+				metadata.consenters = consenters;
+			}
+		} else {
+			if (!options) {
+				options = {
+					election_tick: 10,
+					heartbeat_tick: 1,
+					max_inflight_blocks: 5,
+					snapshot_interval_size: 20971520,
+					tick_interval: '500ms'
+				};
+			}
+			this.newConfig.channel_group.groups.Orderer.values.ConsensusType.value.metadata = {
+				consenters: consenters.map(({client_tls_cert, host, port, server_tls_cert}) => ({
+					client_tls_cert: ConfigFactory._toBase64(client_tls_cert),
+					server_tls_cert: ConfigFactory._toBase64(server_tls_cert),
+					host, port: parseInt(port)
+				})),
+				options
+			};
+		}
 	}
 
 	/**
@@ -302,7 +330,7 @@ exports.getChannelConfigReadable = async (channel, peer, viaServer) => {
  * @param {boolean} [viaServer]
  */
 exports.channelUpdate = async (channel, orderer, configChangeCallback, signatureCollectCallback,
-	{peer, client = channel._clientContext, viaServer} = {}) => {
+                               {peer, client = channel._clientContext, viaServer} = {}) => {
 
 	const ERROR_NO_UPDATE = 'No update to original_config';
 	const channelName = channel.getName();
