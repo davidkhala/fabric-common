@@ -239,6 +239,25 @@ class ConfigFactory {
 		return this.newConfig.channel_group.groups.Orderer.values.KafkaBrokers.value.brokers;
 	}
 
+	/**
+	 *
+	 * @param {string} type kafka|etcdraft
+	 */
+	setConsensusType(type) {
+		switch (type) {
+			case 'kafka':
+				this.newConfig.channel_group.groups.Orderer.values.ConsensusType.value.type = type;
+				break;
+			case 'etcdraft':
+				this.newConfig.channel_group.groups.Orderer.values.ConsensusType.value.type = type;
+				delete this.newConfig.channel_group.groups.Orderer.values.KafkaBrokers;
+				break;
+			default:
+				throw Error(`Unsupported ConsensusType ${type}`);
+		}
+		return this;
+	}
+
 	setConsensusMetadata(consenters, options) {
 		const {metadata} = this.newConfig.channel_group.groups.Orderer.values.ConsensusType.value;
 		if (metadata) {
@@ -259,7 +278,7 @@ class ConfigFactory {
 				};
 			}
 			this.newConfig.channel_group.groups.Orderer.values.ConsensusType.value.metadata = {
-				consenters: consenters.map(({client_tls_cert, host, port, server_tls_cert}) => ({
+				consenters: consenters.map(({client_tls_cert, host, port = 7050, server_tls_cert}) => ({
 					client_tls_cert: ConfigFactory._toBase64(client_tls_cert),
 					server_tls_cert: ConfigFactory._toBase64(server_tls_cert),
 					host, port: parseInt(port)
@@ -267,6 +286,7 @@ class ConfigFactory {
 				options
 			};
 		}
+		return this;
 	}
 
 	/**
@@ -330,7 +350,7 @@ exports.getChannelConfigReadable = async (channel, peer, viaServer) => {
  * @param {boolean} [viaServer]
  */
 exports.channelUpdate = async (channel, orderer, configChangeCallback, signatureCollectCallback,
-                               {peer, client = channel._clientContext, viaServer} = {}) => {
+	{peer, client = channel._clientContext, viaServer} = {}) => {
 
 	const ERROR_NO_UPDATE = 'No update to original_config';
 	const channelName = channel.getName();
