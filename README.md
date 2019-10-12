@@ -59,7 +59,13 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
 - [raft] etcdraft does not support [non TLS](https://hyperledger-fabric.readthedocs.io/en/release-1.4/raft_configuration.html)
     - Raft nodes identify each other using TLS pinning, so in order to impersonate a Raft node, an attacker needs to obtain the private key of its TLS certificate. As a result, it is not possible to run a Raft node without a valid TLS configuration.
     - `[orderer.common.server] initializeClusterClientConfig -> PANI 004 TLS is required for running ordering nodes of type etcdraft.`
-    - `ClientTLSCert`, `ServerTLSCert` have to be tls cert, if using orderer's own signcert, it will say:
+    - `ClientTLSCert`, `ServerTLSCert` in configtx.yaml have to be aligned with orderer environment set: 
+        ```shell script
+                General.Cluster.ClientCertificate = ""
+                General.Cluster.ClientPrivateKey = ""
+                General.Cluster.RootCAs = []
+        ```
+        otherwise it will say:
         ```shell script
         I do not belong to channel testchainid or am forbidden pulling it (not in the channel), skipping chain retrieval
         ```
@@ -69,6 +75,7 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
 - [1.4] operation enhance: 
 The /metrics endpoint allows operators to utilize Prometheus to pull operational metrics from peer and orderer nodes.
 - private data will automatic sync on new peer(process last for seconds)
+- migrate from kafka to etcdRaft, see [here](https://github.com/davidkhala/delphi-fabric/tree/release-1.4/test/migrate)
 ## In progress
 - collectionConfig.memberOnlyRead is not implemented in sdk-node 
 
@@ -84,7 +91,6 @@ The /metrics endpoint allows operators to utilize Prometheus to pull operational
         Dave Enyeart: The block event includes the full transactions of the block, including the read/write sets, which in the case of private data includes the hashes of the private key/values.
 - channelEventHub.disconnect status sync
 - is private data automatic sync on new peer, with peer amount over max peer count.
-- migrate from kafka to etcdRaft
 - make use of npm jsrsasign
 - make use of softHSM in node-sdk
 - [nodejs] do we need `npm bytebuffer`?
