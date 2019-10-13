@@ -125,7 +125,7 @@ softHSM() {
 		#  export LDFLAGS="-L/usr/local/opt/openssl/lib"
 		#  export CPPFLAGS="-I/usr/local/opt/openssl/include"
 	else
-		:
+		sudo apt-get install -y softhsm2
 	fi
 }
 fabricInstall() {
@@ -138,18 +138,12 @@ sync() {
 	npm prune
 	cd -
 }
-travis(){
-    curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/scripts/npm.sh | bash -s packageLock false
-    CURRENT=$(cd $(dirname ${BASH_SOURCE}) && pwd)
-    export BIN_Parent=$CURRENT
-    ./bash/pullBIN.sh
-}
 if [[ -n "$fcn" ]]; then
 	$fcn $remain_params
 else
 	# install home brew
 	if [[ $(uname) == "Darwin" ]]; then
-		if ! brew config >/dev/null; then
+		if ! brew config > /dev/null; then
 			/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 		fi
 	fi

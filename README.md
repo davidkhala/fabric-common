@@ -89,7 +89,6 @@ The /metrics endpoint allows operators to utilize Prometheus to pull operational
 - dig into block event: 
         Dave Enyeart: The block event includes the full transactions of the block, including the read/write sets, which in the case of private data includes the hashes of the private key/values.
 - channelEventHub.disconnect status sync
-- is private data automatic sync on new peer, with peer amount over max peer count.
 - make use of npm jsrsasign
 - make use of softHSM in node-sdk
 
