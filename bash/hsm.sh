@@ -12,7 +12,7 @@ if [[ ! -f "$SOFTHSM2_CONF" ]]; then
 fi
 initToken() {
 	local label=$1
-	softhsm2-util --init-token --slot=0 --label $label
+	softhsm2-util --init-token --free --label $label
 }
 deleteToken() {
 	local label=$1
@@ -20,5 +20,15 @@ deleteToken() {
 }
 listToken() {
 	softhsm2-util --show-slots
+}
+importPrivKey() {
+	local label=$1
+	local id=$2 # an ID of the key pair, it is assigned here
+	if [[ ${#id} -lt 4 ]]; then
+		echo "[ERROR] id length < 4"
+		exit 1
+	fi
+	local privKeyPem=$3
+	softhsm2-util --import $privKeyPem --token $label --label $label --id $id
 }
 $fcn $remain_params
