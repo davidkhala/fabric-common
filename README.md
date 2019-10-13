@@ -32,6 +32,8 @@ Current version 1.4.3
 - [privateData]call `await stub.putPrivateData('any', "key", 'value');` without setup collection Config or in Init step:  
 Error: collection config not define for namespace [node]  
 See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f897a80898abf6a1e45
+- [privateData] collectionConfig.memberOnlyRead
+    -  expected symptom: `Error: GET_STATE failed: transaction ID: 35175d5ac4ccaa44ad77257a25caca5999c1a70fdee27174f0b7d9df1c39cfe5: tx creator does not have read access permission on privatedata in chaincodeName:diagnose collectionName: private`
 - [golang]dep could only be run under system $GOPATH,
 - [chaincode]peer.response in chaincode.Init cannot be recovered from proposal response. stub.GetState is meaningless in Init 
 - [chaincode]transient map context keep persistent when cross chaincode
@@ -76,9 +78,6 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
 The /metrics endpoint allows operators to utilize Prometheus to pull operational metrics from peer and orderer nodes.
 - private data will automatic sync on new peer(process last for seconds)
 - migrate from kafka to etcdRaft, see [here](https://github.com/davidkhala/delphi-fabric/tree/release-1.4/test/migrate)
-## In progress
-- collectionConfig.memberOnlyRead is not implemented in sdk-node 
-
 
 ## TODO
 - npm couchdb-dump in nodejs/couchdbDump.sh
@@ -93,7 +92,7 @@ The /metrics endpoint allows operators to utilize Prometheus to pull operational
 - is private data automatic sync on new peer, with peer amount over max peer count.
 - make use of npm jsrsasign
 - make use of softHSM in node-sdk
-- [nodejs] do we need `npm bytebuffer`?
+
 ## Fabric weakness
 - keystore object un-promisify: https://gerrit.hyperledger.org/r/#/c/24749/
 - endpoint ping: https://gerrit.hyperledger.org/r/#/c/28115/
@@ -110,7 +109,6 @@ The /metrics endpoint allows operators to utilize Prometheus to pull operational
 - new Feature required: GetPrivateStateByRangeWithPagination: https://jira.hyperledger.org/browse/FAB-11732
 - async or not: CryptoSuite importKey
 
-- [1.4] cleanup self and promise in fabric-ca-client, channeljs#instantiateChaincode not found
 - [1.4] `Channel#getChannelConfigFromOrderer` could not specify target orderer
 - client.newTransactionID(); --> new TransactionID(Identity,isAdmin)
 - create docker env manager to convert a env jsObject to env list(having same key checking)

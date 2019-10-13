@@ -1,12 +1,30 @@
 const sideDB = require('fabric-client/lib/SideDB');
 const {RoleIdentity, simplePolicyBuilder} = require('./policy');
 const logger = require('./logger').new('privateData');
-exports.collectionConfig = ({name, policy, requiredPeerCount, maxPeerCount, blockToLive = 0}) => {
+
+
+/**
+ * @typedef {Object} collectionConfig
+ * @property {string} name
+ * @property policy
+ * @property {number} maxPeerCount integer
+ * @property {number} requiredPeerCount integer
+ * @property {!Long|number|string|!{low: number, high: number, unsigned: boolean}} blockToLive param will be converted to unsigned int64 as Long
+ * @property {boolean} memberOnlyRead denotes whether only collection member clients can read the private data
+ */
+
+/**
+ *
+ * @param {collectionConfig} config
+ * @return {collectionConfig}
+ */
+exports.ensureCollectionConfig = (config) => {
+	const {name, policy, requiredPeerCount, maxPeerCount, blockToLive = 0, memberOnlyRead = true} = config;
 	const {identities} = policy;
 	if (requiredPeerCount < identities.length - 1) {
 		logger.warn(`[recommend] collectionConfig ${name}:requiredPeerCount > ${identities.length - 2} is suggested in production`);
 	}
-	return sideDB.checkCollectionConfig({name, policy, requiredPeerCount, maxPeerCount, blockToLive});
+	return sideDB.checkCollectionConfig({name, policy, requiredPeerCount, maxPeerCount, blockToLive, memberOnlyRead});
 };
 
 
