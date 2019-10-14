@@ -12,7 +12,14 @@ if [[ ! -f "$SOFTHSM2_CONF" ]]; then
 fi
 initToken() {
 	local label=$1
-	softhsm2-util --init-token --free --label $label
+	cmd="softhsm2-util --init-token --free --label $label"
+	if [[ -n "$HSM_SO_PIN" ]]; then
+		cmd="$cmd --so-pin $HSM_SO_PIN"
+	fi
+	if [[ -n "$HSM_PIN" ]]; then
+		cmd="$cmd --pin $HSM_PIN"
+	fi
+	$cmd
 }
 deleteToken() {
 	local label=$1
