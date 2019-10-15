@@ -98,13 +98,14 @@ exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, tls, OrdererType}, log
 			env = env.concat([
 				'ORDERER_GENERAL_CLUSTER_SENDBUFFERSIZE=10'  // maximum number of messages in the egress buffer.Consensus messages are dropped if the buffer is full, and transaction messages are waiting for space to be freed.
 			]);
-			if (tls) {
-				env = env.concat([
-					`ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=${tls.cert}`,
-					`ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=${tls.key}`,
-					`ORDERER_GENERAL_CLUSTER_ROOTCAS=[${rootCAsStringBuild(tls)}]`
-				]);
+			if (!tls) {
+				throw Error('etcdraft orderer must have mutual TLS configurations');
 			}
+			env = env.concat([
+				`ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=${tls.cert}`,
+				`ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=${tls.key}`,
+				`ORDERER_GENERAL_CLUSTER_ROOTCAS=[${rootCAsStringBuild(tls)}]`
+			]);
 			break;
 		case 'solo':
 			break;
