@@ -70,57 +70,39 @@ exports.newDummy = (client) => {
 
 exports.genesis = 'testchainid';
 
-
+const ChannelConfig = require('./channelConfig');
 /**
- * TODO migrate to use channelUpdate
  * different from `peer channel create`, this will not response back with genesisBlock for this channel.
  *
- * @param {Client[]} signClients
  * @param {Channel} channel
- * @param {string} channelConfigFile file path
  * @param {Orderer} orderer
+ * @param {string} channelConfigFile file path
+ * @param {Client[]} [signers]
  * @returns {Promise<Client.BroadcastResponse>}
  */
-exports.create = async (signClients, channel, channelConfigFile, orderer) => {
+exports.create = async (channel, orderer, channelConfigFile, signers = [channel._clientContext]) => {
 	const logger = Logger.new('create-channel');
-	const channelName = channel.getName();
-	logger.debug({channelName, channelConfigFile, orderer: orderer.toString()});
+	logger.debug({channelName: channel.getName(), channelConfigFile, orderer: orderer.toString()});
 
 	const channelClient = channel._clientContext;
 	const channelConfig_envelop = fs.readFileSync(channelConfigFile);
-
 	// extract the channel config bytes from the envelope to be signed
-	const channelConfig = channelClient.extractChannelConfig(channelConfig_envelop);
-	const signatures = signs(signClients, channelConfig);
-	const txId = channelClient.newTransactionID();
-	const request = {
-		config: channelConfig,
-		signatures,
-		name: channelName,
-		orderer,
-		txId
-	};
-	logger.debug('signatures', signatures.length);
+	const config = channelClient.extractChannelConfig(channelConfig_envelop);
 
-	// The client application must poll the orderer to discover whether the channel has been created completely or not.
-	const result = await channelClient.createChannel(request);
-	const {status, info} = result;
-	if (status === 'SUCCESS') {
-		logger.info('response', result);
-		return result;
-	} else {
+	const signatures = signs(signers, config);
+	try {
+		return await ChannelConfig.channelUpdate(channel, orderer, undefined, undefined, undefined, {config, signatures});
+	} catch (e) {
+		const {status, info} = e;
 		if (status === 'SERVICE_UNAVAILABLE' && info === 'will not enqueue, consenter for this channel hasn\'t started yet') {
-			logger.warn('loop retry..', result);
+			logger.warn('loop retry..', status);
 			await sleep(1000);
-			return exports.create(signClients, channel, channelConfigFile, orderer);
+			return await exports.create(channel, orderer, channelConfigFile);
 		} else if (status === 'BAD_REQUEST' && info === 'error authorizing update: error validating ReadSet: readset expected key [Group]  /Channel/Application at version 0, but got version 1') {
-			logger.warn('exist swallow', result);
-			return result;
-		} else {
-			const err = Object.assign(Error('create channel'), result);
-			logger.error(result);
-			throw err;
+			logger.warn('exist swallow', status);
+			return {status, info};
 		}
+		throw e;
 	}
 };
 
@@ -201,7 +183,6 @@ const join = async (channel, peer, block, orderer, waitTime = 1000) => {
 };
 
 exports.join = join;
-
 
 
 exports.pretty = (channel) => {

@@ -398,10 +398,10 @@ exports.getChannelConfigReadable = async (channel, peer, viaServer) => {
  * @param {boolean} [viaServer]
  * @param {Buffer<binary>} [config]
  * @param {Client.ConfigSignature[]} [signatures]
- * @returns {Promise<BroadcastResponse>}
+ * @returns {Promise<Client.BroadcastResponse>}
  */
 exports.channelUpdate = async (channel, orderer, configChangeCallback, signatureCollectCallback,
-	{peer, client = channel._clientContext, viaServer} = {}, {config, signatures} = {}) => {
+                               {peer, client = channel._clientContext, viaServer} = {}, {config, signatures} = {}) => {
 
 	const channelName = channel.getName();
 	if (!config) {
@@ -460,9 +460,9 @@ exports.channelUpdate = async (channel, orderer, configChangeCallback, signature
 
 	const updateChannelResp = await client.updateChannel(request);
 	if (updateChannelResp.status !== 'SUCCESS') {
-		throw Error(JSON.stringify(updateChannelResp));
+		throw Object.assign(Error('Error: channel update'), updateChannelResp);
 	}
-	logger.info('updateChannel', updateChannelResp);
+	logger.info(`[${channelName}] channel update: ${updateChannelResp}`);
 	return updateChannelResp;
 };
 
@@ -480,7 +480,7 @@ exports.ConfigFactory = ConfigFactory;
  * @returns {Promise<BroadcastResponse>}
  */
 exports.setupAnchorPeers = async (channel, orderer, anchorPeerTxFile,
-	signers = [channel._clientContext], {client = channel._clientContext} = {}) => {
+                                  signers = [channel._clientContext], {client = channel._clientContext} = {}) => {
 	const channelConfig_envelop = fs.readFileSync(anchorPeerTxFile);
 	const config = channel._clientContext.extractChannelConfig(channelConfig_envelop);// this is
 	const signatures = signs(signers, config);
@@ -488,7 +488,7 @@ exports.setupAnchorPeers = async (channel, orderer, anchorPeerTxFile,
 	return await exports.channelUpdate(channel, orderer, undefined, undefined, {client}, {config, signatures});
 };
 exports.setAnchorPeers = async (channel, orderer, OrgName, anchorPeers,
-	signers = [channel._clientContext], {peer, client = channel._clientContext, viaServer} = {}) => {
+                                signers = [channel._clientContext], {peer, client = channel._clientContext, viaServer} = {}) => {
 
 	const configChangeCallback = (original_config) => {
 		const configFactory = new ConfigFactory(original_config);
