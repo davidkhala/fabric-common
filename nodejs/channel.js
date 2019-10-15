@@ -5,7 +5,7 @@ const {signs} = require('./multiSign');
 const Channel = require('fabric-client/lib/Channel');
 const {sleep} = require('khala-nodeutils/helper');
 const OrdererUtil = require('./orderer');
-const Orderer = require('fabric-client/lib/Orderer');
+const Orderer = OrdererUtil.Orderer;
 exports.setClientContext = (channel, clientContext) => {
 	channel._clientContext = clientContext;
 };
@@ -72,6 +72,7 @@ exports.genesis = 'testchainid';
 
 
 /**
+ * TODO migrate to use channelUpdate
  * different from `peer channel create`, this will not response back with genesisBlock for this channel.
  *
  * @param {Client[]} signClients
@@ -201,37 +202,8 @@ const join = async (channel, peer, block, orderer, waitTime = 1000) => {
 
 exports.join = join;
 
-/**
- * take effect in next block, it is recommended to register a block event after
- * @param {Channel} channel
- * @param {string} anchorPeerTxFile filePath
- * @param {Orderer} orderer
- * @returns {Promise<BroadcastResponse>}
- */
-exports.updateAnchorPeers = async (channel, anchorPeerTxFile, orderer) => {
 
-	const client = channel._clientContext;
-	const channelConfig_envelop = fs.readFileSync(anchorPeerTxFile);
-	const channelConfig = client.extractChannelConfig(channelConfig_envelop);
-	const signatures = signs([client], channelConfig);
 
-	const request = {
-		config: channelConfig,
-		signatures,
-		name: channel.getName(),
-		orderer,
-		txId: client.newTransactionID()
-	};
-
-	const result = await client.updateChannel(request);
-	const {status, info} = result;
-	if (status !== 'SUCCESS') {
-		throw Object.assign(Error('updateAnchorPeer'), {status, info});
-	}
-
-	logger.info('set anchor peers', result);
-	return result;
-};
 exports.pretty = (channel) => {
 	return {
 		client: channel._clientContext,

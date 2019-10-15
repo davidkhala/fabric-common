@@ -2,7 +2,26 @@ const logger = require('./logger').new('channel-config');
 const fs = require('fs');
 const agent = require('./agent2configtxlator');
 const {JSONEqual} = require('khala-nodeutils/helper');
+const {signs} = require('./multiSign');
+/**
+ * @typedef {string} OrgName organization name (MSPName), mapping to MSP ID
+ */
 
+/**
+ * @callback configChangeCallback
+ * @param {string|json} original_config
+ * @return {string|json} update_config
+ */
+
+/**
+ * @callback signatureCollectCallback
+ * @param {Buffer<binary>} config
+ * @return {Client.ConfigSignature[]} signatures
+ */
+
+/**
+ * @class ConfigFactory
+ */
 class ConfigFactory {
 	constructor(original_config) {
 		this.newConfig = JSON.parse(original_config);
@@ -13,13 +32,13 @@ class ConfigFactory {
 	}
 
 	/**
-	 * @param {string} MSPName
+	 * @param {OrgName} OrgName
 	 * @param nodeType
 	 * @return {ConfigFactory}
 	 */
-	deleteMSP(MSPName, nodeType) {
+	deleteMSP(OrgName, nodeType) {
 		const target = ConfigFactory._getTarget(nodeType);
-		delete this.newConfig.channel_group.groups[target].groups[MSPName];
+		delete this.newConfig.channel_group.groups[target].groups[OrgName];
 		return this;
 	}
 
@@ -67,25 +86,25 @@ class ConfigFactory {
 		return this;
 	}
 
-	getOrg(MSPName, nodeType) {
+	getOrg(OrgName, nodeType) {
 		const target = ConfigFactory._getTarget(nodeType);
-		return this.newConfig.channel_group.groups[target].groups[MSPName];
+		return this.newConfig.channel_group.groups[target].groups[OrgName];
 	}
 
 	/**
-	 * @param MSPName
+	 * @param {string} OrgName
 	 * @param nodeType
 	 * @param admin
 	 * @return {ConfigFactory}
 	 */
-	addAdmin(MSPName, nodeType, admin) {
-		if (!this.getOrg(MSPName, nodeType)) {
-			logger.error(MSPName, 'not exist, addAdmin skipped');
+	addAdmin(OrgName, nodeType, admin) {
+		if (!this.getOrg(OrgName, nodeType)) {
+			logger.error(OrgName, 'not exist, addAdmin skipped');
 			return this;
 		}
 		const target = ConfigFactory._getTarget(nodeType);
 		const adminCert = fs.readFileSync(admin).toString('base64');
-		const admins = this.newConfig.channel_group.groups[target].groups[MSPName].values.MSP.value.config.admins;
+		const admins = this.newConfig.channel_group.groups[target].groups[OrgName].values.MSP.value.config.admins;
 		if (admins.find(adminCert)) {
 			logger.warn('adminCert found, addAdmin skipped');
 			return this;
@@ -95,8 +114,29 @@ class ConfigFactory {
 	}
 
 	/**
+	 * @param {string} OrgName
+	 * @param {[{host:string,port:number}]} anchorPeers
+	 */
+	setAnchorPeers(OrgName, anchorPeers) {
+		anchorPeers = anchorPeers.map(({host, port}) => ({host: host.toString(), port}));
+		const {AnchorPeers} = this.newConfig.channel_group.groups.Application.groups[OrgName].values;
+		if (AnchorPeers) {
+			AnchorPeers.value.anchor_peers = anchorPeers;
+		} else {
+			this.newConfig.channel_group.groups.Application.groups[OrgName].values.AnchorPeers = {
+				mod_policy: 'Admins',
+				value: {
+					anchor_peers: anchorPeers
+				},
+				version: '0'
+			};
+		}
+		return this;
+	}
+
+	/**
 	 * because we will not change the 'version' property, so it will never be totally identical
-	 * @param MSPName
+	 * @param {OrgName} OrgName
 	 * @param MSPID
 	 * @param nodeType
 	 * @param {string[]} admins pem file path array
@@ -104,13 +144,13 @@ class ConfigFactory {
 	 * @param {string[]} tls_root_certs pem file path array
 	 * @return {ConfigFactory}
 	 */
-	createOrUpdateOrg(MSPName, MSPID, nodeType, {admins = [], root_certs = [], tls_root_certs = []} = {}, skipIfExist) {
-		if (skipIfExist && this.getOrg(MSPName, nodeType)) {
-			logger.info(MSPName, 'exist, createOrUpdateOrg skipped');
+	createOrUpdateOrg(OrgName, MSPID, nodeType, {admins = [], root_certs = [], tls_root_certs = []} = {}, skipIfExist) {
+		if (skipIfExist && this.getOrg(OrgName, nodeType)) {
+			logger.info(OrgName, 'exist, createOrUpdateOrg skipped');
 			return this;
 		}
 		const target = ConfigFactory._getTarget(nodeType);
-		this.newConfig.channel_group.groups[target].groups[MSPName] = {
+		this.newConfig.channel_group.groups[target].groups[OrgName] = {
 			mod_policy: 'Admins',
 			policies: {
 				Admins: {
@@ -308,10 +348,10 @@ class ConfigFactory {
 /**
  * Note that it could be used to extract application channel from orderer
  * @param {Client.Channel} channel
- * @param {Client.Peer} [peer] optional when nodeType is 'peer'
+ * @param {Client.Peer} [peer] optional if want to fetch block from peer, otherwise we will fetch block from orderer
  * @param {boolean} [viaServer]
- *  true: This requires 'configtxlator' RESTful server running locally on port 7059
- *  false: use configtxlator as command line tool
+ *  true: This requires 'configtxlator' RESTFul server running locally on port 7059
+ *  false: use 'configtxlator' as command line tool
  * @returns {Promise<{original_config_proto: Buffer, original_config: string|json}>}
  */
 exports.getChannelConfigReadable = async (channel, peer, viaServer) => {
@@ -341,58 +381,70 @@ exports.getChannelConfigReadable = async (channel, peer, viaServer) => {
 	};
 };
 /**
+ * take effect in next block, it is recommended to register a block event after
  * @param {Client.Channel} channel with reader client
  * @param {Client.Orderer} orderer
- * @param {function} configChangeCallback input: {string|json} original_config, output {string|json} update_config
- * @param {function} signatureCollectCallback input: {Buffer<binary>} proto, output {Client.ConfigSignature[]} signatures
+ * @param {configChangeCallback} [configChangeCallback]
+ * @param {signatureCollectCallback} [signatureCollectCallback]
  * @param {Client} [client] tx committing client
- * @param {Client.Peer} [peer] optional when nodeType=='peer'
+ * @param {Client.Peer} [peer]
  * @param {boolean} [viaServer]
+ * @param {Buffer<binary>} [config]
+ * @param {Client.ConfigSignature[]} [signatures]
+ * @returns {Promise<BroadcastResponse>}
  */
 exports.channelUpdate = async (channel, orderer, configChangeCallback, signatureCollectCallback,
-	{peer, client = channel._clientContext, viaServer} = {}) => {
+	{peer, client = channel._clientContext, viaServer} = {}, {config, signatures} = {}) => {
 
-	const ERROR_NO_UPDATE = 'No update to original_config';
 	const channelName = channel.getName();
-	const {original_config_proto, original_config} = await exports.getChannelConfigReadable(channel, peer, viaServer);
-	const updateConfigJSON = await configChangeCallback(original_config);
-	if (JSONEqual(updateConfigJSON, original_config)) {
-		logger.warn(ERROR_NO_UPDATE);
-		return {err: ERROR_NO_UPDATE, original_config};
-	}
-	let modified_config_proto;
-	if (viaServer) {
-		const updatedProto = await agent.encode.config(updateConfigJSON);
-		const formData = {
-			channel: channelName,
-			original: {
-				value: original_config_proto,
-				options: {
-					filename: 'original.proto',
-					contentType: 'application/octet-stream'
-				}
-			},
-			updated: {
-				value: updatedProto,
-				options: {
-					filename: 'updated.proto',
-					contentType: 'application/octet-stream'
-				}
-			}
-		};
-		modified_config_proto = await agent.compute.updateFromConfigs(formData);
-	} else {
-		const BinManager = require('./binManager');
-		const binManager = new BinManager();
+	if (!config) {
+		const ERROR_NO_UPDATE = 'No update to original_config';
 
-		const updatedProto = await binManager.configtxlatorCMD.encode('common.Config', updateConfigJSON);
-		modified_config_proto = await binManager.configtxlatorCMD.computeUpdate(channelName, original_config_proto, updatedProto);
-	}
-	const proto = new Buffer(modified_config_proto, 'binary');
-	const signatures = await signatureCollectCallback(proto);
+		const {original_config_proto, original_config} = await exports.getChannelConfigReadable(channel, peer, viaServer);
+		const updateConfigJSON = await configChangeCallback(original_config);
+		if (JSONEqual(updateConfigJSON, original_config)) {
+			logger.warn(ERROR_NO_UPDATE);
+			return {err: ERROR_NO_UPDATE, original_config};
+		}
+		let modified_config_proto;
+		if (viaServer) {
+			const updatedProto = await agent.encode.config(updateConfigJSON);
+			const formData = {
+				channel: channelName,
+				original: {
+					value: original_config_proto,
+					options: {
+						filename: 'original.proto',
+						contentType: 'application/octet-stream'
+					}
+				},
+				updated: {
+					value: updatedProto,
+					options: {
+						filename: 'updated.proto',
+						contentType: 'application/octet-stream'
+					}
+				}
+			};
+			modified_config_proto = await agent.compute.updateFromConfigs(formData);
+		} else {
+			const BinManager = require('./binManager');
+			const binManager = new BinManager();
 
+			const updatedProto = await binManager.configtxlatorCMD.encode('common.Config', updateConfigJSON);
+			modified_config_proto = await binManager.configtxlatorCMD.computeUpdate(channelName, original_config_proto, updatedProto);
+		}
+		config = new Buffer(modified_config_proto, 'binary');
+	}
+	if (!signatures) {
+		signatures = await signatureCollectCallback(config);
+	}
+
+	/**
+	 * @type {ChannelRequest}
+	 */
 	const request = {
-		config: proto,
+		config,
 		signatures,
 		name: channelName,
 		orderer,
@@ -409,3 +461,35 @@ exports.channelUpdate = async (channel, orderer, configChangeCallback, signature
 
 
 exports.ConfigFactory = ConfigFactory;
+
+
+/**
+ * setup anchorPeers from anchorPeerTxFile, this could only be done once.
+ * @param {Client.Channel} channel
+ * @param {string} anchorPeerTxFile filePath
+ * @param {Client.Orderer} orderer
+ * @param {Client[]} [signers]
+ * @param client
+ * @returns {Promise<BroadcastResponse>}
+ */
+exports.setupAnchorPeers = async (channel, orderer, anchorPeerTxFile,
+	signers = [channel._clientContext], {client = channel._clientContext} = {}) => {
+	const channelConfig_envelop = fs.readFileSync(anchorPeerTxFile);
+	const config = channel._clientContext.extractChannelConfig(channelConfig_envelop);// this is
+	const signatures = signs(signers, config);
+
+	return await exports.channelUpdate(channel, orderer, undefined, undefined, {client}, {config, signatures});
+};
+exports.setAnchorPeers = async (channel, orderer, OrgName, anchorPeers,
+	signers = [channel._clientContext], {peer, client = channel._clientContext, viaServer} = {}) => {
+
+	const configChangeCallback = (original_config) => {
+		const configFactory = new ConfigFactory(original_config);
+		configFactory.setAnchorPeers(OrgName, anchorPeers);
+		return configFactory.build();
+	};
+	const signatureCollectCallback = (config) => {
+		return signs(signers, config);
+	};
+	return await exports.channelUpdate(channel, orderer, configChangeCallback, signatureCollectCallback, {peer, client, viaServer});
+};

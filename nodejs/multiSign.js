@@ -1,7 +1,7 @@
 const logger = require('./logger').new('multi-signature');
 /**
  * @param {Client[]} clients
- * @param proto
+ * @param {Buffer<binary>} proto
  * @returns {Client.ConfigSignature[]} signatures
  */
 exports.signs = (clients, proto) => {
