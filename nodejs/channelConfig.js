@@ -23,6 +23,9 @@ const {signs} = require('./multiSign');
  * @class ConfigFactory
  */
 class ConfigFactory {
+	/**
+	 * @param {string|json} original_config
+	 */
 	constructor(original_config) {
 		this.newConfig = JSON.parse(original_config);
 	}
@@ -111,6 +114,10 @@ class ConfigFactory {
 		}
 		admins.push(adminCert);
 		return this;
+	}
+
+	getAnchorPeers(OrgName) {
+		return this.newConfig.channel_group.groups.Application.groups[OrgName].values.AnchorPeers;
 	}
 
 	/**

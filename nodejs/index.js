@@ -1,4 +1,4 @@
-const {sleep, fsExtra, homeResolve, isArrayEven} = require('khala-nodeutils/helper');
+const {sleep, fsExtra, homeResolve, isArrayEven, JSONEqual} = require('khala-nodeutils/helper');
 module.exports = {
 	Channel: require('./channel'),
 	Peer: require('./peer'),
@@ -27,6 +27,6 @@ module.exports = {
 	IdentityService: require('./identityService'),
 	Couchdb: require('./couchdb'),
 	Leveldb: require('./leveldb'),
-	sleep, fsExtra, homeResolve, isArrayEven,
-	Logger: require('./logger')
+	Logger: require('./logger'),
+	sleep, fsExtra, homeResolve, isArrayEven, JSONEqual
 };
