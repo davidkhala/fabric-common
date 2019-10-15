@@ -352,7 +352,7 @@ class ConfigFactory {
  * @param {boolean} [viaServer]
  *  true: This requires 'configtxlator' RESTFul server running locally on port 7059
  *  false: use 'configtxlator' as command line tool
- * @returns {Promise<{original_config_proto: Buffer, original_config: string|json}>}
+ * @returns {Promise<{configProto: Buffer, configJSON: string|json}>}
  */
 exports.getChannelConfigReadable = async (channel, peer, viaServer) => {
 	let configEnvelope;
@@ -362,22 +362,22 @@ exports.getChannelConfigReadable = async (channel, peer, viaServer) => {
 		configEnvelope = await channel.getChannelConfigFromOrderer();
 	}
 
-	// NOTE JSON.stringify(original_config_proto) :TypeError: Converting circular structure to JSON
-	const original_config_proto = configEnvelope.config.toBuffer();
+	// NOTE JSON.stringify(configProto) :TypeError: Converting circular structure to JSON
+	const configProto = configEnvelope.config.toBuffer();
 
-	let original_config;
+	let configJSON;
 	if (viaServer) {
-		const body = await agent.decode.config(original_config_proto);// body is a Buffer,
-		original_config = JSON.stringify(JSON.parse(body));
+		const body = await agent.decode.config(configProto);// body is a Buffer,
+		configJSON = JSON.stringify(JSON.parse(body));
 	} else {
 		const BinManager = require('./binManager');
 		const binManager = new BinManager();
-		original_config = await binManager.configtxlatorCMD.decode('common.Config', original_config_proto);
+		configJSON = await binManager.configtxlatorCMD.decode('common.Config', configProto);
 	}
 
 	return {
-		original_config_proto,
-		original_config
+		configProto,
+		configJSON
 	};
 };
 /**
@@ -400,11 +400,11 @@ exports.channelUpdate = async (channel, orderer, configChangeCallback, signature
 	if (!config) {
 		const ERROR_NO_UPDATE = 'No update to original_config';
 
-		const {original_config_proto, original_config} = await exports.getChannelConfigReadable(channel, peer, viaServer);
-		const updateConfigJSON = await configChangeCallback(original_config);
-		if (JSONEqual(updateConfigJSON, original_config)) {
+		const {configProto, configJSON} = await exports.getChannelConfigReadable(channel, peer, viaServer);
+		const updateConfigJSON = await configChangeCallback(configJSON);
+		if (JSONEqual(updateConfigJSON, configJSON)) {
 			logger.warn(ERROR_NO_UPDATE);
-			return {err: ERROR_NO_UPDATE, original_config};
+			return {status: ERROR_NO_UPDATE, info: updateConfigJSON};
 		}
 		let modified_config_proto;
 		if (viaServer) {
@@ -412,7 +412,7 @@ exports.channelUpdate = async (channel, orderer, configChangeCallback, signature
 			const formData = {
 				channel: channelName,
 				original: {
-					value: original_config_proto,
+					value: configProto,
 					options: {
 						filename: 'original.proto',
 						contentType: 'application/octet-stream'
@@ -432,7 +432,7 @@ exports.channelUpdate = async (channel, orderer, configChangeCallback, signature
 			const binManager = new BinManager();
 
 			const updatedProto = await binManager.configtxlatorCMD.encode('common.Config', updateConfigJSON);
-			modified_config_proto = await binManager.configtxlatorCMD.computeUpdate(channelName, original_config_proto, updatedProto);
+			modified_config_proto = await binManager.configtxlatorCMD.computeUpdate(channelName, configProto, updatedProto);
 		}
 		config = new Buffer(modified_config_proto, 'binary');
 	}
