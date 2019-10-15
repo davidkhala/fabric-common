@@ -49,7 +49,7 @@ exports.nameMatcher = (channelName, toThrow) => {
 /**
  * @param {Client} client
  * @param {string} channelName
- * @returns {Channel}
+ * @returns {Client.Channel}
  */
 exports.new = (client, channelName) => {
 

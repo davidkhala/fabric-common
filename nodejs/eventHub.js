@@ -11,8 +11,8 @@ exports.unRegisterAllEvents = (eventHub) => {
 	eventHub._transactionOnErrors = {};
 };
 /**
- * @param {Channel} channel
- * @param {Peer} peer
+ * @param {Client.Channel} channel
+ * @param {Client.Peer} peer
  * @param {boolean} inlineConnected
  * @returns {ChannelEventHub}
  */
