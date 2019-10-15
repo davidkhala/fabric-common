@@ -109,7 +109,7 @@ exports.create = async (channel, orderer, channelConfigFile, signers = [channel.
 const getGenesisBlock = async (channel, orderer, waitTime = 1000) => {
 	try {
 		const block = await channel.getGenesisBlock({orderer});
-		logger.info('getGenesisBlock', `from orderer: ${orderer.getName()}`);
+		logger.info(`getGenesisBlock from orderer: ${orderer.getName()}`);
 		return block;
 	} catch (e) {
 		const {message} = e;

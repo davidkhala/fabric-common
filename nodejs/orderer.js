@@ -31,11 +31,14 @@ exports.new = ({ordererPort, cert, pem, ordererHostName, host, clientKey, client
 		const opts = RemoteOptsTransform({host, pem, sslTargetNameOverride: ordererHostName, clientKey, clientCert});
 		const orderer = new Orderer(orderer_url, opts);
 		orderer.pem = pem;
+		orderer.host = host ? host : (ordererHostName ? ordererHostName : 'localhost');
 		return orderer;
 	} else {
 		// tls disabled
 		orderer_url = `grpc://${Host}:${ordererPort}`;
-		return new Orderer(orderer_url);
+		const orderer = new Orderer(orderer_url);
+		orderer.host = Host;
+		return orderer;
 	}
 
 };
