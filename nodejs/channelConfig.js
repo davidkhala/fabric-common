@@ -343,7 +343,6 @@ class ConfigFactory {
 	 */
 	maintenanceMode(isDirectionIn) {
 		this.newConfig.channel_group.groups.Orderer.values.ConsensusType.value.state = isDirectionIn ? 'STATE_MAINTENANCE' : 'STATE_NORMAL';
-		// TODO https://jira.hyperledger.org/browse/FAB-16756
 		return this;
 	}
 
