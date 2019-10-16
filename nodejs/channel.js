@@ -12,6 +12,9 @@ exports.setClientContext = (channel, clientContext) => {
 exports.clearOrderers = (channel) => {
 	channel._orderers = new Map();
 };
+exports.addOrderer = (channel, orderer) => {
+	channel._orderers.set(orderer.getName(), orderer);
+};
 exports.clearPeers = (channel) => {
 	channel._channel_peers = new Map();
 };

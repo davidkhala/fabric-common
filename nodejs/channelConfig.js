@@ -368,7 +368,7 @@ exports.getChannelConfigReadable = async (channel, {peer, orderer}, viaServer) =
 		configEnvelope = await channel.getChannelConfig(peer);
 	} else {
 		channel._orderers = new Map();
-		channel.addOrderer(orderer);
+		channel._orderers.set(orderer.getName(), orderer);
 		configEnvelope = await channel.getChannelConfigFromOrderer();
 	}
 
