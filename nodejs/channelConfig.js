@@ -355,17 +355,20 @@ class ConfigFactory {
 /**
  * Note that it could be used to extract application channel from orderer
  * @param {Client.Channel} channel
- * @param {Client.Peer} [peer] optional if want to fetch block from peer, otherwise we will fetch block from orderer
+ * @param {Client.Peer} [peer] targeted peer from which we fetch block
+ * @param {Client.Orderer} [orderer] targeted orderer from which we fetch block
  * @param {boolean} [viaServer]
  *  true: This requires 'configtxlator' RESTFul server running locally on port 7059
  *  false: use 'configtxlator' as command line tool
  * @returns {Promise<{configProto: Buffer, configJSON: string|json}>}
  */
-exports.getChannelConfigReadable = async (channel, peer, viaServer) => {
+exports.getChannelConfigReadable = async (channel, {peer, orderer}, viaServer) => {
 	let configEnvelope;
 	if (peer) {
 		configEnvelope = await channel.getChannelConfig(peer);
 	} else {
+		channel._orderers = new Map();
+		channel.addOrderer(orderer);
 		configEnvelope = await channel.getChannelConfigFromOrderer();
 	}
 
@@ -401,13 +404,13 @@ exports.getChannelConfigReadable = async (channel, peer, viaServer) => {
  * @returns {Promise<Client.BroadcastResponse>}
  */
 exports.channelUpdate = async (channel, orderer, configChangeCallback, signatureCollectCallback,
-                               {peer, client = channel._clientContext, viaServer} = {}, {config, signatures} = {}) => {
+	{peer, client = channel._clientContext, viaServer} = {}, {config, signatures} = {}) => {
 
 	const channelName = channel.getName();
 	if (!config) {
 		const ERROR_NO_UPDATE = 'No update to original_config';
 
-		const {configProto, configJSON} = await exports.getChannelConfigReadable(channel, peer, viaServer);
+		const {configProto, configJSON} = await exports.getChannelConfigReadable(channel, {peer, orderer}, viaServer);
 		const updateConfigJSON = await configChangeCallback(configJSON);
 		if (JSONEqual(updateConfigJSON, configJSON)) {
 			logger.warn(ERROR_NO_UPDATE);
@@ -480,7 +483,7 @@ exports.ConfigFactory = ConfigFactory;
  * @returns {Promise<BroadcastResponse>}
  */
 exports.setupAnchorPeers = async (channel, orderer, anchorPeerTxFile,
-                                  signers = [channel._clientContext], {client = channel._clientContext} = {}) => {
+	signers = [channel._clientContext], {client = channel._clientContext} = {}) => {
 	const channelConfig_envelop = fs.readFileSync(anchorPeerTxFile);
 	const config = channel._clientContext.extractChannelConfig(channelConfig_envelop);// this is
 	const signatures = signs(signers, config);
@@ -488,7 +491,7 @@ exports.setupAnchorPeers = async (channel, orderer, anchorPeerTxFile,
 	return await exports.channelUpdate(channel, orderer, undefined, undefined, {client}, {config, signatures});
 };
 exports.setAnchorPeers = async (channel, orderer, OrgName, anchorPeers,
-                                signers = [channel._clientContext], {peer, client = channel._clientContext, viaServer} = {}) => {
+	signers = [channel._clientContext], {peer, client = channel._clientContext, viaServer} = {}) => {
 
 	const configChangeCallback = (original_config) => {
 		const configFactory = new ConfigFactory(original_config);
