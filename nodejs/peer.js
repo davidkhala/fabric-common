@@ -93,7 +93,7 @@ exports.statePath = {
  * @param peerHostName
  * @param tls
  * @param couchDB
- * @param {number} loggingLevel index of [loggerLevels]{@link loggingLevels}
+ * @param {number} [loggingLevel] index of [loggerLevels]{@link loggingLevels}
  * @param operationOpts
  * @returns {string[]}
  */
