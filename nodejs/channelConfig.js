@@ -462,6 +462,7 @@ exports.channelUpdate = async (channel, orderer, configChangeCallback, signature
 
 	const updateChannelResp = await client.updateChannel(request);
 	if (updateChannelResp.status !== 'SUCCESS') {
+		logger.error(updateChannelResp);
 		throw Object.assign(Error('Channel update'), updateChannelResp);
 	}
 	logger.info(`[${channelName}] channel update: ${updateChannelResp}`);
