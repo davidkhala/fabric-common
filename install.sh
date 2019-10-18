@@ -65,10 +65,6 @@ golang_dep() {
 	fi
 	dep version
 }
-gitSync() {
-	git pull
-	git submodule update --init --recursive
-}
 java11() {
 	sudo add-apt-repository -y ppa:linuxuprising/java
 	sudo apt update
