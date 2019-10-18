@@ -2,9 +2,6 @@
 [![Build Status](https://travis-ci.com/davidkhala/fabric-common.svg?branch=release-1.4)](https://travis-ci.com/davidkhala/fabric-common)
 
 Current version 1.4.3
-## Installation
-- init submodule
-    `./install gitSync`
 ## Language environment
 - docker: 17.06.2-ce +
 - docker-compose: 1.14.0 +
