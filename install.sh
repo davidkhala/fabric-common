@@ -95,10 +95,7 @@ golang_dep() {
 	fi
 	dep version
 }
-gitSync() {
-	git pull
-	git submodule update --init --recursive
-}
+
 java() {
 	echo "[WARNING] This is to install OpenJDK, Oracle requires fee to use Java in production."
 	sudo apt update
