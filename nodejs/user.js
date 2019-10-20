@@ -9,6 +9,7 @@ const {Identity, SigningIdentity, Signer} = require('fabric-client/lib/msp/ident
 
 /**
  * Set the enrollment object for this User instance
+ * @param {Client.User} user
  * @param {module:api.Key} privateKey the private key object
  * @param {string} certificate the PEM-encoded string of certificate
  * @param {MspId} mspId MSPID for the local signing identity
