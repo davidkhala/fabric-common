@@ -469,9 +469,7 @@ exports.channelUpdate = async (channel, orderer, configChangeCallback, signature
 	return updateChannelResp;
 };
 
-
 exports.ConfigFactory = ConfigFactory;
-
 
 /**
  * setup anchorPeers from anchorPeerTxFile, this could only be done once.
