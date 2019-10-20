@@ -465,7 +465,7 @@ exports.channelUpdate = async (channel, orderer, configChangeCallback, signature
 		logger.error(updateChannelResp);
 		throw Object.assign(Error('Channel update'), updateChannelResp);
 	}
-	logger.info(`[${channelName}] channel update: ${updateChannelResp}`);
+	logger.info(`[${channelName}] channel update: ${JSON.stringify(updateChannelResp)}`);
 	return updateChannelResp;
 };
 
