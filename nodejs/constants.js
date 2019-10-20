@@ -12,6 +12,14 @@ const ChannelType = {
 	system: 'system',
 	application: 'application'
 };
+/**
+ * fabric node type "orderer|peer"
+ * @enum {string}
+ */
+const NodeType = {
+	orderer: 'orderer',
+	peer: 'peer'
+};
 
 
 /** consensus "solo|kafka|etcdraft"
@@ -24,3 +32,4 @@ const OrdererType = {
 };
 exports.OrdererType = OrdererType;
 exports.ChannelType = ChannelType;
+exports.NodeType = NodeType;

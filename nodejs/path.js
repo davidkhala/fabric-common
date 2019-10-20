@@ -18,7 +18,11 @@ exports.findCertFiles = (dir) => {
 		}
 	});
 };
-exports.CryptoPath = class {
+
+/**
+ * @class
+ */
+class CryptoPath {
 	constructor(rootPath, {orderer, peer, user, password} = {}) {
 		this.password = password;
 		if (orderer) {
@@ -105,7 +109,7 @@ exports.CryptoPath = class {
 	}
 
 	MSPFile(type) {
-		const nodeType = this.constructor.getNodeType(type);
+		const nodeType = CryptoPath.getNodeType(type);
 		const mspDir = this.MSP(type);
 		const caCertBaseName = `ca.${this[`${nodeType}OrgName`]}-cert.pem`;
 		const tlscaCertBaseName = `tls${caCertBaseName}`;
@@ -212,4 +216,6 @@ exports.CryptoPath = class {
 		fsExtra.outputFileSync(tlscacerts, rootCertificate);
 	}
 
-};
+}
+
+exports.CryptoPath = CryptoPath;
