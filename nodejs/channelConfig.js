@@ -3,9 +3,7 @@ const fs = require('fs');
 const agent = require('./agent2configtxlator');
 const {JSONEqual} = require('khala-nodeutils/helper');
 const {signs} = require('./multiSign');
-/**
- * @typedef {string} OrgName organization name (MSPName), mapping to MSP ID
- */
+const {ChannelType, OrdererType} = require('./constants');
 
 /**
  * @callback configChangeCallback
@@ -36,32 +34,44 @@ class ConfigFactory {
 
 	/**
 	 * @param {OrgName} OrgName
-	 * @param nodeType
+	 * @param {ChannelType} channelType
 	 * @return {ConfigFactory}
 	 */
-	deleteMSP(OrgName, nodeType) {
-		const target = ConfigFactory._getTarget(nodeType);
+	deleteMSP(OrgName, channelType) {
+		const target = ConfigFactory._getTarget(channelType);
 		delete this.newConfig.channel_group.groups[target].groups[OrgName];
 		return this;
 	}
 
-	static _getTarget(nodeType) {
+	/**
+	 *
+	 * @param {ChannelType} type
+	 * @return {string}
+	 * @private
+	 */
+	static _getTarget(type) {
 		let target;
-		switch (nodeType) {
-			case 'orderer':
+		switch (type) {
+			case ChannelType.system:
 				target = 'Orderer';
 				break;
-			case 'peer':
+			case ChannelType.application:
 				target = 'Application';
 				break;
 			default:
-				throw Error(`invalid nodeType ${nodeType}`);
+				throw Error(`invalid channel type ${type}`);
 		}
 		return target;
 	}
 
-	assignDictator(MSPID, nodeType) {
-		const target = ConfigFactory._getTarget(nodeType);
+	/**
+	 *
+	 * @param {MspId} MSPID
+	 * @param {ChannelType} channelType
+	 * @return {ConfigFactory}
+	 */
+	assignDictator(MSPID, channelType) {
+		const target = ConfigFactory._getTarget(channelType);
 		this.newConfig.channel_group.groups[target].policies.Admins.policy = {
 			type: 1,
 			value: {
@@ -89,23 +99,28 @@ class ConfigFactory {
 		return this;
 	}
 
-	getOrg(OrgName, nodeType) {
-		const target = ConfigFactory._getTarget(nodeType);
+	/**
+	 *
+	 * @param OrgName
+	 * @param {ChannelType} channelType
+	 */
+	getOrg(OrgName, channelType) {
+		const target = ConfigFactory._getTarget(channelType);
 		return this.newConfig.channel_group.groups[target].groups[OrgName];
 	}
 
 	/**
 	 * @param {string} OrgName
-	 * @param nodeType
+	 * @param {ChannelType} channelType
 	 * @param admin
 	 * @return {ConfigFactory}
 	 */
-	addAdmin(OrgName, nodeType, admin) {
-		if (!this.getOrg(OrgName, nodeType)) {
+	addAdmin(OrgName, channelType, admin) {
+		if (!this.getOrg(OrgName, channelType)) {
 			logger.error(OrgName, 'not exist, addAdmin skipped');
 			return this;
 		}
-		const target = ConfigFactory._getTarget(nodeType);
+		const target = ConfigFactory._getTarget(channelType);
 		const adminCert = fs.readFileSync(admin).toString('base64');
 		const admins = this.newConfig.channel_group.groups[target].groups[OrgName].values.MSP.value.config.admins;
 		if (admins.find(adminCert)) {
@@ -144,19 +159,20 @@ class ConfigFactory {
 	/**
 	 * because we will not change the 'version' property, so it will never be totally identical
 	 * @param {OrgName} OrgName
-	 * @param MSPID
-	 * @param nodeType
+	 * @param {MspId} MSPID
+	 * @param {ChannelType} channelType
 	 * @param {string[]} admins pem file path array
 	 * @param {string[]} root_certs pem file path array
 	 * @param {string[]} tls_root_certs pem file path array
+	 * @param skipIfExist
 	 * @return {ConfigFactory}
 	 */
-	createOrUpdateOrg(OrgName, MSPID, nodeType, {admins = [], root_certs = [], tls_root_certs = []} = {}, skipIfExist) {
-		if (skipIfExist && this.getOrg(OrgName, nodeType)) {
+	createOrUpdateOrg(OrgName, MSPID, channelType, {admins = [], root_certs = [], tls_root_certs = []} = {}, skipIfExist) {
+		if (skipIfExist && this.getOrg(OrgName, channelType)) {
 			logger.info(OrgName, 'exist, createOrUpdateOrg skipped');
 			return this;
 		}
-		const target = ConfigFactory._getTarget(nodeType);
+		const target = ConfigFactory._getTarget(channelType);
 		this.newConfig.channel_group.groups[target].groups[OrgName] = {
 			mod_policy: 'Admins',
 			policies: {
@@ -266,6 +282,35 @@ class ConfigFactory {
 	}
 
 	/**
+	 *
+	 * @param {string} version
+	 * @return {string}
+	 * @private
+	 */
+	static _fromSemVer(version) {
+		return `V${version.replace('.', '_')}`;
+	}
+
+	setCapability(version) {
+		const {Capabilities} = this.newConfig.channel_group.groups.Orderer.values;
+		if (!Capabilities) {
+			this.newConfig.channel_group.groups.Orderer.values.Capabilities = {
+				mod_policy: 'Admins',
+				value: {
+					capabilities: {
+						[ConfigFactory._fromSemVer(version)]: {}
+					}
+				}
+			};
+		} else {
+			Capabilities.value.capabilities = {
+				[ConfigFactory._fromSemVer(version)]: {}
+			};
+		}
+		return this;
+	}
+
+	/**
 	 * @param newAddr
 	 * @return {ConfigFactory}
 	 */
@@ -288,14 +333,14 @@ class ConfigFactory {
 
 	/**
 	 *
-	 * @param {string} type kafka|etcdraft
+	 * @param {OrdererType} type
 	 */
 	setConsensusType(type) {
 		switch (type) {
-			case 'kafka':
+			case OrdererType.kafka:
 				this.newConfig.channel_group.groups.Orderer.values.ConsensusType.value.type = type;
 				break;
-			case 'etcdraft':
+			case OrdererType.etcdraft:
 				this.newConfig.channel_group.groups.Orderer.values.ConsensusType.value.type = type;
 				delete this.newConfig.channel_group.groups.Orderer.values.KafkaBrokers;
 				break;

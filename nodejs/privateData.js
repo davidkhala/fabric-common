@@ -37,7 +37,7 @@ exports.ensureCollectionConfig = (config) => {
  *  always:
  *    - "1-of": n===1
  *    - role.name==="member": type===0
- * @param {string[]} mspIds array of mspId
+ * @param {MspId[]} mspIds array of mspId
  * @return
  */
 exports.collectionPolicyBuilder = (mspIds) => {

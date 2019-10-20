@@ -42,7 +42,8 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
     - means package name for golang-chaincode entrance is not `main`
 - [reference]playback conference: https://wiki.hyperledger.org/display/fabric/Playbacks
 - [channel]`txId` is required in peer join channel because: [bret Harrison]There is a transaction proposal to the system chaincode, so a transaction id is required.
-- [channel]impossible: join channel without orderer 
+- [channel]impossible: join channel without orderer
+- [channel][orderer] individual properties may be overridden by setting environment variables, such as `CONFIGTX_ORDERER_ORDERERTYPE=kafka`. 
 - [channel]channel ID length < 250 :initializing configtx manager failed: bad channel ID: channel ID illegal, cannot be longer than 249
 - [1.4][nodejs][sdk] `Channel#getChannelConfigReadable` could be used to extract application channel from orderer
     - used in migration from kafka to RAFT. When after <appChannel> config is changed to maintenance mode, peer in <appChannel> could not get the latest channel config. At that point, we could extract <appChannel> config from orderer alternatively.   
@@ -90,8 +91,6 @@ The /metrics endpoint allows operators to utilize Prometheus to pull operational
 - make use of softHSM in node-sdk
 
 ## Fabric weakness
-- keystore object un-promisify: https://gerrit.hyperledger.org/r/#/c/24749/
-- endpoint ping: https://gerrit.hyperledger.org/r/#/c/28115/
 - fabric RSA key support
 - `instantiate policy` is not `endorsemnet policy`, it is used during chaincode packaging/install determining who is able
  to instantiate/upgrade chaincode, it is partially supported in nodejs with chaincode package binary(byte[]) as input. 
@@ -116,3 +115,5 @@ The /metrics endpoint allows operators to utilize Prometheus to pull operational
 
 ## Abandoned
 - what is peer_chaincode_id and peer_chaincode_path
+- keystore object un-promisify: https://gerrit.hyperledger.org/r/#/c/24749/
+- endpoint ping: https://gerrit.hyperledger.org/r/#/c/28115/
