@@ -416,8 +416,7 @@ exports.getChannelConfigReadable = async (channel, {peer, orderer}, viaServer) =
 		configEnvelope = await channel.getChannelConfigFromOrderer();
 	}
 
-	// NOTE JSON.stringify(configProto) :TypeError: Converting circular structure to JSON
-	const configProto = configEnvelope.config.toBuffer();
+	const configProto = configEnvelope.config.toBuffer(); // it has circular structure
 
 	let configJSON;
 	if (viaServer) {
