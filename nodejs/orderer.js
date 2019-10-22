@@ -60,9 +60,10 @@ exports.container = containerDefaultPaths;
  * @param {string} OrdererType solo|etcdraft|kafka
  * @param loggingLevel
  * @param operationOpts
+ * @param raft_tls
  * @returns {string[]}
  */
-exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, tls, OrdererType}, loggingLevel, operationOpts) => {
+exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, tls, OrdererType}, loggingLevel, operationOpts, raft_tls = tls) => {
 	let env = [
 		'ORDERER_GENERAL_LISTENADDRESS=0.0.0.0', // used to self identify
 		`ORDERER_GENERAL_TLS_ENABLED=${!!tls}`,
@@ -76,12 +77,12 @@ exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, tls, OrdererType}, log
 	if (loggingLevel) {
 		env.push(`FABRIC_LOGGING_SPEC=${loggingLevels[loggingLevel]}`);
 	}
-	const rootCAsStringBuild = (tls) => {
-		let rootCAs = [tls.caCert];
-		if (Array.isArray(tls.rootCAs)) {
-			rootCAs = rootCAs.concat(tls.rootCAs);
+	const rootCAsStringBuild = ({caCert, rootCAs}) => {
+		let result = [caCert];
+		if (Array.isArray(rootCAs)) {
+			result = result.concat(rootCAs);
 		}
-		return rootCAs.join(',');
+		return result.join(',');
 	};
 	if (tls) {
 		env = env.concat([
@@ -101,13 +102,13 @@ exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, tls, OrdererType}, log
 			env = env.concat([
 				'ORDERER_GENERAL_CLUSTER_SENDBUFFERSIZE=10'  // maximum number of messages in the egress buffer.Consensus messages are dropped if the buffer is full, and transaction messages are waiting for space to be freed.
 			]);
-			if (!tls) {
+			if (!raft_tls) {
 				throw Error('etcdraft orderer must have mutual TLS configurations');
 			}
 			env = env.concat([
-				`ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=${tls.cert}`,
-				`ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=${tls.key}`,
-				`ORDERER_GENERAL_CLUSTER_ROOTCAS=[${rootCAsStringBuild(tls)}]`
+				`ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=${raft_tls.cert}`,
+				`ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=${raft_tls.key}`,
+				`ORDERER_GENERAL_CLUSTER_ROOTCAS=[${rootCAsStringBuild(raft_tls)}]`
 			]);
 			break;
 		case 'solo':
