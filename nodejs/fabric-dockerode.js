@@ -303,14 +303,14 @@ exports.chaincodeClean = async (prune, filter) => {
 };
 exports.runOrderer = ({
 	                      container_name, imageTag, port, network, BLOCK_FILE, CONFIGTXVolume,
-	                      msp: {id, configPath, volumeName}, OrdererType, tls, stateVolume
+	                      msp: {id, configPath, volumeName}, ordererType, tls, stateVolume
                       }, operations) => {
 	const Image = `hyperledger/fabric-orderer:${imageTag}`;
 	const Cmd = ['orderer'];
 	const Env = ordererUtil.envBuilder({
 		BLOCK_FILE, msp: {
 			configPath, id
-		}, OrdererType, tls
+		}, ordererType, tls
 	}, undefined, operations);
 
 	const builder = new ContainerOptsBuilder(Image, Cmd);
@@ -331,7 +331,7 @@ exports.runOrderer = ({
 
 exports.deployOrderer = async ({
 	                               Name, network, imageTag, Constraints, port,
-	                               msp: {volumeName, configPath, id}, CONFIGTXVolume, BLOCK_FILE, OrdererType, tls
+	                               msp: {volumeName, configPath, id}, CONFIGTXVolume, BLOCK_FILE, ordererType, tls
                                }) => {
 	const serviceName = swarmServiceName(Name);
 	if (!Constraints) {
@@ -345,7 +345,7 @@ exports.deployOrderer = async ({
 		volumes: [{volumeName, volume: peerUtil.container.MSPROOT},
 			{volumeName: CONFIGTXVolume, volume: ordererUtil.container.CONFIGTX}],
 		ports: [{host: port, container: 7050}],
-		Env: ordererUtil.envBuilder({BLOCK_FILE, msp: {configPath, id}, OrdererType, tls}),
+		Env: ordererUtil.envBuilder({BLOCK_FILE, msp: {configPath, id}, ordererType, tls}),
 		Aliases: [Name]
 	});
 };

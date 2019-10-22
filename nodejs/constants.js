@@ -30,6 +30,16 @@ const OrdererType = {
 	kafka: 'kafka',
 	etcdraft: 'etcdraft'
 };
+/**
+ *
+ * @enum {string}
+ */
+const MetricsProvider = {
+	StatsD: 'statsd',
+	prometheus: 'prometheus',
+	undefined: 'disabled'
+};
+exports.MetricsProvider = MetricsProvider;
 exports.OrdererType = OrdererType;
 exports.ChannelType = ChannelType;
 exports.NodeType = NodeType;

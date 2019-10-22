@@ -2,6 +2,7 @@ const Orderer = require('fabric-client/lib/Orderer');
 const fs = require('fs');
 const logger = require('./logger').new('orderer');
 const {loggingLevels, RemoteOptsTransform} = require('./remote');
+const {OrdererType} = require('./constants');
 exports.find = ({orderers, ordererUrl}) => {
 	return ordererUrl ? orderers.find((orderer) => orderer.getUrl() === ordererUrl) : orderers[0];
 };
@@ -57,13 +58,13 @@ exports.container = containerDefaultPaths;
  * @param tls
  * @param configPath
  * @param id
- * @param {string} OrdererType solo|etcdraft|kafka
+ * @param {OrdererType} ordererType
  * @param loggingLevel
  * @param operationOpts
  * @param raft_tls
  * @returns {string[]}
  */
-exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, tls, OrdererType}, loggingLevel, operationOpts, raft_tls = tls) => {
+exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, tls, ordererType}, loggingLevel, operationOpts, raft_tls = tls) => {
 	let env = [
 		'ORDERER_GENERAL_LISTENADDRESS=0.0.0.0', // used to self identify
 		`ORDERER_GENERAL_TLS_ENABLED=${!!tls}`,
@@ -90,15 +91,15 @@ exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, tls, OrdererType}, log
 			`ORDERER_GENERAL_TLS_CERTIFICATE=${tls.cert}`,
 			`ORDERER_GENERAL_TLS_ROOTCAS=[${rootCAsStringBuild(tls)}]`]);
 	}
-	switch (OrdererType) {
-		case 'kafka':
+	switch (ordererType) {
+		case OrdererType.kafka:
 			env = env.concat([
 				'ORDERER_KAFKA_RETRY_SHORTINTERVAL=1s',
 				'ORDERER_KAFKA_RETRY_SHORTTOTAL=30s',
 				'ORDERER_KAFKA_VERBOSE=true'
 			]);
 			break;
-		case 'etcdraft':
+		case OrdererType.etcdraft:
 			env = env.concat([
 				'ORDERER_GENERAL_CLUSTER_SENDBUFFERSIZE=10'  // maximum number of messages in the egress buffer.Consensus messages are dropped if the buffer is full, and transaction messages are waiting for space to be freed.
 			]);
@@ -111,7 +112,7 @@ exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, tls, OrdererType}, log
 				`ORDERER_GENERAL_CLUSTER_ROOTCAS=[${rootCAsStringBuild(raft_tls)}]`
 			]);
 			break;
-		case 'solo':
+		case OrdererType.solo:
 			break;
 	}
 	if (operationOpts) {
