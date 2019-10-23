@@ -37,7 +37,8 @@ const OrdererType = {
 const MetricsProvider = {
 	StatsD: 'statsd',
 	prometheus: 'prometheus',
-	undefined: 'disabled'
+	undefined: 'disabled',
+	null: 'disabled' // value in json file could not be undefined
 };
 exports.MetricsProvider = MetricsProvider;
 exports.OrdererType = OrdererType;
