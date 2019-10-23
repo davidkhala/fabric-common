@@ -69,6 +69,7 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
         ```
 - [raft] Each channel has its own RAFT orderer cluster, but system channel should have a super set of all orderer cluster  -- Jay Guo
 - [1.4.3][orderer][FAB-7559] apply new config structure
+- [metrics][TLS] the TLS enable flag located in `Operations` section
 ## DONE
 - discovery service, endorsement hints
 - [1.4] operation enhance: 

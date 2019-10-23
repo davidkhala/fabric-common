@@ -98,6 +98,7 @@ exports.create = async (channel, orderer, channelConfigFile, signers = [channel.
 	} catch (e) {
 		const {status, info} = e;
 		if (status === 'SERVICE_UNAVAILABLE' && info === 'will not enqueue, consenter for this channel hasn\'t started yet') {
+			// TODO [fabric weakness] let healthz return whether it is ready
 			logger.warn('loop retry..', status);
 			await sleep(1000);
 			return await exports.create(channel, orderer, channelConfigFile);
