@@ -107,7 +107,8 @@ exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchD
 	if (loggingLevel) {
 		environment = environment.concat([
 			`FABRIC_LOGGING_SPEC=${loggingLevels[loggingLevel]}`,
-			`CORE_CHAINCODE_LOGGING_LEVEL=${loggingLevels[loggingLevel]}` // used for chaincode logging
+			`CORE_CHAINCODE_LOGGING_LEVEL=${loggingLevels[loggingLevel]}`, // for all loggers within the chaincode container
+			`CORE_CHAINCODE_LOGGING_SHIM=${loggingLevels[loggingLevel]}` // for the 'shim' logger
 		]);
 	}
 	if (tls) {
@@ -116,7 +117,6 @@ exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchD
 			`CORE_PEER_TLS_CERT_FILE=${tls.cert}`,
 			`CORE_PEER_TLS_ROOTCERT_FILE=${tls.caCert}`]);
 	}
-	// TODO CORE_CHAINCODE_LOGGING_SHIM :used for fabric logging
 	if (couchDB) {
 		const {container_name, user = '', password = ''} = couchDB;
 		environment = environment.concat([

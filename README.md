@@ -48,7 +48,8 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
 - [1.4][nodejs][sdk] `Channel#getChannelConfigReadable` could be used to extract application channel from orderer
     - used in migration from kafka to RAFT. When after <appChannel> config is changed to maintenance mode, peer in <appChannel> could not get the latest channel config. At that point, we could extract <appChannel> config from orderer alternatively.   
 - [disaster]backup recovery: at least 1 anchor peer for each organization should be resumed to recover transaction process   
-- [healthz] `logspec`:`{"spec":"chaincode=debug:info"}`, the logger is in debug mode and level is info.
+- [logLevel] `logspec`:`{"spec":"chaincode=debug:info"}`, the logger is in debug mode and level is info.
+- [healthz] In the current version, the only health check that is registered is for Docker. 
 - [endorsement]chaincode partial update: when not all peers upgrade to latest chaincode, is it possible that old chaincode still work
     with inappropriate endorsement config; while with appropriate endorsement policy, we get chaincode fingerprint mismatch error
 - [nodejs][sdk]node-gyp rebuild require `make` and `g++` 
