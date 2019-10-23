@@ -2,7 +2,7 @@ const Orderer = require('fabric-client/lib/Orderer');
 const fs = require('fs');
 const logger = require('./logger').new('orderer');
 const {loggingLevels, RemoteOptsTransform} = require('./remote');
-const {OrdererType} = require('./constants');
+const {OrdererType, MetricsProvider} = require('./constants');
 exports.find = ({orderers, ordererUrl}) => {
 	return ordererUrl ? orderers.find((orderer) => orderer.getUrl() === ordererUrl) : orderers[0];
 };
@@ -59,12 +59,13 @@ exports.container = containerDefaultPaths;
  * @param configPath
  * @param id
  * @param {OrdererType} ordererType
- * @param loggingLevel
- * @param operationOpts
  * @param raft_tls
+ * @param loggingLevel
+ * @param operationsOpts
+ * @param metricsOpts
  * @returns {string[]}
  */
-exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, tls, ordererType}, loggingLevel, operationOpts, raft_tls = tls) => {
+exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, tls, ordererType, raft_tls = tls}, loggingLevel, operationsOpts, metricsOpts) => {
 	let env = [
 		'ORDERER_GENERAL_LISTENADDRESS=0.0.0.0', // used to self identify
 		`ORDERER_GENERAL_TLS_ENABLED=${!!tls}`,
@@ -115,12 +116,25 @@ exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, tls, ordererType}, log
 		case OrdererType.solo:
 			break;
 	}
-	if (operationOpts) {
-		// metrics provider is one of statsd, prometheus, or disabled
-		const {tls, metrics = 'disabled'} = operationOpts;// TODO TLS
+	if (operationsOpts) {
 		env = env.concat([
 			'ORDERER_OPERATIONS_LISTENADDRESS=0.0.0.0:8443',
-			`ORDERER_METRICS_PROVIDER=${metrics}`
+		]);
+
+		const operationsTLS = operationsOpts.tls || tls;
+
+		if (operationsTLS) {
+			env = env.concat([
+				'ORDERER_OPERATIONS_TLS_ENABLED=true',
+				`ORDERER_OPERATIONS_TLS_CERTIFICATE=${operationsTLS.cert}`,
+				`ORDERER_OPERATIONS_TLS_PRIVATEKEY=${operationsTLS.key}`
+			]);
+		}
+	}
+	if (metricsOpts) {
+		const {provider} = metricsOpts;
+		env = env.concat([
+			`ORDERER_METRICS_PROVIDER=${MetricsProvider[provider]}`
 		]);
 	}
 	return env;

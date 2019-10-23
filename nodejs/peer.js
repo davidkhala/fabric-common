@@ -1,8 +1,8 @@
 const Peer = require('fabric-client/lib/Peer');
 const {fsExtra} = require('khala-nodeutils/helper');
-const logger = require('khala-nodeutils').logger.new('peer');
 const {RequestPromise} = require('khala-nodeutils/request');
 const {loggingLevels, RemoteOptsTransform} = require('./remote');
+const {MetricsProvider} = require('./constants');
 
 /**
  * @param {number|string} peerPort
@@ -82,10 +82,11 @@ exports.statePath = {
  * @param tls
  * @param couchDB
  * @param {number} [loggingLevel] index of [loggerLevels]{@link loggingLevels}
- * @param operationOpts
+ * @param operationsOpts
+ * @param metricsOpts
  * @returns {string[]}
  */
-exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchDB}, loggingLevel, operationOpts) => {
+exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchDB}, loggingLevel, operationsOpts, metricsOpts) => {
 	let environment =
 		[
 			`CORE_VM_ENDPOINT=unix://${exports.container.dockerSock}`,
@@ -125,13 +126,24 @@ exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchD
 			`CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=${password}`
 		]);
 	}
-	if (operationOpts) {
-		// metrics provider is one of statsd, prometheus, or disabled
-		const {tls, metrics = 'disabled', statsd} = operationOpts; // TODO another set of TLS,
+	if (operationsOpts) {
 		// omit the ip/domain in listenAddress will allow all traffic
 		environment = environment.concat([
-			'CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9443',
-			`CORE_METRICS_PROVIDER=${metrics}`
+			'CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9443'
+		]);
+		const operationsTLS = operationsOpts.tls || tls;
+		if (operationsTLS) {
+			environment = environment.concat([
+				'CORE_OPERATIONS_TLS_ENABLED=true',
+				`CORE_OPERATIONS_TLS_CERT_FILE=${operationsTLS.cert}`,
+				`CORE_OPERATIONS_TLS_KEY_FILE=${operationsTLS.key}`
+			]);
+		}
+	}
+	if (metricsOpts) {
+		const {provider} = metricsOpts;
+		environment = environment.concat([
+			`CORE_METRICS_PROVIDER=${MetricsProvider[provider]}`
 		]);
 	}
 	return environment;

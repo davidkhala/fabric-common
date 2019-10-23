@@ -116,3 +116,4 @@ The /metrics endpoint allows operators to utilize Prometheus to pull operational
 - what is peer_chaincode_id and peer_chaincode_path
 - keystore object un-promisify: https://gerrit.hyperledger.org/r/#/c/24749/
 - endpoint ping: https://gerrit.hyperledger.org/r/#/c/28115/
+- docker-swarm support
