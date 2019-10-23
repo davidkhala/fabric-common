@@ -4,20 +4,8 @@ const logger = require('khala-nodeutils').logger.new('peer');
 const {RequestPromise} = require('khala-nodeutils/request');
 const {loggingLevels, RemoteOptsTransform} = require('./remote');
 
-
 /**
- * @typedef {string} ClientKey The private key file, in PEM format
- *    To use with the gRPC protocol (that is, with TransportCredentials).
- *    Required when using the grpcs protocol with client certificates.
- */
-
-/**
- * @typedef {string} ClientCert The public certificate file, in PEM format,
- *    To use with the gRPC protocol (that is, with TransportCredentials).
- *    Required when using the grpcs protocol with client certificates.
- */
-/**
- * @param peerPort
+ * @param {number|string} peerPort
  * @param {string} [peerHostName] Used in test environment only, when the server certificate's
  *    hostname (in the 'CN' field) does not match the actual host endpoint that the server process runs
  *    at, the application can work around the client TLS verify failure by setting this property to the
@@ -157,9 +145,7 @@ exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchD
  */
 exports.ping = async (peer) => {
 	try {
-		logger.debug('ping', peer.toString());
 		await peer.waitForReady(peer._discoveryClient);
-		logger.debug('pong from', peer.toString());
 		return true;
 	} catch (err) {
 		if (err.message.includes('Failed to connect before the deadline')) {

@@ -1,3 +1,14 @@
+/**
+ * @typedef {string} ClientKey The private key file, in PEM format
+ *    To use with the gRPC protocol (that is, with TransportCredentials).
+ *    Required when using the grpcs protocol with client certificates.
+ */
+
+/**
+ * @typedef {string} ClientCert The public certificate file, in PEM format,
+ *    To use with the gRPC protocol (that is, with TransportCredentials).
+ *    Required when using the grpcs protocol with client certificates.
+ */
 const logger = require('./logger').new('remote');
 const RemoteOptsTransform = (opts = {}) => {
 	const {sslTargetNameOverride, host} = opts;
