@@ -147,6 +147,15 @@ exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchD
 		environment = environment.concat([
 			`CORE_METRICS_PROVIDER=${MetricsProvider[provider]}`
 		]);
+		if (provider === MetricsProvider.StatsD) {
+			const {statsD: {host}} = metricsOpts;
+			environment = environment.concat([
+				'CORE_METRICS_STATSD_NETWORK=udp',
+				`CORE_METRICS_STATSD_ADDRESS=${host}:8125`,
+				`CORE_METRICS_STATSD_PREFIX=${peerHostName}`,
+				'CORE_METRICS_STATSD_WRITEINTERVAL=9s' // TODO 9 seconds do not work??
+			]);
+		}
 	}
 	return environment;
 };
