@@ -15,41 +15,21 @@ Current version 1.4.3
 - [1.2]
     - [privateData]
 - [1.4]
-    - [healthz]
+    - [Operations][healthz][metrics][logLevel]
     - [raft]
+    - [1.4.3][orderer][FAB-7559] apply new ordering service endpoints config structure
 ## Notes
 
 - [gRpcs][docker network] **host name SHOULD not include upper-case character, otherwise gRpcs ping for discovery_client will not response back with docker network DNS** 
 - [query]blockHeight(got from queryChain) indexing from 1, blockNumber in blockEvent starting from 0
-- [privateData]requirePeerCount <= peerCount - 1 (1 for peer itself)
-- [privateData]"2-of" collectionPolicy is not allowed
-- [privateData]private data work only after manually set anchor peers
-- [privateData]Note that collections cannot be deleted, 
-    as there may be prior private data hashes on the channel’s blockchain that cannot be removed.
-- [privateData]call `await stub.putPrivateData('any', "key", 'value');` without setup collection Config or in Init step:  
-Error: collection config not define for namespace [node]  
-See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f897a80898abf6a1e45
-- [privateData] collectionConfig.memberOnlyRead
-    -  expected symptom: `Error: GET_STATE failed: transaction ID: 35175d5ac4ccaa44ad77257a25caca5999c1a70fdee27174f0b7d9df1c39cfe5: tx creator does not have read access permission on privatedata in chaincodeName:diagnose collectionName: private`
 - [golang]dep could only be run under system $GOPATH,
-- [chaincode]peer.response in chaincode.Init cannot be recovered from proposal response. stub.GetState is meaningless in Init 
-- [chaincode]transient map context keep persistent when cross chaincode
-- [chaincode]it is allowed that chaincode invoker `creator`, target peers belongs to differed organization.
-- [chaincode]chaincode name is not a secret, we can use combination of discovery service and query chaincode installed on peer to get them all
-- [chaincode]chaincode upgrade could not replace instantiate for fabric-sdk-node: ` Error: could not find chaincode with name 'diagnose'`
-- [nodejs][chaincode]nodejs chaincode take longer time in install chaincode only.
-- [golang][chaincode] `failed to invoke chaincode name:"lscc" , error: API error (400): OCI runtime create failed: container_linux.go:348: starting container process caused "exec: \"chaincode\": executable file not found in $PATH": unknown`
-    - means package name for golang-chaincode entrance is not `main`
 - [reference]playback conference: https://wiki.hyperledger.org/display/fabric/Playbacks
 - [channel]`txId` is required in peer join channel because: [bret Harrison]There is a transaction proposal to the system chaincode, so a transaction id is required.
-- [channel]impossible: join channel without orderer
 - [channel][orderer] individual properties may be overridden by setting environment variables, such as `CONFIGTX_ORDERER_ORDERERTYPE=kafka`. 
 - [channel]channel ID length < 250 :initializing configtx manager failed: bad channel ID: channel ID illegal, cannot be longer than 249
 - [1.4][nodejs][sdk] `Channel#getChannelConfigReadable` could be used to extract application channel from orderer
     - used in migration from kafka to RAFT. When after <appChannel> config is changed to maintenance mode, peer in <appChannel> could not get the latest channel config. At that point, we could extract <appChannel> config from orderer alternatively.   
-- [disaster]backup recovery: at least 1 anchor peer for each organization should be resumed to recover transaction process   
-- [logLevel] `logspec`:`{"spec":"chaincode=debug:info"}`, the logger is in debug mode and level is info.
-- [healthz] In the current version, the only health check that is registered is for Docker. 
+- [disaster]backup recovery: at least 1 anchor peer for each organization should be resumed to recover transaction process
 - [endorsement]chaincode partial update: when not all peers upgrade to latest chaincode, is it possible that old chaincode still work
     with inappropriate endorsement config; while with appropriate endorsement policy, we get chaincode fingerprint mismatch error
 - [nodejs][sdk]node-gyp rebuild require `make` and `g++` 
@@ -69,14 +49,43 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
         I do not belong to channel testchainid or am forbidden pulling it (not in the channel), skipping chain retrieval
         ```
 - [raft] Each channel has its own RAFT orderer cluster, but system channel should have a super set of all orderer cluster  -- Jay Guo
-- [1.4.3][orderer][FAB-7559] apply new config structure
+- [raft][migrate] migrate from kafka to etcdRaft, see [here](https://github.com/davidkhala/delphi-fabric/tree/release-1.4/operations/migrate/README.md)
+### Notes: Private Data 
+
+- [privateData]requirePeerCount <= peerCount - 1 (1 for peer itself)
+- [privateData]"2-of" collectionPolicy is not allowed
+- [privateData]private data work only after manually set anchor peers
+- [privateData]Note that collections cannot be deleted, 
+    as there may be prior private data hashes on the channel’s blockchain that cannot be removed.
+- [privateData]call `await stub.putPrivateData('any', "key", 'value');` without setup collection Config or in Init step:  
+Error: collection config not define for namespace [node]  
+See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f897a80898abf6a1e45
+- [privateData] collectionConfig.memberOnlyRead
+    -  expected symptom: `Error: GET_STATE failed: transaction ID: 35175d5ac4ccaa44ad77257a25caca5999c1a70fdee27174f0b7d9df1c39cfe5: tx creator does not have read access permission on privatedata in chaincodeName:diagnose collectionName: private`
+- [privateData] private data will automatic sync on new peer(process last for seconds)
+
+### Notes: Chaincode
+
+- [chaincode]peer.response in chaincode.Init cannot be recovered from proposal response. stub.GetState is meaningless in Init 
+- [chaincode]transient map context keep persistent when cross chaincode
+- [chaincode]it is allowed that chaincode invoker `creator`, target peers belongs to differed organization.
+- [chaincode]chaincode name is not a secret, we can use combination of discovery service and query chaincode installed on peer to get them all
+- [chaincode]chaincode upgrade could not replace instantiate for fabric-sdk-node: ` Error: could not find chaincode with name 'diagnose'`
+- [nodejs][chaincode]nodejs chaincode take longer time in install chaincode only.
+- [golang][chaincode] `failed to invoke chaincode name:"lscc" , error: API error (400): OCI runtime create failed: container_linux.go:348: starting container process caused "exec: \"chaincode\": executable file not found in $PATH": unknown`
+    - means package name for golang-chaincode entrance is not `main`
+
+### Notes: Operations
+
+- [logLevel] `logspec`:`{"spec":"chaincode=debug:info"}`, the logger is in debug mode and level is info.
+- [healthz] In the current version, the only health check that is registered is for Docker. 
 - [metrics][TLS] the TLS enable flag located in `Operations` section
-## DONE
-- discovery service, endorsement hints
-- [1.4] operation enhance: 
-The /metrics endpoint allows operators to utilize Prometheus to pull operational metrics from peer and orderer nodes.
-- private data will automatic sync on new peer(process last for seconds)
-- migrate from kafka to etcdRaft, see [here](https://github.com/davidkhala/delphi-fabric/tree/release-1.4/operations/migrate/README.md)
+- [metrics][TLS] for peer and orderer, even ...OPERATIONS_TLS_CLIENTAUTHREQUIRED=false, client side key-cert is still 
+    - required on endpoints: `/metrics`, `/logspec`
+    - not required on endpoints `healthz`
+    
+    See details in [FAB-14323](https://jira.hyperledger.org/browse/FAB-14323)
+- [metrics] The `/metrics` endpoint allows operators to utilize Prometheus to pull operational metrics from peer and orderer nodes.
 
 ## TODO
 - npm couchdb-dump in nodejs/couchdbDump.sh

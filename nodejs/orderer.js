@@ -118,7 +118,7 @@ exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, tls, ordererType, raft
 	}
 	if (operationsOpts) {
 		env = env.concat([
-			'ORDERER_OPERATIONS_LISTENADDRESS=0.0.0.0:8443',
+			'ORDERER_OPERATIONS_LISTENADDRESS=0.0.0.0:8443'
 		]);
 
 		const operationsTLS = operationsOpts.tls || tls;
@@ -127,7 +127,9 @@ exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, tls, ordererType, raft
 			env = env.concat([
 				'ORDERER_OPERATIONS_TLS_ENABLED=true',
 				`ORDERER_OPERATIONS_TLS_CERTIFICATE=${operationsTLS.cert}`,
-				`ORDERER_OPERATIONS_TLS_PRIVATEKEY=${operationsTLS.key}`
+				`ORDERER_OPERATIONS_TLS_PRIVATEKEY=${operationsTLS.key}`,
+				'ORDERER_OPERATIONS_TLS_CLIENTAUTHREQUIRED=false', // see in README.md
+				`ORDERER_OPERATIONS_TLS_CLIENTROOTCAS=[${rootCAsStringBuild(operationsTLS)}]`
 			]);
 		}
 	}

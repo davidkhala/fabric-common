@@ -136,7 +136,9 @@ exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchD
 			environment = environment.concat([
 				'CORE_OPERATIONS_TLS_ENABLED=true',
 				`CORE_OPERATIONS_TLS_CERT_FILE=${operationsTLS.cert}`,
-				`CORE_OPERATIONS_TLS_KEY_FILE=${operationsTLS.key}`
+				`CORE_OPERATIONS_TLS_KEY_FILE=${operationsTLS.key}`,
+				'CORE_OPERATIONS_TLS_CLIENTAUTHREQUIRED=false', // see in README.md
+				`CORE_OPERATIONS_TLS_CLIENTROOTCAS_FILES=${operationsTLS.caCert}`
 			]);
 		}
 	}

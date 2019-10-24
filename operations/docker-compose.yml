@@ -1,0 +1,15 @@
+version: '3'
+services:
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - 9090:9090
+    network_mode: $dockerNetwork
+    volumes:
+      - $prometheusConfigFile:/etc/prometheus/prometheus.yml
+      - $peerCaCert:/etc/prometheus/peer-caCert
+      - $peerClientKey:/etc/prometheus/peer-clientKey
+      - $peerClientCert:/etc/prometheus/peer-clientCert
+      - $ordererCaCert:/etc/prometheus/orderer-caCert
+      - $ordererClientKey:/etc/prometheus/orderer-clientKey
+      - $ordererClientCert:/etc/prometheus/orderer-clientCert
