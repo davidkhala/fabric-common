@@ -1,8 +1,8 @@
-const {devOps, yaml, devLogger} = require('khala-nodeutils');
-const {exec, execResponsePrint, execDetach, killProcess, findProcess} = devOps;
+const {exec, execResponsePrint, execDetach, killProcess, findProcess} = require('khala-nodeutils/devOps');
+const yaml = require('khala-nodeutils/yaml');
 const path = require('path');
 const fs = require('fs');
-const logger = devLogger('binManager');
+const logger = require('khala-logger/dev').devLogger('binManager');
 
 class BinManager {
 	constructor(binPath = process.env.binPath) {

@@ -1,5 +1,5 @@
-const {yaml, devLogger} = require('../helper').nodeUtil;
-const logger = devLogger('yaml');
+const yaml = require('khala-nodeutils/yaml');
+const logger = require('khala-logger/dev').devLogger('yaml');
 
 const path = require('path');
 const configtxFile = path.resolve(__dirname, '../../config/configtx.yaml');

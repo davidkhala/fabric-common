@@ -1,5 +1,4 @@
 const moduleName = 'configtxlator agent';
-const logger = require('./logger').new(moduleName);
 const {RequestPromise} = require('khala-nodeutils/request');
 
 const requestPost = async (opt) => {

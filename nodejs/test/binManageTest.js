@@ -1,7 +1,7 @@
 const path = require('path');
 process.env.binPath = path.resolve(__dirname, '../../bin');
 const BinManager = require('../binManager');
-const {fsExtra} = require('../index');
+const {fsExtra} = require('khala-nodeutils/helper');
 const binManager = new BinManager();
 const configtxYaml = path.resolve(__dirname, '../../config/configtx.yaml');
 const logger = require('../logger').new('test:binManager', true);
