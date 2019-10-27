@@ -1,4 +1,3 @@
-const {logger: Logger, devLogger: DevLogger} = require('khala-nodeutils');
 /**
  *
  * @param moduleName
@@ -7,8 +6,9 @@ const {logger: Logger, devLogger: DevLogger} = require('khala-nodeutils');
  */
 exports.new = (moduleName, dev) => {
 	if (dev) {
-		return DevLogger(moduleName);
+		return require('khala-logger/dev').devLogger(moduleName);
 	}
+	const Logger = require('khala-logger');
 	return Logger.new(moduleName);
 };
 exports.setGlobal = (dev) => {
