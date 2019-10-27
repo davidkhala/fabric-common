@@ -1,5 +1,4 @@
-const dockerode = require('khala-dockerode');
-const dockerUtil = dockerode.util;
+const dockerUtil = require('khala-dockerode/dockerode-util');
 const {ContainerOptsBuilder} = dockerUtil;
 const peerUtil = require('./peer');
 const caUtil = require('./ca');
