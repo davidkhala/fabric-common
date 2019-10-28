@@ -1,6 +1,7 @@
 version: '3'
 services:
   prometheus:
+    container_name: prometheus
     image: prom/prometheus
     ports:
       - 9090:9090
@@ -13,14 +14,3 @@ services:
       - $ordererCaCert:/etc/prometheus/orderer-caCert
       - $ordererClientKey:/etc/prometheus/orderer-clientKey
       - $ordererClientCert:/etc/prometheus/orderer-clientCert
-  statsD: # TODO how to config clientCert
-    image: mayachit/statsd-console
-    network_mode: $dockerNetwork
-
-  statsdExporter: # TODO how to config clientCert
-    image: prom/statsd-exporter
-    network_mode: $dockerNetwork
-    ports:
-      - 9102:9102
-    entrypoint: [ "/bin/statsd_exporter","--statsd.listen-udp=:8125" ]
-

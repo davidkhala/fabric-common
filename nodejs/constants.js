@@ -35,7 +35,7 @@ const OrdererType = {
  * @enum {string}
  */
 const MetricsProvider = {
-	StatsD: 'statsd',
+	statsd: 'statsd',
 	prometheus: 'prometheus',
 	undefined: 'disabled',
 	null: 'disabled' // value in json file could not be undefined

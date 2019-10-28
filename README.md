@@ -76,6 +76,7 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
     - means package name for golang-chaincode entrance is not `main`
 
 ### Notes: Operations
+[reference](https://hyperledger-fabric.readthedocs.io/en/release-1.4/metrics_reference.html)
 
 - [logLevel] `logspec`:`{"spec":"chaincode=debug:info"}`, the logger is in debug mode and level is info.
 - [healthz] In the current version, the only health check that is registered is for Docker. 
@@ -91,8 +92,8 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
 - npm couchdb-dump in nodejs/couchdbDump.sh
 - level db navigator(https://github.com/Level/level or https://github.com/syndtr/goleveldb) and richQuery for leveldb;leveldb analyzer 
 - [1.4] operation enhance: 
-    - Metrics can also be pushed to StatsD.
-    - check this reference: https://hyperledger-fabric.readthedocs.io/en/release-1.4/metrics_reference.html
+    - StatsD
+        - graphiteapp/graphite-statsd not working to receive metrics
 - NodeOUs enable
 - dig into block event: 
         Dave Enyeart: The block event includes the full transactions of the block, including the read/write sets, which in the case of private data includes the hashes of the private key/values.
