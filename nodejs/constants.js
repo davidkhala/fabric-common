@@ -1,10 +1,4 @@
 /**
- * @typedef {string} OrgName organization name (MSPName), mapping to MSP ID
- */
-/**
- * @typedef {string} MspId msp_identifier, member service provider identifier
- */
-/**
  * channel type, "system|application"
  * @enum {string}
  */

@@ -1,37 +1,26 @@
 const Logger = require('./logger');
 
 const {chaincodeProposal, transactionProposal, invokeCommit} = require('./chaincode');
-const {txEventCode, txEvent, disconnect} = require('./eventHub');
+const {txEvent, disconnect} = require('./eventHub');
 /**
  * @param eventHub
  * @param txId
  * @param eventTimeOut
- * @return {Promise<{tx,code,err}>}
+ * @return {Promise<{tx,code}>}
  */
 const txTimerPromise = (eventHub, {txId}, eventTimeOut) => {
-	const logger = Logger.new('newTxEvent', true);
-	const validator = ({tx, code, blockNum}) => {
-		logger.debug({tx, code, blockNum});
-		return {valid: code === txEventCode[0], interrupt: true};
-	};
 	return new Promise((resolve, reject) => {
-		txEvent(eventHub, {txId}, validator, (data) => {
+		txEvent(eventHub, {txId}, undefined, (tx, code, blockNum) => {
 			clearTimeout(timerID);
-			const {tx, code, interrupt} = data;
-			if (interrupt) {
-				disconnect(eventHub);
-			}
 			resolve({tx, code});
 		}, (err) => {
-			if (err.interrupt) {
-				disconnect(eventHub);
-			}
 			clearTimeout(timerID);
-			reject({err});
+			reject(err);
 		});
 		const timerID = setTimeout(() => {
 			disconnect(eventHub);
-			reject({err: 'txTimeout'});
+			const err = Error('txTimeout');
+			reject(err);
 		}, eventTimeOut);
 	});
 };
