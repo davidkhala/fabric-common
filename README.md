@@ -11,6 +11,9 @@ Current version 1.4.3
     - npm@5.6 + 
     - Python: 2.7
 
+## Design Notes
+- `configtxlator` handler in `nodejs/binManager.js`
+- CICD: using travis
 ## Milestone
 - [1.2]
     - [privateData]
