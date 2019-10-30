@@ -29,6 +29,7 @@
 exports.Policy = require('fabric-client/lib/Policy');
 const MSPRoleType = ['member', 'admin', 'client', 'peer'];
 
+// TODO not to use index any more
 exports.RoleIdentity = (mspId, typeIndex) => ({
 	[exports.Policy.IDENTITY_TYPE.Role]: {name: MSPRoleType[typeIndex], mspId}
 });

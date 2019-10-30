@@ -15,6 +15,14 @@ const NodeType = {
 	peer: 'peer'
 };
 
+/**
+ * @enum {string}
+ */
+const MSPRoleType = {
+	admin: 'ADMIN',
+	peer: 'PEER',
+	member: 'MEMBER'
+};
 
 /** consensus "solo|kafka|etcdraft"
  * @enum {string}
@@ -34,6 +42,30 @@ const MetricsProvider = {
 	undefined: 'disabled',
 	null: 'disabled' // value in json file could not be undefined
 };
+/**
+ * @enum {string}
+ */
+const ImplicitMetaPolicyRule = {
+	ANY: 'ANY',
+	ALL: 'ALL',
+	MAJORITY: 'MAJORITY'
+};
+/**
+ *
+ * @enum {string}
+ */
+const PolicyType = {
+	IMPLICIT_META: 'IMPLICIT_META',
+	SIGNATURE: 'SIGNATURE'
+};
+const PolicyRuleType = {
+	n_out_of: 'n_out_of',
+	signed_by: 'signed_by'
+};
+exports.MSPRoleType = MSPRoleType;
+exports.PolicyType = PolicyType;
+exports.PolicyRuleType = PolicyRuleType;
+exports.ImplicitMetaPolicyRule = ImplicitMetaPolicyRule;
 exports.MetricsProvider = MetricsProvider;
 exports.OrdererType = OrdererType;
 exports.ChannelType = ChannelType;
