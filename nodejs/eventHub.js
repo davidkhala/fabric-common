@@ -58,7 +58,7 @@ exports.pretty = pretty;
  */
 /**
  * @callback OnBlockEventSuccess
- * @param block
+ * @param {Block} block
  */
 /**
  * @callback OnChaincodeEventSuccess

@@ -33,7 +33,7 @@
 /**
  * @typedef {Object} BlockDataPayload
  * @property {TxHeader} header
- * @property {ConfigEnvelope|EndorseTransaction} data //TODO
+ * @property {ConfigEnvelope|EndorseTransaction} data
  */
 /**
  * @typedef {number[]} TransactionsFilter int[], see TxValidationCode in proto/peer/transaction.proto
@@ -76,14 +76,20 @@
  * @property {string} tx_id
  * @property {string|number} epoch
  * @property {Buffer} extension
- * @property {string} typeString CONFIG|
+ * @property {TransactionType} typeString
  */
 
 
 /**
+ * @typedef {Object} TransactionCreator
+ * @property {MspId} Mspid
+ * @property {CertificatePem} IdBytes
+ */
+
+/**
  * An object that is part of all signatures in Hyperledger Fabric.
  * @typedef {Object} SignatureHeader
- * @property {{Mspid:MspId,IdBytes:CertificatePem}} creator
+ * @property {TransactionCreator}} creator
  * @property {Buffer} nonce - a unique value to guard against replay attacks.
  */
 
@@ -202,81 +208,86 @@
  */
 
 /**
- * An Endorser Transaction, is the result of invoking chaincodes
- * to collect endorsements, getting globally ordered in the context of a channel,
- * and getting validated by the committer peer as part of a block before finally
- * being formally "committed" to the ledger inside a Block. Each transaction contains
- * an array of "actions" representing different steps for executing a transaction,
- * and those steps will be processed atomically, meaning if any one step failed
- * then the whole transaction will be marked as rejected.
- * <br><br>
- * Each entry of the "actions" array contains a chaincode proposal and corresponding proposal
- * responses that encapsulate the endorsing peer's decisions on whether the proposal
- * is considered valid. Note that even if a transaction proposal(s) is considered
- * valid by the endorsing peers, it may still be rejected by the committers during
- * transaction validation. Whether a transaction as a whole is valid or not, is not
- * reflected in the transaction record itself, but rather recorded in a separate
- * field in the Block's metadata.
- * <br><br>
- * A "Transaction" will have the following object structure.
-<br><pre>
-actions {array}
-	header -- {{@link SignatureHeader}}
-	payload
-		chaincode_proposal_payload
-			input -- {{@link ChaincodeInvocationSpec}} for a endorser transaction
-		action
-			proposal_response_payload
-				proposal_hash -- {byte[]}
-				extension
-					results
-						data_model -- {int}
-						ns_rwset -- {array}
-							namespace -- {string}
-							rwset
-								reads -- {array}
-									key -- {string}
-									version
-										block_num -- {number}
-										tx_num -- {number}
-								range_queries_info -- {array}
-								writes -- {array}
-									key -- {string}
-									is_delete -- {boolean}
-									value -- {string}
-								metadata_writes -- {array}
-									key -- {string}
-									entries -- {array}
-										name -- {string}
-										value -- {byte[]}
-						collection_hashed_rwset -- {array}
-							collection_name -- {string}
-							hashed_rwset
-								hashed_reads -- {array}
-									key_hash -- {byte[]}
-									version
-										block_num -- {number}
-										tx_num -- {number}
-								hashed_writes -- {array}
-									key_hash -- {byte[]}
-									is_delete -- {boolean}
-									value_hash -- {byte[]}
-								metadata_writes -- {array}
-									key_hash -- {byte[]}
-									entries -- {array}
-										name -- {string}
-										value -- {byte[]}
-							pvt_rwset_hash -- {byte[]}
-					events
-						chaincode_id --  {string}
-						tx_id -- {string}
-						event_name -- {string}
-						payload -- {byte[]}
-					response
-						status -- {int}
-						message -- {string}
-						payload -- {byte[]}
-			endorsements -- {{@link Endorsement}[]}
-</pre>
- * @typedef {Object} EndorseTransaction
+ * An endorsement proposal, which includes the name of the chaincode to be invoked and the arguments to be passed to the chaincode.
+ *
+ * @typedef {Object} ChaincodeInvocationSpec
+ * @property {number} type int
+ * @property {ChaincodeType} typeString
+ * @property {{args:Buffer[],decorations}} input
+ * @property {{path:string,name:string,version:string}} chaincode_id
+ * @property {number} timeout int
  */
+
+/**
+ * @typedef {Object} EndorseTransactionActionPayLoad
+ * @property {{input:{chaincode_spec:ChaincodeInvocationSpec}}}} chaincode_proposal_payload
+ * @property {{proposal_response_payload:EndorseTransactionProposalResponsePayload,endorsements:Endorsement[]}} action
+ */
+
+/**
+ * @typedef {Object} EndorseTransactionProposalResponsePayload
+ * @property {string|hex} proposal_hash
+ * @property {EndorseTransactionProposalResponseExtension} extension
+ */
+
+/**
+ * @typedef {Object} EndorseTransactionProposalResponseExtension
+ * @property {{data_model:number|int,ns_rwset:ReadWriteSet[]}} results
+ * @property {ChaincodeEvent} events
+ * @property {Client.Response} response
+ */
+
+/**
+ * @typedef {Object} ReadWriteSet
+ * @property {string} namespace
+ * @property {{reads:ReadSet[],range_queries_info:[],writes:WriteSet[],metadata_writes:MetadataWriteSet[]}} rwset
+ * @property {[]} collection_hashed_rwset // TODO sample required
+ */
+/**
+ * @typedef {Object} ReadSet
+ * @property {string} key
+ * @property {{block_num:number,tx_num:number}} version
+ */
+/**
+ * @typedef {Object} WriteSet
+ * @property {string} key
+ * @property {boolean} is_delete
+ * @property {string} value
+ */
+/**
+ * @typedef {Object} MetadataWriteSet
+ * @property {string} key
+ * @property {{name:string,value}[]} entries
+ */
+
+/**
+ * EndorseTransactionAction contains a chaincode proposal and corresponding proposal responses
+ * that encapsulate the endorsing peer's decisions on whether the proposal is considered valid.
+ * @typedef {Object} EndorseTransactionAction
+ * @property {SignatureHeader} header
+ * @property {EndorseTransactionActionPayLoad} payload
+ */
+
+/**
+ * An endorsement is a signature of an endorser over a proposal response. By producing an endorsement message,
+ * an endorser implicitly "approves" that proposal response and the actions contained therein. When enough endorsements have been collected,
+ * a transaction can be generated out of a set of proposal responses
+ *
+ * @typedef {Object} Endorsement
+ * @property {TransactionCreator} endorser
+ * @property {Buffer} signature
+ */
+
+/**
+ * An Endorser Transaction, is the result of invoking chaincodes to collect endorsements, getting globally ordered in the context of a channel,
+ * and getting validated by the committer peer as part of a block before finally being formally "committed" to the ledger inside a Block.
+ * <br><br>
+ * Note that even if a transaction proposal(s) is considered valid by the endorsing peers, it may still be rejected by the committers during
+ * transaction validation. Whether a transaction as a whole is valid or not, is not reflected in the transaction record itself,
+ * but rather recorded in a separate field in the Block's metadata.
+
+ * @typedef {Object} EndorseTransaction
+ * @property {EndorseTransactionAction[]} actions These represent different steps for executing a transaction,
+ * and those steps will be processed atomically, meaning if any one step failed then the whole transaction will be marked as rejected.
+ */
+

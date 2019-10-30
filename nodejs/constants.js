@@ -51,17 +51,27 @@ const ImplicitMetaPolicyRule = {
 	MAJORITY: 'MAJORITY'
 };
 /**
- *
+ * @enum {string}
+ */
+const TransactionType = {
+	ENDORSER_TRANSACTION: 'ENDORSER_TRANSACTION',
+	CONFIG: 'CONFIG'
+};
+/**
  * @enum {string}
  */
 const PolicyType = {
 	IMPLICIT_META: 'IMPLICIT_META',
 	SIGNATURE: 'SIGNATURE'
 };
+/**
+ * @enum {string}
+ */
 const PolicyRuleType = {
 	n_out_of: 'n_out_of',
 	signed_by: 'signed_by'
 };
+exports.TransactionType = TransactionType;
 exports.MSPRoleType = MSPRoleType;
 exports.PolicyType = PolicyType;
 exports.PolicyRuleType = PolicyRuleType;

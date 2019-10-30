@@ -3,7 +3,14 @@ const Channel = require('fabric-client/lib/Channel');
 const Orderer = require('fabric-client/lib/Orderer');
 const ChannelUtil = require('./channel');
 
-exports.chaincodeTypes = ['golang', 'car', 'node', 'java'];
+/**
+ * @enum {string}
+ */
+exports.ChaincodeType = {
+	golang: 'GOLANG',
+	node: 'NODE',
+	java: 'JAVA'
+};
 exports.proposalStringify = (proposalResponse) => {
 	if (!(proposalResponse instanceof Error)) {
 		proposalResponse.response.payload = proposalResponse.response.payload.toString();
