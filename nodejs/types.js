@@ -41,7 +41,7 @@
 
 /**
  * @typedef {Object} LastConfig
- * @property {{index:string|number}} value
+ * @property {{index:string|int}} value
  * @property {MetadataSignature[]} signatures
  */
 
@@ -74,7 +74,7 @@
  * @property {string} timestamp
  * @property {string} channel_id
  * @property {string} tx_id
- * @property {string|number} epoch
+ * @property {string|int} epoch
  * @property {Buffer} extension
  * @property {TransactionType} typeString
  */
@@ -252,7 +252,7 @@
 
 /**
  * @typedef {Object} HashedReadWriteSet
- * @property {[HashedRead]} hashed_reads
+ * @property {HashedRead[]} hashed_reads
  * @property {HashedWrite[]} hashed_writes
  * @property {HashedMetadataWrite[]} metadata_writes
  */
@@ -260,7 +260,7 @@
 /**
  * @typedef {Object} HashedRead
  * @property {Buffer} key_hash
- * @property {{block_num,tx_num}} version //TODO
+ * @property {{block_num:string|int,tx_num:string|int}} version
  */
 
 /**
@@ -280,7 +280,7 @@
  * item of ReadSet
  * @typedef {Object} Read
  * @property {string} key
- * @property {{block_num,tx_num}} version //TODO
+ * @property {{block_num:string|int,tx_num:string|int}} version
  */
 /**
  * item of WriteSet

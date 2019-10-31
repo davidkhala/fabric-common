@@ -12,12 +12,30 @@ class EventHub {
 		logger.debug('new', {channel: channel.getName(), peer: peer.toString()});
 	}
 
-	connect() {
-		//TODO make use of type `ConnectOptions`
-		this.channelEventHub.connect(true);
+	async connect({startBlock = 0, endBlock} = {}) {
+		return new Promise((resolve, reject) => {
+			const connectCallback = (err, eventHub) => {
+				if (err) {
+					reject(err);
+				} else {
+					resolve();
+				}
+			};
+			/**
+			 *
+			 * @type {ConnectOptions}
+			 */
+			const options = {
+				full_block: true,
+				startBlock,
+				endBlock
+			};
+			this.channelEventHub.connect(options, connectCallback);
+		});
+
 	}
 
-	unRegisterAllEvents(eventHub) {
+	unRegisterAllEvents() {
 		this.channelEventHub._chaincodeRegistrants = new Map();
 		this.channelEventHub._blockOnEvents = {};
 
@@ -32,7 +50,6 @@ class EventHub {
 	 * Will close all event listeners and send an Error object
 	 * with the message "ChannelEventHub has been shutdown" to
 	 * all listeners that provided an "onError" callback.
-	 * @param {ChannelEventHub} eventHub
 	 */
 	disconnect() {
 		const eventHub = this.channelEventHub;
@@ -63,6 +80,13 @@ class EventHub {
 	}
 
 	/**
+	 * @param {ChaincodeChannelEventHandle} listener
+	 */
+	unregisterChaincodeEvent(listener) {
+		this.channelEventHub.unregisterChaincodeEvent(listener, true);
+	}
+
+	/**
 	 *
 	 * @param {OnChaincodeEventSuccess&Validator} validator
 	 * @param {string} chaincodeId
@@ -89,7 +113,7 @@ class EventHub {
 			}
 			const {valid, interrupt} = validator(chaincodeEvent, blockNum, status);
 			if (interrupt) {
-				eventHub.unregisterChaincodeEvent(listener, true);
+				this.unregisterChaincodeEvent(listener);
 				this.disconnect();
 			}
 			if (valid) {
@@ -101,11 +125,18 @@ class EventHub {
 			}
 		}, (err) => {
 			logger.error(err);
-			eventHub.unregisterChaincodeEvent(listener, true);
+			this.unregisterChaincodeEvent(listener);
 			this.disconnect();
 			onError(err);
 		});
 		return listener;
+	}
+
+	/**
+	 * @param {number} listener a blockRegistrationNumber as identifier
+	 */
+	unregisterBlockEvent(listener) {
+		this.channelEventHub.unregisterBlockEvent(listener, true);
 	}
 
 	/**
@@ -129,7 +160,7 @@ class EventHub {
 		const block_registration_number = eventHub.registerBlockEvent((block) => {
 			const {valid, interrupt} = validator(block);
 			if (interrupt) {
-				eventHub.unregisterBlockEvent(block_registration_number, true);
+				this.unregisterBlockEvent(block_registration_number);
 				this.disconnect();
 			}
 			if (valid) {
@@ -141,12 +172,19 @@ class EventHub {
 			}
 		}, (err) => {
 			logger.error(err);
-			eventHub.unregisterBlockEvent(block_registration_number, true);
+			this.unregisterBlockEvent(block_registration_number);
 			this.disconnect();
 			onError(err);
 		});
 
 		return block_registration_number;
+	}
+
+	/**
+	 * @param {string} listener a `txId`
+	 */
+	unregisterTxEvent(listener) {
+		this.channelEventHub.unregisterTxEvent(listener, true);
 	}
 
 	/**
@@ -172,7 +210,7 @@ class EventHub {
 		transactionID = eventHub.registerTxEvent(transactionID, (tx, code, blockNum) => {
 			const {valid, interrupt} = validator(tx, code, blockNum);
 			if (interrupt) {
-				eventHub.unregisterTxEvent(transactionID, true);
+				this.unregisterTxEvent(transactionID);
 				this.disconnect();
 			}
 			if (valid) {
@@ -184,7 +222,7 @@ class EventHub {
 			}
 		}, err => {
 			logger.error(err);
-			eventHub.unregisterTxEvent(transactionID, true);
+			this.unregisterTxEvent(transactionID);
 			this.disconnect();
 			onError(err);
 		});
@@ -192,6 +230,7 @@ class EventHub {
 
 	}
 }
+
 EventHub.txEventCode = ['VALID', 'ENDORSEMENT_POLICY_FAILURE', 'MVCC_READ_CONFLICT'];
 
 
