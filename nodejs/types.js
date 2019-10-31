@@ -8,6 +8,17 @@
  * @typedef {string} CertificatePem certificate containing the public key in PEM format.
  */
 
+
+/**
+ * @typedef {number} integer
+ */
+/**
+ * @typedef {string} intString '0'
+ */
+/**
+ * @typedef {string} hexString '58ab'
+ */
+
 /**
  * An object of a fully decoded protobuf message "Block".
  * A Block may contain the configuration of the channel or endorsing transactions on the channel.
@@ -19,7 +30,7 @@
 
 /**
  * @typedef {Object} BlockHeader
- * @property {number} number - int
+ * @property {integer} number
  * @property {Buffer} previous_hash
  * @property {Buffer} data_hash
  */
@@ -36,12 +47,12 @@
  * @property {ConfigEnvelope|EndorseTransaction} data
  */
 /**
- * @typedef {number[]} TransactionsFilter int[], see TxValidationCode in proto/peer/transaction.proto
+ * @typedef {integer[]} TransactionsFilter see TxValidationCode in proto/peer/transaction.proto
  */
 
 /**
  * @typedef {Object} LastConfig
- * @property {{index:string|int}} value
+ * @property {{index:intString}} value
  * @property {MetadataSignature[]} signatures
  */
 
@@ -69,12 +80,12 @@
 
 /**
  * @typedef {Object} ChannelHeader
- * @property {number} type
- * @property {number} version
+ * @property {integer} type
+ * @property {integer} version
  * @property {string} timestamp
  * @property {string} channel_id
  * @property {string} tx_id
- * @property {string|int} epoch
+ * @property {intString} epoch
  * @property {Buffer} extension
  * @property {TransactionType} typeString
  */
@@ -99,7 +110,7 @@
  * Every block, including the configuration blocks themselves, has a pointer to the latest configuration block, making it easy to query for the
  * latest channel configuration settings.
  * @typedef {Object} ConfigEnvelope
- * @property {{sequence:string|int,channel_group:ConfigGroup}} config
+ * @property {{sequence:intString,channel_group:ConfigGroup}} config
  * @property {{signature:Buffer,payload:{header:TxHeader,data:ConfigUpdateEnvelope}}} last_update
  */
 
@@ -113,7 +124,7 @@
 /**
  * A channel configuration record will have the following object structure.
  * @typedef {Object} ConfigGroup
- * @property {number} version
+ * @property {integer} version
  * @property {{Orderer:ConfigGroup,Application?:ConfigGroup,OrgName?:ConfigGroup}} groups
  * @property {{?:ConfigValue}} values usual keys:
  * - for global: Consortium|HashingAlgorithm|BlockDataHashingStructure,
@@ -127,7 +138,7 @@
 
 /**
  * @typedef {Object} ConfigValue
- * @property {number} version int
+ * @property {integer} version
  * @property {string} mod_policy
  * @property {ConfigValueContent} value
  */
@@ -137,7 +148,7 @@
  * @property {string} [name] used in HashingAlgorithm|Consortium
  * @property {string[]} [anchor_peers] used in AnchorPeers
  * @property {number} [width] BlockDataHashingStructure
- * @property {number} [type] used in MSP
+ * @property {integer} [type] used in MSP
  * @property {MSPConfigValue} config used in MSP
  */
 
@@ -177,12 +188,12 @@
  * policies which are more complicated than 'exactly this signature'.
  * @typedef {Object} SignaturePolicy
  * @property {PolicyType} type 'SIGNATURE'
- * @property {{version:number|int, rule:SignaturePolicyRule,identities:SignaturePolicyIdentity[]}} value
+ * @property {{version:integer, rule:SignaturePolicyRule,identities:SignaturePolicyIdentity[]}} value
  */
 
 /**
  * @typedef {Object} SignaturePolicyIdentity
- * @property {number} principal_classification
+ * @property {integer} principal_classification
  * @property {MspId} msp_identifier
  * @property {MSPRoleType} Role
  */
@@ -191,18 +202,18 @@
  * The NOutOf operator is sufficient to express AND as well as OR, as well as of course N out of the following M policies.
  * @typedef {Object} SignaturePolicyRule
  * @property {PolicyRuleType} Type 'n_out_of'
- * @property {{N:number,rules:SignaturePolicyRuleSignedBy[]}} n_out_of
+ * @property {{N:integer,rules:SignaturePolicyRuleSignedBy[]}} n_out_of
  */
 /**
  * SignedBy implies that the signature is from a valid certificate which is signed by the trusted authority
  * @typedef {Object} SignaturePolicyRuleSignedBy
  * @property {PolicyRuleType} Type 'signed_by'
- * @property {number} signed_by
+ * @property {integer} signed_by
  */
 
 /**
  * @typedef {Object} ConfigPolicy
- * @property {number} version
+ * @property {integer} version
  * @property {string} mod_policy
  * @property {ImplicitMetaPolicy|SignaturePolicy} policy
  */
@@ -211,11 +222,11 @@
  * An endorsement proposal, which includes the name of the chaincode to be invoked and the arguments to be passed to the chaincode.
  *
  * @typedef {Object} ChaincodeInvocationSpec
- * @property {number} type int
+ * @property {integer} type
  * @property {ChaincodeType} typeString
  * @property {{args:Buffer[],decorations}} input
  * @property {{path:string,name:string,version:string}} chaincode_id
- * @property {number} timeout int
+ * @property {integer} timeout
  */
 
 /**
@@ -226,13 +237,13 @@
 
 /**
  * @typedef {Object} EndorseTransactionProposalResponsePayload
- * @property {string|hex} proposal_hash
+ * @property {hexString} proposal_hash
  * @property {EndorseTransactionProposalResponseExtension} extension
  */
 
 /**
  * @typedef {Object} EndorseTransactionProposalResponseExtension
- * @property {{data_model:number|int,ns_rwset:ReadWriteSet[]}} results
+ * @property {{data_model:integer,ns_rwset:ReadWriteSet[]}} results
  * @property {ChaincodeEvent} events
  * @property {Client.Response} response
  */
@@ -241,7 +252,7 @@
  * @typedef {Object} ReadWriteSet
  * @property {string} namespace
  * @property {{reads:Read[],range_queries_info:[],writes:Write[],metadata_writes:MetadataWrite[]}} rwset
- * @property {PrivateReadWriteSet[]} collection_hashed_rwset // TODO sample required
+ * @property {PrivateReadWriteSet[]} collection_hashed_rwset
  */
 /**
  * @typedef {Object} PrivateReadWriteSet
@@ -260,7 +271,7 @@
 /**
  * @typedef {Object} HashedRead
  * @property {Buffer} key_hash
- * @property {{block_num:string|int,tx_num:string|int}} version
+ * @property {{block_num:intString,tx_num:intString}} version
  */
 
 /**
@@ -280,7 +291,7 @@
  * item of ReadSet
  * @typedef {Object} Read
  * @property {string} key
- * @property {{block_num:string|int,tx_num:string|int}} version
+ * @property {{block_num:intString,tx_num:intString}} version
  */
 /**
  * item of WriteSet
