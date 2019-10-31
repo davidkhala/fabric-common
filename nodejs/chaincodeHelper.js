@@ -1,7 +1,7 @@
 const Logger = require('./logger');
 
 const {chaincodeProposal, transactionProposal, invokeCommit} = require('./chaincode');
-const {txEvent, disconnect} = require('./eventHub');
+const EventHub = require('./eventHub');
 /**
  * @param eventHub
  * @param txId
@@ -10,15 +10,14 @@ const {txEvent, disconnect} = require('./eventHub');
  */
 const txTimerPromise = (eventHub, {txId}, eventTimeOut) => {
 	return new Promise((resolve, reject) => {
-		txEvent(eventHub, {txId}, undefined, (tx, code, blockNum) => {
+		eventHub.txEvent({txId}, undefined, (tx, code, blockNum) => {
 			clearTimeout(timerID);
-			resolve({tx, code});
+			resolve({tx, code, blockNum});
 		}, (err) => {
 			clearTimeout(timerID);
 			reject(err);
 		});
 		const timerID = setTimeout(() => {
-			disconnect(eventHub);
 			const err = Error('txTimeout');
 			reject(err);
 		}, eventTimeOut);
@@ -73,7 +72,7 @@ exports.instantiateOrUpgrade = async (
 		await Promise.all(promises);
 	} finally {
 		for (const eventHub of eventHubs) {
-			disconnect(eventHub);
+			eventHub.disconnect();
 		}
 	}
 

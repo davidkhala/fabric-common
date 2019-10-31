@@ -240,24 +240,60 @@
 /**
  * @typedef {Object} ReadWriteSet
  * @property {string} namespace
- * @property {{reads:ReadSet[],range_queries_info:[],writes:WriteSet[],metadata_writes:MetadataWriteSet[]}} rwset
- * @property {[]} collection_hashed_rwset // TODO sample required
+ * @property {{reads:Read[],range_queries_info:[],writes:Write[],metadata_writes:MetadataWrite[]}} rwset
+ * @property {PrivateReadWriteSet[]} collection_hashed_rwset // TODO sample required
  */
 /**
- * @typedef {Object} ReadSet
+ * @typedef {Object} PrivateReadWriteSet
+ * @property {string} collection_name
+ * @property {HashedReadWriteSet} hashed_rwset
+ * @property {Buffer} pvt_rwset_hash
+ */
+
+/**
+ * @typedef {Object} HashedReadWriteSet
+ * @property {[HashedRead]} hashed_reads
+ * @property {HashedWrite[]} hashed_writes
+ * @property {HashedMetadataWrite[]} metadata_writes
+ */
+
+/**
+ * @typedef {Object} HashedRead
+ * @property {Buffer} key_hash
+ * @property {{block_num,tx_num}} version //TODO
+ */
+
+/**
+ * @typedef {Object} HashedWrite
+ * @property {Buffer} key_hash
+ * @property {boolean} is_delete
+ * @property {Buffer} value_hash
+ */
+
+/**
+ * @typedef {Object} HashedMetadataWrite
+ * @property key_hash //TODO
+ * @property {{name:string,value}[]} entries //TODO
+ */
+
+/**
+ * item of ReadSet
+ * @typedef {Object} Read
  * @property {string} key
- * @property {{block_num:number,tx_num:number}} version
+ * @property {{block_num,tx_num}} version //TODO
  */
 /**
- * @typedef {Object} WriteSet
+ * item of WriteSet
+ * @typedef {Object} Write
  * @property {string} key
  * @property {boolean} is_delete
  * @property {string} value
  */
 /**
- * @typedef {Object} MetadataWriteSet
+ * item of MetadataWriteSet
+ * @typedef {Object} MetadataWrite
  * @property {string} key
- * @property {{name:string,value}[]} entries
+ * @property {{name:string,value}[]} entries //TODO
  */
 
 /**
