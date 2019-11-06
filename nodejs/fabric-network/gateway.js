@@ -10,8 +10,8 @@ class gateway {
 	 *
 	 * @param {Client} client
 	 * @param {string} channelName
-	 * @param {Peer} peer
-	 * @param {string} mspid peer MSP id
+	 * @param {Client.Peer} peer
+	 * @param {MspId} mspid peer MSP id
 	 * @param {Orderer} orderer
 	 * @return {Promise<Network>}
 	 */

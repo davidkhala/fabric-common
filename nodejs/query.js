@@ -1,7 +1,7 @@
 const Long = require('long');
 /**
  *
- * @param {Peer} peer
+ * @param {Client.Peer} peer
  * @param {Channel} channel
  * @returns {Promise<{height, currentBlockHash, previousBlockHash,pretty}>}
  */

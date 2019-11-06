@@ -28,7 +28,7 @@ const findLatest = (chaincodes, chaincodeId, comparator = newerVersion) => {
 exports.findLatest = findLatest;
 /**
  *
- * @param {Peer[]} peers
+ * @param {Client.Peer[]} peers
  * @param {string} chaincodeId
  * @param {string} [chaincodePath] if undefined, will use `path` of latest installed chaincode (in result of [queryInstalledChaincodes]).
  * @param {ChaincodeType} [chaincodeType]

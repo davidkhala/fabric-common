@@ -136,7 +136,7 @@ exports.versionMatcher = (ccVersionName, toThrow) => {
 /**
  * install chaincode does not require channel existence
  * set golang path is required when chaincodeType is 'golang'
- * @param {Peer[]} peers
+ * @param {Client.Peer[]} peers
  * @param {string} chaincodeId allowedCharsChaincodeName = "[A-Za-z0-9_-]+"
  * @param {string} chaincodePath
  * @param {string} chaincodeVersion allowedCharsVersion  = "[A-Za-z0-9_.-]+"
@@ -223,7 +223,7 @@ exports.transactionProposalResponseErrorHandler = transactionProposalResponseErr
  *
  * This is also used as query
  * @param {Client} client
- * @param {Peer[]} targets
+ * @param {Client.Peer[]} targets
  * @param {string} channelName
  * @param {string} chaincodeId
  * @param {string} fcn
@@ -255,10 +255,10 @@ exports.transactionProposal = async (client, targets, channelName, {
  * result parser is not required here, because the payload in proposal response is in form of garbled characters.
  * @param {string} command 'deploy' or 'upgrade'
  * @param {Channel} channel
- * @param {Peer[]} peers default: all peers in channel
+ * @param {Client.Peer[]} peers default: all peers in channel
  * @param {chaincodeProposalOpts} opts
  * @param {number} proposalTimeOut
- * @return {Promise<TransactionRequest}>}
+ * @return {Promise<TransactionRequest>}
  */
 exports.chaincodeProposal = async (
 	command, channel, peers, opts, proposalTimeOut

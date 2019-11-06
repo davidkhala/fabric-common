@@ -162,7 +162,7 @@ exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchD
 
 /**
  * basic health check by discoveryClient
- * @param {Peer} peer
+ * @param {Client.Peer} peer
  * @return {Promise<boolean>} false if connect trial failed
  */
 exports.ping = async (peer) => {

@@ -40,7 +40,7 @@ const txTimerPromise = (eventHub, {txId}, eventTimeOut) => {
 /**
  * @param {string} command deploy|upgrade
  * @param {Channel} channel
- * @param {Peer[]} peers default: all peers in channel
+ * @param {Client.Peer[]} peers default: all peers in channel
  * @param {EventHub[]} eventHubs
  * @param {chaincodeProposalOpts} opts
  * @param {Orderer} orderer
@@ -83,7 +83,7 @@ exports.instantiateOrUpgrade = async (
  *
  * @param {Client} client
  * @param {string} channelName
- * @param {Peer[]} peers
+ * @param {Client.Peer[]} peers
  * @param {ChannelEventHub[]} eventHubs
  * @param {string} chaincodeId
  * @param {string} fcn
