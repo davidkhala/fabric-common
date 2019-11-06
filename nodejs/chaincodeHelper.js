@@ -33,8 +33,8 @@ const txTimerPromise = (eventHub, {txId}, eventTimeOut) => {
  * @property {string} fcn
  * @property {Object} endorsementPolicy
  * @property {Object} collectionConfig
- * @property {Object} transientMap
- * @property {string} chaincodeType Type of chaincode. One of 'golang', 'car', 'java' or 'node'.
+ * @property {TransientMap} [transientMap]
+ * @property {ChaincodeType} chaincodeType
  */
 
 /**
@@ -88,7 +88,7 @@ exports.instantiateOrUpgrade = async (
  * @param {string} chaincodeId
  * @param {string} fcn
  * @param {string[]} args
- * @param {Object} transientMap key<string> -> value<string>
+ * @param {TransientMap} [transientMap]
  * @param {Orderer} orderer target orderer
  * @param {number} [proposalTimeout] default to 30000 ms
  * @param {number} [commitTimeout] default to 30000 ms

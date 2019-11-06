@@ -9,6 +9,11 @@ const couchdbUtil = require('./couchdb');
 const userUtil = require('./user');
 const yaml = require('khala-nodeutils/yaml');
 
+/**
+ * @param fabricTag
+ * @param thirdPartyTag
+ * @param {ChaincodeType} [chaincodeType]
+ */
 exports.fabricImagePull = async ({fabricTag, thirdPartyTag, chaincodeType = 'golang'}) => {
 	if (fabricTag) {
 		const imageTag = fabricTag;
@@ -54,10 +59,10 @@ exports.fabricImagePull = async ({fabricTag, thirdPartyTag, chaincodeType = 'gol
  * @returns {Promise<*>}
  */
 exports.runCA = ({
-	                 container_name, port, network, imageTag,
-	                 admin = userUtil.adminName, adminpw = userUtil.adminPwd,
-	                 TLS, Issuer
-                 }, configFile) => {
+	container_name, port, network, imageTag,
+	admin = userUtil.adminName, adminpw = userUtil.adminPwd,
+	TLS, Issuer
+}, configFile) => {
 
 	const {caKey, caCert} = caUtil.container;
 	const {CN, OU, O, ST, C, L} = Issuer;
@@ -219,9 +224,9 @@ exports.chaincodeClean = async (prune, filter) => {
 	}
 };
 exports.runOrderer = ({
-	                      container_name, imageTag, port, network, BLOCK_FILE, CONFIGTXVolume,
-	                      msp: {id, configPath, volumeName}, ordererType, tls, stateVolume
-                      }, operations, metrics) => {
+	container_name, imageTag, port, network, BLOCK_FILE, CONFIGTXVolume,
+	msp: {id, configPath, volumeName}, ordererType, tls, stateVolume
+}, operations, metrics) => {
 	const Image = `hyperledger/fabric-orderer:${imageTag}`;
 	const Cmd = ['orderer'];
 	const Env = ordererUtil.envBuilder({
@@ -247,12 +252,12 @@ exports.runOrderer = ({
 };
 
 exports.runPeer = ({
-	                   container_name, port, network, imageTag,
-	                   msp: {
-		                   id, volumeName,
-		                   configPath
-	                   }, peerHostName, tls, couchDB, stateVolume
-                   }, operations, metrics) => {
+	container_name, port, network, imageTag,
+	msp: {
+		id, volumeName,
+		configPath
+	}, peerHostName, tls, couchDB, stateVolume
+}, operations, metrics) => {
 	const Image = `hyperledger/fabric-peer:${imageTag}`;
 	const Cmd = ['peer', 'node', 'start'];
 	const Env = peerUtil.envBuilder({

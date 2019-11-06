@@ -7,7 +7,9 @@
 /**
  * @typedef {string} CertificatePem certificate containing the public key in PEM format.
  */
-
+/**
+ * @typedef {Object} TransientMap jsObject of key<string> --> value<string>
+ */
 
 /**
  * @typedef {number} integer

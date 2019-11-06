@@ -6,11 +6,12 @@ const ChannelUtil = require('./channel');
 /**
  * @enum {string}
  */
-exports.ChaincodeType = {
-	golang: 'GOLANG',
-	node: 'NODE',
-	java: 'JAVA'
+const ChaincodeType = {
+	golang: 'golang',
+	node: 'node',
+	java: 'java'
 };
+exports.ChaincodeType = ChaincodeType;
 exports.proposalStringify = (proposalResponse) => {
 	if (!(proposalResponse instanceof Error)) {
 		proposalResponse.response.payload = proposalResponse.response.payload.toString();
@@ -139,13 +140,13 @@ exports.versionMatcher = (ccVersionName, toThrow) => {
  * @param {string} chaincodeId allowedCharsChaincodeName = "[A-Za-z0-9_-]+"
  * @param {string} chaincodePath
  * @param {string} chaincodeVersion allowedCharsVersion  = "[A-Za-z0-9_.-]+"
- * @param {string} [chaincodeType] Optional. Type of chaincode. One of 'golang', 'car', 'node' or 'java'.
+ * @param {ChaincodeType} [chaincodeType]
  * @param {string} [metadataPath] the absolute path to the directory structure containing the JSON index files. e.g<br>
  * <$metadataPath>/statedb/couchdb/indexes/<files *.json>
  * @param {Client} client
  * @returns {Promise<ProposalResult>}
  */
-exports.install = async (peers, {chaincodeId, chaincodePath, chaincodeVersion, chaincodeType = 'golang', metadataPath}, client) => {
+exports.install = async (peers, {chaincodeId, chaincodePath, chaincodeVersion, chaincodeType = ChaincodeType.golang, metadataPath}, client) => {
 	const logger = Logger.new('chaincode:install', true);
 	logger.debug({
 		peers_length: peers.length,
@@ -227,7 +228,7 @@ exports.transactionProposalResponseErrorHandler = transactionProposalResponseErr
  * @param {string} chaincodeId
  * @param {string} fcn
  * @param {string[]} args
- * @param {Object} transientMap jsObject of key<string> --> value<string>
+ * @param {TransientMap} [transientMap]
  * @param {number} proposalTimeout
  * @return {Promise<TransactionRequest>}
  */

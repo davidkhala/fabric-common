@@ -31,7 +31,7 @@ exports.findLatest = findLatest;
  * @param {Peer[]} peers
  * @param {string} chaincodeId
  * @param {string} [chaincodePath] if undefined, will use `path` of latest installed chaincode (in result of [queryInstalledChaincodes]).
- * @param {string} [chaincodeType]
+ * @param {ChaincodeType} [chaincodeType]
  * @param {string} [metadataPath]
  * @param {Client} client
  * @param {string} incrementLevel incrementLevel major|minor|patch
