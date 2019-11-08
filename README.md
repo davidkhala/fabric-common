@@ -23,6 +23,7 @@ Current version 1.4.3
     - [1.4.3][orderer][FAB-7559] apply new ordering service endpoints config structure
 ## Notes
 
+- [keystore] For private keys existing in local file system, you should set the permissions to 0400 on *nix based OS’s.  
 - [gRpcs][docker network] **host name SHOULD not include upper-case character, otherwise gRpcs ping for discovery_client will not response back with docker network DNS** 
 - [query]blockHeight(got from queryChain) indexing from 1, blockNumber in blockEvent starting from 0
 - [golang]dep could only be run under system $GOPATH,
