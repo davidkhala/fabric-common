@@ -142,11 +142,11 @@
  * @typedef {Object} ConfigValue
  * @property {integer} version
  * @property {string} mod_policy
- * @property {ConfigValueContent} value
+ * @property {ConfigValueBody} value
  */
 
 /**
- * @typedef {Object} ConfigValueContent
+ * @typedef {Object} ConfigValueBody
  * @property {string} [name] used in HashingAlgorithm|Consortium
  * @property {string[]} [anchor_peers] used in AnchorPeers
  * @property {number} [width] BlockDataHashingStructure
