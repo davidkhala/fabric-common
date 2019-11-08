@@ -12,7 +12,7 @@ class EventHub {
 		logger.debug('new', {channel: channel.getName(), peer: peer.toString()});
 	}
 
-	async connect({startBlock = 0, endBlock} = {}) {
+	async connect({startBlock, endBlock} = {}) {
 		return new Promise((resolve, reject) => {
 			const connectCallback = (err, eventHub) => {
 				if (err) {
