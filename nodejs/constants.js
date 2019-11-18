@@ -24,7 +24,7 @@ const MSPRoleType = {
 	member: 'MEMBER'
 };
 
-/** consensus "solo|kafka|etcdraft"
+/** 'solo' is now taken as a special case of 'etcdraft'
  * @enum {string}
  */
 const OrdererType = {

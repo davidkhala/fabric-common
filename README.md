@@ -34,8 +34,6 @@ Current version 1.4.3
 - [1.4][nodejs][sdk] `Channel#getChannelConfigReadable` could be used to extract application channel from orderer
     - used in migration from kafka to RAFT. When after <appChannel> config is changed to maintenance mode, peer in <appChannel> could not get the latest channel config. At that point, we could extract <appChannel> config from orderer alternatively.   
 - [disaster]backup recovery: at least 1 anchor peer for each organization should be resumed to recover transaction process
-- [endorsement]chaincode partial update: when not all peers upgrade to latest chaincode, is it possible that old chaincode still work
-    with inappropriate endorsement config; while with appropriate endorsement policy, we get chaincode fingerprint mismatch error
 - [nodejs][sdk]node-gyp rebuild require `make` and `g++` 
 - [nodejs][sdk]FABN-1130: Stop using "init" as default function name
 - [couchdb]error symptom of run richQuery on levelDB:  `GET_QUERY_RESULT failed: transaction ID: 6b53220f87f791047ba44635f32d07cb667b6439c5df95e9a208d74ab12b5ff2: ExecuteQuery not supported for leveldb`
@@ -54,6 +52,8 @@ Current version 1.4.3
         ```
 - [raft] Each channel has its own RAFT orderer cluster, but system channel should have a super set of all orderer cluster  -- Jay Guo
 - [raft][migrate] migrate from kafka to etcdRaft, see [here](https://github.com/davidkhala/delphi-fabric/tree/release-1.4/operations/migrate/README.md)
+- [solo][FAB-15754] Deploy a single-node Raft-based ordering service instead of using solo consensus type
+
 ### Notes: Private Data 
 
 - [privateData]requirePeerCount <= peerCount - 1 (1 for peer itself)
@@ -78,7 +78,9 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
 - [nodejs][chaincode]nodejs chaincode take longer time in install chaincode only.
 - [golang][chaincode] `failed to invoke chaincode name:"lscc" , error: API error (400): OCI runtime create failed: container_linux.go:348: starting container process caused "exec: \"chaincode\": executable file not found in $PATH": unknown`
     - means package name for golang-chaincode entrance is not `main`
-
+- [endorsement][chaincode]chaincode partial update: when not all peers upgrade to latest chaincode, is it possible that old chaincode still work
+      with inappropriate endorsement config; while with appropriate endorsement policy, we get chaincode fingerprint mismatch error
+- [chaincode][FAB-15285] System chaincodes are intended to be invoked by a client rather than by a user chaincode. Invoking from a user chaincode may cause deadlocks.
 ### Notes: Operations
 [reference](https://hyperledger-fabric.readthedocs.io/en/release-1.4/metrics_reference.html)
 

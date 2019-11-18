@@ -113,8 +113,6 @@ exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, tls, ordererType, raft
 				`ORDERER_GENERAL_CLUSTER_ROOTCAS=[${rootCAsStringBuild(raft_tls)}]`
 			]);
 			break;
-		case OrdererType.solo:
-			break;
 	}
 	if (operationsOpts) {
 		env = env.concat([

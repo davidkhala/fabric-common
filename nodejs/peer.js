@@ -81,12 +81,13 @@ exports.statePath = {
  * @param peerHostName
  * @param tls
  * @param couchDB
+ * @param chaincodeConfig
  * @param {number} [loggingLevel] index of [loggerLevels]{@link loggingLevels}
  * @param operationsOpts
  * @param metricsOpts
  * @returns {string[]}
  */
-exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchDB}, loggingLevel, operationsOpts, metricsOpts) => {
+exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchDB, chaincodeConfig}, loggingLevel, operationsOpts, metricsOpts) => {
 	let environment =
 		[
 			`CORE_VM_ENDPOINT=unix://${exports.container.dockerSock}`,
@@ -100,10 +101,13 @@ exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchD
 			`CORE_PEER_TLS_ENABLED=${!!tls}`,
 			`CORE_PEER_ID=${peerHostName}`,
 			`CORE_PEER_ADDRESS=${peerHostName}:7051`,
-			'CORE_CHAINCODE_EXECUTETIMEOUT=180s',
 			'CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052', // for swarm/k8s mode
-			'GODEBUG=netdns=go'// NOTE aliyun only
+			'GODEBUG=netdns=go' // NOTE aliyun only
 		];
+	if (chaincodeConfig) {
+		const {attachLog} = chaincodeConfig;
+		environment.push(`CORE_VM_DOCKER_ATTACHSTDOUT=${!!attachLog}`); // Enables/disables the standard out/err from chaincode containers for debugging purposes
+	}
 	if (loggingLevel) {
 		environment = environment.concat([
 			`FABRIC_LOGGING_SPEC=${loggingLevels[loggingLevel]}`,
@@ -152,7 +156,7 @@ exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchD
 			environment = environment.concat([
 				'CORE_METRICS_STATSD_NETWORK=udp',
 				`CORE_METRICS_STATSD_ADDRESS=${host}:8125`,
-				`CORE_METRICS_STATSD_PREFIX=${peerHostName}`,
+				`CORE_METRICS_STATSD_PREFIX=${peerHostName}`
 			]);
 		}
 	}
