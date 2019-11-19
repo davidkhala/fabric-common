@@ -2,7 +2,7 @@ const logger = require('./logger').new('channel-config');
 const fs = require('fs');
 const agent = require('./agent2configtxlator');
 const {JSONEqual} = require('khala-nodeutils/helper');
-const {signs} = require('./multiSign');
+const {signChannelConfig} = require('./multiSign');
 const {ChannelType, OrdererType} = require('./constants');
 
 /**
@@ -528,7 +528,7 @@ exports.setupAnchorPeers = async (channel, orderer, anchorPeerTxFile,
 	signers = [channel._clientContext], {client = channel._clientContext} = {}) => {
 	const channelConfig_envelop = fs.readFileSync(anchorPeerTxFile);
 	const config = channel._clientContext.extractChannelConfig(channelConfig_envelop);// this is
-	const signatures = signs(signers, config);
+	const signatures = signChannelConfig(signers, config);
 
 	return await exports.channelUpdate(channel, orderer, undefined, undefined, {client}, {config, signatures});
 };
@@ -541,7 +541,7 @@ exports.setAnchorPeers = async (channel, orderer, OrgName, anchorPeers,
 		return configFactory.build();
 	};
 	const signatureCollectCallback = (config) => {
-		return signs(signers, config);
+		return signChannelConfig(signers, config);
 	};
 	return await exports.channelUpdate(channel, orderer, configChangeCallback, signatureCollectCallback, {peer, client, viaServer});
 };

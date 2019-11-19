@@ -1,7 +1,7 @@
 const Logger = require('./logger');
 const logger = Logger.new('channel');
 const fs = require('fs');
-const {signs} = require('./multiSign');
+const {signChannelConfig} = require('./multiSign');
 const Channel = require('fabric-client/lib/Channel');
 const {sleep} = require('khala-nodeutils/helper');
 const OrdererUtil = require('./orderer');
@@ -37,9 +37,8 @@ exports.getOrderers = async (channel, healthyOnly) => {
 /**
  * could be ignored from 1.2
  * @author davidliu
- * @param channelName
- * @param toThrow
- * @returns {*}
+ * @param {string} channelName
+ * @param {boolean} toThrow
  */
 exports.nameMatcher = (channelName, toThrow) => {
 	const namePattern = /^[a-z][a-z0-9.-]*$/;
@@ -49,6 +48,7 @@ exports.nameMatcher = (channelName, toThrow) => {
 	}
 	return result;
 };
+
 /**
  * @param {Client} client
  * @param {string} channelName
@@ -92,7 +92,7 @@ exports.create = async (channel, orderer, channelConfigFile, signers = [channel.
 	// extract the channel config bytes from the envelope to be signed
 	const config = channelClient.extractChannelConfig(channelConfig_envelop);
 
-	const signatures = signs(signers, config);
+	const signatures = signChannelConfig(signers, config);
 	try {
 		return await ChannelConfig.channelUpdate(channel, orderer, undefined, undefined, undefined, {config, signatures});
 	} catch (e) {
@@ -187,7 +187,6 @@ const join = async (channel, peer, block, orderer, waitTime = 1000) => {
 };
 
 exports.join = join;
-
 
 exports.pretty = (channel) => {
 	return {

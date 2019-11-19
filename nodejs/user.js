@@ -69,6 +69,8 @@ exports.getCertificate = (user) => user.getSigningIdentity()._certificate;
 exports.getMSPID = (user) => user._mspId;
 exports.getPrivateKey = (user) => user.getSigningIdentity()._signer._key;
 
+exports.sign = (user, messageBytes) => user.getSigningIdentity().sign(messageBytes);
+
 const TransactionID = require('fabric-client/lib/TransactionID');
 /**
  * Builds a new transactionID based on a user's certificate and a nonce value.
