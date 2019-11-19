@@ -27,8 +27,20 @@ const setEnrollment = (user, privateKey, certificate, mspId) => {
 	user._signingIdentity = new SigningIdentity(certificate, pubKey, mspId, user._cryptoSuite, new Signer(user._cryptoSuite, privateKey));
 };
 
+/**
+ * @param name
+ * @param key
+ * @param certificate
+ * @param mspId
+ * @param cryptoSuite
+ * @param roles
+ * @param affiliation
+ * @return {User}
+ */
 const build = (name, {key, certificate}, mspId, cryptoSuite = clientUtil.newCryptoSuite(), {roles, affiliation} = {}) => {
-
+	/**
+	 * @type {User}
+	 */
 	const user = new User({name, roles, affiliation});
 	let privateKey;
 	if (key instanceof ECDSA_KEY) {
@@ -49,13 +61,13 @@ exports.build = build;
  * @param {NodeType} nodeType
  * @param mspId
  * @param cryptoSuite
- * @returns {Promise<User>}
+ * @returns {User}
  */
 exports.loadFromLocal = (cryptoPath, nodeType, mspId, cryptoSuite = clientUtil.newCryptoSuite()) => {
 	const username = cryptoPath.userName;
 	const exist = cryptoPath.cryptoExistLocal(`${nodeType}User`);
 	if (!exist) {
-		return;
+		return undefined;
 	}
 	const {keystore, signcerts} = exist;
 
@@ -69,7 +81,13 @@ exports.getCertificate = (user) => user.getSigningIdentity()._certificate;
 exports.getMSPID = (user) => user._mspId;
 exports.getPrivateKey = (user) => user.getSigningIdentity()._signer._key;
 
-exports.sign = (user, messageBytes) => user.getSigningIdentity().sign(messageBytes);
+/**
+ *
+ * @param {User} user
+ * @param messageBytes
+ * @return {Buffer}
+ */
+exports.sign = (user, messageBytes) => user.getSigningIdentity().sign(messageBytes, undefined);
 
 const TransactionID = require('fabric-client/lib/TransactionID');
 /**
