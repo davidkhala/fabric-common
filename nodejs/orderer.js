@@ -1,7 +1,7 @@
 const Orderer = require('fabric-client/lib/Orderer');
 const fs = require('fs');
 const logger = require('./logger').new('orderer');
-const {loggingLevels, RemoteOptsTransform} = require('./remote');
+const {LoggingLevel, RemoteOptsTransform} = require('./remote');
 const {OrdererType, MetricsProvider} = require('./constants');
 exports.find = ({orderers, ordererUrl}) => {
 	return ordererUrl ? orderers.find((orderer) => orderer.getUrl() === ordererUrl) : orderers[0];
@@ -77,7 +77,7 @@ exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, tls, ordererType, raft
 	];
 
 	if (loggingLevel) {
-		env.push(`FABRIC_LOGGING_SPEC=${loggingLevels[loggingLevel]}`);
+		env.push(`FABRIC_LOGGING_SPEC=${LoggingLevel[loggingLevel]}`);
 	}
 	const rootCAsStringBuild = ({caCert, rootCAs}) => {
 		let result = [caCert];

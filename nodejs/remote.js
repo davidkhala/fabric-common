@@ -33,6 +33,15 @@ exports.RemoteOptsTransform = RemoteOptsTransform;
 
 /**
  * Valid logging levels are case-insensitive string
- * @type {string[]}
+ * @enum {string}
  */
-exports.loggingLevels = ['FATAL', 'PANIC', 'ERROR', 'WARNING', 'INFO', 'DEBUG'];
+const LoggingLevel = {
+	fatal: 'FATAL', FATAL: 'FATAL',
+	panic: 'PANIC', PANIC: 'PANIC',
+	error: 'ERROR', ERROR: 'ERROR',
+	warning: 'WARNING', WARNING: 'WARNING',
+	info: 'INFO', INFO: 'INFO',
+	debug: 'DEBUG', DEBUG: 'DEBUG',
+	undefined: 'INFO', null: 'INFO'
+};
+exports.LoggingLevel = LoggingLevel;

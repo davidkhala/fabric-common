@@ -1,7 +1,7 @@
 # fabric-common
 [![Build Status](https://travis-ci.com/davidkhala/fabric-common.svg?branch=release-1.4)](https://travis-ci.com/davidkhala/fabric-common)
 
-Current version 1.4.3
+Current version 1.4.4
 ## Language environment
 - docker: 17.06.2-ce +
 - docker-compose: 1.14.0 +
@@ -89,7 +89,7 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
 - [metrics][TLS] the TLS enable flag located in `Operations` section
 - [metrics][TLS] for peer and orderer, even ...OPERATIONS_TLS_CLIENTAUTHREQUIRED=false, client side key-cert is still 
     - required on endpoints: `/metrics`, `/logspec`
-    - not required on endpoints `healthz`
+    - but not required on endpoints `/healthz`, `/version`
     
     See details in [FAB-14323](https://jira.hyperledger.org/browse/FAB-14323)
 - [metrics] The `/metrics` endpoint allows operators to utilize Prometheus to pull operational metrics from peer and orderer nodes.

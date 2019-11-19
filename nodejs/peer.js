@@ -1,7 +1,6 @@
 const Peer = require('fabric-client/lib/Peer');
 const {fsExtra} = require('khala-nodeutils/helper');
-const {RequestPromise} = require('khala-nodeutils/request');
-const {loggingLevels, RemoteOptsTransform} = require('./remote');
+const {LoggingLevel, RemoteOptsTransform} = require('./remote');
 const {MetricsProvider} = require('./constants');
 
 /**
@@ -82,7 +81,7 @@ exports.statePath = {
  * @param tls
  * @param couchDB
  * @param chaincodeConfig
- * @param {number} [loggingLevel] index of [loggerLevels]{@link loggingLevels}
+ * @param {LoggingLevel} [loggingLevel]
  * @param operationsOpts
  * @param metricsOpts
  * @returns {string[]}
@@ -110,9 +109,9 @@ exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchD
 	}
 	if (loggingLevel) {
 		environment = environment.concat([
-			`FABRIC_LOGGING_SPEC=${loggingLevels[loggingLevel]}`,
-			`CORE_CHAINCODE_LOGGING_LEVEL=${loggingLevels[loggingLevel]}`, // for all loggers within the chaincode container
-			`CORE_CHAINCODE_LOGGING_SHIM=${loggingLevels[loggingLevel]}` // for the 'shim' logger
+			`FABRIC_LOGGING_SPEC=${LoggingLevel[loggingLevel]}`,
+			`CORE_CHAINCODE_LOGGING_LEVEL=${LoggingLevel[loggingLevel]}`, // for all loggers within the chaincode container
+			`CORE_CHAINCODE_LOGGING_SHIM=${LoggingLevel[loggingLevel]}` // for the 'shim' logger
 		]);
 	}
 	if (tls) {
@@ -163,7 +162,6 @@ exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchD
 	return environment;
 };
 
-
 /**
  * basic health check by discoveryClient
  * @param {Client.Peer} peer
@@ -182,42 +180,6 @@ exports.ping = async (peer) => {
 	}
 };
 
-/**
- * /healthz official health check, for peer and orderer
- * TODO to support https
- * -- introduced from 1.4
- * @param baseUrl ${domain:port}
- * @param otherOptions
- * @returns {Promise}
- */
-exports.health = async (baseUrl, otherOptions) => {
-	const url = `${baseUrl}/healthz`;
-	const result = await RequestPromise({url, method: 'GET'}, otherOptions);
-	if (result.status === 'OK') {
-		return result;
-	} else {
-		const err = Error('healthz check');
-		err.url = url;
-		err.result = result;
-		throw err;
-	}
-};
-exports.getLogLevel = async (baseUrl, otherOptions) => {
-	const url = `${baseUrl}/logspec`;
-	const {spec} = await RequestPromise({url, method: 'GET'}, otherOptions);
-	return spec;
-};
-/**
- * @param {string} baseUrl
- * @param {string|number} level FATAL | PANIC | ERROR | WARNING | INFO | DEBUG, validation will be completed by service
- * @param otherOptions
- * @returns {Promise<void>}
- */
-exports.setLogLevel = async (baseUrl, level, otherOptions) => {
-	const url = `${baseUrl}/logspec`;
-	if (Number.isInteger(level)) {
-		level = loggingLevels[level];
-	}
-	return await RequestPromise({url, method: 'PUT', body: {spec: level}}, otherOptions);
-};
+
+
 exports.Peer = Peer;
