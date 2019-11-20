@@ -9,10 +9,9 @@ class EventHub {
 	 */
 	constructor(channel, peer) {
 		this.channelEventHub = new ChannelEventHub(channel, peer);
-		logger.debug('new', {channel: channel.getName(), peer: peer.toString()});
 	}
 
-	async connect({startBlock, endBlock} = {}) {
+	async connect({startBlock, endBlock, signedEvent} = {}) {
 		return new Promise((resolve, reject) => {
 			const connectCallback = (err, eventHub) => {
 				if (err) {
@@ -27,13 +26,29 @@ class EventHub {
 			 */
 			const options = {
 				full_block: true,
-				startBlock,
-				endBlock
+				startBlock, endBlock,
+				signedEvent
 			};
 			this.channelEventHub.connect(options, connectCallback);
 		});
 
 	}
+
+	/**
+	 * @param {CertificatePem} certificate
+	 * @param {MspId} mspId
+	 */
+	unsignedRegistration(certificate, mspId) {
+		/**
+		 * @type {EventHubRegistrationRequest}
+		 */
+		const options = {
+			certificate, mspId,
+			txId: undefined, identity: undefined
+		};
+		return this.channelEventHub.generateUnsignedRegistration(options);
+	}
+
 
 	unRegisterAllEvents() {
 		this.channelEventHub._chaincodeRegistrants = new Map();

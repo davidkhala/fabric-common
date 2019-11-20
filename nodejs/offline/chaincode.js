@@ -45,7 +45,7 @@ exports.sendSignedTransaction = async (signedTransaction, orderer, timeout) => {
  * @param {Client.TransientMap} [transientMap] raw type
  * @param {MspId} mspId
  * @param {CertificatePem} certificate
- * @return {{proposal: Proposal, txId: *}}
+ * @return {{proposal: Proposal, txId: TransactionId}}
  */
 exports.unsignedTransactionProposal = (channelName, {fcn, args = [], chaincodeId, transientMap}, mspId, certificate) => {
 	/**
@@ -55,7 +55,7 @@ exports.unsignedTransactionProposal = (channelName, {fcn, args = [], chaincodeId
 		fcn,
 		args,
 		chaincodeId,
-		transientMap,
+		transientMap
 	};
 	const channel = emptyChannel(channelName);
 
@@ -88,4 +88,3 @@ exports.unsignedTransaction = (channelName, proposalResponses, proposal) => {
 	};
 	return channel.generateUnsignedTransaction(request);
 };
-// TODO eventHub
