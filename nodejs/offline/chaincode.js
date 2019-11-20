@@ -16,13 +16,6 @@ const {emptyChannel} = require('./channel');
  */
 exports.sendSignedProposal = async (endorsePeers, signedProposal, timeout) => sendPeersProposal(endorsePeers, signedProposal, timeout);
 
-
-/**
- * @typedef {Object} SignedCommit
- * @property {TransactionRequest} request
- * @property {Buffer} signedTransaction
- */
-
 /**
  * send the signed commit proposal for a transaction
  *
