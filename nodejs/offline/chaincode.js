@@ -88,4 +88,4 @@ exports.unsignedTransaction = (channelName, proposalResponses, proposal) => {
 	};
 	return channel.generateUnsignedTransaction(request);
 };
-// TODO commit transaction
+// TODO eventHub
