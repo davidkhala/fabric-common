@@ -28,20 +28,18 @@ exports.sendSignedProposal = async (endorsePeers, signedProposal, timeout) => se
  *
  * @param {PeerSignedProposal} signedTransaction
  * @param {Client.Orderer} orderer
- * @param {number} [timeout]
  */
-exports.sendSignedTransaction = async (signedTransaction, orderer, timeout) => {
+exports.sendSignedTransaction = async (signedTransaction, orderer) => {
 	const signed_envelope = toEnvelope(signedTransaction);
-
-	return await orderer.sendBroadcast(signed_envelope, timeout);
+	return await orderer.sendBroadcast(signed_envelope);
 };
 
 
 /**
- * @param channelName
- * @param [fcn]
- * @param [args]
- * @param chaincodeId
+ * @param {string} channelName
+ * @param {string} [fcn]
+ * @param {string[]} [args]
+ * @param {string} chaincodeId
  * @param {Client.TransientMap} [transientMap] raw type
  * @param {MspId} mspId
  * @param {CertificatePem} certificate
@@ -55,7 +53,8 @@ exports.unsignedTransactionProposal = (channelName, {fcn, args = [], chaincodeId
 		fcn,
 		args,
 		chaincodeId,
-		transientMap
+		transientMap,
+		argbytes: undefined
 	};
 	const channel = emptyChannel(channelName);
 
@@ -72,9 +71,9 @@ exports.unsignedTransactionProposal = (channelName, {fcn, args = [], chaincodeId
 
 /**
  *
- * @param channelName
- * @param proposalResponses
- * @param proposal
+ * @param {string} channelName
+ * @param {ProposalResponse[]} proposalResponses
+ * @param {Proposal} proposal
  * @return {UnsignedTransaction}
  */
 exports.unsignedTransaction = (channelName, proposalResponses, proposal) => {
@@ -84,7 +83,8 @@ exports.unsignedTransaction = (channelName, proposalResponses, proposal) => {
 	 * @type {TransactionRequest}
 	 */
 	const request = {
-		proposalResponses, proposal
+		proposalResponses, proposal,
+		orderer: undefined, txID: undefined
 	};
 	return channel.generateUnsignedTransaction(request);
 };
