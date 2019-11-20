@@ -26,7 +26,7 @@ exports.sendSignedProposal = async (endorsePeers, signedProposal, timeout) => se
 /**
  * send the signed commit proposal for a transaction
  *
- * @param {Buffer} signedTransaction
+ * @param {PeerSignedProposal} signedTransaction
  * @param {Client.Orderer} orderer
  * @param {number} [timeout]
  */
@@ -55,7 +55,7 @@ exports.unsignedTransactionProposal = (channelName, {fcn, args = [], chaincodeId
 		fcn,
 		args,
 		chaincodeId,
-		transientMap
+		transientMap,
 	};
 	const channel = emptyChannel(channelName);
 
