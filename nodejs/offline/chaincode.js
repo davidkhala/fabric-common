@@ -20,24 +20,20 @@ exports.sendSignedProposal = async (endorsePeers, signedProposal, timeout) => se
 /**
  * @typedef {Object} SignedCommit
  * @property {TransactionRequest} request
- * @property {} signedTransaction
-		signedTransaction: Buffer;
-		orderer?: Orderer | string;
+ * @property {Buffer} signedTransaction
  */
 
 /**
  * send the signed commit proposal for a transaction
  *
- * @param {SignedCommitProposal} request the signed commit proposal
- * @param {number} timeout the timeout setting passed on sendSignedProposal
+ * @param {Buffer} signedTransaction
+ * @param {Client.Orderer} orderer
+ * @param {number} [timeout]
  */
-exports.sendSignedTransaction = async (request, timeout) => {
-	const {signedTransaction} = request;
+exports.sendSignedTransaction = async (signedTransaction, orderer, timeout) => {
 	const signed_envelope = toEnvelope(signedTransaction);
 
-	// verify that we have an orderer configured
-	const orderer = this._clientContext.getTargetOrderer(request.orderer, this.getOrderers(), this._name);
-	return orderer.sendBroadcast(signed_envelope, timeout);
+	return await orderer.sendBroadcast(signed_envelope, timeout);
 };
 
 

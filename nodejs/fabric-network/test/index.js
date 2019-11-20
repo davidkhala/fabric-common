@@ -7,7 +7,7 @@ const channelName = 'allchannel';
 let chaincodeId = 'diagnose';
 
 const task = async () => {
-	const client = await helper.getOrgAdmin(org);
+	const client = helper.getOrgAdmin(org);
 	const Gateway = require('../gateway');
 	const gateway = new Gateway();
 	const network = await gateway.connect(client, channelName, peer, mspid, orderer);
