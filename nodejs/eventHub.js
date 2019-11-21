@@ -204,13 +204,14 @@ class EventHub {
 
 	/**
 	 *
-	 * @param {TransactionId} txId
+	 * @param {TransactionId} [txId]
+	 * @param {string} [transactionID]
 	 * @param {OnTxEventSuccess&Validator} [validator]
 	 * @param {OnTxEventSuccess} onSuccess
 	 * @param {OnEvenHubError} onError
 	 * @returns {string} transaction id string
 	 */
-	txEvent({txId}, validator, onSuccess, onError) {
+	txEvent({txId, transactionID}, validator, onSuccess, onError) {
 		const eventHub = this.channelEventHub;
 		this._throwIfNotConnected();
 		const logger = Logger.new('txEvent');
@@ -220,7 +221,9 @@ class EventHub {
 				return {valid: code === EventHub.txEventCode[0], interrupt: true};
 			};
 		}
-		let transactionID = txId.getTransactionID();
+		if (!transactionID) {
+			transactionID = txId.getTransactionID();
+		}
 		// some modification on transactionID may happen during `registerTxEvent`
 		transactionID = eventHub.registerTxEvent(transactionID, (tx, code, blockNum) => {
 			const {valid, interrupt} = validator(tx, code, blockNum);

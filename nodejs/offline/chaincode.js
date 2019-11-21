@@ -36,7 +36,7 @@ exports.sendSignedTransaction = async (signedTransaction, orderer) => {
  * @param {Client.TransientMap} [transientMap] raw type
  * @param {MspId} mspId
  * @param {CertificatePem} certificate
- * @return {{proposal: Proposal, txId: TransactionId}}
+ * @return {{proposal: Proposal, transactionID: string}}
  */
 exports.unsignedTransactionProposal = (channelName, {fcn, args = [], chaincodeId, transientMap}, mspId, certificate) => {
 	/**
@@ -53,7 +53,8 @@ exports.unsignedTransactionProposal = (channelName, {fcn, args = [], chaincodeId
 
 
 	const {proposal, txId} = channel.generateUnsignedProposal(transactionProposalReq, mspId, certificate, false);
-	return {proposal, txId};
+	const transactionID = txId.getTransactionID();
+	return {proposal, transactionID};
 };
 
 /**
