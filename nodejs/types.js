@@ -5,20 +5,7 @@
  * @typedef {string} MspId msp_identifier, member service provider identifier
  */
 /**
- * @typedef {string} CertificatePem certificate containing the public key in PEM format.
- */
-/**
  * @typedef {Object} TransientMap jsObject of key<string> --> value<string>
- */
-
-/**
- * @typedef {number} integer
- */
-/**
- * @typedef {string} intString '0'
- */
-/**
- * @typedef {string} hexString '58ab'
  */
 
 /**
