@@ -2,7 +2,7 @@ const Logger = require('./logger');
 
 const {chaincodeProposal, transactionProposal, invokeCommit} = require('./chaincode');
 /**
- * @param eventHub
+ * @param {EventHub} eventHub
  * @param txId
  * @param eventTimeOut
  * @return {Promise<{tx,code}>}
