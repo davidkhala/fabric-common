@@ -37,6 +37,7 @@ class EventHub {
 	/**
 	 * @param {CertificatePem} certificate
 	 * @param {MspId} mspId
+	 * @return {Buffer}
 	 */
 	unsignedRegistration(certificate, mspId) {
 		/**
