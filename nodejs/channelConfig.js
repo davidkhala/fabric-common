@@ -487,7 +487,7 @@ exports.channelUpdate = async (channel, orderer, configChangeCallback, signature
 			const updatedProto = await binManager.configtxlatorCMD.encode('common.Config', updateConfigJSON);
 			modified_config_proto = await binManager.configtxlatorCMD.computeUpdate(channelName, configProto, updatedProto);
 		}
-		config = new Buffer(modified_config_proto, 'binary');
+		config = Buffer.from(modified_config_proto, 'binary');
 	}
 	if (!signatures) {
 		signatures = await signatureCollectCallback(config);
