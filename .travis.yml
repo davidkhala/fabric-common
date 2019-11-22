@@ -2,8 +2,8 @@ matrix:
   include:
     - language: node_js
       node_js:
-        - "8"
         - "10"
+        - "8"
       dist: bionic
       cache:
         directories:
