@@ -7,8 +7,8 @@ Current version 1.4.4
 - docker-compose: 1.14.0 +
 - golang: 1.11.x
 - fabric-node-sdk:
-    - nodejs: 8.x
-    - npm@5.6 + 
+    - nodejs: 10.x
+    - npm: 6 + 
     - Python: 2.7
 
 ## Design Notes
