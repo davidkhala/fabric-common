@@ -74,11 +74,12 @@ exports.unsignedTransactionProposal = (channelName, {fcn, args = [], chaincodeId
 exports.unsignedTransaction = (channelName, proposalResponses, proposal) => {
 	const channel = emptyChannel(channelName);
 
+	const proposalCopy = Object.assign({getHeader: () => proposal.header}, proposal); // TODO work around of sdk bug
 	/**
 	 * @type {TransactionRequest}
 	 */
 	const request = {
-		proposalResponses, proposal,
+		proposalResponses, proposal: proposalCopy,
 		orderer: undefined, txID: undefined
 	};
 	return channel.generateUnsignedTransaction(request);
