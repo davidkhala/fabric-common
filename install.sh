@@ -37,13 +37,14 @@ golang() {
 		fi
 	fi
 }
-golang11() {
+golang12() {
 	if go version; then
 		echo "current go version " $(go version) " exist, skip install"
 		return
 	fi
-	echo install golang1.11
-	goTar=go1.11.12.linux-amd64.tar.gz
+
+	echo install golang1.12
+	goTar=go1.12.13.linux-amd64.tar.gz
 	wget https://dl.google.com/go/${goTar}
 	sudo tar -C /usr/local -xzf ${goTar}
 	rm -f ${goTar}
@@ -56,7 +57,9 @@ golang11() {
 		echo "GOROOT found in $bashProfile"
 	fi
 
-	export PATH=$PATH:/usr/local/go/bin # ephemeral
+	if ! go version; then
+		export PATH=$PATH:/usr/local/go/bin # ephemeral
+	fi
 	# write $GOPATH/bin to $PATH
 	GOPATH=$(go env GOPATH)
 	if ! grep "$GOPATH/bin" $bashProfile; then

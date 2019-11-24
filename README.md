@@ -5,7 +5,7 @@ Current version 1.4.4
 ## Language environment
 - docker: 17.06.2-ce +
 - docker-compose: 1.14.0 +
-- golang: 1.11.x
+- golang: 1.12.x
 - fabric-node-sdk:
     - nodejs: 10.x
     - npm: 6 + 
