@@ -10,14 +10,15 @@ class gateway {
 	 * @param {Client} client
 	 * @param {string} channelName
 	 * @param {Client.Peer} peer
-	 * @param {MspId} mspid peer MSP id
+	 * @param {MspId} mspId peer MSP id
 	 * @param {Orderer} orderer
+	 * @param {boolean} [useDiscovery]
 	 * @return {Promise<Network>}
 	 */
-	async connect(client, channelName, peer, mspid, orderer) {
-		await this.gateWay.connect(client, {wallet: {}, discovery: {enabled: false}});
+	async connect(client, channelName, peer, mspId, orderer, useDiscovery) {
+		await this.gateWay.connect(client, {wallet: {}, discovery: {enabled: !!useDiscovery}});
 		const channel = client.newChannel(channelName);
-		channel.addPeer(peer, mspid);
+		channel.addPeer(peer, mspId);
 		channel.addOrderer(orderer);
 		const network = await this.gateWay.getNetwork(channelName);
 		return network;
