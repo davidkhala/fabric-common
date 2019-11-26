@@ -1,9 +1,8 @@
-const {Gateway, FileSystemWallet} = require('fabric-network');
+const {Gateway} = require('fabric-network');
 
 class gateway {
 	constructor() {
 		this.gateWay = new Gateway();
-		this.wallet = new FileSystemWallet('./cache');//TODO wallet manager
 	}
 
 	/**
@@ -16,7 +15,7 @@ class gateway {
 	 * @return {Promise<Network>}
 	 */
 	async connect(client, channelName, peer, mspid, orderer) {
-		await this.gateWay.connect(client, {wallet: this.wallet, discovery: {enabled: false}});
+		await this.gateWay.connect(client, {wallet: {}, discovery: {enabled: false}});
 		const channel = client.newChannel(channelName);
 		channel.addPeer(peer, mspid);
 		channel.addOrderer(orderer);
