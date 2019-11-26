@@ -135,7 +135,8 @@ sync() {
 	CURRENT=$(cd $(dirname ${BASH_SOURCE}) && pwd)
 	cd $CURRENT/nodejs
 	npm install
-	npm prune
+	cd fabric-network
+	npm install
 	cd -
 }
 if [[ -n "$fcn" ]]; then
