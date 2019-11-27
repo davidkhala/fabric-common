@@ -13,10 +13,11 @@ exports.container = {
 	tlsCert: path.resolve(FABRIC_CA_HOME, 'tls-cert.pem')
 };
 
+//TODO test
 exports.intermediateCA = {
-	register: (caService, {enrollmentID, affiliation}, adminUser) => {
+	register: async (caService, {enrollmentID, affiliation}, adminUser) => {
 
-		return caService.register({
+		return await caService.register({
 			enrollmentID,
 			affiliation: affiliation.toLowerCase(),
 			role: 'client',
@@ -70,7 +71,7 @@ exports.register = registerIfNotExist;
 /**
  *
  * @param {string} caUrl
- * @param {string[]} trustedRoots
+ * @param {CertificatePem[]} trustedRoots tlsca for connection
  * @param {CryptoSuite} cryptoSuite
  * @returns {FabricCAServices}
  */

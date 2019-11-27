@@ -53,6 +53,7 @@ Current version 1.4.4
 - [raft] Each channel has its own RAFT orderer cluster, but system channel should have a super set of all orderer cluster  -- Jay Guo
 - [raft][migrate] migrate from kafka to etcdRaft, see [here](https://github.com/davidkhala/delphi-fabric/tree/release-1.4/operations/migrate/README.md)
 - [solo][FAB-15754] Deploy a single-node Raft-based ordering service instead of using solo consensus type
+- Block data emitted in block event has a structure documented in [types.js](./nodejs/types.js)  
 
 ### Notes: Private Data 
 
@@ -97,18 +98,15 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
 ## TODO
 - npm couchdb-dump in nodejs/couchdbDump.sh
 - level db navigator(https://github.com/Level/level or https://github.com/syndtr/goleveldb) and richQuery for leveldb;leveldb analyzer 
-- [1.4] operation enhance: 
-    - StatsD
-        - graphiteapp/graphite-statsd not working to receive metrics
-- NodeOUs enable
-- dig into block event: 
-        Dave Enyeart: The block event includes the full transactions of the block, including the read/write sets, which in the case of private data includes the hashes of the private key/values.
+- NodeOUs enable and intermediate CA
 - channelEventHub.disconnect status sync
 - make use of npm jsrsasign
 - make use of softHSM in node-sdk
+- replace some function in query.js with system chaincode
 
 ## Fabric weakness
-- fabric RSA key support
+- fabric RSA key support: 
+    - not supported as peer|orderer keystore
 - `instantiate policy` is not `endorsemnet policy`, it is used during chaincode packaging/install determining who is able
  to instantiate/upgrade chaincode, it is partially supported in nodejs with chaincode package binary(byte[]) as input. 
  
@@ -135,3 +133,4 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
 - keystore object un-promisify: https://gerrit.hyperledger.org/r/#/c/24749/
 - endpoint ping: https://gerrit.hyperledger.org/r/#/c/28115/
 - docker-swarm support
+- graphiteapp/graphite-statsd not working to receive metrics: push statsD to AWS 

@@ -58,7 +58,7 @@ exports.fabricImagePull = async ({fabricTag, thirdPartyTag, chaincodeType = 'gol
  * @param configFile
  * @returns {Promise<*>}
  */
-exports.runCA = ({
+exports.runCA = async ({
 	container_name, port, network, imageTag,
 	admin = userUtil.adminName, adminpw = userUtil.adminPwd,
 	TLS, Issuer
@@ -66,7 +66,7 @@ exports.runCA = ({
 
 	const {caKey, caCert} = caUtil.container;
 	const {CN, OU, O, ST, C, L} = Issuer;
-	const cmdAppend = configFile ? '' : `-d -b ${admin}:${adminpw} ${TLS ? '--tls.enabled' : ''} --csr.cn=${CN}`;
+	const cmdAppend = configFile ? '' : `-d -b ${admin}:${adminpw} ${TLS ? '--tls.enabled' : ''} --csr.cn=${CN} --cors.enabled`;
 	const Cmd = ['sh', '-c', `rm ${caKey}; rm ${caCert};fabric-ca-server start ${cmdAppend}`];
 
 
@@ -143,11 +143,11 @@ exports.runCA = ({
 	}
 	const createOptions = builder.build();
 
-	return dockerUtil.containerStart(createOptions);
+	return await dockerUtil.containerStart(createOptions);
 };
 
 
-exports.runKafka = ({container_name, network, imageTag, BROKER_ID}, zookeepers, {N, M}) => {
+exports.runKafka = async ({container_name, network, imageTag, BROKER_ID}, zookeepers, {N, M}) => {
 
 	const createOptions = {
 		name: container_name,
@@ -164,9 +164,9 @@ exports.runKafka = ({container_name, network, imageTag, BROKER_ID}, zookeepers, 
 			PublishAllPorts: true
 		}
 	};
-	return dockerUtil.containerStart(createOptions);
+	return await dockerUtil.containerStart(createOptions);
 };
-exports.runZookeeper = ({container_name, network, imageTag, MY_ID}, zookeepersConfig) => {
+exports.runZookeeper = async ({container_name, network, imageTag, MY_ID}, zookeepersConfig) => {
 	const createOptions = {
 		name: container_name,
 		Env: zookeeperUtil.envBuilder(MY_ID, zookeepersConfig),
@@ -182,7 +182,7 @@ exports.runZookeeper = ({container_name, network, imageTag, MY_ID}, zookeepersCo
 			PublishAllPorts: true
 		}
 	};
-	return dockerUtil.containerStart(createOptions);
+	return await dockerUtil.containerStart(createOptions);
 };
 /**
  * TODO not sure it is possible
@@ -223,7 +223,7 @@ exports.chaincodeClean = async (prune, filter) => {
 		}));
 	}
 };
-exports.runOrderer = ({
+exports.runOrderer = async ({
 	container_name, imageTag, port, network, BLOCK_FILE, CONFIGTXVolume,
 	msp: {id, configPath, volumeName}, ordererType, tls, stateVolume
 }, operations, metrics) => {
@@ -248,10 +248,10 @@ exports.runOrderer = ({
 		builder.setPortBind(`${operations.port}:8443`);
 	}
 	const createOptions = builder.build();
-	return dockerUtil.containerStart(createOptions);
+	return await dockerUtil.containerStart(createOptions);
 };
 
-exports.runPeer = ({
+exports.runPeer = async ({
 	container_name, port, network, imageTag,
 	msp: {
 		id, volumeName,
@@ -278,7 +278,7 @@ exports.runPeer = ({
 		builder.setVolume(stateVolume, peerUtil.container.state);
 	}
 	const createOptions = builder.build();
-	return dockerUtil.containerStart(createOptions);
+	return await dockerUtil.containerStart(createOptions);
 };
 
 exports.runCouchDB = async ({imageTag, container_name, port, network, user, password}) => {
@@ -292,5 +292,5 @@ exports.runCouchDB = async ({imageTag, container_name, port, network, user, pass
 		builder.setPortBind(`${port}:5984`);
 	}
 	const createOptions = builder.build();
-	return dockerUtil.containerStart(createOptions);
+	return await dockerUtil.containerStart(createOptions);
 };

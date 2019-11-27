@@ -1,3 +1,4 @@
+// TODO replace some with system chaincode
 const Long = require('long');
 /**
  *
@@ -18,7 +19,7 @@ exports.chain = async (peer, channel) => {
 	return message;
 };
 /**
- * @param {Peer} peer
+ * @param {Client.Peer} peer
  * @param {Client} client
  * @return {Promise<Client.ChaincodeQueryResponse>}
  */
@@ -29,7 +30,7 @@ exports.chaincodesInstalled = async (peer, client) => {
 };
 /**
  * only one latest version entry for each chaincode, thus no need to findLast
- * @param {Peer} peer
+ * @param {Client.Peer} peer
  * @param {Channel} channel
  * @return {Promise<Client.ChaincodeQueryResponse>}
  */

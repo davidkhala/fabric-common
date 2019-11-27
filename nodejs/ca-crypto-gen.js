@@ -122,7 +122,7 @@ exports.genOrderer = async (caService, cryptoPath, admin, {TLS, affiliationRoot}
 	if (TLS) {
 		const tlsResult = await caService.enroll({enrollmentID, enrollmentSecret, profile: 'tls'});
 		cryptoPath.toTLS(tlsResult, type);
-		cryptoPath.toOrgTLS(tlsResult, type);
+		// assume cryptoPath.toOrgTLS is done by `initAdmin`
 	}
 	return admin;
 
@@ -165,7 +165,7 @@ exports.genPeer = async (caService, cryptoPath, admin, {TLS, affiliationRoot} = 
 	if (TLS) {
 		const tlsResult = await caService.enroll({enrollmentID, enrollmentSecret, profile: 'tls'});
 		cryptoPath.toTLS(tlsResult, type);
-		cryptoPath.toOrgTLS(tlsResult, type);
+		// assume cryptoPath.toOrgTLS is done by `initAdmin`
 	}
 };
 /**
@@ -194,8 +194,6 @@ exports.genUser = async (caService, cryptoPath, nodeType, admin, {TLS, affiliati
 
 	const enrollmentID = cryptoPath[`${nodeType}UserHostName`];
 	let enrollmentSecret = cryptoPath.password;
-	// const certificate = userUtil.getCertificate(admin);
-	// caUtil.peer.toAdminCerts({certificate}, cryptoPath, type);
 	const {enrollmentSecret: newSecret} = await caUtil.register(caService, {
 		enrollmentID,
 		enrollmentSecret,
