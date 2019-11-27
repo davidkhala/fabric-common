@@ -6,7 +6,7 @@ if [[ -z "$BIN_Parent" ]]; then
 fi
 
 cd $BIN_Parent
-
+mkdir -p bin
 VERSION=${1:-1.4.4}
 
 ARCH=$(echo "$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/mingw64_nt.*/windows/')-$(uname -m | sed 's/x86_64/amd64/g')")
