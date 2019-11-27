@@ -109,12 +109,12 @@ exports.genOrderer = async (caService, cryptoPath, admin, {TLS, affiliationRoot}
 	let enrollmentSecret = cryptoPath.password;
 	const certificate = userUtil.getCertificate(admin);
 	cryptoPath.toAdminCerts({certificate}, type);
-	const {enrollmentSecret: newSecret} = await caUtil.register(caService, {
+	const {enrollmentSecret: newSecret} = await caUtil.register(caService, admin, {
 		enrollmentID,
 		enrollmentSecret,
 		role: 'orderer',
 		affiliation: `${affiliationRoot}.orderer`
-	}, admin);
+	});
 	enrollmentSecret = newSecret;
 
 	const result = await caService.enroll({enrollmentID, enrollmentSecret});
@@ -153,12 +153,12 @@ exports.genPeer = async (caService, cryptoPath, admin, {TLS, affiliationRoot} = 
 	let enrollmentSecret = cryptoPath.password;
 	const certificate = userUtil.getCertificate(admin);
 	cryptoPath.toAdminCerts({certificate}, type);
-	const {enrollmentSecret: newSecret} = await caUtil.register(caService, {
+	const {enrollmentSecret: newSecret} = await caUtil.register(caService, admin, {
 		enrollmentID,
 		enrollmentSecret,
 		role: 'peer',
 		affiliation: `${affiliationRoot}.peer`
-	}, admin);
+	});
 	enrollmentSecret = newSecret;
 	const result = await caService.enroll({enrollmentID, enrollmentSecret});
 	cryptoPath.toMSP(result, type);
@@ -194,12 +194,12 @@ exports.genUser = async (caService, cryptoPath, nodeType, admin, {TLS, affiliati
 
 	const enrollmentID = cryptoPath[`${nodeType}UserHostName`];
 	let enrollmentSecret = cryptoPath.password;
-	const {enrollmentSecret: newSecret} = await caUtil.register(caService, {
+	const {enrollmentSecret: newSecret} = await caUtil.register(caService, admin, {
 		enrollmentID,
 		enrollmentSecret,
 		role: 'user',
 		affiliation: `${affiliationRoot}.user`
-	}, admin);
+	});
 	enrollmentSecret = newSecret;
 	const result = await caService.enroll({enrollmentID, enrollmentSecret});
 	cryptoPath.toMSP(result, type);
@@ -211,12 +211,12 @@ exports.genUser = async (caService, cryptoPath, nodeType, admin, {TLS, affiliati
 	return user;
 };
 exports.genClientKeyPair = async (caService, {enrollmentID, enrollmentSecret}, admin, affiliationRoot) => {
-	const {enrollmentSecret: newSecret} = await caUtil.register(caService, {
+	const {enrollmentSecret: newSecret} = await caUtil.register(caService, admin, {
 		enrollmentID,
 		enrollmentSecret,
 		role: 'client',
 		affiliation: `${affiliationRoot}.client`
-	}, admin);
+	});
 	if (!enrollmentSecret) {
 		enrollmentSecret = newSecret;
 	}

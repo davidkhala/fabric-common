@@ -37,110 +37,53 @@ exports.fabricImagePull = async ({fabricTag, thirdPartyTag, chaincodeType = 'gol
 };
 
 /**
- * @typedef IssuerObject
+ * @typedef Issuer
  * @property {string} CN Common Name
- * @property {string} OU Organization Unit
- * @property {string} O Organization Name
- * @property {string} ST State Name
- * @property {string} C Country
+ * @property {string} [OU] Organization Unit
+ * @property {string} [O] Organization Name
+ * @property {string} [ST] State Name
+ * @property {string} [C] Country
  */
 
 /**
  * TLS enabled but no certificate or key provided, automatically generate TLS credentials
- * @param container_name
+ * @param {string} container_name
  * @param {Number} port exposed host port
- * @param network
- * @param imageTag
- * @param admin
- * @param adminpw
- * @param TLS
- * @param {IssuerObject} Issuer
- * @param configFile
+ * @param {string} network
+ * @param {string} imageTag
+ * @param {string} [adminName] admin user name
+ * @param {string} [adminPassword] admin user password
+ * @param {boolean} TLS
+ * @param {Issuer} issuer
+ * @param intermediate
  * @returns {Promise<*>}
  */
 exports.runCA = async ({
 	container_name, port, network, imageTag,
-	admin = userUtil.adminName, adminpw = userUtil.adminPwd,
-	TLS, Issuer
-}, configFile) => {
+	adminName = userUtil.adminName, adminPassword = userUtil.adminPwd,
+	TLS, issuer
+}, intermediate) => {
 
 	const {caKey, caCert} = caUtil.container;
-	const {CN, OU, O, ST, C, L} = Issuer;
-	const cmdAppend = configFile ? '' : `-d -b ${admin}:${adminpw} ${TLS ? '--tls.enabled' : ''} --csr.cn=${CN} --cors.enabled`;
+	const {CN, OU, O, ST, C, L} = issuer;
+
+	const cmdIntermediateBuilder = (options) => {
+		if (!options) {
+			return '';
+		} else {
+			const {enrollmentID, enrollmentSecret, host: parentHost, port: parentPort} = options;
+			return ` -u ${TLS ? 'https' : 'http'}://${enrollmentID}:${enrollmentSecret}@${parentHost}:${parentPort}`;
+		}
+	};
+
+
+	const cmdAppend = `-d -b ${adminName}:${adminPassword} ${TLS ? '--tls.enabled' : ''} --csr.cn=${CN} --cors.enabled${cmdIntermediateBuilder(intermediate)}`;
 	const Cmd = ['sh', '-c', `rm ${caKey}; rm ${caCert};fabric-ca-server start ${cmdAppend}`];
 
 
 	const builder = new ContainerOptsBuilder(`hyperledger/fabric-ca:${imageTag}`, Cmd);
 	builder.setName(container_name).setEnv(caUtil.envBuilder());
 	builder.setPortBind(`${port}:7054`).setNetwork(network, [container_name]);
-	if (configFile) {
-		const config = {
-			debug: true,
-			csr: {
-				cn: CN,
-				names: [{
-					C,
-					ST,
-					L,
-					O,
-					OU
-				}],
-
-				hosts: [
-					'localhost', container_name
-				]
-			},
-			tls: {
-				enabled: !!TLS
-
-			},
-
-			registry: {
-				identities: [{
-					name: admin,
-					pass: adminpw,
-					type: 'client',
-					affiliation: '',
-					attrs: {
-						['hf.Registrar.Roles']: 'peer,orderer,client,user',
-						['hf.Registrar.DelegateRoles']: 'peer,orderer,client,user',
-						['hf.Revoker']: true,
-						['hf.IntermediateCA']: true,
-						['hf.GenCRL']: true,
-						['hf.Registrar.Attributes']: '*',
-						['hf.AffiliationMgr']: true
-					}
-				}]
-			},
-			signing: {
-				default: {
-					usage:
-						[
-							'digital signature'
-						],
-					expiry: '8760h'
-				},
-
-				profiles:
-					{
-						tls: {
-							usage: [
-								'server auth', // Extended key usage
-								'client auth', // Extended key usage
-								// 'signing',
-								'digital signature',
-								'key encipherment',
-								'key agreement'
-							],
-							expiry: '8760h'
-						}
-					}
-			}
-
-		};
-		yaml.write(config, configFile);
-		builder.setVolume(configFile, caUtil.container.CONFIG);
-	}
 	const createOptions = builder.build();
 
 	return await dockerUtil.containerStart(createOptions);

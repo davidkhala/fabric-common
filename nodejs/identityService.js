@@ -77,8 +77,11 @@ exports.update = async (identityService, admin, {enrollmentID, role, affiliation
 	logger.debug(result);
 	return result;
 };
-
+/**
+ *
+ * @param {FabricCAService} caService
+ */
 exports.new = (caService) => {
-	return caService.newIdentityService();
+	return new IdentityService(caService._fabricCAClient);
 };
 
