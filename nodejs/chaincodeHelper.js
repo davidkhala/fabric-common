@@ -83,7 +83,7 @@ exports.instantiateOrUpgrade = async (
  * @param {Client} client
  * @param {string} channelName
  * @param {Client.Peer[]} peers
- * @param {ChannelEventHub[]} eventHubs
+ * @param {EventHub[]} eventHubs
  * @param {string} chaincodeId
  * @param {string} fcn
  * @param {string[]} args

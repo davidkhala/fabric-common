@@ -40,7 +40,7 @@ exports.transientMapTransform = transientMapTransform;
  * @typedef {Object} ProposalResult
  * @property {number} errCounter
  * @property {number} swallowCounter
- * @property {TransactionRequest} nextRequest
+ * @property {Client.TransactionRequest} nextRequest
  */
 
 /**
@@ -52,8 +52,8 @@ exports.transientMapTransform = transientMapTransform;
 /**
  * @param {string} actionString
  * @param {ProposalValidator} validator
- * @param {boolean} verbose
- * @param {boolean} log
+ * @param {boolean} [verbose]
+ * @param {boolean} [log]
  * @return {function(*[]): ProposalResult}
  */
 const chaincodeProposalAdapter = (actionString, validator, verbose, log) => {
@@ -199,8 +199,12 @@ exports.install = async (peers, {chaincodeId, chaincodePath, chaincodeVersion, c
 		return result;
 	}
 };
-
-
+/**
+ *
+ * @param proposalResponses
+ * @param proposal
+ * @return {Client.TransactionRequest}
+ */
 const transactionProposalResponseErrorHandler = (proposalResponses, proposal) => {
 	const logger = Logger.new('chaincode:transactionProposal', true);
 	const ccHandler = chaincodeProposalAdapter('transactionProposal', undefined, true);
@@ -230,7 +234,7 @@ exports.transactionProposalResponseErrorHandler = transactionProposalResponseErr
  * @param {string[]} args
  * @param {TransientMap} [transientMap]
  * @param {number} proposalTimeout
- * @return {Promise<TransactionRequest>}
+ * @return {Promise<Client.TransactionRequest>}
  */
 exports.transactionProposal = async (client, targets, channelName, {
 	chaincodeId, fcn, args, transientMap
@@ -258,7 +262,7 @@ exports.transactionProposal = async (client, targets, channelName, {
  * @param {Client.Peer[]} peers default: all peers in channel
  * @param {chaincodeProposalOpts} opts
  * @param {number} proposalTimeOut
- * @return {Promise<TransactionRequest>}
+ * @return {Promise<Client.TransactionRequest>}
  */
 exports.chaincodeProposal = async (
 	command, channel, peers, opts, proposalTimeOut
