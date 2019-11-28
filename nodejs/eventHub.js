@@ -6,9 +6,10 @@ class EventHub {
 	/**
 	 * @param {Client.Channel} channel
 	 * @param {Client.Peer} peer
+	 * @param {ChannelEventHub} [channelEventHub] wrapped existing channelEventHub object
 	 */
-	constructor(channel, peer) {
-		this.channelEventHub = new ChannelEventHub(channel, peer);
+	constructor(channel, peer, channelEventHub) {
+		this.channelEventHub = channelEventHub || new ChannelEventHub(channel, peer);
 	}
 
 	async connect({startBlock, endBlock, signedEvent} = {}) {
