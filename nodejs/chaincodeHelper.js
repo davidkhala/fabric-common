@@ -25,7 +25,7 @@ const txTimerPromise = (eventHub, {txId}, eventTimeOut) => {
 
 
 /**
- * @typedef {Object} chaincodeProposalOpts
+ * @typedef {Object} ChaincodeProposalOpts
  * @property {string} chaincodeId
  * @property {string} chaincodeVersion
  * @property {string[]} args
@@ -41,10 +41,10 @@ const txTimerPromise = (eventHub, {txId}, eventTimeOut) => {
  * @param {Channel} channel
  * @param {Client.Peer[]} peers default: all peers in channel
  * @param {EventHub[]} eventHubs
- * @param {chaincodeProposalOpts} opts
+ * @param {ChaincodeProposalOpts} opts
  * @param {Orderer} orderer
- * @param {number} proposalTimeOut
- * @param {number} eventTimeOut default: 30000
+ * @param {number} [proposalTimeOut]
+ * @param {number} [eventTimeOut] default: 30000
  */
 exports.instantiateOrUpgrade = async (
 	command, channel, peers, eventHubs,

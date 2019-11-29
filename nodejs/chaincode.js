@@ -265,8 +265,8 @@ exports.transactionProposal = async (client, targets, channelName, {
  * @param {string} command 'deploy' or 'upgrade'
  * @param {Channel} channel
  * @param {Client.Peer[]} peers default: all peers in channel
- * @param {chaincodeProposalOpts} opts
- * @param {number} proposalTimeOut
+ * @param {ChaincodeProposalOpts} opts
+ * @param {number} [proposalTimeOut]
  * @return {Promise<Client.TransactionRequest>}
  */
 exports.chaincodeProposal = async (
