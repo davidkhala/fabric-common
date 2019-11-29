@@ -3,7 +3,7 @@ const Long = require('long');
 /**
  *
  * @param {Client.Peer} peer
- * @param {Channel} channel
+ * @param {Client.Channel} channel
  * @returns {Promise<{height, currentBlockHash, previousBlockHash,pretty}>}
  */
 exports.chain = async (peer, channel) => {
@@ -31,7 +31,7 @@ exports.chaincodesInstalled = async (peer, client) => {
 /**
  * only one latest version entry for each chaincode, thus no need to findLast
  * @param {Client.Peer} peer
- * @param {Channel} channel
+ * @param {Client.Channel} channel
  * @return {Promise<Client.ChaincodeQueryResponse>}
  */
 exports.chaincodesInstantiated = async (peer, channel) => {
