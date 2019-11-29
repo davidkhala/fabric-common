@@ -141,10 +141,8 @@ class EventHub {
 				onError(err);
 			}
 		}, (err) => {
-			logger.error(err);
 			this.unregisterChaincodeEvent(listener);
-			this.disconnect();
-			onError(err);
+			EventHub._assertEventHubDisconnectError(err, onError);
 		});
 		return listener;
 	}
@@ -188,10 +186,8 @@ class EventHub {
 				onError(err);
 			}
 		}, (err) => {
-			logger.error(err);
 			this.unregisterBlockEvent(block_registration_number);
-			this.disconnect();
-			onError(err);
+			EventHub._assertEventHubDisconnectError(err, onError);
 		});
 
 		return block_registration_number;
@@ -202,6 +198,14 @@ class EventHub {
 	 */
 	unregisterTxEvent(listener) {
 		this.channelEventHub.unregisterTxEvent(listener, true);
+	}
+
+	static _assertEventHubDisconnectError(err, onAssertFailure) {
+		const asserted = err.message === 'ChannelEventHub has been shutdown';
+		console.assert(asserted, 'expect "ChannelEventHub has been shutdown"');
+		if (!asserted) {
+			onAssertFailure(err);
+		}
 	}
 
 	/**
@@ -241,10 +245,8 @@ class EventHub {
 				onError(err);
 			}
 		}, err => {
-			logger.error(err);
 			this.unregisterTxEvent(transactionID);
-			this.disconnect();
-			onError(err);
+			EventHub._assertEventHubDisconnectError(err, onError);
 		});
 		return transactionID;
 
