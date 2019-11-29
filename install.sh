@@ -137,7 +137,7 @@ sync() {
 	npm install
 	cd fabric-network
 	npm install
-	cd -
+	cd $CURRENT
 }
 if [[ -n "$fcn" ]]; then
 	$fcn $remain_params
