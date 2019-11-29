@@ -25,6 +25,11 @@ exports.proposalFlatten = proposalResponse => {
 		return proposalResponse.response.payload;
 	}
 };
+/**
+ *
+ * @param jsObject
+ * @return {Client.TransientMap}
+ */
 const transientMapTransform = (jsObject) => {
 	if (!jsObject) {
 		return jsObject;
@@ -278,19 +283,19 @@ exports.chaincodeProposal = async (
 	const txId = client.newTransactionID();
 
 	/**
-	 * @type {ChaincodeInstantiateUpgradeRequest}
+	 * @type {ChaincodeInstantiateUpgradeRequest|*} // TODO still version mismatch
 	 */
 	const request = {
+		targets: peers, // optional: if not set, targets will be channel.getPeers
+		chaincodeType,
 		chaincodeId,
 		chaincodeVersion,
-		args,
-		fcn,
 		txId,
-		targets: peers, // optional: if not set, targets will be channel.getPeers
-		'endorsement-policy': endorsementPolicy,
 		'collections-config': collectionConfig,
-		chaincodeType,
-		transientMap: transientMapTransform(transientMap)
+		transientMap: transientMapTransform(transientMap),
+		fcn,
+		args,
+		'endorsement-policy': endorsementPolicy
 	};
 	const existSymptom = 'exists';// TODO stronger limitation
 

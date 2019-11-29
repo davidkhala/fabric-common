@@ -33,7 +33,7 @@ const txTimerPromise = (eventHub, {txId}, eventTimeOut) => {
  * @property {Object} endorsementPolicy
  * @property {Object} collectionConfig
  * @property {TransientMap} [transientMap]
- * @property {ChaincodeType} chaincodeType
+ * @property {Client.ChaincodeType} chaincodeType
  */
 
 /**
