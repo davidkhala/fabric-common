@@ -10,7 +10,7 @@ const clientUtil = require('./client');
  * @param {CryptoPath} cryptoPath should be host path
  * @param {string} nodeType
  * @param {string} mspId
- * @param TLS
+ * @param {boolean} TLS
  * @returns {Promise<User>}
  */
 exports.initAdmin = async (caService, cryptoPath, nodeType, mspId, TLS) => {
@@ -44,11 +44,11 @@ exports.initAdmin = async (caService, cryptoPath, nodeType, mspId, TLS) => {
  * @param {CryptoPath} adminCryptoPath should be host path
  * @param {string} nodeType
  * @param {string} mspId
- * @param TLS
+ * @param {boolean} TLS
  * @param {string} affiliationRoot
  * @returns {Promise<*>}
  */
-exports.init = async (caService, adminCryptoPath, nodeType, mspId, {TLS, affiliationRoot} = {}) => {
+exports.init = async (caService, adminCryptoPath, nodeType, mspId, TLS, {affiliationRoot} = {}) => {
 	logger.debug('init', {mspId, nodeType}, adminCryptoPath);
 	const {[`${nodeType}OrgName`]: domain} = adminCryptoPath;
 	if (!affiliationRoot) {
@@ -122,7 +122,7 @@ exports.genOrderer = async (caService, cryptoPath, admin, {TLS, affiliationRoot}
 	if (TLS) {
 		const tlsResult = await caService.enroll({enrollmentID, enrollmentSecret, profile: 'tls'});
 		cryptoPath.toTLS(tlsResult, type);
-		// assume cryptoPath.toOrgTLS is done by `initAdmin`
+		// assume cryptoPath.toOrgTLS is done in `initAdmin`
 	}
 	return admin;
 
@@ -165,7 +165,7 @@ exports.genPeer = async (caService, cryptoPath, admin, {TLS, affiliationRoot} = 
 	if (TLS) {
 		const tlsResult = await caService.enroll({enrollmentID, enrollmentSecret, profile: 'tls'});
 		cryptoPath.toTLS(tlsResult, type);
-		// assume cryptoPath.toOrgTLS is done by `initAdmin`
+		// assume cryptoPath.toOrgTLS is done in `initAdmin`
 	}
 };
 /**
