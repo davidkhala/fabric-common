@@ -23,6 +23,8 @@ Current version 1.4.4
     - [1.4.3][orderer][FAB-7559] apply new ordering service endpoints config structure
 ## Notes
 
+- if random result is included in WriteSet, it corrupts the deterministic process.
+- instantiate/upgrade could be where data migration is performed, if necessary
 - [keystore] For private keys existing in local file system, you should set the permissions to 0400 on *nix based OS’s.  
 - [gRpcs][docker network] **host name SHOULD not include upper-case character, otherwise gRpcs ping for discovery_client will not response back with docker network DNS** 
 - [query]blockHeight(got from queryChain) indexing from 1, blockNumber in blockEvent starting from 0
@@ -76,12 +78,18 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
 - [chaincode]it is allowed that chaincode invoker `creator`, target peers belongs to differed organization.
 - [chaincode]chaincode name is not a secret, we can use combination of discovery service and query chaincode installed on peer to get them all
 - [chaincode]chaincode upgrade could not replace instantiate for fabric-sdk-node: ` Error: could not find chaincode with name 'diagnose'`
-- [nodejs][chaincode]nodejs chaincode take longer time in install chaincode only.
-- [golang][chaincode] `failed to invoke chaincode name:"lscc" , error: API error (400): OCI runtime create failed: container_linux.go:348: starting container process caused "exec: \"chaincode\": executable file not found in $PATH": unknown`
+- [chaincode][nodejs]nodejs chaincode take longer time in install chaincode only.
+- [chaincode][nodejs][contract-api]later contract in `index#exports.contracts` array will overlap to previous one. The case is similar to `Object.assign()`
+- [chaincode] call `await stub.putPrivateData('any', "key", 'value');` without setup collection Config or in Init step:  
+    `Error: collection config not define for namespace` 
+    See in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f897a80898abf6a1e45
+- [chaincode][system]System chaincodes are intended to be invoked by a client rather than by a user chaincode
+- [chaincode][golang] `failed to invoke chaincode name:"lscc" , error: API error (400): OCI runtime create failed: container_linux.go:348: starting container process caused "exec: \"chaincode\": executable file not found in $PATH": unknown`
     - means package name for golang-chaincode entrance is not `main`
-- [endorsement][chaincode]chaincode partial update: when not all peers upgrade to latest chaincode, is it possible that old chaincode still work
+- [chaincode][endorsement]chaincode partial update: when not all peers upgrade to latest chaincode, is it possible that old chaincode still work
       with inappropriate endorsement config; while with appropriate endorsement policy, we get chaincode fingerprint mismatch error
 - [chaincode][FAB-15285] System chaincodes are intended to be invoked by a client rather than by a user chaincode. Invoking from a user chaincode may cause deadlocks.
+
 ### Notes: Operations
 [reference](https://hyperledger-fabric.readthedocs.io/en/release-1.4/metrics_reference.html)
 
