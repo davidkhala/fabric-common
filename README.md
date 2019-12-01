@@ -80,6 +80,12 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
 - [chaincode]chaincode upgrade could not replace instantiate for fabric-sdk-node: ` Error: could not find chaincode with name 'diagnose'`
 - [chaincode][nodejs]nodejs chaincode take longer time in install chaincode only.
 - [chaincode][nodejs][contract-api]later contract in `index#exports.contracts` array will overlap to previous one. The case is similar to `Object.assign()`
+- [chaincode][nodejs][contract-api] multiple contract in index.js: for invoke function code split
+    - contract name: defined in subclass of Contract constructor
+        ``` super(`${contractName}`) ```
+    - function namespace division: <contract name>:<function name>
+    - ledger data is integral for multiple contract  
+     
 - [chaincode] call `await stub.putPrivateData('any', "key", 'value');` without setup collection Config or in Init step:  
     `Error: collection config not define for namespace` 
     See in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f897a80898abf6a1e45
