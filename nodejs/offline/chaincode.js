@@ -66,13 +66,12 @@ exports.unsignedTransactionProposal = (channelName, {fcn, args = [], chaincodeId
 
 /**
  *
- * @param {string} channelName
  * @param {ProposalResponse[]} proposalResponses
  * @param {Proposal} proposal
  * @return {UnsignedTransaction}
  */
-exports.unsignedTransaction = (channelName, proposalResponses, proposal) => {
-	const channel = emptyChannel(channelName);
+exports.unsignedTransaction = (proposalResponses, proposal) => {
+	const channel = emptyChannel('void');
 
 	proposal = Object.assign({getHeader: () => proposal.header}, proposal); // TODO work around of sdk bug
 	/**

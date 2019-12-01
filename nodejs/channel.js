@@ -68,7 +68,7 @@ exports.new = (client, channelName) => {
  * @returns {Channel}
  */
 exports.newDummy = (client) => {
-	return exports.new(client, 'dummy');
+	return exports.new(client, 'void');
 };
 
 exports.genesis = 'testchainid';
