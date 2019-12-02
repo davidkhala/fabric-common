@@ -85,7 +85,17 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
         ``` super(`${contractName}`) ```
     - function namespace division: <contract name>:<function name>
     - ledger data is integral for multiple contract  
-     
+- [chaincode][nodejs][contract-api] minimum package.json
+    ```json
+        "main": "index.js", 
+        "scripts": {
+            "start": "fabric-chaincode-node start"
+        },
+        "dependencies": {
+            ...
+        }
+    ```     
+    `main`,`scripts` property is required
 - [chaincode] call `await stub.putPrivateData('any', "key", 'value');` without setup collection Config or in Init step:  
     `Error: collection config not define for namespace` 
     See in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f897a80898abf6a1e45
