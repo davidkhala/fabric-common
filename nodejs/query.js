@@ -4,7 +4,7 @@ const Long = require('long');
  *
  * @param {Client.Peer} peer
  * @param {Client.Channel} channel
- * @returns {Promise<{height, currentBlockHash, previousBlockHash,pretty}>}
+ * @returns {Promise<Client.BlockchainInfo>}
  */
 exports.chain = async (peer, channel) => {
 	const message = await channel.queryInfo(peer);
