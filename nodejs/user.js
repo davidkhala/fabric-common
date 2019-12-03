@@ -96,7 +96,9 @@ const TransactionID = require('fabric-client/lib/TransactionID');
  * @param {boolean} [isAdmin] - Indicates whether this instance will be used for administrative transactions.
  */
 exports.newTransactionID = (user, isAdmin) => new TransactionID(user.getSigningIdentity(), isAdmin);
-
+exports.fromClient = (client) => {
+	return client._userContext;
+};
 
 exports.adminName = 'Admin';
 exports.adminPwd = 'passwd';

@@ -62,14 +62,6 @@ exports.new = (client, channelName) => {
 	}
 	return new Channel(channelName, client);
 };
-/**
- * This is designed to be along with channel.sendTransaction
- * @param {Client} client
- * @returns {Channel}
- */
-exports.newDummy = (client) => {
-	return exports.new(client, 'void');
-};
 
 exports.genesis = 'testchainid';
 

@@ -21,11 +21,12 @@ exports.sendSignedProposal = async (endorsePeers, signedProposal, timeout) => se
  *
  * @param {PeerSignedProposal} signedTransaction
  * @param {Client.Orderer} orderer
+ * @param {number} [timeout]
  * @return {Promise<BroadcastResponse>}
  */
-exports.sendSignedTransaction = async (signedTransaction, orderer) => {
+exports.sendSignedTransaction = async (signedTransaction, orderer, timeout) => {
 	const signed_envelope = toEnvelope(signedTransaction);
-	return await orderer.sendBroadcast(signed_envelope);
+	return await orderer.sendBroadcast(signed_envelope, timeout);
 };
 
 

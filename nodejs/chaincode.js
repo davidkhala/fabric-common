@@ -1,8 +1,8 @@
 const Logger = require('./logger');
 const Channel = require('fabric-client/lib/Channel');
 const Orderer = require('fabric-client/lib/Orderer');
-const ChannelUtil = require('./channel');
-
+const {unsignedTransaction, sendSignedTransaction} = require('./offline/chaincode');
+const {sign, fromClient} = require('./user');
 /**
  * @enum {string}
  */
@@ -330,20 +330,24 @@ exports.chaincodeProposal = async (
 	return nextRequest;
 };
 
+
 /**
  *
  * @param {Client} client
  * @param {Client.TransactionRequest} nextRequest
  * @param {Orderer} orderer
- * @param {number} timeout
+ * @param {number} [timeout]
  * @return {Promise<Client.BroadcastResponse>}
  */
 exports.invokeCommit = async (client, nextRequest, orderer, timeout) => {
 	if (!(orderer instanceof Orderer)) {
 		throw Error(`orderer should be instance of Orderer, but got ${typeof orderer}`);
 	}
-	nextRequest.orderer = orderer;
-	const dummyChannel = ChannelUtil.newDummy(client);
-	return dummyChannel.sendTransaction(nextRequest, timeout);// TODO fix sdk
+	const {proposalResponses, proposal} = nextRequest;
+	const unsignedTx = unsignedTransaction(proposalResponses, proposal);
+	const user = fromClient(client);
+	const proposal_bytes = unsignedTx.toBuffer();
+	const signature = sign(user, proposal_bytes);
+	return await sendSignedTransaction({signature, proposal_bytes}, orderer, timeout);
 };
 
