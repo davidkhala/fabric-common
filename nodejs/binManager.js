@@ -2,7 +2,7 @@ const {exec, execResponsePrint, execDetach, killProcess, findProcess} = require(
 const yaml = require('khala-nodeutils/yaml');
 const path = require('path');
 const fs = require('fs');
-const logger = require('khala-logger/dev').devLogger('binManager');
+const logger = require('khala-logger/log4js').consoleLogger('binManager');
 
 class BinManager {
 	constructor(binPath = process.env.binPath) {

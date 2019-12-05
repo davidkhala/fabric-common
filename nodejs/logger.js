@@ -1,15 +1,12 @@
 /**
  *
- * @param moduleName
- * @param {boolean} [dev] true to use `log4j`, false to use `winston`
+ * @param {string} moduleName
+ * @param {boolean} [dev] true to include debug level
  * @returns {*}
  */
 exports.new = (moduleName, dev) => {
-	if (dev) {
-		return require('khala-logger/dev').devLogger(moduleName);
-	}
-	const Logger = require('khala-logger');
-	return Logger.new(moduleName);
+	const Log4js = require('khala-logger/log4js');
+	return Log4js.consoleLogger(moduleName, dev ? 5 : 4);
 };
 exports.setGlobal = (dev) => {
 	const hfcLogger = exports.new('fabric-sdk-node', dev);
