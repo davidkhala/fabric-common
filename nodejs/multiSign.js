@@ -7,7 +7,7 @@ const logger = require('./logger').new('multi-signature');
 exports.signChannelConfig = (clients, proto) => {
 	const signatures = [];
 	for (const client of clients) {
-		logger.debug('signature identity', client._userContext.getName(), client._userContext._mspId);
+		logger.debug('signature identity', client._userContext.getName(), client._userContext._signingIdentity._mspId);
 		signatures.push(client.signChannelConfig(proto));
 	}
 	return signatures;

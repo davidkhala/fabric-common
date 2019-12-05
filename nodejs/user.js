@@ -4,7 +4,7 @@ const ECDSA_KEY = require('fabric-client/lib/impl/ecdsa/key');
 exports.formatUsername = (username, domain) => `${username}@${domain}`;
 const User = require('fabric-client/lib/User');
 
-const {Identity, SigningIdentity, Signer} = require('fabric-client/lib/msp/identity.js');
+const {SigningIdentity, Signer} = require('fabric-client/lib/msp/identity.js');
 
 
 /**
@@ -12,18 +12,16 @@ const {Identity, SigningIdentity, Signer} = require('fabric-client/lib/msp/ident
  * @param {User} user
  * @param {module:api.Key} privateKey the private key object
  * @param {string} certificate the PEM-encoded string of certificate
- * @param {MspId} mspId MSPID for the local signing identity
+ * @param {MspId} mspId MSPID for the local signing identity. Note that this is required when Client#signChannelConfig
  */
 const setEnrollment = (user, privateKey, certificate, mspId) => {
-	user._mspId = mspId;
 
 	if (!user._cryptoSuite) {
 		user._cryptoSuite = clientUtil.new();
 	}
 
-	const pubKey = user._cryptoSuite.importKey(certificate, {ephemeral: true});
+	const pubKey = user._cryptoSuite.importKey(certificate, {ephemeral: true}); // FIXME: importKey.then is not function in some case;
 
-	user._identity = new Identity(certificate, pubKey, mspId, user._cryptoSuite);
 	user._signingIdentity = new SigningIdentity(certificate, pubKey, mspId, user._cryptoSuite, new Signer(user._cryptoSuite, privateKey));
 };
 
@@ -87,7 +85,7 @@ exports.getPrivateKey = (user) => user.getSigningIdentity()._signer._key;
  * @param messageBytes
  * @return {Buffer}
  */
-exports.sign = (user, messageBytes) => user.getSigningIdentity().sign(messageBytes, undefined);
+exports.sign = (user, messageBytes) => user._signingIdentity.sign(messageBytes, undefined);
 
 const TransactionID = require('fabric-client/lib/TransactionID');
 /**
