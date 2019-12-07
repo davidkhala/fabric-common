@@ -8,7 +8,7 @@ matrix:
         directories:
           - nodejs/node_modules
       install:
-        - curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/scripts/npm.sh | bash -s packageLock false
+        - ./install.sh
         - export BIN_Parent=$PWD
         - ./bash/pullBIN.sh
         - cd nodejs; npm install; cd -;
