@@ -144,7 +144,7 @@ if [[ -n "$fcn" ]]; then
 else
 	# install home brew
 	if [[ $(uname) == "Darwin" ]]; then
-		if ! brew config > /dev/null; then
+		if ! brew config >/dev/null; then
 			/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 		fi
 	fi
@@ -155,7 +155,12 @@ else
 	nodejsInstall="curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/install.sh"
 	$nodejsInstall | bash -s nodeGYPDependencies
 	$nodejsInstall | bash -s nodeVersionManager
+	export NVM_DIR="$HOME/.nvm"
+	[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
+	[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
+
 	nvm install 10
 	nvm alias default 10
+	nvm use 10 # work for current shell
 	curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/scripts/npm.sh | bash -s packageLock false
 fi
