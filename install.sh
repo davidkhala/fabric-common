@@ -156,6 +156,6 @@ else
 	$nodejsInstall | bash -s nodeGYPDependencies
 	$nodejsInstall | bash -s nodeVersionManager
 	nvm install 10
-	nvm use 10
+	nvm alias default 10
 	curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/scripts/npm.sh | bash -s packageLock false
 fi
