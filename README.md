@@ -151,7 +151,8 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
     - `GetStateByPartialCompositeKey`
     - `GetQueryResult`
     - `GetHistoryForKey`
-
+- [go mod support]`lib/packager/Golang.js` could not support project outside of GoPath (as usually in go mod)
+    - `const projDir = path.join(goPath, 'src', chaincodePath);`
 ## Abandoned
 - what is peer_chaincode_id and peer_chaincode_path
 - keystore object un-promisify: https://gerrit.hyperledger.org/r/#/c/24749/
