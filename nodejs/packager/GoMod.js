@@ -28,7 +28,7 @@ class GolangModulePackager extends BasePackager {
 	 * 	- if the GOPATH environment variable is set, the package must be located under GOPATH/src.
 	 * 	- if GOPATH environment not found, take it as go module case.
 	 * @param {string} [metadataPath] The path to the top-level directory containing metadata descriptors.
-	 * @returns {Promise.<TResult>}
+	 * @returns {Promise<Buffer>}
 	 */
 	async package(chaincodePath, metadataPath) {
 		logger.debug('packaging GOLANG from %s', chaincodePath);
