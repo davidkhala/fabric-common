@@ -7,7 +7,6 @@ const ordererUtil = require('./orderer');
 const zookeeperUtil = require('./zookeeper');
 const couchdbUtil = require('./couchdb');
 const userUtil = require('./user');
-const yaml = require('khala-nodeutils/yaml');
 
 /**
  * @param fabricTag
