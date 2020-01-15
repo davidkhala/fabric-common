@@ -116,7 +116,7 @@ exports.invoke = async (client, channelName, peers, eventHubs, {
 	for (const eventHub of eventHubs) {
 		promises.push(txTimerPromise(eventHub, {txId}, eventTimeout));
 	}
-
+	logger.debug('sendSignedTransaction', orderer.getName());
 	await invokeCommit(client, nextRequest, orderer, commitTimeout);
 
 	const txEventResponses = await Promise.all(promises);
