@@ -43,7 +43,6 @@ exports.getName = (peer) => {
 		return originName;
 	}
 };
-exports.formatPeerName = (peerName, domain) => `${peerName}.${domain}`;
 
 exports.container =
 	{
