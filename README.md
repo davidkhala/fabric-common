@@ -22,7 +22,7 @@ Current version 1.4.4
     - [raft]
     - [1.4.3][orderer][FAB-7559] apply new ordering service endpoints config structure
 ## Notes
-
+- [connectionProfile]A connection profile is normally created by an administrator who understands the network topology.
 - if random result is included in WriteSet, it corrupts the deterministic process.
 - instantiate/upgrade could be where data migration is performed, if necessary
 - [keystore] For private keys existing in local file system, you should set the permissions to 0400 on *nix based OS’s.  
