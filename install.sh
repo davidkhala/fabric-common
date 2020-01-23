@@ -57,7 +57,7 @@ golang12() {
 		echo "GOROOT found in $bashProfile"
 	fi
 
-	if ! go version; then
+	if ! go; then
 		export PATH=$PATH:/usr/local/go/bin # ephemeral
 	fi
 	# write $GOPATH/bin to $PATH
