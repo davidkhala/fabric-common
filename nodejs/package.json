@@ -1,6 +1,6 @@
 {
   "name": "khala-fabric-sdk-node",
-  "version": "1.4.4-0.1.1",
+  "version": "1.4.4-0.1.2",
   "dependencies": {
     "fabric-ca-client": "^1.4.4",
     "fabric-client": "^1.4.4",
@@ -9,14 +9,14 @@
     "khala-level": "^0.0.1",
     "tmp": "^0.1.0",
     "khala-logger": "^0.2.0",
-    "bytebuffer": "^5.0.1",
-    "ignore-walk": "^3.0.0"
+    "bytebuffer": "^5.0.1"
   },
   "devDependencies": {
     "jsrsasign": "^7.2.2"
   },
   "description": "fabric-sdk-node utils",
   "repository": {
-    "url": "davidkhala/fabric-common"
+    "type": "git",
+    "url": "github.com/davidkhala/fabric-common"
   }
 }
