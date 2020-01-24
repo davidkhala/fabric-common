@@ -43,37 +43,10 @@ golang11(){
 	sudo apt-get install golang-1.11-go
 }
 golang12() {
-	if go version; then
-		echo "current go version " $(go version) " exist, skip install"
-		return
-	fi
-
-	echo install golang1.12
-	goTar=go1.12.13.linux-amd64.tar.gz
-	wget https://dl.google.com/go/${goTar}
-	sudo tar -C /usr/local -xzf ${goTar}
-	rm -f ${goTar}
-
-	# write GOROOT to $PATH
-	if ! grep "/usr/local/go/bin" $bashProfile; then
-		echo "...To set GOROOT"
-		sudo sed -i "1 i\export PATH=\$PATH:/usr/local/go/bin" $bashProfile
-	else
-		echo "GOROOT found in $bashProfile"
-	fi
-
-	if ! go; then
-		export PATH=$PATH:/usr/local/go/bin # ephemeral
-	fi
-	# write $GOPATH/bin to $PATH
-	GOPATH=$(go env GOPATH)
-	if ! grep "$GOPATH/bin" $bashProfile; then
-		echo "...To set GOPATH/bin"
-		sudo sed -i "1 i\export PATH=\$PATH:$GOPATH/bin" $bashProfile
-	else
-		echo "GOPATH/bin found in $bashProfile"
-	fi
-	echo "path (effective in new shell) $PATH"
+	sudo add-apt-repository -y ppa:longsleep/golang-backports
+	sudo apt-get update
+	sudo apt install golang-1.12
+	
 }
 install_libtool() {
 	if [[ $(uname) == "Darwin" ]]; then
