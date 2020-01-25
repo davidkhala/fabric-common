@@ -92,7 +92,8 @@ exports.invoke = async (client, channelName, peers, eventHubs, {
 	chaincodeId, fcn, args, transientMap
 }, orderer, proposalTimeout, commitTimeout, eventTimeout) => {
 	const logger = Logger.new('chaincode:invoke', true);
-	logger.debug({channel: channelName, peersSize: peers.length, chaincodeId, fcn, args, transientMap});
+	logger.debug({channel: channelName, chaincodeId, fcn, args});
+	logger.debug({peers, args, transientMap});
 	if (!proposalTimeout) {
 		proposalTimeout = 30000;
 	}
