@@ -12,6 +12,8 @@ matrix:
         - export BIN_Parent=$PWD
         - ./bash/pullBIN.sh
         - cd nodejs; npm install; cd -;
+        - cd nodejs/formatter; npm install; cd -;
+        - cd nodejs/fabric-network; npm install; cd -;
       script:
         - node nodejs/test
 

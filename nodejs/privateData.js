@@ -1,6 +1,7 @@
 const sideDB = require('fabric-client/lib/SideDB');
 const {RoleIdentity, simplePolicyBuilder} = require('./policy');
 const logger = require('./logger').new('privateData');
+const {MSPRoleType} = require('./constants');
 
 
 /**
@@ -36,14 +37,14 @@ exports.ensureCollectionConfig = (config) => {
  *  ----
  *  always:
  *    - "1-of": n===1
- *    - role.name==="member": type===0
+ *    - role.name==="member"
  * @param {MspId[]} mspIds array of mspId
  * @return
  */
 exports.collectionPolicyBuilder = (mspIds) => {
 	const identities = [];
 	for (const mspId of mspIds) {
-		identities.push(RoleIdentity(mspId, 0));
+		identities.push(RoleIdentity(mspId, MSPRoleType.member));
 	}
 	return simplePolicyBuilder(identities, 1);
 };

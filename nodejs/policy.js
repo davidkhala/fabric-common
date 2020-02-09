@@ -27,11 +27,15 @@
 */
 
 exports.Policy = require('fabric-client/lib/Policy');
-const MSPRoleType = ['member', 'admin', 'client', 'peer'];
+const {IdentityType} = require('./constants');
 
-// TODO not to use index any more
-exports.RoleIdentity = (mspId, typeIndex) => ({
-	[exports.Policy.IDENTITY_TYPE.Role]: {name: MSPRoleType[typeIndex], mspId}
+/**
+ *
+ * @param {MspId} mspId
+ * @param {MSPRoleType} type mixture usage of MEMBER and member
+ */
+exports.RoleIdentity = (mspId, type) => ({
+	[IdentityType.Role]: {name: type.toLowerCase(), mspId}
 });
 
 exports.simplePolicyBuilder = (identities, n) => {

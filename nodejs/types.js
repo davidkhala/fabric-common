@@ -19,9 +19,9 @@
 
 /**
  * @typedef {Object} BlockHeader
- * @property {integer} number
- * @property {Buffer} previous_hash
- * @property {Buffer} data_hash
+ * @property {intString} number
+ * @property {hexString} previous_hash
+ * @property {hexString} data_hash
  */
 
 /**
@@ -119,6 +119,7 @@
  * - for global: Consortium|HashingAlgorithm|BlockDataHashingStructure,
  * - for Orderer: ConsensusType|BatchSize|BatchTimeout|ChannelRestrictions
  * - for organization: MSP
+ * - for orderer organization: Endpoints
  * - for peer organization: AnchorPeers
  * - for all: Capabilities
  * @property {{Admins:ConfigPolicy,Readers:ConfigPolicy,Writers:ConfigPolicy,BlockValidation?:ConfigPolicy}} policies
@@ -168,8 +169,8 @@
  * each sub-group, retrieves policy "Readers" for each subgroup, evaluates it, and, in the case of ANY
  * 1 satisfied is sufficient, ALL would require 4 signatures, and MAJORITY would require 3 signatures.
  * @typedef {Object} ImplicitMetaPolicy
- * @property {PolicyType} type type='IMPLICIT_META'
- * @property {{sub_policy:string,rule:ImplicitMetaPolicyRule}} value
+ * @property {PolicyType} type 'IMPLICIT_META'
+ * @property {{sub_policy:PolicyName,rule:ImplicitMetaPolicyRule}} value
  */
 
 /**
@@ -239,7 +240,7 @@
 
 /**
  * @typedef {Object} ReadWriteSet
- * @property {string} namespace
+ * @property {string} namespace chaincodeName
  * @property {{reads:Read[],range_queries_info:[],writes:Write[],metadata_writes:MetadataWrite[]}} rwset
  * @property {PrivateReadWriteSet[]} collection_hashed_rwset
  */
@@ -280,7 +281,7 @@
  * item of ReadSet
  * @typedef {Object} Read
  * @property {string} key
- * @property {{block_num:intString,tx_num:intString}} version
+ * @property {{block_num:intString,tx_num:intString}|null} version
  */
 /**
  * item of WriteSet

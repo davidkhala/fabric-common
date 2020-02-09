@@ -14,14 +14,24 @@ const NodeType = {
 	orderer: 'orderer',
 	peer: 'peer'
 };
-
 /**
+ * @enum {string}
+ */
+const PolicyName = {
+	Readers: 'Readers',
+	Writers: 'Writers',
+	Admins: 'Admins',
+	BlockValidation: 'BlockValidation'
+};
+/**
+ * used in block content
  * @enum {string}
  */
 const MSPRoleType = {
 	admin: 'ADMIN',
 	peer: 'PEER',
-	member: 'MEMBER'
+	member: 'MEMBER',
+	client: 'CLIENT'
 };
 
 /** 'solo' is now taken as a special case of 'etcdraft'
@@ -71,6 +81,15 @@ const PolicyRuleType = {
 	n_out_of: 'n_out_of',
 	signed_by: 'signed_by'
 };
+/**
+ * @enum {string}
+ */
+const IdentityType = {
+	Role: 'role',
+	OrganizationUnit: 'organization-unit',
+	Identity: 'identity'
+};
+exports.IdentityType = IdentityType;
 exports.TransactionType = TransactionType;
 exports.MSPRoleType = MSPRoleType;
 exports.PolicyType = PolicyType;
@@ -80,3 +99,4 @@ exports.MetricsProvider = MetricsProvider;
 exports.OrdererType = OrdererType;
 exports.ChannelType = ChannelType;
 exports.NodeType = NodeType;
+exports.PolicyName = PolicyName;
