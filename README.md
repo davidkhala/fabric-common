@@ -79,6 +79,7 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
 - [chaincode]chaincode name is not a secret, we can use combination of discovery service and query chaincode installed on peer to get them all
 - [chaincode]chaincode upgrade could not replace instantiate for fabric-sdk-node: ` Error: could not find chaincode with name 'diagnose'`
 - [chaincode][nodejs]nodejs chaincode take longer time in install chaincode only.
+- [chaincode][nodejs][FAB-9287] devDependencies and offline chaincode instantiate is not supported yet
 - [chaincode][nodejs][contract-api] later contract in `index#exports.contracts` array will overlap to previous one, similar as `Object.assign()`
 - [chaincode][nodejs][contract-api] multiple contract in index.js: for invoke function code split
     - contract name: defined in subclass of Contract constructor
@@ -94,7 +95,9 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
         "dependencies": {
             ...
         }
-    ```     
+    ```
+    property "name", "version" is useless
+       
 - [chaincode] call `await stub.putPrivateData('anyCollection', "key", 'value');` without setup collection Config or in Init step:  
     `Error: collection config not define for namespace` 
     See in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f897a80898abf6a1e45
