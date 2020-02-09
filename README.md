@@ -79,7 +79,7 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
 - [chaincode]chaincode name is not a secret, we can use combination of discovery service and query chaincode installed on peer to get them all
 - [chaincode]chaincode upgrade could not replace instantiate for fabric-sdk-node: ` Error: could not find chaincode with name 'diagnose'`
 - [chaincode][nodejs]nodejs chaincode take longer time in install chaincode only.
-- [chaincode][nodejs][contract-api]later contract in `index#exports.contracts` array will overlap to previous one. The case is similar to `Object.assign()`
+- [chaincode][nodejs][contract-api] later contract in `index#exports.contracts` array will overlap to previous one, similar as `Object.assign()`
 - [chaincode][nodejs][contract-api] multiple contract in index.js: for invoke function code split
     - contract name: defined in subclass of Contract constructor
         ``` super(`${contractName}`) ```
@@ -95,8 +95,7 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
             ...
         }
     ```     
-    `main`,`scripts` property is required
-- [chaincode] call `await stub.putPrivateData('any', "key", 'value');` without setup collection Config or in Init step:  
+- [chaincode] call `await stub.putPrivateData('anyCollection', "key", 'value');` without setup collection Config or in Init step:  
     `Error: collection config not define for namespace` 
     See in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f897a80898abf6a1e45
 - [chaincode][system]System chaincodes are intended to be invoked by a client rather than by a user chaincode
@@ -104,7 +103,8 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
     - means package name for golang-chaincode entrance is not `main`
 - [chaincode][endorsement]chaincode partial update: when not all peers upgrade to latest chaincode, is it possible that old chaincode still work
       with inappropriate endorsement config; while with appropriate endorsement policy, we get chaincode fingerprint mismatch error
-- [chaincode][FAB-15285] System chaincodes are intended to be invoked by a client rather than by a user chaincode. Invoking from a user chaincode may cause deadlocks.
+- [chaincode][system] System chaincodes are intended to be invoked by a client rather than by a user chaincode. Invoking from a user chaincode may cause deadlocks.
+    [See here](https://jira.hyperledger.org/browse/FAB-15285) 
 
 ### Notes: Operations
 [reference](https://hyperledger-fabric.readthedocs.io/en/release-1.4/metrics_reference.html)
