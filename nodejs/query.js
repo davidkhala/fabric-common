@@ -1,9 +1,10 @@
+// TODO replace some with system chaincode
 const Long = require('long');
 /**
  *
- * @param {Peer} peer
- * @param {Channel} channel
- * @returns {Promise<{height, currentBlockHash, previousBlockHash,pretty}>}
+ * @param {Client.Peer} peer
+ * @param {Client.Channel} channel
+ * @returns {Promise<Client.BlockchainInfo>}
  */
 exports.chain = async (peer, channel) => {
 	const message = await channel.queryInfo(peer);
@@ -18,7 +19,7 @@ exports.chain = async (peer, channel) => {
 	return message;
 };
 /**
- * @param {Peer} peer
+ * @param {Client.Peer} peer
  * @param {Client} client
  * @return {Promise<Client.ChaincodeQueryResponse>}
  */
@@ -28,8 +29,9 @@ exports.chaincodesInstalled = async (peer, client) => {
 	return {chaincodes, pretty};
 };
 /**
- * @param {Peer} peer
- * @param {Channel} channel
+ * only one latest version entry for each chaincode, thus no need to findLast
+ * @param {Client.Peer} peer
+ * @param {Client.Channel} channel
  * @return {Promise<Client.ChaincodeQueryResponse>}
  */
 exports.chaincodesInstantiated = async (peer, channel) => {

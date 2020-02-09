@@ -1,16 +1,19 @@
 const Logger = require('./logger');
 const logger = Logger.new('channel');
 const fs = require('fs');
-const {signs} = require('./multiSign');
+const {signChannelConfig} = require('./multiSign');
 const Channel = require('fabric-client/lib/Channel');
 const {sleep} = require('khala-nodeutils/helper');
 const OrdererUtil = require('./orderer');
-const Orderer = require('fabric-client/lib/Orderer');
+const Orderer = OrdererUtil.Orderer;
 exports.setClientContext = (channel, clientContext) => {
 	channel._clientContext = clientContext;
 };
 exports.clearOrderers = (channel) => {
 	channel._orderers = new Map();
+};
+exports.addOrderer = (channel, orderer) => {
+	channel._orderers.set(orderer.getName(), orderer);
 };
 exports.clearPeers = (channel) => {
 	channel._channel_peers = new Map();
@@ -34,9 +37,8 @@ exports.getOrderers = async (channel, healthyOnly) => {
 /**
  * could be ignored from 1.2
  * @author davidliu
- * @param channelName
- * @param toThrow
- * @returns {*}
+ * @param {string} channelName
+ * @param {boolean} toThrow
  */
 exports.nameMatcher = (channelName, toThrow) => {
 	const namePattern = /^[a-z][a-z0-9.-]*$/;
@@ -46,10 +48,11 @@ exports.nameMatcher = (channelName, toThrow) => {
 	}
 	return result;
 };
+
 /**
  * @param {Client} client
  * @param {string} channelName
- * @returns {Channel}
+ * @returns {Client.Channel}
  */
 exports.new = (client, channelName) => {
 
@@ -59,74 +62,50 @@ exports.new = (client, channelName) => {
 	}
 	return new Channel(channelName, client);
 };
-/**
- * This is designed to be along with channel.sendTransaction
- * @param {Client} client
- * @returns {Channel}
- */
-exports.newDummy = (client) => {
-	return exports.new(client, 'dummy');
-};
 
 exports.genesis = 'testchainid';
 
-
+const ChannelConfig = require('./channelConfig');
 /**
  * different from `peer channel create`, this will not response back with genesisBlock for this channel.
  *
- * @param {Client[]} signClients
  * @param {Channel} channel
- * @param {string} channelConfigFile file path
  * @param {Orderer} orderer
+ * @param {string} channelConfigFile file path
+ * @param {Client[]} [signers]
  * @returns {Promise<Client.BroadcastResponse>}
  */
-exports.create = async (signClients, channel, channelConfigFile, orderer) => {
+exports.create = async (channel, orderer, channelConfigFile, signers = [channel._clientContext]) => {
 	const logger = Logger.new('create-channel');
-	const channelName = channel.getName();
-	logger.debug({channelName, channelConfigFile, orderer: orderer.toString()});
+	logger.debug({channelName: channel.getName(), channelConfigFile, orderer: orderer.toString()});
 
 	const channelClient = channel._clientContext;
 	const channelConfig_envelop = fs.readFileSync(channelConfigFile);
-
 	// extract the channel config bytes from the envelope to be signed
-	const channelConfig = channelClient.extractChannelConfig(channelConfig_envelop);
-	const {signatures} = signs(signClients, channelConfig);
-	const txId = channelClient.newTransactionID();
-	const request = {
-		config: channelConfig,
-		signatures,
-		name: channelName,
-		orderer,
-		txId
-	};
-	logger.debug('signatures', signatures.length);
+	const config = channelClient.extractChannelConfig(channelConfig_envelop);
 
-	// The client application must poll the orderer to discover whether the channel has been created completely or not.
-	const result = await channelClient.createChannel(request);
-	const {status, info} = result;
-	if (status === 'SUCCESS') {
-		logger.info('response', result);
-		return result;
-	} else {
+	const signatures = signChannelConfig(signers, config);
+	try {
+		return await ChannelConfig.channelUpdate(channel, orderer, undefined, undefined, undefined, {config, signatures});
+	} catch (e) {
+		const {status, info} = e;
 		if (status === 'SERVICE_UNAVAILABLE' && info === 'will not enqueue, consenter for this channel hasn\'t started yet') {
-			logger.warn('loop retry..', result);
+			// TODO [fabric weakness] let healthz return whether it is ready
+			logger.warn('loop retry..', status);
 			await sleep(1000);
-			return exports.create(signClients, channel, channelConfigFile, orderer);
+			return await exports.create(channel, orderer, channelConfigFile);
 		} else if (status === 'BAD_REQUEST' && info === 'error authorizing update: error validating ReadSet: readset expected key [Group]  /Channel/Application at version 0, but got version 1') {
-			logger.warn('exist swallow', result);
-			return result;
-		} else {
-			const err = Object.assign(Error('create channel'), result);
-			logger.error(result);
-			throw err;
+			logger.warn('exist swallow', status);
+			return {status, info};
 		}
+		throw e;
 	}
 };
 
 const getGenesisBlock = async (channel, orderer, waitTime = 1000) => {
 	try {
 		const block = await channel.getGenesisBlock({orderer});
-		logger.info('getGenesisBlock', `from orderer: ${orderer.getName()}`);
+		logger.info(`getGenesisBlock from orderer: ${orderer.getName()}`);
 		return block;
 	} catch (e) {
 		const {message} = e;
@@ -144,9 +123,9 @@ exports.getGenesisBlock = getGenesisBlock;
  * different from `peer channel join`, since we do not have genesisBlock as output of `peer channel create`, we have to prepared one before.
  * to be atomic, join 1 peer each time
  * @param {Channel} channel
- * @param {Peer} peer
- * @param {Object} block genesis_block
- * @param {Orderer} [orderer]
+ * @param {Client.Peer} peer
+ * @param {Object} [block] genesis_block
+ * @param {Orderer} [orderer] required if block is not provided
  * @param {number} waitTime default 1000, if set to false, will not retry channel join
  * @returns {Promise<*>}
  */
@@ -201,38 +180,6 @@ const join = async (channel, peer, block, orderer, waitTime = 1000) => {
 
 exports.join = join;
 
-/**
- * take effect in next block, it is recommended to register a block event after
- * @param channel
- * @param anchorPeerTxFile
- * @param orderer
- * @returns {Promise<BroadcastResponse>}
- */
-exports.updateAnchorPeers = async (channel, anchorPeerTxFile, orderer) => {
-
-	const client = channel._clientContext;
-	const channelConfig_envelop = fs.readFileSync(anchorPeerTxFile);
-	const channelConfig = client.extractChannelConfig(channelConfig_envelop);
-	const {signatures} = signs([client], channelConfig);
-
-	const request = {
-		config: channelConfig,
-		signatures,
-		name: channel.getName(),
-		orderer,
-		txId: client.newTransactionID()
-	};
-
-	const result = await client.updateChannel(request);
-	const {status, info} = result;
-	if (status !== 'SUCCESS') {
-		const err = Object.assign(Error('updateAnchorPeer'), {status, info});
-		throw err;
-	}
-
-	logger.info('set anchor peers', result);
-	return result;
-};
 exports.pretty = (channel) => {
 	return {
 		client: channel._clientContext,

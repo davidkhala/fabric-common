@@ -1,6 +1,5 @@
 const fs = require('fs');
 const clientUtil = require('./client');
-const logger = require('./logger').new('userUtil');
 const ECDSA_KEY = require('fabric-common/lib/impl/ecdsa/key');
 exports.formatUsername = (username, domain) => `${username}@${domain}`;
 const User = require('fabric-common/lib/User');
@@ -10,12 +9,12 @@ const SigningIdentity = require('fabric-common/lib/SigningIdentity');
 const Signer = require('fabric-common/lib/Signer');
 /**
  * Set the enrollment object for this User instance
+ * @param {User} user
  * @param {module:api.Key} privateKey the private key object
  * @param {string} certificate the PEM-encoded string of certificate
- * @param {string} mspId The Member Service Provider id for the local signing identity
+ * @param {MspId} mspId MSPID for the local signing identity. Note that this is required when Client#signChannelConfig
  */
 const setEnrollment = (user, privateKey, certificate, mspId) => {
-	user._mspId = mspId;
 
 	if (!user._cryptoSuite) {
 		user._cryptoSuite = clientUtil.new();
@@ -24,12 +23,24 @@ const setEnrollment = (user, privateKey, certificate, mspId) => {
 
 	const pubKey = user._cryptoSuite.createKeyFromRaw(certificate);
 
-	user._identity = new Identity(certificate, pubKey, mspId, user._cryptoSuite);
+
 	user._signingIdentity = new SigningIdentity(certificate, pubKey, mspId, user._cryptoSuite, new Signer(user._cryptoSuite, privateKey));
 };
 
+/**
+ * @param name
+ * @param key
+ * @param certificate
+ * @param mspId
+ * @param cryptoSuite
+ * @param roles
+ * @param affiliation
+ * @return {User}
+ */
 const build = (name, {key, certificate}, mspId, cryptoSuite = clientUtil.newCryptoSuite(), {roles, affiliation} = {}) => {
-
+	/**
+	 * @type {User}
+	 */
 	const user = new User({name, roles, affiliation});
 	let privateKey;
 	if (key instanceof ECDSA_KEY) {
@@ -47,16 +58,16 @@ exports.build = build;
 /**
  *
  * @param cryptoPath
- * @param nodeType
+ * @param {NodeType} nodeType
  * @param mspId
  * @param cryptoSuite
- * @returns {Promise<User>}
+ * @returns {User}
  */
 exports.loadFromLocal = (cryptoPath, nodeType, mspId, cryptoSuite = clientUtil.newCryptoSuite()) => {
 	const username = cryptoPath.userName;
 	const exist = cryptoPath.cryptoExistLocal(`${nodeType}User`);
 	if (!exist) {
-		return;
+		return undefined;
 	}
 	const {keystore, signcerts} = exist;
 
@@ -70,6 +81,14 @@ exports.getCertificate = (user) => user.getSigningIdentity()._certificate;
 exports.getMSPID = (user) => user._mspId;
 exports.getPrivateKey = (user) => user.getSigningIdentity()._signer._key;
 
+/**
+ *
+ * @param {User} user
+ * @param messageBytes
+ * @return {Buffer}
+ */
+exports.sign = (user, messageBytes) => user._signingIdentity.sign(messageBytes, undefined);
+
 const TransactionID = require('fabric-client/lib/TransactionID');
 /**
  * Builds a new transactionID based on a user's certificate and a nonce value.
@@ -77,7 +96,9 @@ const TransactionID = require('fabric-client/lib/TransactionID');
  * @param {boolean} [isAdmin] - Indicates whether this instance will be used for administrative transactions.
  */
 exports.newTransactionID = (user, isAdmin) => new TransactionID(user.getSigningIdentity(), isAdmin);
-
+exports.fromClient = (client) => {
+	return client._userContext;
+};
 
 exports.adminName = 'Admin';
 exports.adminPwd = 'passwd';

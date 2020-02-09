@@ -1,12 +1,25 @@
 const Orderer = require('fabric-client/lib/Orderer');
 const fs = require('fs');
-const Logger = require('./logger');
-const logger = Logger.new('orderer');
-const {loggingLevels} = require('./peer');
+const logger = require('./logger').new('orderer');
+const {LoggingLevel, RemoteOptsTransform} = require('./remote');
+const {OrdererType, MetricsProvider} = require('./constants');
 exports.find = ({orderers, ordererUrl}) => {
 	return ordererUrl ? orderers.find((orderer) => orderer.getUrl() === ordererUrl) : orderers[0];
 };
-exports.new = ({ordererPort, cert, pem, ordererHostName, host}) => {
+/**
+ *
+ * @param {intString} ordererPort
+ * @param {string} [cert] TLS CA certificate file path
+ * @param {CertificatePem} pem TLS CA certificate
+ * @param {string} [ordererHostName] Used in test environment only, when the server certificate's
+ *    hostname (in the 'CN' field) does not match the actual host endpoint that the server process runs
+ *    at, the application can work around the client TLS verify failure by setting this property to the
+ *    value of the server certificate's hostname
+ * @param {string} [host]
+ * @param {ClientKey} [clientKey]
+ * @param {ClientCert} [clientCert]
+ */
+exports.new = ({ordererPort, cert, pem, ordererHostName, host, clientKey, clientCert}) => {
 	const Host = host ? host : 'localhost';
 	let orderer_url = `grpcs://${Host}:${ordererPort}`;
 	if (!pem) {
@@ -16,16 +29,17 @@ exports.new = ({ordererPort, cert, pem, ordererHostName, host}) => {
 	}
 	if (pem) {
 		// tls enabled
-		const orderer = new Orderer(orderer_url, {
-			pem,
-			'ssl-target-name-override': ordererHostName
-		});
+		const opts = RemoteOptsTransform({host, pem, sslTargetNameOverride: ordererHostName, clientKey, clientCert});
+		const orderer = new Orderer(orderer_url, opts);
 		orderer.pem = pem;
+		orderer.host = host ? host : (ordererHostName ? ordererHostName : 'localhost');
 		return orderer;
 	} else {
 		// tls disabled
 		orderer_url = `grpc://${Host}:${ordererPort}`;
-		return new Orderer(orderer_url);
+		const orderer = new Orderer(orderer_url);
+		orderer.host = Host;
+		return orderer;
 	}
 
 };
@@ -44,12 +58,14 @@ exports.container = containerDefaultPaths;
  * @param tls
  * @param configPath
  * @param id
- * @param {string} OrdererType solo|etcdraft
+ * @param {OrdererType} ordererType
+ * @param raft_tls
  * @param loggingLevel
- * @param operationOpts
+ * @param operationsOpts
+ * @param metricsOpts
  * @returns {string[]}
  */
-exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, tls, OrdererType}, loggingLevel, operationOpts) => {
+exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, tls, ordererType, raft_tls = tls}, loggingLevel, operationsOpts, metricsOpts) => {
 	let env = [
 		'ORDERER_GENERAL_LISTENADDRESS=0.0.0.0', // used to self identify
 		`ORDERER_GENERAL_TLS_ENABLED=${!!tls}`,
@@ -61,14 +77,14 @@ exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, tls, OrdererType}, log
 	];
 
 	if (loggingLevel) {
-		env.push(`FABRIC_LOGGING_SPEC=${loggingLevels[loggingLevel]}`);
+		env.push(`FABRIC_LOGGING_SPEC=${LoggingLevel[loggingLevel]}`);
 	}
-	const rootCAsStringBuild = (tls) => {
-		let rootCAs = [tls.caCert];
-		if (Array.isArray(tls.rootCAs)) {
-			rootCAs = rootCAs.concat(tls.rootCAs);
+	const rootCAsStringBuild = ({caCert, rootCAs}) => {
+		let result = [caCert];
+		if (Array.isArray(rootCAs)) {
+			result = result.concat(rootCAs);
 		}
-		return rootCAs.join(',');
+		return result.join(',');
 	};
 	if (tls) {
 		env = env.concat([
@@ -76,28 +92,49 @@ exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, tls, OrdererType}, log
 			`ORDERER_GENERAL_TLS_CERTIFICATE=${tls.cert}`,
 			`ORDERER_GENERAL_TLS_ROOTCAS=[${rootCAsStringBuild(tls)}]`]);
 	}
-	switch (OrdererType) {
-		case 'etcdraft':
+	switch (ordererType) {
+		case OrdererType.kafka:
+			env = env.concat([
+				'ORDERER_KAFKA_RETRY_SHORTINTERVAL=1s',
+				'ORDERER_KAFKA_RETRY_SHORTTOTAL=30s',
+				'ORDERER_KAFKA_VERBOSE=true'
+			]);
+			break;
+		case OrdererType.etcdraft:
 			env = env.concat([
 				'ORDERER_GENERAL_CLUSTER_SENDBUFFERSIZE=10'  // maximum number of messages in the egress buffer.Consensus messages are dropped if the buffer is full, and transaction messages are waiting for space to be freed.
 			]);
-			if (tls) {
-				env = env.concat([
-					`ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=${tls.cert}`,
-					`ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=${tls.key}`,
-					`ORDERER_GENERAL_CLUSTER_ROOTCAS=[${rootCAsStringBuild(tls)}]`
-				]);
+			if (!raft_tls) {
+				throw Error('etcdraft orderer must have mutual TLS configurations');
 			}
-			break;
-		case 'solo':
+			env = env.concat([
+				`ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=${raft_tls.cert}`,
+				`ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=${raft_tls.key}`,
+				`ORDERER_GENERAL_CLUSTER_ROOTCAS=[${rootCAsStringBuild(raft_tls)}]`
+			]);
 			break;
 	}
-	if (operationOpts) {
-		// metrics provider is one of statsd, prometheus, or disabled
-		const {tls, metrics = 'disabled'} = operationOpts;// TODO TLS
+	if (operationsOpts) {
 		env = env.concat([
-			'ORDERER_OPERATIONS_LISTENADDRESS=0.0.0.0:8443',
-			`ORDERER_METRICS_PROVIDER=${metrics}`
+			'ORDERER_OPERATIONS_LISTENADDRESS=0.0.0.0:8443'
+		]);
+
+		const operationsTLS = operationsOpts.tls || tls;
+
+		if (operationsTLS) {
+			env = env.concat([
+				'ORDERER_OPERATIONS_TLS_ENABLED=true',
+				`ORDERER_OPERATIONS_TLS_CERTIFICATE=${operationsTLS.cert}`,
+				`ORDERER_OPERATIONS_TLS_PRIVATEKEY=${operationsTLS.key}`,
+				'ORDERER_OPERATIONS_TLS_CLIENTAUTHREQUIRED=false', // see in README.md
+				`ORDERER_OPERATIONS_TLS_CLIENTROOTCAS=[${rootCAsStringBuild(operationsTLS)}]`
+			]);
+		}
+	}
+	if (metricsOpts) {
+		const {provider} = metricsOpts;
+		env = env.concat([
+			`ORDERER_METRICS_PROVIDER=${MetricsProvider[provider]}`
 		]);
 	}
 	return env;
@@ -119,3 +156,4 @@ exports.ping = async (orderer) => {
 		}
 	}
 };
+exports.Orderer = Orderer;

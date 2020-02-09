@@ -1,11 +1,28 @@
 const path = require('path');
 const {fsExtra} = require('khala-nodeutils/helper');
 const {pkcs11_key} = require('./ca');
-exports.findKeyfiles = (dir) => {
+const {FabricClient} = require('./client');
+exports.findKeyFiles = (dir) => {
 	const files = fsExtra.readdirSync(dir);
 	return files.filter((fileName) => fileName.endsWith('_sk')).map((fileName) => path.resolve(dir, fileName));
 };
-exports.CryptoPath = class {
+exports.findCertFiles = (dir) => {
+	const files = fsExtra.readdirSync(dir);
+	return files.map((fileName) => path.resolve(dir, fileName)).filter(filePath => {
+		try {
+			const pem = fsExtra.readFileSync(filePath).toString();
+			FabricClient.normalizeX509(pem);
+			return true;
+		} catch (e) {
+			return false;
+		}
+	});
+};
+
+/**
+ * @class
+ */
+class CryptoPath {
 	constructor(rootPath, {orderer, peer, user, password} = {}) {
 		this.password = password;
 		if (orderer) {
@@ -92,7 +109,7 @@ exports.CryptoPath = class {
 	}
 
 	MSPFile(type) {
-		const nodeType = this.constructor.getNodeType(type);
+		const nodeType = CryptoPath.getNodeType(type);
 		const mspDir = this.MSP(type);
 		const caCertBaseName = `ca.${this[`${nodeType}OrgName`]}-cert.pem`;
 		const tlscaCertBaseName = `tls${caCertBaseName}`;
@@ -102,7 +119,7 @@ exports.CryptoPath = class {
 			cacerts: this.resolve(mspDir, 'cacerts', caCertBaseName),
 			tlscacerts: this.resolve(mspDir, 'tlscacerts', tlscaCertBaseName),
 			keystore: this.resolve(mspDir, 'keystore'),
-			signcerts: this.resolve(mspDir, 'signcerts', `${this[`${type}HostName`]}-cert.pem`),
+			signcerts: this.resolve(mspDir, 'signcerts', `${this[`${type}HostName`]}-cert.pem`)
 		};
 	}
 
@@ -142,7 +159,7 @@ exports.CryptoPath = class {
 
 	MSPKeystore(type) {
 		const dir = this.MSPFile(type).keystore;
-		const files = exports.findKeyfiles(dir);
+		const files = exports.findKeyFiles(dir);
 		if (files.length > 0) {
 			return files[0];
 		}
@@ -172,7 +189,7 @@ exports.CryptoPath = class {
 	toMSP({key, certificate, rootCertificate}, type) {
 		const {cacerts, keystore, signcerts} = this.MSPFile(type);
 		fsExtra.outputFileSync(signcerts, certificate);
-		pkcs11_key.toKeystore(key, keystore);
+		pkcs11_key.toKeystore(keystore, key);
 		fsExtra.outputFileSync(cacerts, rootCertificate);
 	}
 
@@ -199,4 +216,6 @@ exports.CryptoPath = class {
 		fsExtra.outputFileSync(tlscacerts, rootCertificate);
 	}
 
-};
+}
+
+exports.CryptoPath = CryptoPath;

@@ -1,217 +1,289 @@
 const Logger = require('./logger');
 const logger = Logger.new('eventHub');
 const ChannelEventHub = require('fabric-client/lib/ChannelEventHub');
-const Query = require('./query');
-exports.unRegisterAllEvents = (eventHub) => {
-	eventHub._chaincodeRegistrants = {};
-	eventHub._blockOnEvents = {};
 
-	eventHub._blockOnErrors = {};
-	eventHub._transactionOnEvents = {};
-	eventHub._transactionOnErrors = {};
-};
-/**
- * @param {Channel} channel
- * @param {Peer} peer
- * @param {boolean} inlineConnected
- * @returns {ChannelEventHub}
- */
-exports.newEventHub = (channel, peer, inlineConnected) => {
-	const eventHub = new ChannelEventHub(channel, peer);
-	if (inlineConnected) {
-		eventHub.connect(true);
+class EventHub {
+	/**
+	 * @param {Client.Channel} channel
+	 * @param {Client.Peer} peer
+	 * @param {ChannelEventHub} [channelEventHub] wrapped existing channelEventHub object
+	 */
+	constructor(channel, peer, channelEventHub) {
+		this.channelEventHub = channelEventHub || new ChannelEventHub(channel, peer);
 	}
-	return eventHub;
-};
-/**
- *
- * Disconnects the ChannelEventHub from the peer event source.
- * Will close all event listeners and send an Error object
- * with the message "ChannelEventHub has been shutdown" to
- * all listeners that provided an "onError" callback.
- * @param {ChannelEventHub} eventHub
- */
-const disconnect = (eventHub) => {
-	//TODO sdk prune with isStreamReady(this);
-	if (eventHub.checkConnection(false) && eventHub.isconnected()) {
-		eventHub.disconnect();
+
+	async connect({startBlock, endBlock, signedEvent} = {}) {
+		return new Promise((resolve, reject) => {
+			const connectCallback = (err, eventHub) => {
+				if (err) {
+					reject(err);
+				} else {
+					resolve();
+				}
+			};
+			/**
+			 *
+			 * @type {ConnectOptions}
+			 */
+			const options = {
+				full_block: true,
+				startBlock, endBlock,
+				signedEvent
+			};
+			this.channelEventHub.connect(options, connectCallback);
+		});
+
 	}
-};
-exports.disconnect = disconnect;
-const pretty = (eventHub) => {
-	return {
-		isConnected: eventHub._connected,
-		client: eventHub._clientContext,
-		peer: eventHub._peer,
-		channel: eventHub._channel
-	};
-};
-exports.pretty = pretty;
+
+	/**
+	 * @param {CertificatePem} certificate
+	 * @param {MspId} mspId
+	 * @return {Buffer}
+	 */
+	unsignedRegistration(certificate, mspId) {
+		/**
+		 * @type {EventHubRegistrationRequest}
+		 */
+		const options = {
+			certificate, mspId,
+			txId: undefined, identity: undefined
+		};
+		return this.channelEventHub.generateUnsignedRegistration(options);
+	}
+
+
+	unRegisterAllEvents() {
+		this.channelEventHub._chaincodeRegistrants = new Map();
+		this.channelEventHub._blockOnEvents = {};
+
+		this.channelEventHub._blockOnErrors = {};
+		this.channelEventHub._transactionOnEvents = {};
+		this.channelEventHub._transactionOnErrors = {};
+	}
+
+	/**
+	 *
+	 * Disconnects the ChannelEventHub from the peer event source.
+	 * Will close all event listeners and send an Error object
+	 * with the message "ChannelEventHub has been shutdown" to
+	 * all listeners that provided an "onError" callback.
+	 */
+	disconnect() {
+		const eventHub = this.channelEventHub;
+		if (eventHub.checkConnection(false) && eventHub.isconnected() && !eventHub._disconnect_running) {
+			logger.debug('disconnect', {peer: eventHub._peer.toString(), channel: eventHub._channel.getName()});
+			eventHub.disconnect();
+		}
+	}
+
+	isConnected() {
+		const eventHub = this.channelEventHub;
+		return eventHub.checkConnection(false) && eventHub.isconnected() && !eventHub._disconnect_running;
+	}
+
+	pretty() {
+		return {
+			isConnected: this.channelEventHub._connected,
+			client: this.channelEventHub._clientContext,
+			peer: this.channelEventHub._peer,
+			channel: this.channelEventHub._channel
+		};
+	}
+
+	_throwIfNotConnected() {
+		if (!this.isConnected()) {
+			throw Error('eventHub connection is required to be established');
+		}
+	}
+
+	/**
+	 * @param {ChaincodeChannelEventHandle} listener
+	 */
+	unregisterChaincodeEvent(listener) {
+		this.channelEventHub.unregisterChaincodeEvent(listener, true);
+	}
+
+	/**
+	 *
+	 * @param {OnChaincodeEventSuccess&Validator} validator
+	 * @param {string} chaincodeId
+	 * @param {string|RegExp} eventName
+	 * @param {OnChaincodeEventSuccess} onSuccess
+	 * @param {OnEvenHubError} onError
+	 * @returns {ChaincodeChannelEventHandle}
+	 */
+	chaincodeEvent(validator, {chaincodeId, eventName}, onSuccess, onError) {
+		const eventHub = this.channelEventHub;
+		this._throwIfNotConnected();
+		const logger = Logger.new('chaincodeEvent', true);
+		if (!validator) {
+			validator = (chaincodeEvent, blockNum, status) => {
+				logger.debug('default validator', {chaincodeEvent, blockNum, status});
+				return {valid: true, interrupt: true};
+			};
+		}
+		const listener = eventHub.registerChaincodeEvent(chaincodeId, eventName, (chaincodeEvent, blockNum, txId, status) => {
+			blockNum = parseInt(blockNum);
+			const {payload} = chaincodeEvent; // event hub connect to full block is required to get payload
+			if (payload) {
+				chaincodeEvent.payload = payload.toString();
+			}
+			const {valid, interrupt} = validator(chaincodeEvent, blockNum, status);
+			if (interrupt) {
+				this.unregisterChaincodeEvent(listener);
+				this.disconnect();
+			}
+			if (valid) {
+				onSuccess(chaincodeEvent, blockNum, status);
+			} else {
+				const err = Error('Invalid chaincode event');
+				Object.assign(err, {chaincodeEvent, blockNum, status, txId});
+				onError(err);
+			}
+		}, (err) => {
+			this.unregisterChaincodeEvent(listener);
+			EventHub._assertEventHubDisconnectError(err, onError);
+		});
+		return listener;
+	}
+
+	/**
+	 * @param {number} listener a blockRegistrationNumber as identifier
+	 */
+	unregisterBlockEvent(listener) {
+		this.channelEventHub.unregisterBlockEvent(listener, true);
+	}
+
+	/**
+	 * @param {OnBlockEventSuccess&Validator} [validator]
+	 * @param {OnBlockEventSuccess} onSuccess
+	 * @param {OnEvenHubError} onError
+	 * @returns {number} blockRegistrationNumber
+	 */
+	blockEvent(validator, onSuccess, onError) {
+		const eventHub = this.channelEventHub;
+		this._throwIfNotConnected();
+		const logger = Logger.new('blockEvent');
+		if (!validator) {
+			validator = (block) => {
+				const {number, previous_hash, data_hash} = block.header;
+				const {data} = block.data;
+				logger.debug('blockEvent validator', {number, previous_hash, data_hash});
+				return {valid: data.length === 1, interrupt: true}; //TODO inspect why data.length has meaning
+			};
+		}
+		const block_registration_number = eventHub.registerBlockEvent((block) => {
+			const {valid, interrupt} = validator(block);
+			if (interrupt) {
+				this.unregisterBlockEvent(block_registration_number);
+				this.disconnect();
+			}
+			if (valid) {
+				onSuccess(block);
+			} else {
+				const err = Error('Invalid block event');
+				err.block = block;
+				onError(err);
+			}
+		}, (err) => {
+			this.unregisterBlockEvent(block_registration_number);
+			EventHub._assertEventHubDisconnectError(err, onError);
+		});
+
+		return block_registration_number;
+	}
+
+	/**
+	 * @param {string} listener a `txId`
+	 */
+	unregisterTxEvent(listener) {
+		this.channelEventHub.unregisterTxEvent(listener, true);
+	}
+
+	static _assertEventHubDisconnectError(err, onAssertFailure) {
+		const asserted = err.message === 'ChannelEventHub has been shutdown';
+		console.assert(asserted, 'expect "ChannelEventHub has been shutdown"');
+		if (!asserted) {
+			onAssertFailure(err);
+		}
+	}
+
+	/**
+	 *
+	 * @param {TransactionId} [txId]
+	 * @param {string} [transactionID]
+	 * @param {OnTxEventSuccess&Validator} [validator]
+	 * @param {OnTxEventSuccess} onSuccess
+	 * @param {OnEvenHubError} onError
+	 * @returns {string} transaction id string
+	 */
+	txEvent({txId, transactionID}, validator, onSuccess, onError) {
+		const eventHub = this.channelEventHub;
+		this._throwIfNotConnected();
+		const logger = Logger.new('txEvent');
+		if (!validator) {
+			validator = (tx, code, blockNum) => {
+				logger.debug({tx, code, blockNum});
+				return {valid: code === EventHub.txEventCode[0], interrupt: true};
+			};
+		}
+		if (!transactionID) {
+			transactionID = txId.getTransactionID();
+		}
+		// some modification on transactionID may happen during `registerTxEvent`
+		transactionID = eventHub.registerTxEvent(transactionID, (tx, code, blockNum) => {
+			const {valid, interrupt} = validator(tx, code, blockNum);
+			if (interrupt) {
+				this.unregisterTxEvent(transactionID);
+				this.disconnect();
+			}
+			if (valid) {
+				onSuccess(tx, code, blockNum);
+			} else {
+				const err = Error('Invalid transaction event');
+				Object.assign(err, {tx, code, blockNum});
+				onError(err);
+			}
+		}, err => {
+			this.unregisterTxEvent(transactionID);
+			EventHub._assertEventHubDisconnectError(err, onError);
+		});
+		return transactionID;
+
+	}
+}
+
+EventHub.txEventCode = ['VALID', 'ENDORSEMENT_POLICY_FAILURE', 'MVCC_READ_CONFLICT'];
+
+
 /**
- * @callback evenHubErrorCB
+ * @typedef {boolean} ToInterrupt Expected listener status
+ */
+/**
+ * @callback OnEvenHubError
  * @param {Error} err
- * @param {boolean} interrupt mostly is true
  */
 /**
- * @callback CCEventSuccessCB
+ * @callback OnBlockEventSuccess
+ * @param {Block} block
+ */
+/**
+ * @callback OnChaincodeEventSuccess
  * @param {ChaincodeEvent} chaincodeEvent
  * @param {number} blockNum int number
  * @param {string} status
- * @param {boolean} interrupt
  */
 /**
- *
- * @param {ChannelEventHub} eventHub connection is required to be established
- * @param {function} validator
- * @param {string} chaincodeId
- * @param {string} eventName
- * @param {CCEventSuccessCB} onSuccess
- * @param {evenHubErrorCB} onError
- * @returns {ChaincodeChannelEventHandle}
+ * @callback Validator
+ * @param {ToInterrupt} [interrupt]
+ * @return {{valid: boolean, interrupt: boolean}}
  */
-exports.chaincodeEvent = (eventHub, validator, {chaincodeId, eventName}, onSuccess, onError) => {
-	const logger = Logger.new('chaincodeEvent');
-	if (!validator) {
-		validator = (data) => {
-			logger.debug('default validator', data);
-			return {valid: true, interrupt: true};
-		};
-	}
-	const listener = eventHub.registerChaincodeEvent(chaincodeId, eventName, (chaincodeEvent, blockNum, txId, status) => {
-		blockNum = parseInt(blockNum);
-		const {payload} = chaincodeEvent; // event hub connect to full block is required to get payload
-		if (payload) {
-			chaincodeEvent.payload = payload.toString();
-		}
-		const {valid, interrupt} = validator({chaincodeEvent, blockNum, status});
-		if (interrupt) {
-			eventHub.unregisterChaincodeEvent(listener, true);
-			disconnect(eventHub);
-		}
-		if (valid) {
-			onSuccess({chaincodeEvent, blockNum, status, interrupt});
-		} else {
-			onError({chaincodeEvent, blockNum, status, interrupt});
-		}
-	}, (err) => {
-		logger.error(err);
-		eventHub.unregisterChaincodeEvent(listener, true);
-		disconnect(eventHub);
-		onError({err, interrupt: true});
-	});
-	return listener;
-};
+
 /**
- * @param {ChannelEventHub} eventHub connection is required to be established
- * @param {function} validator
- * @param onSuccess
- * @param {evenHubErrorCB} onError
- * @returns {number}
+ * @callback OnTxEventSuccess
+ * @param tx
+ * @param code
+ * @param blockNum
  */
-exports.blockEvent = (eventHub, validator, onSuccess, onError) => {
-	const logger = Logger.new('blockEvent');
-	if (!validator) {
-		validator = ({block}) => {
-			const {number, previous_hash, data_hash} = block.header;
-			const {data} = block.data;
-			logger.debug('blockEvent validator', {number, previous_hash, data_hash});
-			return {valid: data.length === 1, interrupt: true};
-		};
-	}
-	const block_registration_number = eventHub.registerBlockEvent((block) => {
-		const {valid, interrupt} = validator({block});
-		if (interrupt) {
-			eventHub.unregisterBlockEvent(block_registration_number, true);
-			disconnect(eventHub);
-		}
-		if (valid) {
-			onSuccess({block, interrupt});
-		} else {
-			onError({block, interrupt});
-		}
-	}, (err) => {
-		logger.error(err);
-		eventHub.unregisterBlockEvent(block_registration_number, true);
-		disconnect(eventHub);
-		onError({err, interrupt: true});
-	});
 
-	return block_registration_number;
-};
-const blockWaiter = async (eventHub, minHeight) => {
-	const logger = Logger.new('blockWaiter');
-	const result = await new Promise((resolve, reject) => {
-		const onSucc = ({block, interrupt}) => {
-			if (interrupt) {
-				resolve({block});
-			}
-		};
-		const onErr = (e) => reject(e);
-		let validator;
-		if (Number.isSafeInteger(minHeight)) {
-			validator = ({block}) => {
-				const {number, previous_hash, data_hash} = block.header;
-				const {data} = block.data;
-				logger.debug('validator', {number, previous_hash, data_hash});
-				if (data.length !== 1) {
-					return {valid: false, interrupt: true};
-				}
-				if (number >= minHeight) {
-					return {valid: true, interrupt: true};
-				} else {
-					return {valid: true, interrupt: false};
-				}
-
-			};
-		}
-		exports.blockEvent(eventHub, validator, onSucc, onErr);
-	});
-	return result.block;
-};
-exports.blockWaiter = blockWaiter;
-exports.nextBlockWaiter = async (eventHub) => {
-	const logger = Logger.new('nextBlockWaiter');
-	const {peer, channel} = pretty(eventHub);
-	const {pretty: {height}} = await Query.chain(peer, channel);
-	logger.info(peer.toString(), `current block height ${height}`);// blockHeight indexing from 1
-	await blockWaiter(eventHub, height);// blockNumber indexing from 0
-};
-const txEventCode = ['VALID', 'ENDORSEMENT_POLICY_FAILURE', 'MVCC_READ_CONFLICT'];
-exports.txEventCode = txEventCode;
-/**
- *
- * @param {ChannelEventHub} eventHub connection is required to be established
- * @param {TransactionId} txId
- * @param {function} validator
- * @param {function} onSuccess
- * @param {evenHubErrorCB} onError
- * @returns {string} transaction id string
- */
-exports.txEvent = (eventHub, {txId}, validator, onSuccess, onError) => {
-	const logger = Logger.new('txEvent');
-	if (!validator) {
-		validator = ({tx, code, blockNum}) => {
-			return {valid: code === txEventCode[0], interrupt: true};
-		};
-	}
-	const transactionID = txId.getTransactionID();
-	eventHub.registerTxEvent(transactionID, (tx, code, blockNum) => {
-		const {valid, interrupt} = validator({tx, code, blockNum});
-		if (interrupt) {
-			eventHub.unregisterTxEvent(transactionID, true);
-			disconnect(eventHub);
-		}
-		if (valid) {
-			onSuccess({tx, code, blockNum, interrupt});
-		} else {
-			onError({tx, code, blockNum, interrupt});
-		}
-	}, err => {
-		logger.error(err);
-		eventHub.unregisterTxEvent(transactionID, true);
-		disconnect(eventHub);
-		onError({err, interrupt: true});
-	});
-	return transactionID;
-
-};
+module.exports = EventHub;

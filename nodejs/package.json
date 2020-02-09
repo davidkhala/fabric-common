@@ -5,16 +5,19 @@
     "fabric-ca-client": "^2.0.0-alpha",
     "fabric-client": "^2.0.0-alpha",
     "fabric-common": "^2.0.0-alpha",
-    "khala-nodeutils": "^0.4.13",
-    "khala-logger": "^0.0.0",
-    "khala-dockerode": "^0.0.1"
+    "khala-dockerode": "^0.1.1",
+    "khala-nodeutils": "^0.7.9",
+    "khala-level": "^0.0.1",
+    "tmp": "^0.1.0",
+    "khala-logger": "^0.2.0",
+    "bytebuffer": "^5.0.1"
   },
   "devDependencies": {
     "jsrsasign": "^7.2.2"
   },
   "description": "fabric-sdk-node utils",
   "repository": {
-    "url": "davidkhala/fabric-common"
-  },
-  "cryptoKeyStore": "../keyStoreCache"
+    "type": "git",
+    "url": "github.com/davidkhala/fabric-common"
+  }
 }

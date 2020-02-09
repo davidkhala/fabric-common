@@ -1,0 +1,19 @@
+matrix:
+  include:
+    - language: node_js
+      node_js:
+        - "10"
+      dist: bionic
+      cache:
+        directories:
+          - nodejs/node_modules
+      install:
+        - ./install.sh
+        - export BIN_Parent=$PWD
+        - ./bash/pullBIN.sh
+        - cd nodejs; npm install; cd -;
+      script:
+        - node nodejs/test
+
+
+

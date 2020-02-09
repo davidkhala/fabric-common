@@ -65,11 +65,11 @@ golang_dep() {
 	fi
 	dep version
 }
-java11() {
-	sudo add-apt-repository -y ppa:linuxuprising/java
+
+java() {
+	echo "[WARNING] This is to install OpenJDK, Oracle requires fee to use Java in production."
 	sudo apt update
-	sudo apt install -y oracle-java11-installer
-	sudo apt install -y oracle-java11-set-default
+	sudo apt install -y default-jdk
 }
 softHSM() {
 	if [[ $(uname) == "Darwin" ]]; then
@@ -92,7 +92,7 @@ softHSM() {
 		#  export LDFLAGS="-L/usr/local/opt/openssl/lib"
 		#  export CPPFLAGS="-I/usr/local/opt/openssl/include"
 	else
-		:
+		sudo apt-get install -y softhsm2
 	fi
 }
 fabricInstall() {
@@ -102,8 +102,9 @@ sync() {
 	CURRENT=$(cd $(dirname ${BASH_SOURCE}) && pwd)
 	cd $CURRENT/nodejs
 	npm install
-	npm prune
-	cd -
+	cd fabric-network
+	npm install
+	cd $CURRENT
 }
 if [[ -n "$fcn" ]]; then
 	$fcn $remain_params

@@ -1,12 +1,8 @@
 const BaseClient = require('fabric-common/lib/BaseClient');
 const Client = require('fabric-client');
-const path = require('path');
-const {fsExtra} = require('khala-nodeutils/helper');
+const fs = require('fs');
 const logger = require('./logger').new('client', true);
 
-const {cryptoKeyStore} = require('./package');
-const cryptoKeyStorePath = path.resolve(__dirname, cryptoKeyStore);
-fsExtra.ensureDirSync(cryptoKeyStorePath);// TODO
 const User = require('fabric-common/lib/User');
 exports.new = (persist) => {
 	const client = new Client();
@@ -40,17 +36,12 @@ exports.getUser = (client) => {
 exports.newCryptoSuite = ({path, persist} = {}) => {
 	const newCryptoSuite = BaseClient.newCryptoSuite();
 	if (persist) {
-		if (!path) {
-			path = cryptoKeyStorePath;
-		}
 		newCryptoSuite.setCryptoKeyStore(BaseClient.newCryptoKeyStore(undefined, {path}));
-		logger.debug('cryptoKeystore cache files:', fsExtra.readdirSync(path).length);
+		logger.debug('cryptoKeystore cache files:', fs.readdirSync(path).length);
 	}
 
 	return newCryptoSuite;
 };
-exports.clean = () => {
-	fsExtra.emptyDirSync(cryptoKeyStorePath);
-};
-exports.getCryptoSuite = (client) => client.getCryptoSuite();
 
+exports.getCryptoSuite = (client) => client.getCryptoSuite();
+exports.FabricClient = Client;

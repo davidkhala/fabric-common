@@ -1,7 +1,21 @@
 const Peer = require('fabric-client/lib/Peer');
 const {fsExtra} = require('khala-nodeutils/helper');
-const {RequestPromise} = require('khala-nodeutils/request');
-exports.new = ({peerPort, peerHostName, cert, pem, host}) => {
+const {LoggingLevel, RemoteOptsTransform} = require('./remote');
+const {MetricsProvider} = require('./constants');
+
+/**
+ * @param {intString} peerPort
+ * @param {string} [peerHostName] Used in test environment only, when the server certificate's
+ *    hostname (in the 'CN' field) does not match the actual host endpoint that the server process runs
+ *    at, the application can work around the client TLS verify failure by setting this property to the
+ *    value of the server certificate's hostname
+ * @param {string} [cert] TLS CA certificate file path
+ * @param {CertificatePem} [pem] TLS CA certificate
+ * @param {string} [host]
+ * @param {ClientKey} [clientKey]
+ * @param {ClientCert} [clientCert]
+ */
+exports.new = ({peerPort, peerHostName, cert, pem, host, clientKey, clientCert}) => {
 	const Host = host ? host : 'localhost';
 	let peerUrl = `grpcs://${Host}:${peerPort}`;
 	if (!pem) {
@@ -11,10 +25,8 @@ exports.new = ({peerPort, peerHostName, cert, pem, host}) => {
 	}
 	if (pem) {
 		// tls enabled
-		const peer = new Peer(peerUrl, {
-			pem,
-			'ssl-target-name-override': peerHostName
-		});
+		const opts = RemoteOptsTransform({host, pem, sslTargetNameOverride: peerHostName, clientKey, clientCert});
+		const peer = new Peer(peerUrl, opts);
 		peer.pem = pem;
 		return peer;
 	} else {
@@ -23,8 +35,14 @@ exports.new = ({peerPort, peerHostName, cert, pem, host}) => {
 		return new Peer(peerUrl);
 	}
 };
-
-exports.formatPeerName = (peerName, domain) => `${peerName}.${domain}`;
+exports.getName = (peer) => {
+	const originName = peer.toString();
+	if (originName.includes('://localhost') && peer._options['grpc.ssl_target_name_override']) {
+		return peer._options['grpc.ssl_target_name_override'];
+	} else {
+		return originName;
+	}
+};
 
 exports.container =
 	{
@@ -34,7 +52,7 @@ exports.container =
 		config: '/etc/hyperledger/'
 	};
 exports.host = {
-	dockerSock: '/var/run/docker.sock' //mac system, only  /var/run/docker.sock exist.
+	dockerSock: '/var/run/docker.sock' // mac system, only  /var/run/docker.sock exist.
 };
 exports.statePath = {
 	chaincodes: undefined, // diagnose.0.0.0
@@ -54,12 +72,6 @@ exports.statePath = {
 };
 
 /**
- * Valid logging levels are case-insensitive string
- * @type {string[]}
- */
-const loggingLevels = ['FATAL', 'PANIC', 'ERROR', 'WARNING', 'INFO', 'DEBUG'];
-exports.loggingLevels = loggingLevels;
-/**
  *
  * @param network
  * @param configPath
@@ -67,11 +79,13 @@ exports.loggingLevels = loggingLevels;
  * @param peerHostName
  * @param tls
  * @param couchDB
- * @param {number} loggingLevel index of [loggerLevels]{@link loggingLevels}
- * @param operationOpts
+ * @param chaincodeConfig
+ * @param {LoggingLevel} [loggingLevel]
+ * @param operationsOpts
+ * @param metricsOpts
  * @returns {string[]}
  */
-exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchDB}, loggingLevel, operationOpts) => {
+exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchDB, chaincodeConfig}, loggingLevel, operationsOpts, metricsOpts) => {
 	let environment =
 		[
 			`CORE_VM_ENDPOINT=unix://${exports.container.dockerSock}`,
@@ -85,14 +99,18 @@ exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchD
 			`CORE_PEER_TLS_ENABLED=${!!tls}`,
 			`CORE_PEER_ID=${peerHostName}`,
 			`CORE_PEER_ADDRESS=${peerHostName}:7051`,
-			'CORE_CHAINCODE_EXECUTETIMEOUT=180s',
-			'CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052', // for swarm mode
-			'GODEBUG=netdns=go'// NOTE aliyun only
+			'CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052', // for swarm/k8s mode
+			'GODEBUG=netdns=go' // NOTE aliyun only
 		];
+	if (chaincodeConfig) {
+		const {attachLog} = chaincodeConfig;
+		environment.push(`CORE_VM_DOCKER_ATTACHSTDOUT=${!!attachLog}`); // Enables/disables the standard out/err from chaincode containers for debugging purposes
+	}
 	if (loggingLevel) {
 		environment = environment.concat([
-			`FABRIC_LOGGING_SPEC=${loggingLevels[loggingLevel]}`,
-			`CORE_CHAINCODE_LOGGING_LEVEL=${loggingLevels[loggingLevel]}` // used for chaincode logging
+			`FABRIC_LOGGING_SPEC=${LoggingLevel[loggingLevel]}`,
+			`CORE_CHAINCODE_LOGGING_LEVEL=${LoggingLevel[loggingLevel]}`, // for all loggers within the chaincode container
+			`CORE_CHAINCODE_LOGGING_SHIM=${LoggingLevel[loggingLevel]}` // for the 'shim' logger
 		]);
 	}
 	if (tls) {
@@ -101,7 +119,6 @@ exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchD
 			`CORE_PEER_TLS_CERT_FILE=${tls.cert}`,
 			`CORE_PEER_TLS_ROOTCERT_FILE=${tls.caCert}`]);
 	}
-	//TODO CORE_CHAINCODE_LOGGING_SHIM :used for fabric logging
 	if (couchDB) {
 		const {container_name, user = '', password = ''} = couchDB;
 		environment = environment.concat([
@@ -111,22 +128,42 @@ exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchD
 			`CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=${password}`
 		]);
 	}
-	if (operationOpts) {
-		// metrics provider is one of statsd, prometheus, or disabled
-		const {tls, metrics = 'disabled', statsd} = operationOpts; // TODO another set of TLS,
+	if (operationsOpts) {
 		// omit the ip/domain in listenAddress will allow all traffic
 		environment = environment.concat([
-			'CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9443',
-			`CORE_METRICS_PROVIDER=${metrics}`
+			'CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9443'
 		]);
+		const operationsTLS = operationsOpts.tls || tls;
+		if (operationsTLS) {
+			environment = environment.concat([
+				'CORE_OPERATIONS_TLS_ENABLED=true',
+				`CORE_OPERATIONS_TLS_CERT_FILE=${operationsTLS.cert}`,
+				`CORE_OPERATIONS_TLS_KEY_FILE=${operationsTLS.key}`,
+				'CORE_OPERATIONS_TLS_CLIENTAUTHREQUIRED=false', // see in README.md
+				`CORE_OPERATIONS_TLS_CLIENTROOTCAS_FILES=${operationsTLS.caCert}`
+			]);
+		}
+	}
+	if (metricsOpts) {
+		const {provider} = metricsOpts;
+		environment = environment.concat([
+			`CORE_METRICS_PROVIDER=${MetricsProvider[provider]}`
+		]);
+		if (provider === MetricsProvider.statsd) {
+			const {statsD: {host}} = metricsOpts;
+			environment = environment.concat([
+				'CORE_METRICS_STATSD_NETWORK=udp',
+				`CORE_METRICS_STATSD_ADDRESS=${host}:8125`,
+				`CORE_METRICS_STATSD_PREFIX=${peerHostName}`
+			]);
+		}
 	}
 	return environment;
 };
 
-
 /**
  * basic health check by discoveryClient
- * @param {Peer} peer
+ * @param {Client.Peer} peer
  * @return {Promise<boolean>} false if connect trial failed
  */
 exports.ping = async (peer) => {
@@ -142,42 +179,6 @@ exports.ping = async (peer) => {
 	}
 };
 
-/**
- * /healthz official health check, for peer and orderer
- * TODO to support https
- * -- introduced from 1.4
- * @param baseUrl ${domain:port}
- * @param otherOptions
- * @returns {Promise<void>}
- */
-exports.health = async (baseUrl, otherOptions) => {
-	const url = `${baseUrl}/healthz`;
-	const result = await RequestPromise({url, method: 'GET'}, otherOptions);
-	if (result.status === 'OK') {
-		return result;
-	} else {
-		let err = Error('healthz check');
-		err.url = url;
-		err = Object.assign(err, result);
-		throw err;
-	}
-};
-exports.getLogLevel = async (baseUrl, otherOptions) => {
-	const url = `${baseUrl}/logspec`;
-	const {spec} = await RequestPromise({url, method: 'GET'}, otherOptions);
-	return spec;
-};
-/**
- * @param {string} baseUrl
- * @param {string|number} level FATAL | PANIC | ERROR | WARNING | INFO | DEBUG, validation will be completed by service
- * @param otherOptions
- * @returns {Promise<void>}
- */
-exports.setLogLevel = async (baseUrl, level, otherOptions) => {
-	const url = `${baseUrl}/logspec`;
-	if (Number.isInteger(level)) {
-		level = loggingLevels[level];
-	}
-	return await RequestPromise({url, method: 'PUT', body: {spec: level}}, otherOptions);
-};
+
+
 exports.Peer = Peer;

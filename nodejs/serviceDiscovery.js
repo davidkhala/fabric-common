@@ -1,11 +1,24 @@
 const {FabricConfig} = require('./helper');
-const Logger = require('./logger');
-const logger = Logger.new('service discovery', true);
+const logger = require('./logger').new('service discovery', true);
 /**
  * @typedef {Object} PeerQueryResponse
  * @property {Object} local_peers
  * @property {Object} pretty
  */
+
+/**
+ * @typedef {Object} DiscoveryChaincodeInterest
+ * @property {DiscoveryChaincodeCall[]} chaincodes The chaincodes names and collections
+ *           that will be sent to the discovery service to calculate an endorsement
+ *           plan.
+ */
+
+/**
+ * @typedef {Object} DiscoveryChaincodeCall
+ * @property {string} name - The name of the chaincode
+ * @property {string[]} collection_names - The names of the related collections
+ */
+
 
 /**
  *
@@ -50,26 +63,20 @@ exports.getDiscoveryResults = async (channel, endorsement_hints) => {
  * @param peer
  * @param {boolean} asLocalhost   FIXME:ugly undefined checking in fabric-sdk-node
  * @param TLS
- * @returns {Promise<*|void>}
  */
 exports.initialize = async (channel, peer, {asLocalhost, TLS} = {}) => {
 	FabricConfig.set('discovery-protocol', TLS ? 'grpcs' : 'grpc');
-	return await channel.initialize({target: peer, discover: true, asLocalhost});
+	return channel.initialize({target: peer, discover: true, asLocalhost});
 };
-
 /**
- * @param {string} chaincodeId
- * @param {Object} collectionsConfig
- * @returns {Client.DiscoveryChaincodeCall}
- * @constructor
+ * @param {Object} configs chaincodeID -> collectionNames
+ * @returns {Client.DiscoveryChaincodeInterest}
+ *
  */
-exports.discoveryChaincodeCallBuilder = ({chaincodeId, collectionsConfig}) => {
-	return {
-		name: chaincodeId,
-		collection_names: collectionsConfig ? Object.keys(collectionsConfig) : undefined
-	};
+exports.endorsementHintsBuilder = (configs) => {
+	return {chaincodes: Object.entries(configs).map(([name, collection_names]) => ({name, collection_names}))};
 };
-
+exports.discoveryChaincodeCallBuilder = exports.endorsementHintsBuilder;
 
 /**
  *

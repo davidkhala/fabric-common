@@ -1,0 +1,14 @@
+version: '3'
+services:
+  statsd-exporter:
+    hostname: statsd-exporter
+    container_name: statsd-exporter
+    network_mode: $dockerNetwork
+    image: prom/statsd-exporter
+    ports:
+      - 9102:9102
+    expose: # overwrite to expose 8125
+      - 8125/udp
+      - 8125
+    entrypoint: [ "/bin/statsd_exporter","--statsd.listen-udp=:8125" ]
+

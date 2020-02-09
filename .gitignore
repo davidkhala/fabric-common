@@ -1,11 +1,4 @@
 .idea
 /bin
-.gradle
-gradlew
-gradlew.bat
-/java/gradle
-/java/out
-vendor
-node_modules
-/keyStoreCache
-package-lock.json
+*.block
+*.tx

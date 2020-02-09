@@ -1,45 +1,16 @@
-const dockerode = require('khala-dockerode');
-const dockerUtil = dockerode.util;
-const {
-	constraintSelf, taskDeadWaiter, taskLiveWaiter, swarmServiceName, serviceCreateIfNotExist, swarmInit, swarmJoin,
-	swarmTouch, swarmLeave, taskList
-} = dockerode.swarmUtil;
-const logger = require('./logger').new('dockerode');
+const dockerUtil = require('khala-dockerode/dockerode-util');
+const {ContainerOptsBuilder} = dockerUtil;
 const peerUtil = require('./peer');
 const caUtil = require('./ca');
 const ordererUtil = require('./orderer');
 const couchdbUtil = require('./couchdb');
 const userUtil = require('./user');
-const yaml = require('khala-nodeutils/yaml');
-const dockerHelper = require('khala-dockerode/helper');
 
 /**
- * TODO not mature
- * @returns {Promise<void>}
+ * @param fabricTag
+ * @param thirdPartyTag
+ * @param {ChaincodeType} [chaincodeType]
  */
-exports.swarmRenew = async () => {
-	const {result, reason} = await swarmTouch();
-	if (!result) {
-		if (reason === 'consensus') {
-			await swarmLeave();
-			await exports.swarmIPInit();
-		} else if (reason === 'noexist') {
-			await exports.swarmIPInit();
-		}
-	}
-};
-exports.swarmIPJoin = async ({AdvertiseAddr, JoinToken}) => {
-	const ip = dockerHelper.ip();
-	await swarmJoin({AdvertiseAddr, JoinToken}, ip);
-};
-exports.swarmIPInit = async (AdvertiseAddr) => {
-	if (!AdvertiseAddr) {
-		const ip = dockerHelper.ip();
-		AdvertiseAddr = `${ip}:2377`;
-	}
-	logger.debug('swarmIPInit', AdvertiseAddr);
-	return await swarmInit({AdvertiseAddr});
-};
 exports.fabricImagePull = async ({fabricTag, thirdPartyTag, chaincodeType = 'golang'}) => {
 	if (fabricTag) {
 		const imageTag = fabricTag;
@@ -61,162 +32,56 @@ exports.fabricImagePull = async ({fabricTag, thirdPartyTag, chaincodeType = 'gol
 };
 
 /**
- * @typedef IssuerObject
+ * @typedef Issuer
  * @property {string} CN Common Name
- * @property {string} OU Organization Unit
- * @property {string} O Organization Name
- * @property {string} ST State Name
- * @property {string} C Country
+ * @property {string} [OU] Organization Unit
+ * @property {string} [O] Organization Name
+ * @property {string} [ST] State Name
+ * @property {string} [C] Country
  */
 
 /**
  * TLS enabled but no certificate or key provided, automatically generate TLS credentials
- * @param container_name
+ * @param {string} container_name
  * @param {Number} port exposed host port
- * @param network
- * @param imageTag
- * @param admin
- * @param adminpw
- * @param TLS
- * @param {IssuerObject} Issuer
- * @param configFile
+ * @param {string} network
+ * @param {string} imageTag
+ * @param {string} [adminName] admin user name
+ * @param {string} [adminPassword] admin user password
+ * @param {boolean} TLS
+ * @param {Issuer} issuer
+ * @param intermediate
  * @returns {Promise<*>}
  */
-exports.runCA = ({
-	                 container_name, port, network, imageTag,
-	                 admin = userUtil.adminName, adminpw = userUtil.adminPwd,
-	                 TLS, Issuer
-                 }, configFile) => {
+exports.runCA = async ({
+	container_name, port, network, imageTag,
+	adminName = userUtil.adminName, adminPassword = userUtil.adminPwd,
+	TLS, issuer
+}, intermediate) => {
 
 	const {caKey, caCert} = caUtil.container;
-	const {CN, OU, O, ST, C, L} = Issuer;
-	const cmdAppend = configFile ? '' : `-d -b ${admin}:${adminpw} ${TLS ? '--tls.enabled' : ''} --csr.cn=${CN}`;
-	const Cmd = ['sh', '-c', `rm ${caKey}; rm ${caCert};fabric-ca-server start ${cmdAppend}`];
+	const {CN, OU, O, ST, C, L} = issuer;
 
-	const createOptions = {
-		name: container_name,
-		Env: caUtil.envBuilder(),
-		ExposedPorts: {
-			'7054': {}
-		},
-		Cmd,
-		Image: `hyperledger/fabric-ca:${imageTag}`,
-		Hostconfig: {
-			PortBindings: {
-				'7054': [
-					{
-						HostPort: port.toString()
-					}
-				]
-			}
-
-		},
-		NetworkingConfig: {
-			EndpointsConfig: {
-				[network]: {
-					Aliases: [container_name]
-				}
-			}
+	const cmdIntermediateBuilder = (options) => {
+		if (!options) {
+			return '';
+		} else {
+			const {enrollmentID, enrollmentSecret, host: parentHost, port: parentPort} = options;
+			return ` -u ${TLS ? 'https' : 'http'}://${enrollmentID}:${enrollmentSecret}@${parentHost}:${parentPort}`;
 		}
 	};
-	if (configFile) {
-		const config = {
-			debug: true,
-			csr: {
-				cn: CN,
-				names: [{
-					C,
-					ST,
-					L,
-					O,
-					OU
-				}],
 
-				hosts: [
-					'localhost', container_name
-				]
-			},
-			tls: {
-				enabled: !!TLS
 
-			},
+	const cmdAppend = `-d -b ${adminName}:${adminPassword} ${TLS ? '--tls.enabled' : ''} --csr.cn=${CN} --cors.enabled${cmdIntermediateBuilder(intermediate)}`;
+	const Cmd = ['sh', '-c', `rm ${caKey}; rm ${caCert};fabric-ca-server start ${cmdAppend}`];
 
-			registry: {
-				identities: [{
-					name: admin,
-					pass: adminpw,
-					type: 'client',
-					affiliation: '',
-					attrs: {
-						['hf.Registrar.Roles']: 'peer,orderer,client,user',
-						['hf.Registrar.DelegateRoles']: 'peer,orderer,client,user',
-						['hf.Revoker']: true,
-						['hf.IntermediateCA']: true,
-						['hf.GenCRL']: true,
-						['hf.Registrar.Attributes']: '*',
-						['hf.AffiliationMgr']: true
-					}
-				}]
-			},
-			signing: {
-				default: {
-					usage:
-						[
-							'digital signature'
-						],
-					expiry: '8760h'
-				},
 
-				profiles:
-					{
-						tls: {
-							usage: [
-								'server auth', // Extended key usage
-								'client auth', // Extended key usage
-								// 'signing',
-								'digital signature',
-								'key encipherment',
-								'key agreement'
-							],
-							expiry: '8760h'
-						}
-					}
-			}
+	const builder = new ContainerOptsBuilder(`hyperledger/fabric-ca:${imageTag}`, Cmd);
+	builder.setName(container_name).setEnv(caUtil.envBuilder());
+	builder.setPortBind(`${port}:7054`).setNetwork(network, [container_name]);
+	const createOptions = builder.build();
 
-		};
-		yaml.write(config, configFile);
-
-		createOptions.Volumes = {
-			[caUtil.container.CONFIG]: {}
-		};
-		createOptions.Hostconfig.Binds = [
-			`${configFile}:${caUtil.container.CONFIG}`
-		];
-	}
-	return dockerUtil.containerStart(createOptions);
-}
-;
-
-exports.deployCA = async ({Name, network, imageTag, Constraints, port, admin = userUtil.adminName, adminpw = userUtil.adminPwd, TLS}) => {
-	const serviceName = swarmServiceName(Name);
-	const tlsOptions = TLS ? '--tls.enabled' : '';
-
-	const {caKey, caCert} = caUtil.container;
-
-	const Cmd = ['sh', '-c', `rm ${caKey}; rm ${caCert}; fabric-ca-server start -d -b ${admin}:${adminpw} ${tlsOptions}  --csr.cn=${Name}`];
-	if (!Constraints) {
-		Constraints = await constraintSelf();
-	}
-	return await serviceCreateIfNotExist({
-		Image: `hyperledger/fabric-ca:${imageTag}`,
-		Name: serviceName,
-		Cmd,
-		network,
-		Constraints,
-		ports: [{host: port, container: 7054}],
-		Env: caUtil.envBuilder(),
-		Aliases: [Name]
-	});
+	return await dockerUtil.containerStart(createOptions);
 };
 
 /**
@@ -258,218 +123,74 @@ exports.chaincodeClean = async (prune, filter) => {
 		}));
 	}
 };
-exports.runOrderer = ({
-	                      container_name, imageTag, port, network, BLOCK_FILE, CONFIGTXVolume,
-	                      msp: {id, configPath, volumeName}, OrdererType, tls, stateVolume
-                      }, operations) => {
+exports.runOrderer = async ({
+	container_name, imageTag, port, network, BLOCK_FILE, CONFIGTXVolume,
+	msp: {id, configPath, volumeName}, ordererType, tls, stateVolume
+}, operations, metrics) => {
 	const Image = `hyperledger/fabric-orderer:${imageTag}`;
 	const Cmd = ['orderer'];
 	const Env = ordererUtil.envBuilder({
 		BLOCK_FILE, msp: {
 			configPath, id
-		}, OrdererType, tls
-	}, undefined, operations);
+		}, ordererType, tls
+	}, undefined, operations, metrics);
 
-	const createOptions = {
-		name: container_name,
-		Env,
-		Volumes: {
-			[peerUtil.container.MSPROOT]: {},
-			[ordererUtil.container.CONFIGTX]: {}
-		},
-		Cmd,
-		Image,
-		ExposedPorts: {
-			'7050': {},
-			'8443': {}
-		},
-		Hostconfig: {
-			Binds: [
-				`${volumeName}:${peerUtil.container.MSPROOT}`,
-				`${CONFIGTXVolume}:${ordererUtil.container.CONFIGTX}`
-			],
-			PortBindings: {
-				'7050': [
-					{
-						HostPort: port.toString()
-					}
-				],
-				'8443': []
-			}
-		},
-		NetworkingConfig: {
-			EndpointsConfig: {
-				[network]: {
-					Aliases: [container_name]
-				}
-			}
-		}
-	};
+	const builder = new ContainerOptsBuilder(Image, Cmd);
+	builder.setName(container_name).setEnv(Env);
+	builder.setVolume(volumeName, peerUtil.container.MSPROOT);
+	builder.setVolume(CONFIGTXVolume, ordererUtil.container.CONFIGTX);
+	builder.setPortBind(`${port}:7050`).setNetwork(network, [container_name]);
+
 	if (stateVolume) {
-		createOptions.Volumes[ordererUtil.container.state] = {};
-		createOptions.Hostconfig.Binds.push(`${stateVolume}:${ordererUtil.container.state}`);
+		builder.setVolume(stateVolume, ordererUtil.container.state);
 	}
 	if (operations) {
-		createOptions.Hostconfig.PortBindings['8443'].push({HostPort: operations.port.toString()});
+		builder.setPortBind(`${operations.port}:8443`);
 	}
-	return dockerUtil.containerStart(createOptions);
+	const createOptions = builder.build();
+	return await dockerUtil.containerStart(createOptions);
 };
 
-exports.deployOrderer = async ({
-	                               Name, network, imageTag, Constraints, port,
-	                               msp: {volumeName, configPath, id}, CONFIGTXVolume, BLOCK_FILE, OrdererType, tls
-                               }) => {
-	const serviceName = swarmServiceName(Name);
-	if (!Constraints) {
-		Constraints = await constraintSelf();
-	}
-
-	return await serviceCreateIfNotExist({
-		Cmd: ['orderer'],
-		Image: `hyperledger/fabric-orderer:${imageTag}`,
-		Name: serviceName, network, Constraints,
-		volumes: [{volumeName, volume: peerUtil.container.MSPROOT},
-			{volumeName: CONFIGTXVolume, volume: ordererUtil.container.CONFIGTX}],
-		ports: [{host: port, container: 7050}],
-		Env: ordererUtil.envBuilder({BLOCK_FILE, msp: {configPath, id}, OrdererType, tls}),
-		Aliases: [Name]
-	});
-};
-exports.deployPeer = async ({
-	                            Name, network, imageTag, Constraints, port,
-	                            msp: {volumeName, configPath, id}, peerHostName, tls
-                            }) => {
-	const serviceName = swarmServiceName(Name);
-	if (!Constraints) {
-		Constraints = await constraintSelf();
-	}
-	return await serviceCreateIfNotExist({
-		Image: `hyperledger/fabric-peer:${imageTag}`,
-		Cmd: ['peer', 'node', 'start'],
-		Name: serviceName, network, Constraints, volumes: [{
-			volumeName, volume: peerUtil.container.MSPROOT
-		}, {
-			Type: 'bind', volumeName: peerUtil.host.dockerSock, volume: peerUtil.container.dockerSock
-		}],
-		ports: [
-			{host: port, container: 7051}
-		],
-		Env: peerUtil.envBuilder({network, msp: {configPath, id, peerHostName}, tls}),
-		Aliases: [Name, peerHostName]
-	});
-};
-exports.runPeer = ({
-	                   container_name, port, network, imageTag,
-	                   msp: {
-		                   id, volumeName,
-		                   configPath
-	                   }, peerHostName, tls, couchDB, stateVolume
-                   }, operations) => {
+exports.runPeer = async ({
+	container_name, port, network, imageTag,
+	msp: {
+		id, volumeName,
+		configPath
+	}, peerHostName, tls, couchDB, stateVolume
+}, operations, metrics) => {
 	const Image = `hyperledger/fabric-peer:${imageTag}`;
 	const Cmd = ['peer', 'node', 'start'];
 	const Env = peerUtil.envBuilder({
 		network, msp: {
 			configPath, id, peerHostName
 		}, tls, couchDB
-	}, undefined, operations);
+	}, undefined, operations, metrics);
 
-	const createOptions = {
-		name: container_name,
-		Env,
-		Volumes: {
-			[peerUtil.container.dockerSock]: {},
-			[peerUtil.container.MSPROOT]: {}
-		},
-		Cmd,
-		Image,
-		ExposedPorts: {
-			'7051': {},
-			'9443': {}
-		},
-		Hostconfig: {
-			Binds: [
-				`${peerUtil.host.dockerSock}:${peerUtil.container.dockerSock}`,
-				`${volumeName}:${peerUtil.container.MSPROOT}`],
-			PortBindings: {
-				'7051': [
-					{
-						HostPort: port.toString()
-					}
-				],
-				'9443': []
-			}
-		},
-		NetworkingConfig: {
-			EndpointsConfig: {
-				[network]: {
-					Aliases: [peerHostName]
-				}
-			}
-		}
-	};
+	const builder = new ContainerOptsBuilder(Image, Cmd);
+	builder.setName(container_name).setEnv(Env);
+	builder.setVolume(volumeName, peerUtil.container.MSPROOT);
+	builder.setVolume(peerUtil.host.dockerSock, peerUtil.container.dockerSock);
+	builder.setPortBind(`${port}:7051`).setNetwork(network, [peerHostName]);
 	if (operations) {
-		createOptions.Hostconfig.PortBindings['9443'].push({HostPort: operations.port.toString()});
+		builder.setPortBind(`${operations.port}:9443`);
 	}
 	if (stateVolume) {
-		createOptions.Volumes[peerUtil.container.state] = {};
-		createOptions.Hostconfig.Binds.push(`${stateVolume}:${peerUtil.container.state}`);
+		builder.setVolume(stateVolume, peerUtil.container.state);
 	}
-	return dockerUtil.containerStart(createOptions);
+	const createOptions = builder.build();
+	return await dockerUtil.containerStart(createOptions);
 };
 
-// TODO deployCouchDB
 exports.runCouchDB = async ({imageTag, container_name, port, network, user, password}) => {
 	const Image = `hyperledger/fabric-couchdb:${imageTag}`;
 	const Env = couchdbUtil.envBuilder(user, password);
-	const createOptions = {
-		name: container_name,
-		Env,
-		Image,
-		NetworkingConfig: {
-			EndpointsConfig: {
-				[network]: {
-					Aliases: [container_name]
-				}
-			}
-		}
-	};
+	const builder = new ContainerOptsBuilder(Image);
+	builder.setName(container_name).setEnv(Env);
+	builder.setNetwork(network, [container_name]);
+
 	if (port) {
-		createOptions.ExposedPorts = {
-			'5984': {}
-		};
-		createOptions.Hostconfig = {
-			PortBindings: {
-				'5984': [
-					{
-						HostPort: port.toString()
-					}
-				]
-			}
-		};
+		builder.setPortBind(`${port}:5984`);
 	}
-	return dockerUtil.containerStart(createOptions);
-};
-
-/**
- * if service is deleted, taskList could not find legacy task
- * @param {Service[]} services service info array
- * @param nodes
- * @returns {Promise<any>}
- */
-exports.tasksWaitUntilDead = async ({nodes, services} = {}) => {
-	const ids = services.map(service => service.ID);
-	const tasks = (await taskList({nodes})).filter(task => {
-		const {ServiceID} = task;
-		return ids.find(id => id === ServiceID);
-	});
-
-	logger.debug('tasksWaitUtilDead', tasks.length);
-	for (const task of tasks) {
-		await taskDeadWaiter(task);
-	}
-};
-exports.tasksWaitUntilLive = async (services) => {
-	for (const service of services) {
-		await taskLiveWaiter(service);
-	}
+	const createOptions = builder.build();
+	return await dockerUtil.containerStart(createOptions);
 };
