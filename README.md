@@ -88,13 +88,16 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
     - ledger data is integral for multiple contract  
 - [chaincode][nodejs][contract-api] minimum package.json
     ```json
-        "main": "index.js", 
-        "scripts": {
-            "start": "fabric-chaincode-node start"
-        },
-        "dependencies": {
-            ...
-        }
+  {
+      "main": "index.js", 
+      "scripts": {
+          "start": "fabric-chaincode-node start"
+      },
+      "dependencies": {
+          "fabric-contract-api": "^1.4.4",
+          "fabric-shim": "^1.4.4"
+      }
+  }    
     ```
     property "name", "version" is useless
        
