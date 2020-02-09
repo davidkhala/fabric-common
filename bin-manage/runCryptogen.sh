@@ -33,7 +33,7 @@ while getopts "i:o:a" shortname $remain_params; do
 	esac
 done
 
-if [ "$isAPPEND" == "false" ]; then
+if [[ "$isAPPEND" == "false" ]]; then
 	echo "clear CRYPTO_CONFIG_DIR $CRYPTO_CONFIG_DIR"
 	sudo rm -rf ${CRYPTO_CONFIG_DIR}* # keep folder itself (for work as nfs server)
 	mkdir -p ${CRYPTO_CONFIG_DIR}

@@ -1,6 +1,7 @@
 # fabric-common
+[![Build Status](https://travis-ci.com/davidkhala/fabric-common.svg?branch=master)](https://travis-ci.com/davidkhala/fabric-common)
 
-Latest version 2.0.0-alpha
+Current version 2.0.0
 # Installation
 - init submodule
     `./install gitSync`

@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 set -e
-CURRENT=$(cd $(dirname ${BASH_SOURCE}) && pwd)
-Parent=$(dirname $CURRENT)
-cd $Parent
+if [[ -z "$BIN_Parent" ]]; then
+	CURRENT=$(cd $(dirname ${BASH_SOURCE}) && pwd)
+	BIN_Parent=$(dirname $CURRENT)
+fi
 
-VERSION=${1:-2.0.0-alpha}
+cd $BIN_Parent
+mkdir -p bin
+VERSION=${1:-2.0.0}
 
 ARCH=$(echo "$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/mingw64_nt.*/windows/')-$(uname -m | sed 's/x86_64/amd64/g')")
 

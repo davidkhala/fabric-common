@@ -11,8 +11,10 @@ CORE_PEER_TLS_KEY_FILE=$CORE_PEER_TLS_KEY_FILE
 CORE_PEER_TLS_CERT_FILE=$CORE_PEER_TLS_CERT_FILE
 CORE_PEER_TLS_ROOTCERT_FILE=$CORE_PEER_TLS_ROOTCERT_FILE
 
+
+tlsOptions="--tls --cafile=${CORE_PEER_TLS_ROOTCERT_FILE} --certfile=${CORE_PEER_TLS_CERT_FILE} --keyfile=${CORE_PEER_TLS_KEY_FILE}"
 channelList() {
-    local CMD="peer channel list --tls --cafile=$CORE_PEER_TLS_ROOTCERT_FILE --certfile=$CORE_PEER_TLS_CERT_FILE --keyfile=$CORE_PEER_TLS_KEY_FILE"
+    local CMD="peer channel list ${tlsOptions}"
     echo $CMD
     $CMD
 
@@ -29,12 +31,15 @@ channelConfig() {
         echo " 'ordererEndPoint' as 2nd parameter is required, otherwise: Error: can't read the block: &{NOT_FOUND}"
         exit 1
     fi
-    local CMD="peer channel fetch config --tls --cafile=$CORE_PEER_TLS_ROOTCERT_FILE --certfile=$CORE_PEER_TLS_CERT_FILE --keyfile=$CORE_PEER_TLS_KEY_FILE -c=$channelName -o=$ordererEndPoint"
+    local CMD="peer channel fetch config ${tlsOptions} -c=${channelName} -o=${ordererEndPoint}"
     if [[ -n ${ordererHostname} ]]; then
         CMD="$CMD --ordererTLSHostnameOverride=$ordererHostname"
     fi
     echo $CMD
     $CMD
 }
-
+chaincodeInstantiated(){
+    local channelName=$1
+    peer chaincode list --instantiated --channelID $channelName ${tlsOptions}
+}
 $fcn $remain_params
