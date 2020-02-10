@@ -21,13 +21,7 @@ exports.clearPeers = (channel) => {
 exports.getOrderers = async (channel, healthyOnly) => {
 	const orderers = channel.getOrderers();
 	if (healthyOnly) {
-		const result = [];
-		for (const orderer of orderers) {
-			const isAlive = await OrdererUtil.ping(orderer);
-			if (isAlive) {
-				result.push(orderer);
-			}
-		}
+		const result = await OrdererUtil.filter(orderers, true);
 		logger.debug(`${result.length} alive in ${channel.getName()}`);
 		return result;
 	} else {

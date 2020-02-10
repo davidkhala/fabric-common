@@ -1,5 +1,4 @@
 // TODO replace some with system chaincode
-const Long = require('long');
 /**
  *
  * @param {Client.Peer} peer
@@ -11,7 +10,7 @@ exports.chain = async (peer, channel) => {
 
 	const {height, currentBlockHash, previousBlockHash} = message;
 	message.pretty = {
-		height: new Long(height.low, height.high, height.unsigned).toInt(),
+		height: height.toInt(),
 		currentBlockHash: currentBlockHash.toString('hex'),
 		previousBlockHash: previousBlockHash.toString('hex')
 	};

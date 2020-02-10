@@ -28,10 +28,11 @@ Current version 1.4.4
 - [keystore] For private keys existing in local file system, you should set the permissions to 0400 on *nix based OS’s.  
 - [gRpcs][docker network] **host name SHOULD not include upper-case character, otherwise gRpcs ping for discovery_client will not response back with docker network DNS** 
 - [query]blockHeight(got from queryChain) indexing from 1, blockNumber in blockEvent starting from 0
-- [golang]dep could only be run under system $GOPATH,
 - [reference]playback conference: https://wiki.hyperledger.org/display/fabric/Playbacks
 - [channel]`txId` is required in peer join channel because: [bret Harrison]There is a transaction proposal to the system chaincode, so a transaction id is required.
-- [channel][orderer] individual properties may be overridden by setting environment variables, such as `CONFIGTX_ORDERER_ORDERERTYPE=kafka`. 
+- [channel][orderer] individual properties may be overridden by setting environment variables, such as `CONFIGTX_ORDERER_ORDERERTYPE=kafka`.
+- [channel][system] peer could not join system channel
+    ` [Orderer.js]: sendDeliver - rejecting - status:FORBIDDEN`
 - [channel]channel ID length < 250 :initializing configtx manager failed: bad channel ID: channel ID illegal, cannot be longer than 249
 - [1.4][nodejs][sdk] `Channel#getChannelConfigReadable` could be used to extract application channel from orderer
     - used in migration from kafka to RAFT. When after <appChannel> config is changed to maintenance mode, peer in <appChannel> could not get the latest channel config. At that point, we could extract <appChannel> config from orderer alternatively.   
@@ -56,6 +57,10 @@ Current version 1.4.4
 - [raft][migrate] migrate from kafka to etcdRaft, see [here](https://github.com/davidkhala/delphi-fabric/tree/release-1.4/operations/migrate/README.md)
 - [solo][FAB-15754] Deploy a single-node Raft-based ordering service instead of using solo consensus type
 - Block data emitted in block event has a structure documented in [types.js](./nodejs/types.js)  
+
+### Notes: ChannelEventHub
+- for application channel
+    - The first block could be replayed is not the channel genesis block (available from `Channel.getGenesisBlock`), but the one after, which is `block.header.number='1'`. 
 
 ### Notes: Private Data 
 

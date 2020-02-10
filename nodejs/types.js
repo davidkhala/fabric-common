@@ -19,7 +19,7 @@
 
 /**
  * @typedef {Object} BlockHeader
- * @property {intString} number
+ * @property {intString|Long} number
  * @property {hexString} previous_hash
  * @property {hexString} data_hash
  */

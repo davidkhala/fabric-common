@@ -3,7 +3,7 @@ const fs = require('fs');
 const logger = require('./logger').new('orderer');
 const {LoggingLevel, RemoteOptsTransform} = require('./remote');
 const {OrdererType, MetricsProvider} = require('./constants');
-exports.find = ({orderers, ordererUrl}) => {
+exports.find = (orderers, {ordererUrl}) => {
 	return ordererUrl ? orderers.find((orderer) => orderer.getUrl() === ordererUrl) : orderers[0];
 };
 /**
@@ -143,7 +143,7 @@ exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, tls, ordererType, raft
  * basic health check for an orderer
  * @param {Orderer} orderer
  */
-exports.ping = async (orderer) => {
+const ping = async (orderer) => {
 	try {
 		await orderer.waitForReady(orderer._ordererClient);
 		return true;
@@ -155,5 +155,19 @@ exports.ping = async (orderer) => {
 			throw err;
 		}
 	}
+};
+exports.ping = ping;
+exports.filter = async (orderers, healthOnly) => {
+	const result = [];
+	for (const orderer of orderers) {
+		if (healthOnly) {
+			const isAlive = await ping(orderer);
+			if (!isAlive) {
+				continue;
+			}
+		}
+		result.push(orderer);
+	}
+	return result;
 };
 exports.Orderer = Orderer;
