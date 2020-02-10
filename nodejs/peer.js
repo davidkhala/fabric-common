@@ -35,14 +35,6 @@ exports.new = ({peerPort, peerHostName, cert, pem, host, clientKey, clientCert})
 		return new Peer(peerUrl);
 	}
 };
-exports.getName = (peer) => {
-	const originName = peer.toString();
-	if (originName.includes('://localhost') && peer._options['grpc.ssl_target_name_override']) {
-		return peer._options['grpc.ssl_target_name_override'];
-	} else {
-		return originName;
-	}
-};
 
 exports.container =
 	{
