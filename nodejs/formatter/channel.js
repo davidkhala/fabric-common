@@ -1,0 +1,1 @@
+exports.genesis = 'testchainid';

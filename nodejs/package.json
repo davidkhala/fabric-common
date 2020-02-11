@@ -14,6 +14,10 @@
   "devDependencies": {
     "jsrsasign": "^7.2.2"
   },
+  "keywords": [
+    "fabric-sdk-node",
+    "utils"
+  ],
   "description": "fabric-sdk-node utils",
   "repository": {
     "type": "git",
