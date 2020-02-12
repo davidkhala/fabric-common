@@ -37,7 +37,7 @@ golang() {
 		fi
 	fi
 }
-golang11(){
+golang11() {
 	sudo add-apt-repository ppa:gophers/archive
 	sudo apt-get update
 	sudo apt-get install golang-1.11-go
@@ -46,7 +46,6 @@ golang12() {
 	sudo add-apt-repository -y ppa:longsleep/golang-backports
 	sudo apt-get update
 	sudo apt install golang-1.12
-	
 }
 install_libtool() {
 	if [[ $(uname) == "Darwin" ]]; then
@@ -107,7 +106,7 @@ softHSM() {
 	fi
 }
 fabricInstall() {
-	curl -sSL http://bit.ly/2ysbOFE | bash -s -- 1.4.4 1.4.4 0.4.18
+	curl -sSL http://bit.ly/2ysbOFE | bash -s -- 1.4.4 1.4.4 0.4.18 -s
 }
 sync() {
 	CURRENT=$(cd $(dirname ${BASH_SOURCE}) && pwd)
@@ -122,7 +121,7 @@ if [[ -n "$fcn" ]]; then
 else
 	# install home brew
 	if [[ $(uname) == "Darwin" ]]; then
-		if ! brew config >/dev/null; then
+		if ! brew config > /dev/null; then
 			/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 		fi
 	fi
