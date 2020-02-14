@@ -327,19 +327,12 @@ class ConfigFactory {
 		return this.newConfig.channel_group.values.OrdererAddresses.value.addresses;
 	}
 
-	getKafkaBrokers() {
-		return this.newConfig.channel_group.groups.Orderer.values.KafkaBrokers.value.brokers;
-	}
-
 	/**
 	 *
 	 * @param {OrdererType} type
 	 */
 	setConsensusType(type) {
 		switch (type) {
-			case OrdererType.kafka:
-				this.newConfig.channel_group.groups.Orderer.values.ConsensusType.value.type = type;
-				break;
 			case OrdererType.etcdraft:
 				this.newConfig.channel_group.groups.Orderer.values.ConsensusType.value.type = type;
 				delete this.newConfig.channel_group.groups.Orderer.values.KafkaBrokers;

@@ -24,11 +24,17 @@ const MSPRoleType = {
 	member: 'MEMBER'
 };
 
-/** 'solo' is now taken as a special case of 'etcdraft'
+/**
  * @enum {string}
  */
 const OrdererType = {
+	/**
+	 * @deprecated 'solo' is now taken as a special case of 'etcdraft'
+	 */
 	solo: 'solo',
+	/**
+	 * @deprecated
+	 */
 	kafka: 'kafka',
 	etcdraft: 'etcdraft'
 };

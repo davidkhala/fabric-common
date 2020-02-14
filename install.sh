@@ -26,14 +26,6 @@ golang() {
 			sudo add-apt-repository -y ppa:longsleep/golang-backports
 			sudo apt update
 			sudo apt install -y golang-go
-			GOPATH=$(go env GOPATH)
-			if ! grep "$GOPATH/bin" $bashProfile; then
-				echo "...To set GOPATH/bin and GOBIN"
-				sudo sed -i "1 i\export PATH=\$PATH:$GOPATH/bin" $bashProfile
-				sudo sed -i "1 i\export GOBIN=$GOPATH/bin" $bashProfile
-			else
-				echo "GOPATH/bin found in $bashProfile"
-			fi
 		fi
 	fi
 }
@@ -43,27 +35,6 @@ install_libtool() {
 	else
 		sudo apt-get install -y libtool
 	fi
-}
-
-golang_dep() {
-	echo "install dep..."
-	if [[ $(uname) == "Darwin" ]]; then
-		brew install dep
-	else
-		if [[ -z "$GOBIN" ]]; then
-			if [[ -z "$GOPATH" ]]; then
-				echo install dep failed: GOPATH not found
-				exit 1
-			fi
-			export GOBIN=$GOPATH/bin/
-		fi
-		mkdir -p $GOBIN
-		curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-		if ! echo $PATH | grep "$GOBIN"; then
-			export PATH=$PATH:$GOBIN # ephemeral
-		fi
-	fi
-	dep version
 }
 
 java() {
@@ -96,15 +67,7 @@ softHSM() {
 	fi
 }
 fabricInstall() {
-	curl -sSL http://bit.ly/2ysbOFE | bash -s -- 2.0.0-alpha 2.0.0-alpha 0.4.15
-}
-sync() {
-	CURRENT=$(cd $(dirname ${BASH_SOURCE}) && pwd)
-	cd $CURRENT/nodejs
-	npm install
-	cd fabric-network
-	npm install
-	cd $CURRENT
+	curl -sSL https://bit.ly/2ysbOFE | bash -s -- 2.0.0 1.4.4 0.4.18 -s
 }
 if [[ -n "$fcn" ]]; then
 	$fcn $remain_params

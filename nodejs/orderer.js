@@ -93,13 +93,6 @@ exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, tls, ordererType, raft
 			`ORDERER_GENERAL_TLS_ROOTCAS=[${rootCAsStringBuild(tls)}]`]);
 	}
 	switch (ordererType) {
-		case OrdererType.kafka:
-			env = env.concat([
-				'ORDERER_KAFKA_RETRY_SHORTINTERVAL=1s',
-				'ORDERER_KAFKA_RETRY_SHORTTOTAL=30s',
-				'ORDERER_KAFKA_VERBOSE=true'
-			]);
-			break;
 		case OrdererType.etcdraft:
 			env = env.concat([
 				'ORDERER_GENERAL_CLUSTER_SENDBUFFERSIZE=10'  // maximum number of messages in the egress buffer.Consensus messages are dropped if the buffer is full, and transaction messages are waiting for space to be freed.
