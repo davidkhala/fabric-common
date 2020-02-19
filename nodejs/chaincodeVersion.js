@@ -3,7 +3,7 @@ const {instantiateOrUpgrade} = require('./chaincodeHelper');
 const {install} = require('./chaincode');
 const Logger = require('./logger');
 const {chaincodesInstalled, chaincodesInstantiated} = require('./query');
-const {chaincodeClean} = require('./fabric-dockerode');
+const {chaincodeClear} = require('./fabric-dockerode');
 const {isArrayEven} = require('khala-nodeutils/helper');
 
 /**
@@ -85,9 +85,17 @@ exports.incrementUpgrade = async (channel, peers, eventHubs, opts, orderer, prop
 		await instantiateOrUpgrade('upgrade', channel, peers, eventHubs, opts, orderer, proposalTimeOut, eventTimeOut);
 	}
 };
+/**
+ * prune legacy chaincode container and its linked legacy chaincode image
+ * @param peer query peer to fetch instantiate info
+ * @param channel
+ * @param chaincodeId
+ * @param [container_name] required if aim to clean  legacy chaincode package installed in peer
+ * @return {Promise<void>}
+ */
 exports.pruneChaincodeLegacy = async (peer, channel, chaincodeId) => {
 	const {pretty} = await chaincodesInstantiated(peer, channel);
 	const {version} = pretty.find(({name}) => name === chaincodeId);
-	const filter = (containerName) => containerName.includes(chaincodeId) && !containerName.includes(`${chaincodeId}-${version}`);
-	await chaincodeClean(false, filter);
+	const filter = ({Names}) => Names.find(containerName => containerName.includes(chaincodeId) && !containerName.includes(`${chaincodeId}-${version}`));
+	await chaincodeClear(filter);
 };

@@ -7,7 +7,7 @@ const ordererUtil = require('./orderer');
 const zookeeperUtil = require('./zookeeper');
 const couchdbUtil = require('./couchdb');
 const userUtil = require('./user');
-
+const query = require('./query');
 /**
  * @param fabricTag
  * @param thirdPartyTag
@@ -127,13 +127,29 @@ exports.runZookeeper = async ({container_name, network, imageTag, MY_ID}, zookee
 	return await dockerUtil.containerStart(createOptions);
 };
 /**
- * TODO not sure it is possible
+ * docker exec $PEER_CONTAINER rm -rf /var/hyperledger/production/chaincodes/$CHAINCODE_NAME.$VERSION
+ * @param [peer] required if use sync fashion
+ * @param [client] required if use sync fashion
+ * @param {string} container_name peer container name
+ * @param {string} chaincodeId
+ * @param {string} chaincodeVersion
+ * @param [logger]
+ * @return {Promise<void>}
  */
-exports.uninstallChaincode = ({container_name, chaincodeId, chaincodeVersion}) => {
-	const Cmd = ['rm', '-rf', `/var/hyperledger/production/chaincodes/${chaincodeId}.${chaincodeVersion}`];
-	return dockerUtil.containerExec({container_name, Cmd});
+exports.uninstallChaincode = async ({container_name, chaincodeId, chaincodeVersion, peer, client}, logger = console) => {
+	const Cmd = ['rm', '-rf', `${peerUtil.container.state}/chaincodes/${chaincodeId}.${chaincodeVersion}`];
+	await dockerUtil.containerExec({container_name, Cmd});
+	if (peer && client) {
+		const loop = async () => {
+			const {pretty} = await query.chaincodesInstalled(peer, client);
+			if (pretty.find(({name, version}) => name === chaincodeId && version === chaincodeVersion)) {
+				logger.debug('uninstallChaincode', 'docekr exec lagging, retry...');
+				await loop();
+			}
+		};
+		await loop();
+	}
 
-// 	docker exec $PEER_CONTAINER rm -rf /var/hyperledger/production/chaincodes/$CHAINCODE_NAME.$VERSION
 };
 exports.chaincodeImageList = async () => {
 	const images = await dockerUtil.imageList();
@@ -149,20 +165,28 @@ exports.chaincodeContainerList = async () => {
 	const containers = await dockerUtil.containerList();
 	return containers.filter(container => container.Names.find(name => name.startsWith('/dev-')));
 };
-exports.chaincodeClean = async (prune, filter) => {
+exports.chaincodeImageClear = async (filter) => {
+	let images = await exports.chaincodeImageList();
+	if (typeof filter === 'function') {
+		images = images.filter(filter);
+	}
+	for (const image of images) {
+		await dockerUtil.imageDelete(image.Id);
+	}
+};
+/**
+ *
+ * @param [filter]
+ * @return {Promise<void>}
+ */
+exports.chaincodeClear = async (filter) => {
 	let containers = await exports.chaincodeContainerList();
 	if (typeof filter === 'function') {
-		containers = containers.filter(container => container.Names.find(filter));
+		containers = containers.filter(filter);
 	}
-	await Promise.all(containers.map(async (container) => {
+	for (const container of containers) {
 		await dockerUtil.containerDelete(container.Id);
 		await dockerUtil.imageDelete(container.Image);
-	}));
-	if (prune) {
-		const images = await exports.chaincodeImageList();
-		await Promise.all(images.map(async (image) => {
-			await dockerUtil.imageDelete(image.Id);
-		}));
 	}
 };
 exports.runOrderer = async ({
