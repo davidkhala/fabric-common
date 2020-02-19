@@ -6,12 +6,6 @@ const binManager = new BinManager();
 const configtxYaml = path.resolve(__dirname, '../../config/configtx.yaml');
 const logger = require('../logger').new('test:binManager', true);
 const blockProfiles = [
-	'SampleSingleMSPSolo',
-	'SampleSingleMSPKafka',
-	'SampleInsecureSolo',
-	'SampleInsecureKafka',
-	'SampleDevModeSolo',
-	'SampleDevModeKafka',
 	'SampleDevModeEtcdRaft'
 ];
 const channelProfiles = ['SampleSingleMSPChannel'];

@@ -7,11 +7,12 @@ const couchdbUtil = require('./couchdb');
 const userUtil = require('./user');
 
 /**
- * @param fabricTag
- * @param thirdPartyTag
+ * @param [fabricTag]
+ * @param [caTag]
+ * @param [thirdPartyTag]
  * @param {ChaincodeType} [chaincodeType]
  */
-exports.fabricImagePull = async ({fabricTag, thirdPartyTag, chaincodeType = 'golang'}) => {
+exports.fabricImagePull = async ({fabricTag, caTag = fabricTag, thirdPartyTag, chaincodeType = 'golang'}) => {
 	if (fabricTag) {
 		const imageTag = fabricTag;
 		switch (chaincodeType) {
@@ -23,11 +24,12 @@ exports.fabricImagePull = async ({fabricTag, thirdPartyTag, chaincodeType = 'gol
 		}
 		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-orderer:${imageTag}`);
 		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-peer:${imageTag}`);
-		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-ca:${imageTag}`);
+	}
+	if (caTag) {
+		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-ca:${caTag}`);
 	}
 	if (thirdPartyTag) {
-		const imageTag = thirdPartyTag;
-		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-couchdb:${imageTag}`);
+		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-couchdb:${thirdPartyTag}`);
 	}
 };
 
