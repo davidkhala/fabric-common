@@ -4,7 +4,6 @@ const ECDSA_KEY = require('fabric-common/lib/impl/ecdsa/key');
 exports.formatUsername = (username, domain) => `${username}@${domain}`;
 const User = require('fabric-common/lib/User');
 
-const Identity = require('fabric-common/lib/Identity');
 const SigningIdentity = require('fabric-common/lib/SigningIdentity');
 const Signer = require('fabric-common/lib/Signer');
 /**
@@ -89,13 +88,6 @@ exports.getPrivateKey = (user) => user.getSigningIdentity()._signer._key;
  */
 exports.sign = (user, messageBytes) => user._signingIdentity.sign(messageBytes, undefined);
 
-const TransactionID = require('fabric-client/lib/TransactionID');
-/**
- * Builds a new transactionID based on a user's certificate and a nonce value.
- * @param {User} user - An instance of {@link User} that provides an unique {Identity} base for this transaction id.
- * @param {boolean} [isAdmin] - Indicates whether this instance will be used for administrative transactions.
- */
-exports.newTransactionID = (user, isAdmin) => new TransactionID(user.getSigningIdentity(), isAdmin);
 exports.fromClient = (client) => {
 	return client._userContext;
 };

@@ -1,4 +1,4 @@
-const Peer = require('fabric-client/lib/Peer');
+const Peer = require('fabric-common/lib/Peer');//TODO
 const {fsExtra} = require('khala-nodeutils/helper');
 const {LoggingLevel, RemoteOptsTransform} = require('./remote');
 const {MetricsProvider} = require('./constants');

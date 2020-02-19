@@ -1,5 +1,5 @@
 const {emptyClient} = require('./client');
-const Channel = require('fabric-client/lib/Channel');
+const Channel = require('fabric-common/lib/Channel');
 
 exports.emptyChannel = (channelName) => {
 	const client = emptyClient();

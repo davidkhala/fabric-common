@@ -26,7 +26,7 @@
   }
 */
 
-exports.Policy = require('fabric-client/lib/Policy');
+exports.Policy = require('fabric-common/lib/Policy');//TODO
 const MSPRoleType = ['member', 'admin', 'client', 'peer'];
 
 // TODO not to use index any more

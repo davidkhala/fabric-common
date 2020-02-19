@@ -1,5 +1,5 @@
 const BaseClient = require('fabric-common/lib/BaseClient');
-const Client = require('fabric-client');
+const Client = require('fabric-common/lib/Client');
 const fs = require('fs');
 const logger = require('./logger').new('client', true);
 

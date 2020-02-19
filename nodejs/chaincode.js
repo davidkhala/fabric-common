@@ -1,6 +1,6 @@
 const Logger = require('./logger');
-const Channel = require('fabric-client/lib/Channel');
-const Orderer = require('fabric-client/lib/Orderer');
+const Channel = require('fabric-common/lib/Channel');
+const Orderer = require('fabric-common/lib/Orderer');
 const {unsignedTransaction, sendSignedTransaction} = require('./offline/chaincode');
 const {sign, fromClient} = require('./user');
 /**

@@ -62,7 +62,8 @@ The /metrics endpoint allows operators to utilize Prometheus to pull operational
 - what is peer_chaincode_id and peer_chaincode_path
 - how to generate currentBlock hash: nodejs implement of: https://github.com/hyperledger/fabric/blob/master/protoutil/blockutils_test.go#L25
 - make use of npm jsrsasign
-- Error on outputBlock: could not create bootstrapper: could not create channel group: could not create orderer group: failed to create orderer org: error adding policies to orderer org group 'Delphi.com': no policies defined        
+- Error on outputBlock: could not create bootstrapper: could not create channel group: could not create orderer group: failed to create orderer org: error adding policies to orderer org group 'Delphi.com': no policies defined
+- Peer, Orderer, eventhub, sideDB is now hidden from sdk-node        
 # Fabric weakness
 - keystore object un-promisify: https://gerrit.hyperledger.org/r/#/c/24749/
 - endpoint ping: https://gerrit.hyperledger.org/r/#/c/28115/

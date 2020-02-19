@@ -1,4 +1,4 @@
-const sideDB = require('fabric-client/lib/SideDB');
+const sideDB = require('fabric-common/lib/SideDB');
 const {RoleIdentity, simplePolicyBuilder} = require('./policy');
 const logger = require('./logger').new('privateData');
 
