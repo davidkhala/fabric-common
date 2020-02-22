@@ -73,7 +73,7 @@ class OperationService {
 	 */
 	async setLogLevel(level) {
 		const url = `${this.url}/logspec`;
-		await axiosPromise({url, method: 'PUT', body: {spec: LoggingLevel[level]}}, this.options); // body is undefined
+		await axiosPromise({url, method: 'PUT', body: {spec: LoggingLevel[level]}}, this.options); // response is undefined
 	}
 }
 
