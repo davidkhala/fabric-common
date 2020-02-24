@@ -1,0 +1,209 @@
+###############################################################################
+#
+#    Peer section
+#
+###############################################################################
+peer:
+
+  # The Peer id is used for identifying this Peer instance.
+  id: peer2.astri.org
+
+  # The networkId allows for logical seperation of networks
+  networkId: dev
+
+  # The Address at local network interface this Peer will listen on.
+  # By default, it will listen on all network interfaces
+  listenAddress: 0.0.0.0:7051
+
+  # The endpoint this peer uses to listen for inbound chaincode connections.
+  # If this is commented-out, the listen address is selected to be
+  # the peer's address (see below) with port 7052
+  chaincodeListenAddress: 0.0.0.0:7052
+
+  # The endpoint the chaincode for this peer uses to connect to the peer.
+  # If this is not specified, the chaincodeListenAddress address is selected.
+  # And if chaincodeListenAddress is not specified, address is selected from
+  # peer listenAddress.
+  # chaincodeAddress: 0.0.0.0:7052
+
+  # When used as peer config, this represents the endpoint to other peers
+  # in the same organization. For peers in other organization, see
+  # gossip.externalEndpoint for more info.
+  # When used as CLI config, this means the peer's endpoint to interact with
+  address: 0.0.0.0:7051
+
+  # Gossip related configuration
+  gossip:
+    # Bootstrap set to initialize gossip with.
+    # This is a list of other peers that this peer reaches out to at startup.
+    # Important: The endpoints here have to be endpoints of peers in the same
+    # organization, because the peer would refuse connecting to these endpoints
+    # unless they are in the same organization as the peer.
+    bootstrap: 127.0.0.1:7051
+
+    # NOTE: orgLeader and useLeaderElection parameters are mutual exclusive.
+    # Setting both to true would result in the termination of the peer
+    # since this is undefined state. If the peers are configured with
+    # useLeaderElection=false, make sure there is at least 1 peer in the
+    # organization that its orgLeader is set to true.
+
+    # Defines whenever peer will initialize dynamic algorithm for
+    # "leader" selection, where leader is the peer to establish
+    # connection with ordering service and use delivery protocol
+    # to pull ledger blocks from ordering service. It is recommended to
+    # use leader election for large networks of peers.
+    useLeaderElection: true
+    # Statically defines peer to be an organization "leader",
+    # where this means that current peer will maintain connection
+    # with ordering service and disseminate block across peers in
+    # its own organization
+    orgLeader: false
+
+    # This is an endpoint that is published to peers outside of the organization.
+    # If this isn't set, the peer will not be known to other organizations.
+    externalEndpoint:
+
+  # TLS Settings
+  # Note that peer-chaincode connections through chaincodeListenAddress is
+  # not mutual TLS auth. See comments on chaincodeListenAddress for more info
+  tls:
+    # Require server-side TLS
+    enabled:  false
+    # Require client certificates / mutual TLS.
+    # Note that clients that are not configured to use a certificate will
+    # fail to connect to the peer.
+    clientAuthRequired: false
+    # X.509 certificate used for TLS server
+    cert:
+      file: tls/server.crt
+    # Private key used for TLS server (and client if clientAuthEnabled
+    # is set to true
+    key:
+      file: tls/server.key
+    # Trusted root certificate chain for tls.cert
+    rootcert:
+      file: tls/ca.crt
+    # Set of root certificate authorities used to verify client certificates
+    clientRootCAs:
+      files:
+        - tls/ca.crt
+    # Private key used for TLS when making client connections.  If
+    # not set, peer.tls.key.file will be used instead
+    clientKey:
+      file:
+    # X.509 certificate used for TLS when making client connections.
+    # If not set, peer.tls.cert.file will be used instead
+    clientCert:
+      file:
+
+
+  # Path on the file system where peer will find MSP local configurations
+  mspConfigPath: msp
+
+  # Identifier of the local MSP
+  # ----!!!!IMPORTANT!!!-!!!IMPORTANT!!!-!!!IMPORTANT!!!!----
+  # Deployers need to change the value of the localMspId string.
+  # In particular, the name of the local MSP ID of a peer needs
+  # to match the name of one of the MSPs in each of the channel
+  # that this peer is a member of. Otherwise this peer's messages
+  # will not be identified as valid by other nodes.
+  localMspId: ASTRIMSP
+
+###############################################################################
+#
+#    VM section
+#
+###############################################################################
+vm:
+
+  # Endpoint of the vm management system.  For docker can be one of the following in general
+  # unix:///var/run/docker.sock
+  # http://localhost:2375
+  # https://localhost:2376
+  endpoint: unix:///var/run/docker.sock
+
+  # settings for docker vms
+  docker:
+
+    # Parameters on creating docker container.
+    # Container may be efficiently created using ipam & dns-server for cluster
+    # NetworkMode - sets the networking mode for the container. Supported
+    # standard values are: `host`(default),`bridge`,`ipvlan`,`none`.
+    # Dns - a list of DNS servers for the container to use.
+    # Note:  `Privileged` `Binds` `Links` and `PortBindings` properties of
+    # Docker Host Config are not supported and will not be used if set.
+    # LogConfig - sets the logging driver (Type) and related options
+    # (Config) for Docker. For more info,
+    # https://docs.docker.com/engine/admin/logging/overview/
+    # Note: Set LogConfig using Environment Variables is not supported.
+    hostConfig:
+      NetworkMode: delphiNetwork
+
+###############################################################################
+#
+#    Ledger section - ledger configuration encompases both the blockchain
+#    and the state
+#
+###############################################################################
+ledger:
+
+  blockchain:
+
+  state:
+    # stateDatabase - options are "goleveldb", "CouchDB"
+    # goleveldb - default state database stored in goleveldb.
+    # CouchDB - store state database in CouchDB
+    stateDatabase: goleveldb
+    couchDBConfig:
+      # It is recommended to run CouchDB on the same server as the peer, and
+      # not map the CouchDB container port to a server port in docker-compose.
+      # Otherwise proper security must be provided on the connection between
+      # CouchDB client (on the peer) and server.
+      couchDBAddress: 127.0.0.1:5984
+      # This username must have read and write authority on CouchDB
+      username:
+      # The password is recommended to pass as an environment variable
+      # during start up (eg CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD).
+      # If it is stored here, the file must be access control protected
+      # to prevent unintended users from discovering the password.
+      password:
+
+  history:
+    # enableHistoryDatabase - options are true or false
+    # Indicates if the history of key updates should be stored.
+    # All history 'index' will be stored in goleveldb, regardless if using
+    # CouchDB or alternate database for the state.
+    enableHistoryDatabase: true
+
+###############################################################################
+#
+#    Operations section
+#
+###############################################################################
+operations:
+  # host and port for the operations server
+  listenAddress: 127.0.0.1:9443
+
+  # TLS configuration for the operations endpoint
+  tls:
+    # TLS enabled
+    enabled: true
+
+    # path to PEM encoded server certificate for the operations server
+    cert:
+      file:
+
+    # path to PEM encoded server key for the operations server
+    key:
+      file:
+
+    # most operations service endpoints require client authentication when TLS
+    # is enabled. clientAuthRequired requires client certificate authentication
+    # at the TLS layer to access all resources.
+    clientAuthRequired: false
+
+    # paths to PEM encoded ca certificates to trust for client authentication
+    clientRootCAs:
+      files: []
+
+

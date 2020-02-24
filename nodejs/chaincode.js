@@ -148,30 +148,49 @@ exports.versionMatcher = (ccVersionName, toThrow) => {
  * @param {ChaincodeType} [chaincodeType]
  * @param {string} [metadataPath] the absolute path to the directory structure containing the JSON index files. e.g<br>
  * <$metadataPath>/statedb/couchdb/indexes/<files *.json>
+ * @param [chaincodePackage]
  * @param {Client} client
  * @returns {Promise<ProposalResult>}
  */
-exports.install = async (peers, {chaincodeId, chaincodePath, chaincodeVersion, chaincodeType = ChaincodeType.golang, metadataPath}, client) => {
+exports.install = async (peers,
+	{chaincodeId, chaincodePath, chaincodeVersion, chaincodeType = ChaincodeType.golang, metadataPath, chaincodePackage},
+	client) => {
 	const logger = Logger.new('chaincode:install', true);
-	logger.debug({
-		peersLength: peers.length,
-		chaincodeId,
-		chaincodePath,
-		chaincodeVersion,
-		chaincodeType,
-		metadataPath
-	});
-
-	exports.nameMatcher(chaincodeId, true);
-	exports.versionMatcher(chaincodeVersion, true);
-	const request = {
-		targets: peers,
-		chaincodePath,
-		chaincodeId,
-		chaincodeVersion,
-		chaincodeType,
-		metadataPath
+	if (peers.length > 1) {
+		logger.debug({peersLength: peers.length});
+	}
+	let request = {
+		targets: peers
 	};
+	if (chaincodePackage) {
+		const fs = require('fs');
+		logger.debug('use ChaincodePackageInstall fashion', chaincodePackage);
+		request.chaincodePackage = fs.readFileSync(chaincodePackage);
+	} else {
+		logger.debug('use ChaincodePathInstall fashion', {
+			chaincodeId,
+			chaincodePath,
+			chaincodeVersion,
+			chaincodeType,
+			metadataPath
+		});
+		exports.nameMatcher(chaincodeId, true);
+		exports.versionMatcher(chaincodeVersion, true);
+		request = Object.assign(request, {
+			chaincodePath,
+			chaincodeId,
+			chaincodeVersion,
+			chaincodeType,
+			metadataPath
+		});
+	}
+
+
+	//targets?: Peer[] | string[];
+	// 		channelNames?: string[] | string;
+	// 		txId?: TransactionId;
+	// 		chaincodePackage: Buffer;
+
 
 	const [responses, proposal] = await client.installChaincode(request);
 	const ccHandler = chaincodeProposalAdapter('install', (proposalResponse) => {
