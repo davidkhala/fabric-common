@@ -1,8 +1,7 @@
 const path = require('path');
-process.env.binPath = path.resolve(__dirname, '../../bin');
 const BinManager = require('../binManager');
 const {fsExtra} = require('khala-nodeutils/helper');
-const binManager = new BinManager();
+const binManager = new BinManager(path.resolve(__dirname, '../../bin'));
 const configtxYaml = path.resolve(__dirname, '../../config/configtx.yaml');
 const logger = require('../logger').new('test:binManager', true);
 const blockProfiles = [
@@ -60,5 +59,15 @@ const taskConfigtxgen = async () => {
 		await viewChannelTest(profile);
 	}
 };
-taskConfigtxlator();
-taskConfigtxgen();
+const task = async () => {
+	switch (parseInt(process.env.taskID)) {
+		case 0:
+
+			break;
+		default:
+			await taskConfigtxlator();
+			await taskConfigtxgen();
+	}
+};
+task();
+

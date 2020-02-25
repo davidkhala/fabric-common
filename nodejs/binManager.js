@@ -3,12 +3,21 @@ const yaml = require('khala-nodeutils/yaml');
 const path = require('path');
 const fs = require('fs');
 const logger = require('khala-logger/log4js').consoleLogger('binManager');
+const {createTmpFile, createTmpDir} = require('khala-nodeutils/tmp');
 
 class BinManager {
+	_buildCMD(executable, args) {
+		return `${path.resolve(this.binPath, executable)} ${args}`;
+	}
+
 	constructor(binPath = process.env.binPath) {
 		if (!binPath) {
 			throw Error('BinManager: environment <binPath> is undefined');
 		}
+		/**
+		 * @throws - if not a directory
+		 */
+		fs.lstatSync(binPath).isDirectory();
 		this.binPath = binPath;
 		// TODO how to use streaming buffer to exec
 		this.configtxlatorCMD = {
@@ -22,7 +31,7 @@ class BinManager {
 				if (!['common.Config', 'common.ConfigUpdate'].includes(type)) {
 					throw Error(`Unsupported encode type: ${type}`);
 				}
-				const CMD = path.resolve(this.binPath, `configtxlator proto_encode --type=${type} --input=${inputFile} --output=${outputFile}`);
+				const CMD = this._buildCMD('configtxlator', `proto_encode --type=${type} --input=${inputFile} --output=${outputFile}`);
 				await exec(CMD);
 			},
 			/**
@@ -32,12 +41,15 @@ class BinManager {
 			 * @return {Buffer}
 			 */
 			encode: async (type, updateConfigJSON) => {
-				const Tmp = require('tmp');
-				const tmpJSONFile = Tmp.fileSync({postfix: '.json'}).name;
-				const tmpFile = Tmp.fileSync().name;
+
+				const [tmpJSONFile, t1] = createTmpFile({postfix: '.json'});
+				const [tmpFile, t2] = createTmpFile();
 				fs.writeFileSync(tmpJSONFile, updateConfigJSON);
 				await this.configtxlatorCMD.encodeFile(type, {inputFile: tmpJSONFile, outputFile: tmpFile});
-				return fs.readFileSync(tmpFile);// TODO debug encoding option
+				const returned = fs.readFileSync(tmpFile);
+				t1();
+				t2();
+				return returned;
 			},
 			/**
 			 * Converts a proto message to JSON.
@@ -50,23 +62,26 @@ class BinManager {
 				if (!['common.Config'].includes(type)) {
 					throw Error(`Unsupported encode type: ${type}`);
 				}
-				const CMD = `configtxlator proto_decode --type=${type} --input=${inputFile} ${outputFile ? `--output=${outputFile}` : ''}`;
-				await exec(path.resolve(this.binPath, CMD));
+				const CMD = this._buildCMD('configtxlator', `proto_decode --type=${type} --input=${inputFile} ${outputFile ? `--output=${outputFile}` : ''}`);
+				await exec(CMD);
 			},
 			/**
 			 *
 			 * @param type
 			 * @param original_config_proto
-			 * @return {Promise<json>} original_config
+			 * @return {Promise<json|string>} original_config
 			 */
 			decode: async (type, original_config_proto) => {
-				const Tmp = require('tmp');
-				const tmpFile = Tmp.fileSync().name;
-				const tmpJSONFile = Tmp.fileSync({postfix: '.json'}).name;
+				const [tmpFile, t1] = createTmpFile();
+				const [tmpJSONFile, t2] = createTmpFile({postfix: '.json'});
 				fs.writeFileSync(tmpFile, original_config_proto);
 
 				await this.configtxlatorCMD.decodeFile(type, {inputFile: tmpFile, outputFile: tmpJSONFile});
-				return JSON.stringify(require(tmpJSONFile));
+				const returned = JSON.stringify(require(tmpJSONFile));
+
+				t1();
+				t2();
+				return returned;
 			},
 			/**
 			 * Takes two marshaled common.Config messages and computes the config update which transitions between the two.
@@ -76,7 +91,7 @@ class BinManager {
 			 * @param {string} outputFile A file to write the config update message to. //TODO fabric document "A file to write the JSON document to."
 			 */
 			computeUpdateFile: async (channelID, original, updated, outputFile) => {
-				const CMD = path.resolve(this.binPath, `configtxlator compute_update --channel_id=${channelID} --original=${original} --updated=${updated}  --output=${outputFile}`);
+				const CMD = this._buildCMD('configtxlator', `compute_update --channel_id=${channelID} --original=${original} --updated=${updated}  --output=${outputFile}`);
 				await exec(CMD);
 			},
 			/**
@@ -87,14 +102,17 @@ class BinManager {
 			 * @return {Promise<Buffer>} modified_config_proto
 			 */
 			computeUpdate: async (channelID, original_config_proto, updated_config_proto) => {
-				const Tmp = require('tmp');
-				const tmpFileOriginal = Tmp.fileSync().name;
-				const tmpFileUpdated = Tmp.fileSync().name;
-				const tmpFileOutput = Tmp.fileSync().name;
+				const [tmpFileOriginal, t1] = createTmpFile();
+				const [tmpFileUpdated, t2] = createTmpFile();
+				const [tmpFileOutput, t3] = createTmpFile();
 				fs.writeFileSync(tmpFileOriginal, original_config_proto);
 				fs.writeFileSync(tmpFileUpdated, updated_config_proto);
 				await this.configtxlatorCMD.computeUpdateFile(channelID, tmpFileOriginal, tmpFileUpdated, tmpFileOutput);
-				return fs.readFileSync(tmpFileOutput);
+				const returned = fs.readFileSync(tmpFileOutput);
+				t1();
+				t2();
+				t3();
+				return returned;
 			}
 		};
 	}
@@ -111,7 +129,7 @@ class BinManager {
 			const CORSReducer = (opt, entry) => {
 				return opt + `--CORS=${entry}`;
 			};
-			const CMD = path.resolve(this.binPath, `configtxlator start --hostname=${hostname} --port=${port} ${CORS.reduce(CORSReducer, '')}`);
+			const CMD = this._buildCMD('configtxlator', `start --hostname=${hostname} --port=${port} ${CORS.reduce(CORSReducer, '')}`);
 			logger.info('CMD', CMD);
 			execDetach(CMD);
 		} else {
@@ -122,6 +140,64 @@ class BinManager {
 			}
 		}
 	}
+
+	// local chaincodeId=${chaincodeId}
+	// 	local chaincodePath=${chaincodePath}
+	// 	local chaincodeVersion=${chaincodeVersion:-0.0.0}
+	// 	local instantiatePolicy=$1
+	// 	local outputfile=${2:-"${chaincodeId}-${chaincodeVersion}.chaincodePack"}
+	// 	#	if --cc-package is not specified, the ouput raw CC deployment spec is deployable while skipping current inline instantiate policy setting
+	// 	local optionTokens="-n ${chaincodeId} -p ${chaincodePath} -v ${chaincodeVersion}"
+	// 	if [[ -n "${instantiatePolicy}" ]]; then
+	// 		optionTokens="$optionTokens --instantiate-policy ${instantiatePolicy} --cc-package"
+	// 	fi
+	// 	local cmd="peer chaincode package ${optionTokens} ${outputfile}"
+	// 	echo $cmd
+	// 	$cmd
+	peer() {
+
+
+		return {
+			/**
+			 *
+			 * @param chaincodeId
+			 * @param chaincodePath
+			 * @param [chaincodeType]
+			 * @param chaincodeVersion
+			 * @param [metadataPath]
+			 * @param localMspId
+			 * @param mspConfigPath
+			 * @param outputFile
+			 * @param [instantiatePolicy]
+			 * @return {Promise<*>}
+			 */
+			package: async ({chaincodeId, chaincodePath, chaincodeType, chaincodeVersion, metadataPath},
+				{localMspId, mspConfigPath}, outputFile, instantiatePolicy) => {
+				const [FABRIC_CFG_PATH, t1] = createTmpDir();
+				fs.writeFileSync(path.resolve(FABRIC_CFG_PATH, 'core.yml'), '');
+				process.env.FABRIC_CFG_PATH = FABRIC_CFG_PATH;
+				process.env.CORE_PEER_LOCALMSPID = localMspId;
+				process.env.CORE_PEER_MSPCONFIGPATH = mspConfigPath;
+				let optionTokens = `--name ${chaincodeId} --path ${chaincodePath} --version ${chaincodeVersion}`;
+				if (instantiatePolicy) {
+					optionTokens += ` --instantiate-policy ${instantiatePolicy} --cc-package`;
+				}
+				if (chaincodeType) {
+					optionTokens += ` --lang ${chaincodeType}`;
+				}
+				const CMD = this._buildCMD('peer', `chaincode package ${optionTokens} ${outputFile}`);
+				logger.info('CMD', CMD);
+				const result = await exec(CMD);
+				execResponsePrint(result);
+				t1();
+				delete process.env.FABRIC_CFG_PATH;
+				delete process.env.CORE_PEER_LOCALMSPID;
+				delete process.env.CORE_PEER_MSPCONFIGPATH;
+				return outputFile;
+			}
+		};
+	}
+
 
 	configtxgen(profile, configtxYaml, channelName) {
 

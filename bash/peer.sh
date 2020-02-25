@@ -48,17 +48,13 @@ package() {
 	local chaincodeVersion=${chaincodeVersion:-0.0.0}
 	local instantiatePolicy=$1
 	local outputfile=${2:-"${chaincodeId}-${chaincodeVersion}.chaincodePack"}
-	local optionTokens="-n ${chaincodeId} -p ${chaincodePath} -v ${chaincodeVersion} -s -S"
+	#	if --cc-package is not specified, the ouput raw CC deployment spec is deployable while skipping current inline instantiate policy setting
+	local optionTokens="-n ${chaincodeId} -p ${chaincodePath} -v ${chaincodeVersion}"
 	if [[ -n "${instantiatePolicy}" ]]; then
-		optionTokens="$optionTokens -i ${instantiatePolicy}"
+		optionTokens="$optionTokens --instantiate-policy ${instantiatePolicy} --cc-package"
 	fi
 	local cmd="peer chaincode package ${optionTokens} ${outputfile}"
 	echo $cmd
 	$cmd
-}
-signPackage() {
-	local package=$1
-	local outputPackage=${2:-$package}
-	peer chaincode signpackage $package $outputPackage
 }
 $fcn $remain_params
