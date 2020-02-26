@@ -8,9 +8,10 @@ matrix:
         directories:
           - nodejs/node_modules
       install:
-        - ./install.sh
-        - export BIN_Parent=$PWD
-        - ./bash/pullBIN.sh
+        - export nodejsInstall="curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/install.sh"
+        - $nodejsInstall | bash -s nodeGYPDependencies
+        - curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/scripts/npm.sh | bash -s packageLock false
+        - ./install.sh fabricInstall
         - cd nodejs; npm install; cd -;
         - cd nodejs/formatter; npm install; cd -;
         - cd nodejs/fabric-network; npm install; cd -;
