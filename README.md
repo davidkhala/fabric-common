@@ -116,7 +116,10 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
       with inappropriate endorsement config; while with appropriate endorsement policy, we get chaincode fingerprint mismatch error
 - [chaincode][system] System chaincodes are intended to be invoked by a client rather than by a user chaincode. Invoking from a user chaincode may cause deadlocks.
     [See here](https://jira.hyperledger.org/browse/FAB-15285) 
-
+- [chaincode][instantiate policy]
+    - `instantiate policy` is not `endorsemnet policy`, it is used during chaincode packaging/install determining who is able
+ to instantiate/upgrade chaincode, it is partially supported in nodejs with chaincode package binary(byte[]) as input. 
+    - to customize instantiate policy, we reply on `peer chaincode package` 
 ### Notes: Operations
 [reference](https://hyperledger-fabric.readthedocs.io/en/release-1.4/metrics_reference.html)
 
@@ -142,26 +145,13 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
 ## Fabric weakness
 - fabric RSA key support: 
     - not supported as peer|orderer keystore
-- `instantiate policy` is not `endorsemnet policy`, it is used during chaincode packaging/install determining who is able
- to instantiate/upgrade chaincode, it is partially supported in nodejs with chaincode package binary(byte[]) as input. 
- 
- *Customizing instantiate policy is not supported in fabric-sdk-node 1.x but in 2.x new chaincode lifecycle*
- 
- quoted from Dave Enyeart: 
- 
-    "They are different, instantiate policy gets packaged with a chaincode and specifies who can instantiate the chaincode, 
-    see the doc starting at: https://hyperledger-fabric.readthedocs.io/en/latest/chaincode4noah.html#packaging"  
 - new Feature required: GetPrivateStateByRangeWithPagination: https://jira.hyperledger.org/browse/FAB-11732
 - async or not: CryptoSuite importKey
 
 - [1.4] `Channel#getChannelConfigFromOrderer` could not specify target orderer
 - client.newTransactionID(); --> new TransactionID(Identity,isAdmin)
 - create docker env manager to convert a env jsObject to env list(having same key checking)
-- [leveldb]QUERY_STATE_NEXT in followings, and how `totalQueryLimit` works?
-    - `GetStateByRange`
-    - `GetStateByPartialCompositeKey`
-    - `GetQueryResult`
-    - `GetHistoryForKey`
+
 - [go mod support]`lib/packager/Golang.js` could not support project outside of GoPath (as usually in go mod)
     - `const projDir = path.join(goPath, 'src', chaincodePath);`
 ## Abandoned
