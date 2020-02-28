@@ -14,7 +14,11 @@ const ChaincodeType = {
 exports.ChaincodeType = ChaincodeType;
 exports.proposalStringify = (proposalResponse) => {
 	if (proposalResponse instanceof Error) {
-		proposalResponse.payload = proposalResponse.payload.toString();
+		const {payload} = proposalResponse;
+		if (payload) {
+			proposalResponse.payload = payload.toString();
+		}
+
 	} else {
 		proposalResponse.response.payload = proposalResponse.response.payload.toString();
 	}
