@@ -13,7 +13,9 @@ const ChaincodeType = {
 };
 exports.ChaincodeType = ChaincodeType;
 exports.proposalStringify = (proposalResponse) => {
-	if (!(proposalResponse instanceof Error)) {
+	if (proposalResponse instanceof Error) {
+		proposalResponse.payload = proposalResponse.payload.toString();
+	} else {
 		proposalResponse.response.payload = proposalResponse.response.payload.toString();
 	}
 	return proposalResponse;
@@ -68,8 +70,7 @@ const chaincodeProposalAdapter = (actionString, validator, verbose, log) => {
 	};
 	const stringify = (proposalResponse) => {
 		if (proposalResponse instanceof Error) {
-			proposalResponse.payload = proposalResponse.payload.toString();
-			return proposalResponse;
+			return exports.proposalStringify(proposalResponse);
 		}
 		const {response} = proposalResponse;
 		if (!response) {
@@ -185,12 +186,6 @@ exports.install = async (peers,
 			metadataPath
 		});
 	}
-
-
-	//targets?: Peer[] | string[];
-	// 		channelNames?: string[] | string;
-	// 		txId?: TransactionId;
-	// 		chaincodePackage: Buffer;
 
 
 	const [responses, proposal] = await client.installChaincode(request);
