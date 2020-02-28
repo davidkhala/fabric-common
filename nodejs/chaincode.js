@@ -68,6 +68,7 @@ const chaincodeProposalAdapter = (actionString, validator, verbose, log) => {
 	};
 	const stringify = (proposalResponse) => {
 		if (proposalResponse instanceof Error) {
+			proposalResponse.payload = proposalResponse.payload.toString();
 			return proposalResponse;
 		}
 		const {response} = proposalResponse;
