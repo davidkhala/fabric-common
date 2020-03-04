@@ -46,10 +46,11 @@ package() {
 	local chaincodeId=${chaincodeId}
 	local chaincodePath=${chaincodePath}
 	local chaincodeVersion=${chaincodeVersion:-0.0.0}
+	local chaincodeType=${chaincodeType:-golang}
 	local instantiatePolicy=$1
 	local outputfile=${2:-"${chaincodeId}-${chaincodeVersion}.chaincodePack"}
 	#	if --cc-package is not specified, the ouput raw CC deployment spec is deployable while skipping current inline instantiate policy setting
-	local optionTokens="-n ${chaincodeId} -p ${chaincodePath} -v ${chaincodeVersion}"
+	local optionTokens="-n ${chaincodeId} -p ${chaincodePath} -v ${chaincodeVersion} -l ${chaincodeType}"
 	if [[ -n "${instantiatePolicy}" ]]; then
 		optionTokens="$optionTokens --instantiate-policy ${instantiatePolicy} --cc-package"
 	fi
