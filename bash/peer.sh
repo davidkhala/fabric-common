@@ -41,6 +41,10 @@ chaincodeInstantiated() {
 	local channelName=$1
 	peer chaincode list --instantiated --channelID $channelName ${tlsOptions}
 }
+chaincodeInstalled() {
+	#  TODO WIP
+	peer lifecycle chaincode queryinstalled
+}
 package() {
 	#  TODO WIP
 	local chaincodeType=${chaincodeType:-golang}
@@ -48,6 +52,10 @@ package() {
 	local chaincodePath=$chaincodePath
 	local outputfile=${1:-"${label}.tar.gz"}
 	peer lifecycle chaincode package $outputfile --lang $chaincodeType --path $chaincodePath --label $label
-
+}
+install() {
+	#  TODO WIP
+	local ccPackage=$1
+	peer lifecycle chaincode install $1
 }
 $fcn $remain_params
