@@ -30,7 +30,7 @@ Current version 2.0.1
 - [query]blockHeight(got from queryChain) indexing from 1, blockNumber in blockEvent starting from 0
 - [reference]playback conference: https://wiki.hyperledger.org/display/fabric/Playbacks
 - [channel]`txId` is required in peer join channel because: [bret Harrison]There is a transaction proposal to the system chaincode, so a transaction id is required.
-- [channel][orderer] individual properties may be overridden by setting environment variables, such as `CONFIGTX_ORDERER_ORDERERTYPE=kafka`.
+- [channel][orderer] individual properties may be overridden by setting environment variables, such as `CONFIGTX_ORDERER_ORDERERTYPE=etcdraft`.
 - [channel][system] peer could not join system channel
     ` [Orderer.js]: sendDeliver - rejecting - status:FORBIDDEN`
 - [channel]channel ID length < 250 :initializing configtx manager failed: bad channel ID: channel ID illegal, cannot be longer than 249
@@ -52,7 +52,6 @@ Current version 2.0.1
         I do not belong to channel testchainid or am forbidden pulling it (not in the channel), skipping chain retrieval
         ```
 - [raft] Each channel has its own RAFT orderer cluster, but system channel should have a super set of all orderer cluster  -- Jay Guo
-- [raft][migrate] migrate from kafka to etcdRaft, see [here](https://github.com/davidkhala/delphi-fabric/tree/release-1.4/operations/migrate/README.md)
 - [solo][FAB-15754] Deploy a single-node Raft-based ordering service instead of using solo consensus type
 - Block data emitted in block event has a structure documented in [types.js](./nodejs/types.js)  
 
