@@ -12,7 +12,9 @@ Current version 2.0.1
     - Python: 2.7
 
 ## Design Notes
-
+- Concept map:
+    - Orderer => Committer
+    - Peer => Discoverer | Endorser | Eventer 
 ## Milestone
 - [2.0]
     - Use only raft for all CFT consensus scenario

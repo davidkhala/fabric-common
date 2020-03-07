@@ -2,10 +2,10 @@
   "name": "khala-fabric-sdk-node",
   "version": "2.0.0-rc",
   "dependencies": {
-    "fabric-ca-client": "^2.0.0-beta.3",
-    "fabric-common": "^2.0.0-beta.3",
+    "fabric-ca-client": "^2.0.0-snapshot.356",
+    "fabric-common": "^2.0.0-snapshot.349",
     "khala-dockerode": "^0.1.2",
-    "khala-nodeutils": "^0.7.11",
+    "khala-nodeutils": "^0.8.2",
     "khala-level": "^0.0.1",
     "tmp": "^0.1.0",
     "khala-logger": "^0.2.0",

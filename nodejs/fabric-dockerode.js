@@ -1,6 +1,6 @@
 const dockerUtil = require('khala-dockerode/dockerode-util');
 const {ContainerOptsBuilder} = dockerUtil;
-const peerUtil = require('./peer');
+const peerAdminUtil = require('./admin/peer');
 const caUtil = require('./ca');
 const ordererUtil = require('./orderer');
 const couchdbUtil = require('./couchdb');
@@ -139,7 +139,7 @@ exports.runOrderer = async ({
 
 	const builder = new ContainerOptsBuilder(Image, Cmd);
 	builder.setName(container_name).setEnv(Env);
-	builder.setVolume(volumeName, peerUtil.container.MSPROOT);
+	builder.setVolume(volumeName, peerAdminUtil.container.MSPROOT);
 	builder.setVolume(CONFIGTXVolume, ordererUtil.container.CONFIGTX);
 	builder.setPortBind(`${port}:7050`).setNetwork(network, [container_name]);
 
@@ -162,7 +162,7 @@ exports.runPeer = async ({
 }, operations, metrics) => {
 	const Image = `hyperledger/fabric-peer:${imageTag}`;
 	const Cmd = ['peer', 'node', 'start'];
-	const Env = peerUtil.envBuilder({
+	const Env = peerAdminUtil.envBuilder({
 		network, msp: {
 			configPath, id, peerHostName
 		}, tls, couchDB
@@ -170,14 +170,14 @@ exports.runPeer = async ({
 
 	const builder = new ContainerOptsBuilder(Image, Cmd);
 	builder.setName(container_name).setEnv(Env);
-	builder.setVolume(volumeName, peerUtil.container.MSPROOT);
-	builder.setVolume(peerUtil.host.dockerSock, peerUtil.container.dockerSock);
+	builder.setVolume(volumeName, peerAdminUtil.container.MSPROOT);
+	builder.setVolume(peerAdminUtil.host.dockerSock, peerAdminUtil.container.dockerSock);
 	builder.setPortBind(`${port}:7051`).setNetwork(network, [peerHostName]);
 	if (operations) {
 		builder.setPortBind(`${operations.port}:9443`);
 	}
 	if (stateVolume) {
-		builder.setVolume(stateVolume, peerUtil.container.state);
+		builder.setVolume(stateVolume, peerAdminUtil.container.state);
 	}
 	const createOptions = builder.build();
 	return await dockerUtil.containerStart(createOptions);
