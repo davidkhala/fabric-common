@@ -2,7 +2,7 @@ const Peer = require('fabric-client/lib/Peer');
 const fs = require('fs');
 const {RemoteOptsTransform} = require('khala-fabric-formatter/remote');
 
-class PeerBuilder {
+class PeerManager {
 	/**
 	 * @param {intString|integer} peerPort
 	 * @param {SSLTargetNameOverride} [peerHostName]
@@ -11,8 +11,13 @@ class PeerBuilder {
 	 * @param {string} [host]
 	 * @param {ClientKey} [clientKey]
 	 * @param {ClientCert} [clientCert]
+	 * @param {Client.Peer} [peer] - apply for existing peer object
 	 */
-	constructor({peerPort, peerHostName, cert, pem, host, clientKey, clientCert}) {
+	constructor({peerPort, peerHostName, cert, pem, host, clientKey, clientCert}, peer) {
+		if (peer) {
+			this.peer = peer;
+			return;
+		}
 		if (!pem) {
 			if (fs.existsSync(cert)) {
 				pem = fs.readFileSync(cert).toString();
@@ -20,30 +25,51 @@ class PeerBuilder {
 		}
 
 		this.host = host ? host : (peerHostName ? peerHostName : 'localhost');
+		this.port = peerPort;
 		if (pem) {
 			// tls enabled
-			this.peerUrl = `grpcs://${this.host}:${peerPort}`;
+			const url = `grpcs://${this.host}:${peerPort}`;
 			this.pem = pem;
 			this.sslTargetNameOverride = peerHostName;
 			this.clientKey = clientKey;
 			this.clientCert = clientCert;
+			const opts = RemoteOptsTransform({
+				host: this.host,
+				pem,
+				sslTargetNameOverride: peerHostName,
+				clientKey,
+				clientCert
+			});
+			this.peer = new Peer(url, opts);
 		} else {
 			// tls disabled
-			this.peerUrl = `grpc://${this.host}:${peerPort}`;
+			const url = `grpc://${this.host}:${peerPort}`;
+			this.peer = new Peer(url);
 		}
 	}
 
-	build() {
-		if (this.pem) {
-			// tls enabled
-			const {host, pem, sslTargetNameOverride, clientKey, clientCert} = this;
-			const opts = RemoteOptsTransform({host, pem, sslTargetNameOverride, clientKey, clientCert});
-			return new Peer(this.peerUrl, opts);
-		} else {
-			// tls disabled
-			return new Peer(this.peerUrl);
+	/**
+	 * basic health check by discoveryClient
+	 * @param {Peer} peer
+	 * @return {Promise<boolean>} false if connect trial failed
+	 */
+	static async ping(peer) {
+		try {
+			await peer.waitForReady(peer._discoveryClient);
+			peer._discoveryClient.close();
+			return true;
+		} catch (err) {
+			if (err.message.includes('Failed to connect before the deadline')) {
+				return false;
+			} else {
+				throw err;
+			}
 		}
+	}
+
+	async ping() {
+		return await PeerManager.ping(this.peer);
 	}
 }
 
-module.exports = PeerBuilder;
+module.exports = PeerManager;

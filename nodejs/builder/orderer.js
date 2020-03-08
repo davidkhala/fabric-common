@@ -2,7 +2,7 @@ const Orderer = require('fabric-client/lib/Orderer');
 const fs = require('fs');
 const {RemoteOptsTransform} = require('khala-fabric-formatter/remote');
 
-class OrdererBuilder {
+class OrdererManager {
 	/**
 	 * @param {intString|integer} ordererPort
 	 * @param {string} [cert] TLS CA certificate file path
@@ -20,30 +20,50 @@ class OrdererBuilder {
 		}
 
 		this.host = host ? host : (ordererHostName ? ordererHostName : 'localhost');
+		this.port = ordererPort;
 		if (pem) {
 			// tls enabled
-			this.ordererUrl = `grpcs://${this.host}:${ordererPort}`;
+			const url = `grpcs://${this.host}:${ordererPort}`;
 			this.pem = pem;
 			this.sslTargetNameOverride = ordererHostName;
 			this.clientKey = clientKey;
 			this.clientCert = clientCert;
+			const opts = RemoteOptsTransform({
+				host: this.host,
+				pem,
+				sslTargetNameOverride: ordererHostName,
+				clientKey,
+				clientCert
+			});
+			this.orderer = new Orderer(url, opts);
 		} else {
 			// tls disabled
-			this.ordererUrl = `grpc://${this.host}:${ordererPort}`;
+			const url = `grpc://${this.host}:${ordererPort}`;
+			this.orderer = new Orderer(url);
 		}
 	}
 
-	build() {
-		if (this.pem) {
-			// tls enabled
-			const {host, pem, sslTargetNameOverride, clientKey, clientCert} = this;
-			const opts = RemoteOptsTransform({host, pem, sslTargetNameOverride, clientKey, clientCert});
-			return new Orderer(this.ordererUrl, opts);
-		} else {
-			// tls disabled
-			return new Orderer(this.ordererUrl);
+	/**
+	 * basic health check for an orderer
+	 * @param {Orderer} orderer
+	 */
+	static async ping(orderer) {
+		try {
+			await orderer.waitForReady(orderer._ordererClient);
+			orderer._ordererClient.close();
+			return true;
+		} catch (err) {
+			if (err.message.includes('Failed to connect before the deadline')) {
+				return false;
+			} else {
+				throw err;
+			}
 		}
+	}
+
+	async ping() {
+		return await OrdererManager.ping(this.orderer);
 	}
 }
 
-module.exports = OrdererBuilder;
+module.exports = OrdererManager;

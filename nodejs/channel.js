@@ -2,62 +2,9 @@ const Logger = require('./logger');
 const logger = Logger.new('channel');
 const fs = require('fs');
 const {signChannelConfig} = require('./multiSign');
-const Channel = require('fabric-client/lib/Channel');
 const {sleep} = require('khala-nodeutils/helper');
 const OrdererUtil = require('./orderer');
 const Orderer = OrdererUtil.Orderer;
-exports.setClientContext = (channel, clientContext) => {
-	channel._clientContext = clientContext;
-};
-exports.clearOrderers = (channel) => {
-	channel._orderers = new Map();
-};
-exports.addOrderer = (channel, orderer) => {
-	channel._orderers.set(orderer.getName(), orderer);
-};
-exports.clearPeers = (channel) => {
-	channel._channel_peers = new Map();
-};
-exports.getOrderers = async (channel, healthyOnly) => {
-	const orderers = channel.getOrderers();
-	if (healthyOnly) {
-		const result = await OrdererUtil.filter(orderers, true);
-		logger.debug(`${result.length} alive in ${channel.getName()}`);
-		return result;
-	} else {
-		return orderers;
-	}
-};
-/**
- * could be ignored from 1.2
- * @author davidliu
- * @param {string} channelName
- * @param {boolean} toThrow
- */
-exports.nameMatcher = (channelName, toThrow) => {
-	const namePattern = /^[a-z][a-z0-9.-]*$/;
-	const result = channelName.match(namePattern);
-	if (!result && toThrow) {
-		throw Error(`invalid channel name ${channelName}; should match regx: ${namePattern}`);
-	}
-	return result;
-};
-
-/**
- * @param {Client} client
- * @param {string} channelName
- * @returns {Client.Channel}
- */
-exports.new = (client, channelName) => {
-
-	if (!channelName) {
-		logger.warn('default to using system channel', exports.genesis);
-		channelName = exports.genesis;
-	}
-	return new Channel(channelName, client);
-};
-
-exports.genesis = 'testchainid';
 
 const ChannelConfig = require('./channelConfig');
 /**
@@ -80,7 +27,10 @@ exports.create = async (channel, orderer, channelConfigFile, signers = [channel.
 
 	const signatures = signChannelConfig(signers, config);
 	try {
-		return await ChannelConfig.channelUpdate(channel, orderer, undefined, undefined, undefined, {config, signatures});
+		return await ChannelConfig.channelUpdate(channel, orderer, undefined, undefined, undefined, {
+			config,
+			signatures
+		});
 	} catch (e) {
 		const {status, info} = e;
 		if (status === 'SERVICE_UNAVAILABLE' && info === 'will not enqueue, consenter for this channel hasn\'t started yet') {

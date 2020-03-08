@@ -3,20 +3,24 @@ const {genesis} = require('khala-fabric-formatter/channel');
 
 class ChannelManager {
 
-	constructor({channel, channelName, client}, logger = console) {
+	constructor({channelName, client}, channel, logger = console) {
 		if (channel) {
 			this.channel = channel;
-		} else {
-			if (!channelName) {
-				logger.warn('default to using system channel', genesis);
-				channelName = genesis;
-			}
-			this.channel = new Channel(channelName, client);
+			return;
 		}
+		if (!channelName) {
+			logger.warn('default to using system channel', genesis);
+			channelName = genesis;
+		}
+		this.channel = new Channel(channelName, client);
+	}
+
+	static setClientContext(channel, clientContext) {
+		channel._clientContext = clientContext;
 	}
 
 	setClientContext(clientContext) {
-		this.channel._clientContext = clientContext;
+		ChannelManager.setClientContext(this.channel, clientContext);
 	}
 
 	clearOrderers() {
@@ -29,10 +33,6 @@ class ChannelManager {
 
 	clearPeers() {
 		this.channel._channel_peers = new Map();
-	}
-
-	build() {
-		return this.channel;
 	}
 
 	pretty() {
