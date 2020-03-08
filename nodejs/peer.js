@@ -1,40 +1,5 @@
-const Peer = require('fabric-client/lib/Peer');
-const {fsExtra} = require('khala-nodeutils/helper');
-const {LoggingLevel, RemoteOptsTransform} = require('./remote');
+const {LoggingLevel} = require('khala-fabric-formatter/remote');
 const {MetricsProvider} = require('./constants');
-
-/**
- * @param {intString} peerPort
- * @param {string} [peerHostName] Used in test environment only, when the server certificate's
- *    hostname (in the 'CN' field) does not match the actual host endpoint that the server process runs
- *    at, the application can work around the client TLS verify failure by setting this property to the
- *    value of the server certificate's hostname
- * @param {string} [cert] TLS CA certificate file path
- * @param {CertificatePem} [pem] TLS CA certificate
- * @param {string} [host]
- * @param {ClientKey} [clientKey]
- * @param {ClientCert} [clientCert]
- */
-exports.new = ({peerPort, peerHostName, cert, pem, host, clientKey, clientCert}) => {
-	const Host = host ? host : 'localhost';
-	let peerUrl = `grpcs://${Host}:${peerPort}`;
-	if (!pem) {
-		if (fsExtra.existsSync(cert)) {
-			pem = fsExtra.readFileSync(cert).toString();
-		}
-	}
-	if (pem) {
-		// tls enabled
-		const opts = RemoteOptsTransform({host, pem, sslTargetNameOverride: peerHostName, clientKey, clientCert});
-		const peer = new Peer(peerUrl, opts);
-		peer.pem = pem;
-		return peer;
-	} else {
-		// tls disaled
-		peerUrl = `grpc://${Host}:${peerPort}`;
-		return new Peer(peerUrl);
-	}
-};
 
 exports.container =
 	{
@@ -152,26 +117,3 @@ exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchD
 	}
 	return environment;
 };
-
-/**
- * basic health check by discoveryClient
- * @param {Client.Peer} peer
- * @return {Promise<boolean>} false if connect trial failed
- */
-exports.ping = async (peer) => {
-	try {
-		await peer.waitForReady(peer._discoveryClient);
-		peer._discoveryClient.close();
-		return true;
-	} catch (err) {
-		if (err.message.includes('Failed to connect before the deadline')) {
-			return false;
-		} else {
-			throw err;
-		}
-	}
-};
-
-
-
-exports.Peer = Peer;

@@ -4,6 +4,7 @@
   "dependencies": {
     "fabric-ca-client": "1.4.7",
     "fabric-client": "1.4.7",
+    "khala-fabric-formatter": "^0.0.3",
     "khala-dockerode": "^0.1.2",
     "khala-nodeutils": "^0.8.2",
     "khala-axios": "^0.1.1",

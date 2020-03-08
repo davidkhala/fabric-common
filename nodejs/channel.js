@@ -3,8 +3,6 @@ const logger = Logger.new('channel');
 const fs = require('fs');
 const {signChannelConfig} = require('./multiSign');
 const {sleep} = require('khala-nodeutils/helper');
-const OrdererUtil = require('./orderer');
-const Orderer = OrdererUtil.Orderer;
 
 const ChannelConfig = require('./channelConfig');
 /**
@@ -79,11 +77,8 @@ const join = async (channel, peer, block, orderer, waitTime = 1000) => {
 
 	const channelClient = channel._clientContext;
 	if (!block) {
-		if (orderer instanceof Orderer) {
-			block = await getGenesisBlock(channel, orderer);
-		} else {
-			throw Error('either block: genesis_block or Orderer is required');
-		}
+		block = await getGenesisBlock(channel, orderer);
+
 	}
 
 	const request = {

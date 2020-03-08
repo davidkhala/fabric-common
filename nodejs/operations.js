@@ -1,5 +1,5 @@
 const {axiosPromise} = require('khala-axios');
-const {LoggingLevel} = require('./remote');
+const {LoggingLevel} = require('khala-fabric-formatter/remote');
 /**
  * @typedef {Object} OperationHealthz
  * @property {string} status

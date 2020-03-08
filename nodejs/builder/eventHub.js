@@ -1,5 +1,3 @@
-const Logger = require('./logger');
-const logger = Logger.new('eventHub');
 const ChannelEventHub = require('fabric-client/lib/ChannelEventHub');
 
 class EventHub {
@@ -7,9 +5,11 @@ class EventHub {
 	 * @param {Client.Channel} channel
 	 * @param {Client.Peer} peer
 	 * @param {ChannelEventHub} [channelEventHub] wrapped existing channelEventHub object
+	 * @param [logger]
 	 */
-	constructor(channel, peer, channelEventHub) {
+	constructor(channel, peer, channelEventHub, logger = console) {
 		this.channelEventHub = channelEventHub || new ChannelEventHub(channel, peer);
+		this.logger = logger;
 	}
 
 	async connect({startBlock, endBlock, signedEvent} = {}) {
@@ -71,7 +71,10 @@ class EventHub {
 	disconnect() {
 		const eventHub = this.channelEventHub;
 		if (eventHub.checkConnection(false) && eventHub.isconnected() && !eventHub._disconnect_running) {
-			logger.debug('disconnect', {peer: eventHub._peer.toString(), channel: eventHub._channel.getName()});
+			this.logger.debug('eventHub disconnect', {
+				peer: eventHub._peer.toString(),
+				channel: eventHub._channel.getName()
+			});
 			eventHub.disconnect();
 		}
 	}
@@ -115,10 +118,10 @@ class EventHub {
 	chaincodeEvent(validator, {chaincodeId, eventName}, onSuccess, onError) {
 		const eventHub = this.channelEventHub;
 		this._throwIfNotConnected();
-		const logger = Logger.new('chaincodeEvent', true);
+
 		if (!validator) {
 			validator = (chaincodeEvent, blockNum, status) => {
-				logger.debug('default validator', {chaincodeEvent, blockNum, status});
+				this.logger.debug('chaincodeEvent', {chaincodeEvent, blockNum, status});
 				return {valid: true, interrupt: true};
 			};
 		}
@@ -163,13 +166,11 @@ class EventHub {
 	blockEvent(validator, onSuccess, onError) {
 		const eventHub = this.channelEventHub;
 		this._throwIfNotConnected();
-		const logger = Logger.new('blockEvent');
 		if (!validator) {
 			validator = (block) => {
 				const {number, previous_hash, data_hash} = block.header;
-				const {data} = block.data;
-				logger.debug('blockEvent validator', {number, previous_hash, data_hash});
-				return {valid: data.length === 1, interrupt: true}; //TODO inspect why data.length has meaning
+				this.logger.debug('blockEvent', {number, previous_hash, data_hash});
+				return {valid: true, interrupt: true};
 			};
 		}
 		const block_registration_number = eventHub.registerBlockEvent((block) => {
@@ -220,11 +221,11 @@ class EventHub {
 	txEvent({txId, transactionID}, validator, onSuccess, onError) {
 		const eventHub = this.channelEventHub;
 		this._throwIfNotConnected();
-		const logger = Logger.new('txEvent');
 		if (!validator) {
+			const {txEventCode} = require('khala-fabric-formatter/eventHub');
 			validator = (tx, code, blockNum) => {
-				logger.debug({tx, code, blockNum});
-				return {valid: code === EventHub.txEventCode[0], interrupt: true};
+				this.logger.debug('txEvent', {tx, code, blockNum});
+				return {valid: code === txEventCode[0], interrupt: true};
 			};
 		}
 		if (!transactionID) {
