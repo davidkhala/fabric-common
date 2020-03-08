@@ -146,6 +146,7 @@ exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, tls, ordererType, raft
 const ping = async (orderer) => {
 	try {
 		await orderer.waitForReady(orderer._ordererClient);
+		orderer._ordererClient.close();
 		return true;
 	} catch (err) {
 		if (err.message.includes('Failed to connect before the deadline')) {

@@ -161,6 +161,7 @@ exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchD
 exports.ping = async (peer) => {
 	try {
 		await peer.waitForReady(peer._discoveryClient);
+		peer._discoveryClient.close();
 		return true;
 	} catch (err) {
 		if (err.message.includes('Failed to connect before the deadline')) {
