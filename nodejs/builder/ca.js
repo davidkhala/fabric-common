@@ -5,28 +5,18 @@ const {emptySuite} = require('./cryptoSuite');
 class CAService {
 	/**
 	 *
+	 * @param {string} caUrl
+	 * @param {CertificatePem[]} trustedRoots tls CA for connection
 	 * @param {CryptoSuite} cryptoSuite
 	 */
-	constructor(cryptoSuite) {
-		this.cryptoSuite = cryptoSuite;
-	}
-
-	/**
-	 *
-	 * @param {string} caUrl
-	 * @param {CertificatePem[]} trustedRoots tlsca for connection
-	 * @returns {FabricCAServices}
-	 */
-	build(caUrl, trustedRoots = []) {
-		let cryptoSuite = this.cryptoSuite;
-		if (!cryptoSuite) {
-			cryptoSuite = emptySuite();
-		}
+	constructor(caUrl, trustedRoots = [], cryptoSuite) {
+		this.cryptoSuite = cryptoSuite || emptySuite();
 		const tlsOptions = {
 			trustedRoots,
 			verify: trustedRoots.length > 0
 		};
-		return new FabricCAServices(caUrl, tlsOptions, '', cryptoSuite);
+		this.caService = new FabricCAServices(caUrl, tlsOptions, '', cryptoSuite);
+
 	}
 }
 
