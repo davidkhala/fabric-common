@@ -1,11 +1,9 @@
-const ECDSA_KEY = require('fabric-client/lib/impl/ecdsa/key');
-
 /**
  * visualizer class for ECDSA_Key
  */
 class ECDSA_PRIV {
 	constructor(key) {
-		if (!(key instanceof ECDSA_KEY)) {
+		if (key.constructor.name !== 'ECDSA_KEY') {
 			const err = Error('not ECDSA Key');
 			err.key = key;
 			throw err;

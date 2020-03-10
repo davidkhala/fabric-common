@@ -1,4 +1,3 @@
-const {FabricConfig} = require('./helper');
 const logger = require('./logger').new('service discovery', true);
 /**
  * @typedef {Object} PeerQueryResponse
@@ -65,7 +64,7 @@ exports.getDiscoveryResults = async (channel, endorsement_hints) => {
  * @param TLS
  */
 exports.initialize = async (channel, peer, {asLocalhost, TLS} = {}) => {
-	FabricConfig.set('discovery-protocol', TLS ? 'grpcs' : 'grpc');
+	// FabricConfig.set('discovery-protocol', TLS ? 'grpcs' : 'grpc');// TODO we need test on not to use this line
 	return channel.initialize({target: peer, discover: true, asLocalhost});
 };
 /**

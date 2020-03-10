@@ -1,9 +1,9 @@
 const caUtil = require('./ca');
 const userUtil = require('./user');
+const UserBuilder = require('khala-fabric-sdk-node-builder/user');
 const logger = require('./logger').new('ca-crypto-gen');
 const Affiliation = require('khala-fabric-sdk-node-builder/affiliationService');
 const {sleep} = require('khala-nodeutils/helper');
-const clientUtil = require('./client');
 /**
  *
  * @param {FabricCAServices} caService
@@ -21,8 +21,7 @@ exports.initAdmin = async (caService, cryptoPath, nodeType, mspId, TLS) => {
 
 	const type = `${nodeType}User`;
 	const userFull = cryptoPath[`${nodeType}UserHostName`];
-	const cryptoSuite = clientUtil.newCryptoSuite();
-	const user = userUtil.loadFromLocal(cryptoPath, nodeType, mspId, cryptoSuite);
+	const user = userUtil.loadFromLocal(cryptoPath, nodeType, mspId);
 	if (user) {
 		logger.info(`${domain} admin found in local`);
 		return user;
@@ -37,7 +36,10 @@ exports.initAdmin = async (caService, cryptoPath, nodeType, mspId, TLS) => {
 		cryptoPath.toOrgTLS(tlsResult, nodeType);
 	}
 
-	return userUtil.build(userFull, result, mspId, cryptoSuite);
+
+	const builder = new UserBuilder(userFull);
+	const {key, certificate} = result;
+	return builder.build({key, certificate, mspId});
 };
 /**
  * @param {FabricCAServices} caService

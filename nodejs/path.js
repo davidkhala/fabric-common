@@ -1,7 +1,7 @@
 const path = require('path');
 const {fsExtra} = require('khala-nodeutils/helper');
 const {pkcs11_key} = require('./ca');
-const {FabricClient} = require('./client');
+const {normalizeX509} = require('khala-fabric-sdk-node-builder/helper');
 exports.findKeyFiles = (dir) => {
 	const files = fsExtra.readdirSync(dir);
 	return files.filter((fileName) => fileName.endsWith('_sk')).map((fileName) => path.resolve(dir, fileName));
@@ -11,7 +11,7 @@ exports.findCertFiles = (dir) => {
 	return files.map((fileName) => path.resolve(dir, fileName)).filter(filePath => {
 		try {
 			const pem = fsExtra.readFileSync(filePath).toString();
-			FabricClient.normalizeX509(pem);
+			normalizeX509(pem);
 			return true;
 		} catch (e) {
 			return false;
