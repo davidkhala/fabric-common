@@ -67,6 +67,14 @@ class PeerManager {
 		}
 	}
 
+	close() {
+		this.peer.close();
+	}
+
+	reconnect() {
+		this.peer._createClients();
+	}
+
 	async ping() {
 		return await PeerManager.ping(this.peer);
 	}

@@ -11,36 +11,44 @@ class OrdererManager {
 	 * @param {string} [host]
 	 * @param {ClientKey} [clientKey]
 	 * @param {ClientCert} [clientCert]
+	 * @param {Orderer} orderer
 	 */
-	constructor({ordererPort, cert, pem, ordererHostName, host, clientKey, clientCert}) {
-		if (!pem) {
-			if (fs.existsSync(cert)) {
-				pem = fs.readFileSync(cert).toString();
+	constructor({ordererPort, cert, pem, ordererHostName, host, clientKey, clientCert} = {}, orderer) {
+		if (!orderer) {
+			if (!pem) {
+				if (fs.existsSync(cert)) {
+					pem = fs.readFileSync(cert).toString();
+				}
+			}
+
+			this.host = host ? host : (ordererHostName ? ordererHostName : 'localhost');
+			this.port = ordererPort;
+			if (pem) {
+				// tls enabled
+				const url = `grpcs://${this.host}:${ordererPort}`;
+				this.pem = pem;
+				this.sslTargetNameOverride = ordererHostName;
+				this.clientKey = clientKey;
+				this.clientCert = clientCert;
+				orderer = OrdererManager.build(url, {
+					host: this.host,
+					pem,
+					sslTargetNameOverride: ordererHostName,
+					clientKey,
+					clientCert,
+				});
+			} else {
+				// tls disabled
+				const url = `grpc://${this.host}:${ordererPort}`;
+				orderer = OrdererManager.build(url);
 			}
 		}
+		this.orderer = orderer;
+	}
 
-		this.host = host ? host : (ordererHostName ? ordererHostName : 'localhost');
-		this.port = ordererPort;
-		if (pem) {
-			// tls enabled
-			const url = `grpcs://${this.host}:${ordererPort}`;
-			this.pem = pem;
-			this.sslTargetNameOverride = ordererHostName;
-			this.clientKey = clientKey;
-			this.clientCert = clientCert;
-			const opts = RemoteOptsTransform({
-				host: this.host,
-				pem,
-				sslTargetNameOverride: ordererHostName,
-				clientKey,
-				clientCert
-			});
-			this.orderer = new Orderer(url, opts);
-		} else {
-			// tls disabled
-			const url = `grpc://${this.host}:${ordererPort}`;
-			this.orderer = new Orderer(url);
-		}
+	static build(url, rawOpts) {
+		const opts = rawOpts ? RemoteOptsTransform(rawOpts) : undefined;
+		return new Orderer(url, opts);
 	}
 
 	/**
@@ -50,7 +58,6 @@ class OrdererManager {
 	static async ping(orderer) {
 		try {
 			await orderer.waitForReady(orderer._ordererClient);
-			orderer._ordererClient.close();
 			return true;
 		} catch (err) {
 			if (err.message.includes('Failed to connect before the deadline')) {
@@ -59,6 +66,12 @@ class OrdererManager {
 				throw err;
 			}
 		}
+	}
+
+	close() {
+		// TODO fabric-sdk provide a way to reconnect on existing client
+		this.orderer._ordererClient.close();
+		this.orderer._ordererClient = null;
 	}
 
 	async ping() {

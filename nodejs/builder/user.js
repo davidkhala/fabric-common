@@ -29,7 +29,7 @@ class UserBuilder {
 	 */
 	build({key, certificate, mspId}) {
 		const {_cryptoSuite} = this.user;
-		const privateKey = (key.constructor.name !== 'ECDSA_KEY') ? key : _cryptoSuite.importKey(key, {ephemeral: true});
+		const privateKey = (key.constructor.name === 'ECDSA_KEY') ? key : _cryptoSuite.importKey(key, {ephemeral: true});
 
 		const pubKey = _cryptoSuite.importKey(certificate, {ephemeral: true});
 
