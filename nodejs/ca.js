@@ -1,10 +1,8 @@
 const path = require('path');
 const logger = require('./logger').new('CA core');
-const CAClient = require('fabric-ca-client/lib/FabricCAServices');
 const {fsExtra} = require('khala-nodeutils/helper');
 const FABRIC_CA_HOME = '/etc/hyperledger/fabric-ca-server';
 const identityServiceUtil = require('./identityService');
-const ClientUtil = require('./client');
 exports.container = {
 	FABRIC_CA_HOME,
 	CONFIG: path.resolve(FABRIC_CA_HOME, 'fabric-ca-server-config.yaml'),
@@ -62,20 +60,6 @@ exports.pkcs11_key = {
 };
 
 exports.register = registerIfNotExist;
-/**
- *
- * @param {string} caUrl
- * @param {CertificatePem[]} trustedRoots tlsca for connection
- * @param {CryptoSuite} cryptoSuite
- * @returns {FabricCAServices}
- */
-exports.new = (caUrl, trustedRoots = [], cryptoSuite = ClientUtil.newCryptoSuite()) => {
-	const tlsOptions = {
-		trustedRoots,
-		verify: trustedRoots.length > 0
-	};
-	return new CAClient(caUrl, tlsOptions, '', cryptoSuite);
-};
 exports.envBuilder = () => {
 	return [
 		'GODEBUG=netdns=go'

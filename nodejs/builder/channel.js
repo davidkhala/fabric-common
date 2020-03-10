@@ -4,15 +4,14 @@ const {genesis} = require('khala-fabric-formatter/channel');
 class ChannelManager {
 
 	constructor({channelName, client}, channel, logger = console) {
-		if (channel) {
-			this.channel = channel;
-			return;
+		if (!channel) {
+			if (!channelName) {
+				logger.warn('default to using system channel', genesis);
+				channelName = genesis;
+			}
+			channel = new Channel(channelName, client);
 		}
-		if (!channelName) {
-			logger.warn('default to using system channel', genesis);
-			channelName = genesis;
-		}
-		this.channel = new Channel(channelName, client);
+		this.channel = channel;
 	}
 
 	static setClientContext(channel, clientContext) {

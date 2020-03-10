@@ -6,8 +6,8 @@ class CAService {
 	/**
 	 *
 	 * @param {string} caUrl
-	 * @param {CertificatePem[]} trustedRoots tls CA for connection
-	 * @param {CryptoSuite} cryptoSuite
+	 * @param {CertificatePem[]} [trustedRoots] tls CA for connection
+	 * @param {CryptoSuite} [cryptoSuite]
 	 */
 	constructor(caUrl, trustedRoots = [], cryptoSuite) {
 		this.cryptoSuite = cryptoSuite || emptySuite();

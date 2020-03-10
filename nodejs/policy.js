@@ -26,7 +26,6 @@
   }
 */
 
-exports.Policy = require('fabric-client/lib/Policy');
 const {IdentityType} = require('./constants');
 
 /**

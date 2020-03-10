@@ -1,7 +1,7 @@
 const caUtil = require('./ca');
 const userUtil = require('./user');
 const logger = require('./logger').new('ca-crypto-gen');
-const affiliationUtil = require('./affiliationService');
+const Affiliation = require('khala-fabric-sdk-node-builder/affiliationService');
 const {sleep} = require('khala-nodeutils/helper');
 const clientUtil = require('./client');
 /**
@@ -71,14 +71,13 @@ exports.init = async (caService, adminCryptoPath, nodeType, mspId, TLS, {affilia
 	};
 
 	const adminUser = await initAdminRetry();
-	const affiliationService = affiliationUtil.new(caService);
-	const promises = [
-		affiliationUtil.createIfNotExist(affiliationService, {name: `${affiliationRoot}.client`, force}, adminUser),
-		affiliationUtil.createIfNotExist(affiliationService, {name: `${affiliationRoot}.user`, force}, adminUser),
-		affiliationUtil.createIfNotExist(affiliationService, {name: `${affiliationRoot}.peer`, force}, adminUser),
-		affiliationUtil.createIfNotExist(affiliationService, {name: `${affiliationRoot}.orderer`, force}, adminUser)
-	];
-	await Promise.all(promises);
+	const affiliationService = new Affiliation(caService);
+
+	await affiliationService.createIfNotExist({name: `${affiliationRoot}.client`, force}, adminUser);
+	await affiliationService.createIfNotExist({name: `${affiliationRoot}.user`, force}, adminUser);
+	await affiliationService.createIfNotExist({name: `${affiliationRoot}.peer`, force}, adminUser);
+	await affiliationService.createIfNotExist({name: `${affiliationRoot}.orderer`, force}, adminUser);
+
 	return adminUser;
 
 };
@@ -220,7 +219,11 @@ exports.genClientKeyPair = async (caService, {enrollmentID, enrollmentSecret}, a
 	if (!enrollmentSecret) {
 		enrollmentSecret = newSecret;
 	}
-	const {key, certificate, rootCertificate} = await caService.enroll({enrollmentID, enrollmentSecret, profile: 'tls'});
+	const {key, certificate, rootCertificate} = await caService.enroll({
+		enrollmentID,
+		enrollmentSecret,
+		profile: 'tls'
+	});
 	return {key, certificate, rootCertificate};
 };
 
