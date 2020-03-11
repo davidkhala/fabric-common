@@ -57,7 +57,7 @@ Current version 1.4.5
 - [raft][migrate] migrate from kafka to etcdRaft, see [here](https://github.com/davidkhala/delphi-fabric/tree/release-1.4/operations/migrate/README.md)
 - [solo][FAB-15754] Deploy a single-node Raft-based ordering service instead of using solo consensus type
 - Block data emitted in block event has a structure documented in [types.js](./nodejs/types.js)  
-
+- [Replay Attack] txID replay validation is done by orderer, the duplicated txID could not be found at next block marked as "invalid transaction"   
 ### Notes: ChannelEventHub
 - for application channel
     - The first block could be replayed is not the channel genesis block (available from `Channel.getGenesisBlock`), but the one after, which is `block.header.number='1'`. 

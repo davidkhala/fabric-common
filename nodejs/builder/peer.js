@@ -14,38 +14,38 @@ class PeerManager {
 	 * @param {Client.Peer} [peer] - apply for existing peer object
 	 */
 	constructor({peerPort, peerHostName, cert, pem, host, clientKey, clientCert}, peer) {
-		if (peer) {
-			this.peer = peer;
-			return;
-		}
-		if (!pem) {
-			if (fs.existsSync(cert)) {
-				pem = fs.readFileSync(cert).toString();
+		if (!peer) {
+			if (!pem) {
+				if (fs.existsSync(cert)) {
+					pem = fs.readFileSync(cert).toString();
+				}
+			}
+
+			this.host = host ? host : (peerHostName ? peerHostName : 'localhost');
+			this.port = peerPort;
+			if (pem) {
+				// tls enabled
+				const url = `grpcs://${this.host}:${peerPort}`;
+				this.pem = pem;
+				this.sslTargetNameOverride = peerHostName;
+				this.clientKey = clientKey;
+				this.clientCert = clientCert;
+				const opts = RemoteOptsTransform({
+					host: this.host,
+					pem,
+					sslTargetNameOverride: peerHostName,
+					clientKey,
+					clientCert
+				});
+				peer = new Peer(url, opts);
+			} else {
+				// tls disabled
+				const url = `grpc://${this.host}:${peerPort}`;
+				peer = new Peer(url);
 			}
 		}
 
-		this.host = host ? host : (peerHostName ? peerHostName : 'localhost');
-		this.port = peerPort;
-		if (pem) {
-			// tls enabled
-			const url = `grpcs://${this.host}:${peerPort}`;
-			this.pem = pem;
-			this.sslTargetNameOverride = peerHostName;
-			this.clientKey = clientKey;
-			this.clientCert = clientCert;
-			const opts = RemoteOptsTransform({
-				host: this.host,
-				pem,
-				sslTargetNameOverride: peerHostName,
-				clientKey,
-				clientCert
-			});
-			this.peer = new Peer(url, opts);
-		} else {
-			// tls disabled
-			const url = `grpc://${this.host}:${peerPort}`;
-			this.peer = new Peer(url);
-		}
+		this.peer = peer;
 	}
 
 	/**

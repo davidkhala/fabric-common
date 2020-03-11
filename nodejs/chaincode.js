@@ -1,6 +1,5 @@
 const Logger = require('./logger');
 const Channel = require('fabric-client/lib/Channel');
-const Orderer = require('fabric-client/lib/Orderer');
 const {unsignedTransaction, sendSignedTransaction} = require('./offline/chaincode');
 const {sign, fromClient} = require('./user');
 /**
@@ -359,9 +358,6 @@ exports.chaincodeProposal = async (
  * @return {Promise<Client.BroadcastResponse>}
  */
 exports.invokeCommit = async (client, nextRequest, orderer, timeout) => {
-	if (!(orderer instanceof Orderer)) {
-		throw Error(`orderer should be instance of Orderer, but got ${typeof orderer}`);
-	}
 	const {proposalResponses, proposal} = nextRequest;
 	const unsignedTx = unsignedTransaction(proposalResponses, proposal);
 	const user = fromClient(client);

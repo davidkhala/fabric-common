@@ -10,11 +10,15 @@ class UserBuilder {
 	 * @param name
 	 * @param roles
 	 * @param affiliation
+	 * @param [user]
 	 * @param logger
 	 */
-	constructor(name, {roles, affiliation} = {}, logger = console) {
-		this.user = new User({name, roles, affiliation});
-		this.user._cryptoSuite = emptySuite();
+	constructor(name, {roles, affiliation} = {}, user, logger = console) {
+		if (!user) {
+			user = new User({name, roles, affiliation});
+			user._cryptoSuite = emptySuite();
+		}
+		this.user = user;
 		this.logger = logger;
 	}
 
@@ -54,10 +58,15 @@ class UserBuilder {
 
 	/**
 	 * Builds a new transactionID based on a user's certificate and a nonce value.
+	 * @param {User} user
 	 * @param {boolean} [isAdmin] - Indicates whether this instance will be used for administrative transactions.
 	 */
+	static newTransactionID(user, isAdmin) {
+		return new TransactionID(user.getSigningIdentity(), isAdmin);
+	}
+
 	newTransactionID(isAdmin) {
-		return new TransactionID(this.user.getSigningIdentity(), isAdmin);
+		return UserBuilder.newTransactionID(this.user, isAdmin);
 	}
 
 }

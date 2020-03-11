@@ -4,7 +4,7 @@ class EventHub {
 	/**
 	 * @param {Client.Channel} channel
 	 * @param {Client.Peer} peer
-	 * @param {ChannelEventHub} [channelEventHub] wrapped existing channelEventHub object
+	 * @param {ChannelEventHub} [channelEventHub] existing channelEventHub object if any
 	 * @param [logger]
 	 */
 	constructor(channel, peer, channelEventHub, logger = console) {
