@@ -12,14 +12,12 @@ const ChaincodeType = {
 };
 exports.ChaincodeType = ChaincodeType;
 exports.proposalStringify = (proposalResponse) => {
-	if (proposalResponse instanceof Error) {
-		const {payload} = proposalResponse;
-		if (payload) {
-			proposalResponse.payload = payload.toString();
-		}
-
-	} else {
+	if (!(proposalResponse instanceof Error)) {
 		proposalResponse.response.payload = proposalResponse.response.payload.toString();
+	}
+	const {payload} = proposalResponse;
+	if (payload) {
+		proposalResponse.payload = payload.toString(); // TODO protobuf deserialize
 	}
 	return proposalResponse;
 };
@@ -83,12 +81,11 @@ const chaincodeProposalAdapter = (actionString, validator, verbose, log) => {
 		const copy = Object.assign({}, proposalResponse);
 		if (endorsement) {
 			copy.endorsement = Object.assign({}, proposalResponse.endorsement);
-			copy.endorsement.endorser = copy.endorsement.endorser.toString();
+			copy.endorsement.endorser = copy.endorsement.endorser.toString(); // TODO protobuf deserialize
 		}
 		if (verbose) {
 			exports.proposalStringify(copy);
-		}
-		if (!verbose) {
+		} else {
 			delete copy.payload;
 		}
 		return copy;
@@ -158,8 +155,8 @@ exports.versionMatcher = (ccVersionName, toThrow) => {
  * @returns {Promise<ProposalResult>}
  */
 exports.install = async (peers,
-	{chaincodeId, chaincodePath, chaincodeVersion, chaincodeType = ChaincodeType.golang, metadataPath, chaincodePackage},
-	client) => {
+                         {chaincodeId, chaincodePath, chaincodeVersion, chaincodeType = ChaincodeType.golang, metadataPath, chaincodePackage},
+                         client) => {
 	const logger = Logger.new('chaincode:install', true);
 	if (peers.length > 1) {
 		logger.debug({peersLength: peers.length});
@@ -230,7 +227,7 @@ exports.install = async (peers,
  */
 const transactionProposalResponseErrorHandler = (proposalResponses, proposal) => {
 	const logger = Logger.new('chaincode:transactionProposal', true);
-	const ccHandler = chaincodeProposalAdapter('transactionProposal', undefined, true);
+	const ccHandler = chaincodeProposalAdapter('transactionProposal', undefined, true, false);
 	const {nextRequest, errCounter} = ccHandler([proposalResponses, proposal]);
 
 	if (errCounter > 0) {

@@ -1,6 +1,7 @@
 const Orderer = require('fabric-client/lib/Orderer');
 const fs = require('fs');
 const {RemoteOptsTransform} = require('khala-fabric-formatter/remote');
+const ProtoLoader = require('./protobuf');
 
 class OrdererManager {
 	/**
@@ -66,6 +67,12 @@ class OrdererManager {
 				throw err;
 			}
 		}
+	}
+
+	static createClient(orderer, node_modules) {
+		const protobufLoader = new ProtoLoader(node_modules);
+		const _abProto = protobufLoader.require('protos/orderer/ab.proto').orderer;
+		orderer._ordererClient = new _abProto.AtomicBroadcast(orderer._endpoint.addr, orderer._endpoint.creds, orderer._options);
 	}
 
 	close() {
