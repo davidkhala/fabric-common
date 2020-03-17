@@ -20,6 +20,9 @@ Current version 2.0.1
 - Before `git clone`, run the following:
     - `git config --global core.autocrlf false`
     - `git config --global core.longpaths true`
+- [option] For nodejs developer  
+    - npm install --global windows-build-tools
+    - npm install --global grpc
 
 ## Design Notes
 - Concept map:
