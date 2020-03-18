@@ -73,10 +73,17 @@ class OrdererManager {
 		const protobufLoader = new ProtoLoader(node_modules);
 		const _abProto = protobufLoader.require('orderer', 'ab.proto').orderer;
 		orderer._ordererClient = new _abProto.AtomicBroadcast(orderer._endpoint.addr, orderer._endpoint.creds, orderer._options);
+		return node_modules;
+	}
+
+	reconnect(node_modules) {
+		if (!node_modules) {
+			node_modules = this.node_modules;
+		}
+		this.node_modules = OrdererManager.createClient(this.orderer, node_modules);
 	}
 
 	close() {
-		// TODO fabric-sdk provide a way to reconnect on existing client
 		this.orderer._ordererClient.close();
 		this.orderer._ordererClient = null;
 	}
