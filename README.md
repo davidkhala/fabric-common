@@ -22,7 +22,9 @@ Current version 2.0.1
     - `git config --global core.longpaths true`
 - [option] For nodejs developer
     - global setup:  **require admin shell**
-        - npm install --global windows-build-tools
+        - npm install --global windows-build-tools  
+            if you see Error "Could+not+install+Visual+Studio+Build+Tools"
+            try to run installer in `C:\Users\<username>\.windows-build-tools\vs_BuildTools` and follow the wizard
         - npm install --global grpc
 
 ## Design Notes
