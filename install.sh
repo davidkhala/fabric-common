@@ -46,6 +46,7 @@ golang12() {
 	sudo add-apt-repository -y ppa:longsleep/golang-backports
 	sudo apt-get update
 	sudo apt install golang-1.12
+	sudo ln -sf /usr/lib/go-1.12/bin/go /usr/bin/go
 }
 install_libtool() {
 	if [[ $(uname) == "Darwin" ]]; then
