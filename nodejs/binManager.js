@@ -14,7 +14,7 @@ class BinManager {
 		if (!fs.lstatSync(binPath).isDirectory()) {
 			throw Error('BinManager: environment <binPath> is not a directory');
 		}
-		
+
 		this.binPath = binPath;
 		// TODO how to use streaming buffer to exec
 		this.configtxlatorCMD = {
