@@ -11,13 +11,10 @@ class BinManager {
 	}
 
 	constructor(binPath = process.env.binPath) {
-		if (!binPath) {
-			throw Error('BinManager: environment <binPath> is undefined');
+		if (!binPath||!fs.lstatSync(binPath).isDirectory()) {
+			throw Error('BinManager: environment <binPath> is undefined or not a directory');
 		}
-		/**
-		 * @throws - if not a directory
-		 */
-		fs.lstatSync(binPath).isDirectory();
+		
 		this.binPath = binPath;
 		// TODO how to use streaming buffer to exec
 		this.configtxlatorCMD = {
