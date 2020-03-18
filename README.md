@@ -21,8 +21,8 @@ Current version 2.0.1
     - `git config --global core.autocrlf false`
     - `git config --global core.longpaths true`
 - [option] For nodejs developer  
-    - npm install --global windows-build-tools
-    - npm install --global grpc
+    - [require admin shell] npm install --global windows-build-tools
+    - [require admin shell] npm install --global grpc
 
 ## Design Notes
 - Concept map:
