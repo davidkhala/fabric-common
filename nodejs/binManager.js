@@ -11,8 +11,8 @@ class BinManager {
 	}
 
 	constructor(binPath = process.env.binPath) {
-		if (!binPath||!fs.lstatSync(binPath).isDirectory()) {
-			throw Error('BinManager: environment <binPath> is undefined or not a directory');
+		if (!fs.lstatSync(binPath).isDirectory()) {
+			throw Error('BinManager: environment <binPath> is not a directory');
 		}
 		
 		this.binPath = binPath;

@@ -71,7 +71,7 @@ class OrdererManager {
 
 	static createClient(orderer, node_modules) {
 		const protobufLoader = new ProtoLoader(node_modules);
-		const _abProto = protobufLoader.require('protos/orderer/ab.proto').orderer;
+		const _abProto = protobufLoader.require('orderer','ab.proto').orderer;
 		orderer._ordererClient = new _abProto.AtomicBroadcast(orderer._endpoint.addr, orderer._endpoint.creds, orderer._options);
 	}
 
