@@ -55,7 +55,6 @@ Current version 2.0.1
 - [disaster]backup recovery: at least 1 anchor peer for each organization should be resumed to recover transaction process
 - [nodejs][sdk]node-gyp rebuild require `make` and `g++` 
 - [nodejs][sdk]FABN-1130: Stop using "init" as default function name
-- [couchdb]error symptom of run richQuery on levelDB:  `GET_QUERY_RESULT failed: transaction ID: 6b53220f87f791047ba44635f32d07cb667b6439c5df95e9a208d74ab12b5ff2: ExecuteQuery not supported for leveldb`
 - [raft] etcdraft does not support [non TLS](https://hyperledger-fabric.readthedocs.io/en/release-1.4/raft_configuration.html)
     - Raft nodes identify each other using TLS pinning, so in order to impersonate a Raft node, an attacker needs to obtain the private key of its TLS certificate. As a result, it is not possible to run a Raft node without a valid TLS configuration.
     - `[orderer.common.server] initializeClusterClientConfig -> PANI 004 TLS is required for running ordering nodes of type etcdraft.`
@@ -150,6 +149,14 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
     
     See details in [FAB-14323](https://jira.hyperledger.org/browse/FAB-14323)
 - [metrics] The `/metrics` endpoint allows operators to utilize Prometheus to pull operational metrics from peer and orderer nodes.
+
+### Notes: storage
+- [couchdb] Adding too many indexes, or using an excessive number of fields in an index, will degrade the performance of your network. 
+    ```
+    This is because the indexes are updated after each block is committed. The more indexes need to be updated through “index warming”, the longer it will take for transactions to complete.
+    ```
+- error symptom of run richQuery on levelDB:  `GET_QUERY_RESULT failed: transaction ID: 6b53220f87f791047ba44635f32d07cb667b6439c5df95e9a208d74ab12b5ff2: ExecuteQuery not supported for leveldb`
+
 
 ## TODO
 - npm couchdb-dump in nodejs/couchdbDump.sh
