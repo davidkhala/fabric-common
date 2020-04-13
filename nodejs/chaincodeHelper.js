@@ -1,6 +1,7 @@
 const Logger = require('./logger');
-
-const {chaincodeProposal, transactionProposal, invokeCommit} = require('./chaincode');
+const {commit} = require('khala-fabric-sdk-node-builder/transaction');
+const {chaincodeProposal} = require('./chaincode');
+const {transactionProposal} = require('khala-fabric-sdk-node-builder/transaction');
 /**
  * @param {EventHub} eventHub
  * @param txId
@@ -82,7 +83,7 @@ exports.instantiateOrUpgrade = async (
  * @param {string} fcn
  * @param {string[]} args
  * @param {TransientMap} [transientMap]
- * @param {Orderer} orderer target orderer
+ * @param {Client.Orderer} orderer target orderer
  * @param {number} [proposalTimeout] default to 30000 ms
  * @param {number} [commitTimeout] default to 30000 ms
  * @param {number} [eventTimeout] default to 30000 ms
@@ -117,8 +118,7 @@ exports.invoke = async (client, channelName, peers, eventHubs, {
 	for (const eventHub of eventHubs) {
 		promises.push(txTimerPromise(eventHub, {txId}, eventTimeout));
 	}
-	logger.debug('sendSignedTransaction', orderer.getName());
-	await invokeCommit(client, nextRequest, orderer, commitTimeout);
+	await commit(client._userContext._signingIdentity, nextRequest, orderer, commitTimeout);
 
 	const txEventResponses = await Promise.all(promises);
 	return {txEventResponses, proposalResponses};

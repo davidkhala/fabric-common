@@ -1,9 +1,11 @@
 const caUtil = require('./ca');
+const {toString:caStringify} = require('khala-fabric-formatter/ca');
 const userUtil = require('./user');
 const UserBuilder = require('khala-fabric-sdk-node-builder/user');
 const logger = require('./logger').new('ca-crypto-gen');
 const Affiliation = require('khala-fabric-sdk-node-builder/affiliationService');
 const {sleep} = require('khala-nodeutils/helper');
+const {getCertificate, getMSPID} = require('khala-fabric-formatter/signingIdentity');
 /**
  *
  * @param {FabricCAServices} caService
@@ -64,7 +66,7 @@ exports.init = async (caService, adminCryptoPath, nodeType, mspId, TLS, {affilia
 		} catch (e) {
 			if (e.toString().includes('Calling enrollment endpoint failed with error')) {
 				const ms = 1000;
-				logger.warn(`ca ${caUtil.toString(caService)} might not be ready, sleep and retry`);
+				logger.warn(`ca ${caStringify(caService)} might not be ready, sleep and retry`);
 				await sleep(ms);
 				return initAdminRetry();
 			}
@@ -108,7 +110,7 @@ exports.genOrderer = async (caService, cryptoPath, admin, {TLS, affiliationRoot}
 
 	const enrollmentID = ordererHostName;
 	let enrollmentSecret = cryptoPath.password;
-	const certificate = userUtil.getCertificate(admin);
+	const certificate = getCertificate(admin.getSigningIdentity());
 	cryptoPath.toAdminCerts({certificate}, type);
 	const {enrollmentSecret: newSecret} = await caUtil.register(caService, admin, {
 		enrollmentID,
@@ -152,7 +154,7 @@ exports.genPeer = async (caService, cryptoPath, admin, {TLS, affiliationRoot} = 
 
 	const enrollmentID = peerHostName;
 	let enrollmentSecret = cryptoPath.password;
-	const certificate = userUtil.getCertificate(admin);
+	const certificate = getCertificate(admin.getSigningIdentity());
 	cryptoPath.toAdminCerts({certificate}, type);
 	const {enrollmentSecret: newSecret} = await caUtil.register(caService, admin, {
 		enrollmentID,
@@ -186,8 +188,8 @@ exports.genUser = async (caService, cryptoPath, nodeType, admin, {TLS, affiliati
 		affiliationRoot = cryptoPath[`${nodeType}OrgName`];
 	}
 
-	const mspId = userUtil.getMSPID(admin);
-	let user = userUtil.loadFromLocal(cryptoPath, nodeType, mspId, undefined);
+	const mspId = getMSPID(admin.getSigningIdentity());
+	let user = userUtil.loadFromLocal(cryptoPath, nodeType, mspId);
 	if (user) {
 		logger.info('user exist', {name: user.getName()});
 		return user;

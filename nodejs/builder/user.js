@@ -2,24 +2,23 @@ const User = require('fabric-client/lib/User');
 const {SigningIdentity, Signer} = require('fabric-client/lib/msp/identity.js');
 const {emptySuite} = require('./cryptoSuite');
 const TransactionID = require('fabric-client/lib/TransactionID');
+const {getCertificate, getMSPID, getPrivateKey, getPublicKey, sign} = require('khala-fabric-formatter/signingIdentity.js');
 
 class UserBuilder {
 
 	/**
 	 *
-	 * @param name
-	 * @param roles
-	 * @param affiliation
-	 * @param [user]
-	 * @param logger
+	 * @param {string} [name]
+	 * @param {string[]} [roles]
+	 * @param {string} [affiliation]
+	 * @param {User} [user]
 	 */
-	constructor(name, {roles, affiliation} = {}, user, logger = console) {
+	constructor({name, roles, affiliation} = {}, user) {
 		if (!user) {
 			user = new User({name, roles, affiliation});
 			user._cryptoSuite = emptySuite();
 		}
 		this.user = user;
-		this.logger = logger;
 	}
 
 	/**
@@ -38,23 +37,8 @@ class UserBuilder {
 		const pubKey = _cryptoSuite.importKey(certificate, {ephemeral: true});
 
 		this.user._signingIdentity = new SigningIdentity(certificate, pubKey, mspId, _cryptoSuite, new Signer(_cryptoSuite, privateKey));
-		this.privateKey = privateKey;
-		this.publicKey = pubKey;
 		return this.user;
 	}
-
-	getCertificate() {
-		return this.user.getSigningIdentity()._certificate;
-	}
-
-	getMSPID() {
-		return this.user._mspId;
-	}
-
-	getPrivateKey() {
-		return this.user.getSigningIdentity()._signer._key;
-	}
-
 
 	/**
 	 * Builds a new transactionID based on a user's certificate and a nonce value.
@@ -62,11 +46,28 @@ class UserBuilder {
 	 * @param {boolean} [isAdmin] - Indicates whether this instance will be used for administrative transactions.
 	 */
 	static newTransactionID(user, isAdmin) {
-		return new TransactionID(user.getSigningIdentity(), isAdmin);
+		return new TransactionID(user._signingIdentity, isAdmin);
 	}
 
-	newTransactionID(isAdmin) {
-		return UserBuilder.newTransactionID(this.user, isAdmin);
+
+	getPublicKey() {
+		return getPublicKey(this.user._signingIdentity);
+	}
+
+	getCertificate() {
+		return getCertificate(this.user._signingIdentity);
+	}
+
+	getMSPID() {
+		return getMSPID(this.user._signingIdentity);
+	}
+
+	getPrivateKey() {
+		return getPrivateKey(this.user._signingIdentity);
+	}
+
+	sign(messageBytes) {
+		return sign(this.user._signingIdentity, messageBytes);
 	}
 
 }

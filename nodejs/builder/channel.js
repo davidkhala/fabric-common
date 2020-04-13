@@ -44,6 +44,11 @@ class ChannelManager {
 			kafkas: this.channel._kafka_brokers
 		};
 	}
+
+	static emptyChannel(channelName) {
+		const client = {getClientCertHash: _ => undefined};
+		return new Channel(channelName, client);
+	}
 }
 
 module.exports = ChannelManager;

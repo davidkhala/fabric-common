@@ -1,4 +1,5 @@
 const HSM = require('../hsm');
+const {HSMSuite} = require('../builder/cryptoSuite');
 const logger = require('../logger').new('test:hsm', true);
 logger.info('libs', HSM.availablePKCSLibs);
 
@@ -19,7 +20,8 @@ const ECDSATask = async (cryptoSuite, ephemeral) => {
 const task = async () => {
 	const slot = 0;
 	const pin = 'fabric';
-	const cryptoSuite = HSM.newHSMCryptoSuite({slot, pin});
+	const lib = HSM.availablePKCSLibs[0];
+	const cryptoSuite = HSMSuite({lib, slot, pin});
 	await ECDSATask(cryptoSuite, true);
 };
 task();

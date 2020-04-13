@@ -7,10 +7,9 @@ class CAService {
 	 *
 	 * @param {string} caUrl
 	 * @param {CertificatePem[]} [trustedRoots] tls CA for connection
-	 * @param {CryptoSuite} [cryptoSuite]
+	 * @param {Client.ICryptoSuite} [cryptoSuite]
 	 */
-	constructor(caUrl, trustedRoots = [], cryptoSuite) {
-		this.cryptoSuite = cryptoSuite || emptySuite();
+	constructor(caUrl, trustedRoots = [], cryptoSuite = emptySuite()) {
 		const tlsOptions = {
 			trustedRoots,
 			verify: trustedRoots.length > 0

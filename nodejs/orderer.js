@@ -1,8 +1,5 @@
 const {LoggingLevel} = require('khala-fabric-formatter/remote');
 const {OrdererType, MetricsProvider} = require('./constants');
-exports.find = (orderers, {ordererUrl}) => {
-	return ordererUrl ? orderers.find((orderer) => orderer.getUrl() === ordererUrl) : orderers[0];
-};
 const containerDefaultPaths = {
 	CONFIGTX: '/etc/hyperledger/configtx',
 	state: '/var/hyperledger/production/orderer/',

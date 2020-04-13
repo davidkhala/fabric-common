@@ -56,7 +56,7 @@ Current version 1.4.5
 - [raft] Each channel has its own RAFT orderer cluster, but system channel should have a super set of all orderer cluster  -- Jay Guo
 - [raft][migrate] migrate from kafka to etcdRaft, see [here](https://github.com/davidkhala/delphi-fabric/tree/release-1.4/operations/migrate/README.md)
 - [solo][FAB-15754] Deploy a single-node Raft-based ordering service instead of using solo consensus type
-- Block data emitted in block event has a structure documented in [types.js](./nodejs/types.js)  
+- Block data emitted in block event has a structure documented in [types.js](.nodejs/formatter/types.js)  
 - [Replay Attack] txID replay validation is done by orderer, the duplicated txID could not be found at next block marked as "invalid transaction"   
 ### Notes: ChannelEventHub
 - for application channel

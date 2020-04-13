@@ -1,16 +1,17 @@
-const Channel = require('fabric-client/lib/Channel');
-const {sendPeersProposal, toEnvelope} = require('fabric-client/lib/client-utils');
-
-
-const emptyChannel = (channelName) => {
-	const client = {getClientCertHash: () => undefined};
-	return new Channel(channelName, client);
-};
 /**
  * @typedef PeerSignedProposal
  * @property {Buffer} proposal_bytes
  * @property {Buffer} signature
  */
+/**
+ * @typedef {Object} UnsignedTransaction
+ * @property {Client.Header} header
+ * @property {ByteBuffer} data
+ */
+
+const Channel = require('fabric-client/lib/Channel');
+const {sendPeersProposal, toEnvelope} = require('fabric-client/lib/client-utils');
+const {emptyChannel} = require('./channel');
 
 /**
  *
@@ -63,11 +64,7 @@ exports.unsignedTransactionProposal = (channelName, {fcn, args = [], chaincodeId
 	return {proposal, transactionID};
 };
 
-/**
- * @typedef {Object} UnsignedTransaction
- * @property {Client.Header} header
- * @property {ByteBuffer} data
- */
+
 
 /**
  *
@@ -122,4 +119,20 @@ exports.transactionProposal = async (client, targets, channelName, {
 		proposal,
 		txId
 	};
+};
+
+/**
+ *
+ * @param {SigningIdentity} signingIdentity
+ * @param {Client.TransactionRequest} nextRequest
+ * @param {Client.Orderer} orderer
+ * @param {number} [timeout]
+ * @return {Promise<Client.BroadcastResponse>}
+ */
+exports.commit = async (signingIdentity, nextRequest, orderer, timeout) => {
+	const {proposalResponses, proposal} = nextRequest;
+	const unsignedTx = exports.unsignedTransaction(proposalResponses, proposal);
+	const proposal_bytes = unsignedTx.toBuffer();
+	const signature = signingIdentity.sign(proposal_bytes);
+	return await exports.sendSignedTransaction({signature, proposal_bytes}, orderer, timeout);
 };

@@ -1,7 +1,7 @@
 const path = require('path');
-const {fsExtra} = require('khala-nodeutils/helper');
-const {pkcs11_key} = require('./ca');
+const fsExtra = require('fs-extra');
 const {normalizeX509} = require('khala-fabric-sdk-node-builder/helper');
+const {ECDSA_PrvKey, ECDSA_Key} = require('khala-fabric-formatter/key');
 exports.findKeyFiles = (dir) => {
 	const files = fsExtra.readdirSync(dir);
 	return files.filter((fileName) => fileName.endsWith('_sk')).map((fileName) => path.resolve(dir, fileName));
@@ -189,14 +189,16 @@ class CryptoPath {
 	toMSP({key, certificate, rootCertificate}, type) {
 		const {cacerts, keystore, signcerts} = this.MSPFile(type);
 		fsExtra.outputFileSync(signcerts, certificate);
-		pkcs11_key.toKeystore(keystore, key);
+		const ecdsaPrvKey = new ECDSA_PrvKey(key, fsExtra);
+		ecdsaPrvKey.toKeystore(keystore);
 		fsExtra.outputFileSync(cacerts, rootCertificate);
 	}
 
 	toTLS({key, certificate, rootCertificate}, type) {
 		const {caCert, cert, key: serverKey} = this.TLSFile(type);
 		const {tlscacerts} = this.MSPFile(type);// TLS in msp folder
-		pkcs11_key.save(serverKey, key);
+		const ecdsaKey = new ECDSA_Key(key, fsExtra);
+		ecdsaKey.save(serverKey);
 		fsExtra.outputFileSync(cert, certificate);
 		fsExtra.outputFileSync(caCert, rootCertificate);
 		fsExtra.outputFileSync(tlscacerts, rootCertificate);

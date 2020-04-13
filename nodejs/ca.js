@@ -1,8 +1,7 @@
 const path = require('path');
 const logger = require('./logger').new('CA core');
-const {fsExtra} = require('khala-nodeutils/helper');
 const FABRIC_CA_HOME = '/etc/hyperledger/fabric-ca-server';
-const identityServiceUtil = require('./identityService');
+const IdentityService = require('khala-fabric-sdk-node-builder/identityService');
 exports.container = {
 	FABRIC_CA_HOME,
 	CONFIG: path.resolve(FABRIC_CA_HOME, 'fabric-ca-server-config.yaml'),
@@ -13,9 +12,9 @@ exports.container = {
 
 const registerIfNotExist = async (caService, admin, {enrollmentID, enrollmentSecret, affiliation, role, attrs}) => {
 	try {
-		const identityService = identityServiceUtil.new(caService);
+		const identityService = new IdentityService(caService);
 
-		const secret = await identityServiceUtil.create(identityService, admin, {
+		const secret = await identityService.create(admin, {
 			enrollmentID, enrollmentSecret, affiliation, role, attrs
 		});
 		if (!enrollmentSecret) {
@@ -43,40 +42,10 @@ exports.intermediateCA = {
 		});
 	}
 };
-const ECDSAPRIV = require('./key');
-const pkcs11KeySave = (filePath, key) => {
-	const ecdsaKey = new ECDSAPRIV(key);
-	fsExtra.outputFileSync(filePath, ecdsaKey.pem());
-};
-exports.pkcs11_key = {
-	generate: (cryptoSuite) => cryptoSuite.generateKey({ephemeral: !cryptoSuite._cryptoKeyStore}),
-	toKeystore: (dirName, key) => {
-		const ecdsaKey = new ECDSAPRIV(key);
-		const filename = ecdsaKey.filename();
-		const absolutePath = path.resolve(dirName, filename);
-		pkcs11KeySave(absolutePath, key);
-	},
-	save: pkcs11KeySave
-};
 
 exports.register = registerIfNotExist;
 exports.envBuilder = () => {
 	return [
 		'GODEBUG=netdns=go'
 	];
-};
-exports.toString = (caService) => {
-	const caClient = caService._fabricCAClient;
-	const returned = {
-		caName: caClient._caName,
-		hostname: caClient._hostname,
-		port: caClient._port
-	};
-	const trustedRoots = caClient._tlsOptions.trustedRoots.map(buffer => buffer.toString());
-	returned.tlsOptions = {
-		trustedRoots,
-		verify: caClient._tlsOptions.verify
-	};
-
-	return JSON.stringify(returned);
 };

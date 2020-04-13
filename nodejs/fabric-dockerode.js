@@ -6,7 +6,7 @@ const kafkaUtil = require('./kafka');
 const ordererUtil = require('./orderer');
 const zookeeperUtil = require('./zookeeper');
 const couchdbUtil = require('./couchdb');
-const userUtil = require('./user');
+const {adminName:defaultAdminName,adminPwd:defaultAdminPwd} = require('khala-fabric-formatter/user');
 const query = require('./query');
 /**
  * @param fabricTag
@@ -59,7 +59,7 @@ exports.fabricImagePull = async ({fabricTag, thirdPartyTag, chaincodeType = 'gol
  */
 exports.runCA = async ({
 	container_name, port, network, imageTag,
-	adminName = userUtil.adminName, adminPassword = userUtil.adminPwd,
+	adminName = defaultAdminName, adminPassword = defaultAdminPwd,
 	TLS, issuer
 }, intermediate) => {
 

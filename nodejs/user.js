@@ -1,5 +1,4 @@
 const fs = require('fs');
-exports.formatUsername = (username, domain) => `${username}@${domain}`;
 const UserBuilder = require('khala-fabric-sdk-node-builder/user');
 
 /**
@@ -7,17 +6,21 @@ const UserBuilder = require('khala-fabric-sdk-node-builder/user');
  * @param cryptoPath
  * @param {NodeType} nodeType
  * @param mspId
- * @returns {User|void}
+ * @param {boolean} [toThrow]
+ * @returns {User}
  */
-exports.loadFromLocal = (cryptoPath, nodeType, mspId) => {
+exports.loadFromLocal = (cryptoPath, nodeType, mspId, toThrow) => {
 	const username = cryptoPath.userName;
 	const exist = cryptoPath.cryptoExistLocal(`${nodeType}User`);
 	if (!exist) {
-		return;
+		if (toThrow) {
+			throw Error(`User [${username}] from ${nodeType} organization [${mspId}] not found`);
+		}
+		return null;
 	}
 	const {keystore, signcerts} = exist;
 
-	const builder = new UserBuilder(username);
+	const builder = new UserBuilder({name: username});
 	return builder.build({
 		key: fs.readFileSync(keystore),
 		certificate: fs.readFileSync(signcerts),
@@ -25,22 +28,10 @@ exports.loadFromLocal = (cryptoPath, nodeType, mspId) => {
 	});
 };
 
-exports.getCertificate = (user) => user.getSigningIdentity()._certificate;
-exports.getMSPID = (user) => user._mspId;
-exports.getPrivateKey = (user) => user.getSigningIdentity()._signer._key;
-
 /**
  *
- * @param {User} user
- * @param messageBytes
+ * @param {Client.User} user
+ * @param {Buffer} messageBytes
  * @return {Buffer}
  */
-exports.sign = (user, messageBytes) => user._signingIdentity.sign(messageBytes, undefined);
-
-
-exports.fromClient = (client) => {
-	return client._userContext;
-};
-
-exports.adminName = 'Admin';
-exports.adminPwd = 'passwd';
+exports.sign = (user, messageBytes) => user.getSigningIdentity().sign(messageBytes, undefined);
