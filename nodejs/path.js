@@ -156,7 +156,6 @@ class CryptoPath {
 		};
 	}
 
-
 	MSPKeystore(type) {
 		const dir = this.MSPFile(type).keystore;
 		const files = exports.findKeyFiles(dir);

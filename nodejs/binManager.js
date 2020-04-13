@@ -2,7 +2,6 @@ const {exec, execResponsePrint, execDetach, killProcess, findProcess} = require(
 const yaml = require('khala-nodeutils/yaml');
 const path = require('path');
 const fs = require('fs');
-const logger = require('khala-logger/log4js').consoleLogger('binManager');
 const {createTmpFile, createTmpDir} = require('khala-nodeutils/tmp');
 
 class BinManager {
@@ -10,11 +9,16 @@ class BinManager {
 		return `${path.resolve(this.binPath, executable)} ${args}`;
 	}
 
-	constructor(binPath = process.env.binPath) {
+	/**
+	 *
+	 * @param binPath
+	 * @param [logger]
+	 */
+	constructor(binPath = process.env.binPath, logger = console) {
 		if (!fs.lstatSync(binPath).isDirectory()) {
 			throw Error('BinManager: environment <binPath> is not a directory');
 		}
-
+		this.logger = logger;
 		this.binPath = binPath;
 		// TODO how to use streaming buffer to exec
 		this.configtxlatorCMD = {
@@ -127,7 +131,7 @@ class BinManager {
 				return opt + `--CORS=${entry}`;
 			};
 			const CMD = this._buildCMD('configtxlator', `start --hostname=${hostname} --port=${port} ${CORS.reduce(CORSReducer, '')}`);
-			logger.info('CMD', CMD);
+			this.logger.info('CMD', CMD);
 			execDetach(CMD);
 		} else {
 			const matched = await findProcess('port', port);
@@ -169,7 +173,7 @@ class BinManager {
 			 * @return {Promise<*>}
 			 */
 			package: async ({chaincodeId, chaincodePath, chaincodeType, chaincodeVersion, metadataPath},
-				{localMspId, mspConfigPath}, outputFile, instantiatePolicy) => {
+			                {localMspId, mspConfigPath}, outputFile, instantiatePolicy) => {
 				const [FABRIC_CFG_PATH, t1] = createTmpDir();
 				fs.writeFileSync(path.resolve(FABRIC_CFG_PATH, 'core.yml'), '');
 				process.env.FABRIC_CFG_PATH = FABRIC_CFG_PATH;
@@ -183,7 +187,7 @@ class BinManager {
 					optionTokens += ` --lang ${chaincodeType}`;
 				}
 				const CMD = this._buildCMD('peer', `chaincode package ${optionTokens} ${outputFile}`);
-				logger.info('CMD', CMD);
+				this.logger.info('CMD', CMD);
 				const result = await exec(CMD);
 				execResponsePrint(result);
 				t1();
@@ -207,13 +211,13 @@ class BinManager {
 					channelName = 'testchainid';
 				}
 				const CMD = `${this.binPath}/configtxgen -outputBlock ${outputFile} -profile ${profile} -channelID ${channelName} -configPath ${configPath}`;
-				logger.info('CMD', CMD);
+				this.logger.info('CMD', CMD);
 				const result = await exec(CMD);
 				execResponsePrint(result);
 			},
 			genChannel: async (outputFile) => {
 				const CMD = `${this.binPath}/configtxgen -outputCreateChannelTx ${outputFile} -profile ${profile} -channelID ${channelName} -configPath ${configPath}`;
-				logger.info('CMD', CMD);
+				this.logger.info('CMD', CMD);
 				const result = await exec(CMD);
 				execResponsePrint(result);
 			},
@@ -229,22 +233,22 @@ class BinManager {
 				configtxYamlCheck();
 
 				const CMD = `${this.binPath}/configtxgen -outputAnchorPeersUpdate ${outputFile} -profile ${profile} -channelID ${channelName} -asOrg ${asOrg} -configPath ${configPath}`;
-				logger.info('CMD', CMD);
+				this.logger.info('CMD', CMD);
 				const result = await exec(CMD);
 				execResponsePrint(result);
 			},
 			viewBlock: async (blockFile) => {
 				const CMD = `${this.binPath}/configtxgen -inspectBlock ${blockFile} -profile ${profile} -configPath ${configPath}`;
-				logger.info('CMD', CMD);
+				this.logger.info('CMD', CMD);
 				const result = await exec(CMD);
-				console.error('stderr[start]\n', result.stderr, '[end]stderr');
+				this.logger.error('stderr[start]\n', result.stderr, '[end]stderr');
 				return JSON.parse(result.stdout);
 			},
 			viewChannel: async (channelFile) => {
 				const CMD = `${this.binPath}/configtxgen -inspectChannelCreateTx ${channelFile} -profile ${profile} -channelID ${channelName} -configPath ${configPath}`;
-				logger.info('CMD', CMD);
+				this.logger.info('CMD', CMD);
 				const result = await exec(CMD);
-				console.error('stderr[start]\n', result.stderr, '[end]stderr');
+				this.logger.error('stderr[start]\n', result.stderr, '[end]stderr');
 				return JSON.parse(result.stdout);
 			}
 		};
