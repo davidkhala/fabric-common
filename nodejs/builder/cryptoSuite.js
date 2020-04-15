@@ -15,5 +15,11 @@ exports.emptySuite = () => {
  * @return {Client.ICryptoSuite}
  */
 exports.HSMSuite = ({lib, slot, pin}) => {
-	return Utils.newCryptoSuite({software: false, lib, slot, pin}); // software false to use HSM
+	const defaultValue = Utils.getConfigSetting('crypto-suite-hsm');
+	Utils.setConfigSetting('crypto-suite-hsm', {
+		'EC': 'fabric-client/lib/impl/bccsp_pkcs11.js'
+	});
+	const result = Utils.newCryptoSuite({software: false, lib, slot, pin, keysize: 256, hash: 'SHA2'}); // software false to use HSM
+	Utils.setConfigSetting('crypto-suite-hsm', defaultValue);
+	return result;
 };
