@@ -1,0 +1,8 @@
+{
+  "packages": [
+    "builder",
+    "fabric-network",
+    "formatter"
+  ],
+  "version": "independent"
+}

@@ -2,18 +2,19 @@
   "name": "khala-fabric-sdk-node",
   "version": "1.4.5-0.1.2",
   "dependencies": {
-    "khala-dockerode": "^0.1.2",
-    "khala-nodeutils": "^0.8.2",
     "khala-axios": "^0.1.1",
+    "khala-dockerode": "^0.1.2",
+    "khala-fabric-sdk-node-builder": "^0.2.1",
     "khala-level": "^0.0.1",
-    "tmp": "^0.1.0",
     "khala-logger": "^0.2.0",
-    "khala-fabric-sdk-node-builder": "^0.2.1"
+    "khala-nodeutils": "^0.8.2",
+    "tmp": "^0.1.0"
   },
   "devDependencies": {
-    "jsrsasign": "^7.2.2",
     "fabric-ca-client": "^1.4.8",
-    "fabric-client": "^1.4.8"
+    "fabric-client": "^1.4.8",
+    "jsrsasign": "^7.2.2",
+    "lerna": "^3.20.2"
   },
   "keywords": [
     "fabric-sdk-node",

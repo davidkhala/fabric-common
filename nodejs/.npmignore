@@ -3,3 +3,4 @@ test
 fabric-network
 formatter
 builder
+lerna.json
