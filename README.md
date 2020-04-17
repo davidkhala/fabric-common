@@ -10,7 +10,12 @@ Current version 1.4.5
     - nodejs: 10.x
     - npm: 6 + 
     - Python: 2.7
-
+## Mono repository division
+- [bash](./bash)
+- [deprecated][Hyperledger composer](./composer)
+- [golang](./golang)
+- [java](./java)
+- [nodejs](./nodejs)
 ## Design Notes
 - `configtxlator` handler in `nodejs/binManager.js`
 - CICD: using travis
