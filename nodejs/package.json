@@ -1,15 +1,14 @@
 {
   "name": "khala-fabric-sdk-node",
-  "version": "1.4.5-0.1.0",
+  "version": "1.4.5-0.1.2",
   "dependencies": {
-    "khala-fabric-formatter": "file:./formatter",
     "khala-dockerode": "^0.1.2",
     "khala-nodeutils": "^0.8.2",
     "khala-axios": "^0.1.1",
     "khala-level": "^0.0.1",
     "tmp": "^0.1.0",
     "khala-logger": "^0.2.0",
-    "khala-fabric-sdk-node-builder": "file:./builder"
+    "khala-fabric-sdk-node-builder": "^0.2.1"
   },
   "devDependencies": {
     "jsrsasign": "^7.2.2",
