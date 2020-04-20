@@ -34,7 +34,6 @@ exports.sendSignedTransaction = async (signedTransaction, orderer, timeout) => {
 	return await orderer.sendBroadcast(signed_envelope, timeout);
 };
 
-
 /**
  * @param {string} channelName
  * @param {string} [fcn]
@@ -63,8 +62,6 @@ exports.unsignedTransactionProposal = (channelName, {fcn, args = [], chaincodeId
 	const transactionID = txId.getTransactionID();
 	return {proposal, transactionID};
 };
-
-
 
 /**
  *
