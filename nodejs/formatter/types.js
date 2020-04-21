@@ -9,6 +9,12 @@
  */
 
 /**
+ * @typedef {Object} Metadata
+ * @property {Object} _internal_repr
+ * @property {integer} flags
+ */
+
+/**
  * An object of a fully decoded protobuf message "Block".
  * A Block may contain the configuration of the channel or endorsing transactions on the channel.
  * @typedef {Object} Block

@@ -45,6 +45,10 @@ class ChannelManager {
 		};
 	}
 
+	/**
+	 * @param {string} channelName
+	 * @return {Client.Channel}
+	 */
 	static emptyChannel(channelName) {
 		const client = {getClientCertHash: _ => undefined};
 		return new Channel(channelName, client);
