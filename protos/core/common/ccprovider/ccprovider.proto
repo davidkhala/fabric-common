@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+option go_package = "github.com/hyperledger/fabric/protos/core/common/ccprovider";
+option java_package = "org.hyperledger.fabric.protos.core.common.ccprovider";
+
+package ccprovider;
+
+message ChaincodeData {
+
+    // Name of the chaincode
+    bytes name = 1;
+
+    // Version of the chaincode
+    bytes version = 2;
+    // Escc for the chaincode instance
+    bytes escc = 3;
+
+    // Vscc for the chaincode instance
+    bytes vscc = 4;
+
+    // Policy endorsement policy for the chaincode instance
+    bytes policy = 5;
+
+    // Data data specific to the package
+    bytes data = 6;
+
+    // Id of the chaincode that's the unique fingerprint for the CC This is not
+    // currently used anywhere but serves as a good eyecatcher
+    bytes id = 7;
+
+    // InstantiationPolicy for the chaincode
+    bytes instantiation_policy = 8;
+}
+

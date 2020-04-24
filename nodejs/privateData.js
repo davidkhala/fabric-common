@@ -1,6 +1,6 @@
 const {RoleIdentity, simplePolicyBuilder} = require('./policy');
 const logger = require('./logger').new('privateData');
-const {MSPRoleType} = require('./constants');
+const {MSPRoleType} = require('khala-fabric-formatter/constants');
 
 /**
  * @typedef {Object} collectionConfig

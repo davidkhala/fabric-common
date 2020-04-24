@@ -8,7 +8,7 @@ const {transactionProposal} = require('khala-fabric-sdk-node-builder/transaction
  * @param eventTimeOut
  * @return {Promise<{tx,code}>}
  */
-const txTimerPromise = (eventHub, {txId}, eventTimeOut) => {
+const txTimerPromise = (eventHub, txId, eventTimeOut) => {
 	return new Promise((resolve, reject) => {
 		eventHub.txEvent({txId}, undefined, (tx, code, blockNum) => {
 			clearTimeout(timerID);
@@ -38,35 +38,41 @@ const txTimerPromise = (eventHub, {txId}, eventTimeOut) => {
  */
 
 /**
- * @param {string} command deploy|upgrade
+ * @param {ChaincodeProposalCommand} command
  * @param {Channel} channel
  * @param {Client.Peer[]} peers default: all peers in channel
  * @param {EventHub[]} eventHubs
  * @param {ChaincodeProposalOpts} opts
  * @param {Orderer} orderer
- * @param {number} [proposalTimeOut]
- * @param {number} [eventTimeOut] default: 30000
+ * @param {number} [proposalTimeout]
+ * @param {number} [commitTimeout]
+ * @param {number} [eventTimeout]
  */
 exports.instantiateOrUpgrade = async (
 	command, channel, peers, eventHubs,
-	opts, orderer, proposalTimeOut = 50000 * peers.length,
-	eventTimeOut = 30000
+	opts, orderer, proposalTimeout, commitTimeout, eventTimeout
 ) => {
 	const logger = Logger.new(`${command}-chaincode`, true);
-
-	const nextRequest = await chaincodeProposal(command, channel, peers, opts, proposalTimeOut);
-	const {txId} = nextRequest;
-	if (!txId) {// swallow case
-		return;
+	if (!proposalTimeout) {
+		proposalTimeout = 50000 * peers.length;
 	}
+	if (!commitTimeout) {
+		commitTimeout = 30000;
+	}
+	if (!eventTimeout) {
+		eventTimeout = 30000;
+	}
+	const nextRequest = await chaincodeProposal(command, channel, peers, opts, proposalTimeout);
+	const {txId} = nextRequest;
+	// TODO interceptor here
 
 	const promises = [];
 	for (const eventHub of eventHubs) {
-		promises.push(txTimerPromise(eventHub, {txId}, eventTimeOut));
+		promises.push(txTimerPromise(eventHub, txId, eventTimeout));
 	}
 
 	nextRequest.orderer = orderer;
-	const response = await channel.sendTransaction(nextRequest);
+	const response = await channel.sendTransaction(nextRequest, commitTimeout);
 	logger.info('channel.sendTransaction', response);
 	await Promise.all(promises);
 
@@ -84,9 +90,9 @@ exports.instantiateOrUpgrade = async (
  * @param {string[]} args
  * @param {TransientMap} [transientMap]
  * @param {Client.Orderer} orderer target orderer
- * @param {number} [proposalTimeout] default to 30000 ms
- * @param {number} [commitTimeout] default to 30000 ms
- * @param {number} [eventTimeout] default to 30000 ms
+ * @param {number} [proposalTimeout]
+ * @param {number} [commitTimeout]
+ * @param {number} [eventTimeout]
  * @return {Promise<{txEventResponses: any[], proposalResponses}>} TODO what is the predefined type for txEventResponses
  */
 exports.invoke = async (client, channelName, peers, eventHubs, {
@@ -96,7 +102,7 @@ exports.invoke = async (client, channelName, peers, eventHubs, {
 	logger.debug({channel: channelName, chaincodeId, fcn, args});
 	logger.debug({peers, args, transientMap});
 	if (!proposalTimeout) {
-		proposalTimeout = 30000;
+		proposalTimeout = 50000 * peers.length;
 	}
 	if (!commitTimeout) {
 		commitTimeout = 30000;
@@ -116,7 +122,7 @@ exports.invoke = async (client, channelName, peers, eventHubs, {
 	const promises = [];
 
 	for (const eventHub of eventHubs) {
-		promises.push(txTimerPromise(eventHub, {txId}, eventTimeout));
+		promises.push(txTimerPromise(eventHub, txId, eventTimeout));
 	}
 	await commit(client._userContext._signingIdentity, nextRequest, orderer, commitTimeout);
 

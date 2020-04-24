@@ -39,11 +39,8 @@ Current version 1.4.5
 - [channel][system] peer could not join system channel
     ` [Orderer.js]: sendDeliver - rejecting - status:FORBIDDEN`
 - [channel]channel ID length < 250 :initializing configtx manager failed: bad channel ID: channel ID illegal, cannot be longer than 249
-- [1.4][nodejs][sdk] `Channel#getChannelConfigReadable` could be used to extract application channel from orderer
-    - used in migration from kafka to RAFT. When after <appChannel> config is changed to maintenance mode, peer in <appChannel> could not get the latest channel config. At that point, we could extract <appChannel> config from orderer alternatively.   
+- [proposalResponse] instantiate|upgrade action return a response payload with struct `ChaincodeData`. See in [protobuf message description file](./protos/core/common/ccprovider/ccprovider.proto)  
 - [disaster]backup recovery: at least 1 anchor peer for each organization should be resumed to recover transaction process
-- [nodejs][sdk]node-gyp rebuild require `make` and `g++` 
-- [nodejs][sdk]FABN-1130: Stop using "init" as default function name
 - [couchdb]error symptom of run richQuery on levelDB:  `GET_QUERY_RESULT failed: transaction ID: 6b53220f87f791047ba44635f32d07cb667b6439c5df95e9a208d74ab12b5ff2: ExecuteQuery not supported for leveldb`
 - [raft] etcdraft does not support [non TLS](https://hyperledger-fabric.readthedocs.io/en/release-1.4/raft_configuration.html)
     - Raft nodes identify each other using TLS pinning, so in order to impersonate a Raft node, an attacker needs to obtain the private key of its TLS certificate. As a result, it is not possible to run a Raft node without a valid TLS configuration.
@@ -61,7 +58,6 @@ Current version 1.4.5
 - [raft] Each channel has its own RAFT orderer cluster, but system channel should have a super set of all orderer cluster  -- Jay Guo
 - [raft][migrate] migrate from kafka to etcdRaft, see [here](https://github.com/davidkhala/delphi-fabric/tree/release-1.4/operations/migrate/README.md)
 - [solo][FAB-15754] Deploy a single-node Raft-based ordering service instead of using solo consensus type
-- Block data emitted in block event has a structure documented in [types.js](.nodejs/formatter/types.js)  
 - [Replay Attack] txID replay validation is done by orderer, the duplicated txID could not be found at next block marked as "invalid transaction"   
 ### Notes: ChannelEventHub
 - for application channel

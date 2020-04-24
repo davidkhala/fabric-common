@@ -3,8 +3,13 @@ const path = require('path');
 const fs = require('fs');
 
 class Protobuf {
-	constructor(node_modules) {
-		const root = path.resolve(node_modules, 'fabric-client', 'lib', 'protos');
+	/**
+	 *
+	 * @param [node_modules]
+	 * @param [protoRoot]
+	 */
+	constructor(node_modules, protoRoot) {
+		const root = protoRoot ? path.resolve(protoRoot) : path.resolve(node_modules, 'fabric-client', 'lib', 'protos');
 		if (!fs.lstatSync(root).isDirectory()) {
 			throw Error(`ProtobufLoader: root <${root}> is not a directory`);
 		}

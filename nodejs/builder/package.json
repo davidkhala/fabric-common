@@ -1,9 +1,10 @@
 {
   "name": "khala-fabric-sdk-node-builder",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "dependencies": {
     "fabric-ca-client": "^1.4.8",
     "fabric-client": "^1.4.8",
-    "khala-fabric-formatter": "^0.1.1"
+    "khala-fabric-formatter": "^0.1.2",
+    "khala-fabric-protos": "^1.4.0"
   }
 }

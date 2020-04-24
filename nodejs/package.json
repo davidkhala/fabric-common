@@ -1,6 +1,6 @@
 {
   "name": "khala-fabric-sdk-node",
-  "version": "1.4.5-0.1.2",
+  "version": "1.4.5-0.2.0",
   "dependencies": {
     "khala-axios": "^0.1.1",
     "khala-dockerode": "^0.1.2",
@@ -11,8 +11,6 @@
     "tmp": "^0.1.0"
   },
   "devDependencies": {
-    "fabric-ca-client": "^1.4.8",
-    "fabric-client": "^1.4.8",
     "jsrsasign": "^7.2.2",
     "lerna": "^3.20.2"
   },

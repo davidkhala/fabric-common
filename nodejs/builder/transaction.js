@@ -111,11 +111,7 @@ exports.transactionProposal = async (client, targets, channelName, {
 		transientMap
 	};
 	const [proposalResponses, proposal] = await Channel.sendTransactionProposal(request, channelName, client, proposalTimeout);
-	return {
-		proposalResponses,
-		proposal,
-		txId
-	};
+	return {proposalResponses, proposal, txId};
 };
 
 /**

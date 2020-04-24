@@ -1,5 +1,5 @@
 const {LoggingLevel} = require('khala-fabric-formatter/remote');
-const {MetricsProvider} = require('./constants');
+const {MetricsProvider} = require('khala-fabric-formatter/constants');
 
 exports.container =
 	{

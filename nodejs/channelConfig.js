@@ -3,7 +3,8 @@ const fs = require('fs');
 const agent = require('./agent2configtxlator');
 const {JSONEqual} = require('khala-nodeutils/helper');
 const {signChannelConfig} = require('./multiSign');
-const {ChannelType, OrdererType} = require('./constants');
+const {ChannelType} = require('./constants');
+const {OrdererType} = require('khala-fabric-formatter/constants');
 
 /**
  * @callback configChangeCallback

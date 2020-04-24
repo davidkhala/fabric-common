@@ -6,7 +6,7 @@ const kafkaUtil = require('./kafka');
 const ordererUtil = require('./orderer');
 const zookeeperUtil = require('./zookeeper');
 const couchdbUtil = require('./couchdb');
-const {adminName:defaultAdminName,adminPwd:defaultAdminPwd} = require('khala-fabric-formatter/user');
+const {adminName: defaultAdminName, adminPwd: defaultAdminPwd} = require('khala-fabric-formatter/user');
 const query = require('./query');
 /**
  * @param fabricTag
@@ -57,11 +57,13 @@ exports.fabricImagePull = async ({fabricTag, thirdPartyTag, chaincodeType = 'gol
  * @param intermediate
  * @returns {Promise<*>}
  */
-exports.runCA = async ({
-	container_name, port, network, imageTag,
-	adminName = defaultAdminName, adminPassword = defaultAdminPwd,
-	TLS, issuer
-}, intermediate) => {
+exports.runCA = async ({container_name, port, network, imageTag, adminName, adminPassword, TLS, issuer}, intermediate) => {
+	if (!adminName) {
+		adminName = defaultAdminName;
+	}
+	if (!adminPassword) {
+		adminPassword = defaultAdminPwd;
+	}
 
 	const {caKey, caCert} = caUtil.container;
 	const {CN, OU, O, ST, C, L} = issuer;
@@ -189,10 +191,9 @@ exports.chaincodeClear = async (filter) => {
 		await dockerUtil.imageDelete(container.Image);
 	}
 };
-exports.runOrderer = async ({
-	container_name, imageTag, port, network, BLOCK_FILE, CONFIGTXVolume,
-	msp: {id, configPath, volumeName}, ordererType, tls, stateVolume
-}, operations, metrics) => {
+// eslint-disable-next-line max-len
+exports.runOrderer = async ({container_name, imageTag, port, network, BLOCK_FILE, CONFIGTXVolume, msp, ordererType, tls, stateVolume}, operations, metrics) => {
+	const {id, configPath, volumeName} = msp;
 	const Image = `hyperledger/fabric-orderer:${imageTag}`;
 	const Cmd = ['orderer'];
 	const Env = ordererUtil.envBuilder({
@@ -217,13 +218,8 @@ exports.runOrderer = async ({
 	return await dockerUtil.containerStart(createOptions);
 };
 
-exports.runPeer = async ({
-	container_name, port, network, imageTag,
-	msp: {
-		id, volumeName,
-		configPath
-	}, peerHostName, tls, couchDB, stateVolume
-}, operations, metrics) => {
+exports.runPeer = async ({container_name, port, network, imageTag, msp, peerHostName, tls, couchDB, stateVolume}, operations, metrics) => {
+	const {id, configPath, volumeName} = msp;
 	const Image = `hyperledger/fabric-peer:${imageTag}`;
 	const Cmd = ['peer', 'node', 'start'];
 	const Env = peerUtil.envBuilder({

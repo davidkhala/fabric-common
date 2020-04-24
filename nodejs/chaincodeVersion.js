@@ -5,6 +5,7 @@ const Logger = require('./logger');
 const {chaincodesInstalled, chaincodesInstantiated} = require('./query');
 const {chaincodeClear} = require('./fabric-dockerode');
 const {isArrayEven} = require('khala-nodeutils/helper');
+const {ChaincodeProposalCommand} = require('khala-fabric-formatter/constants');
 
 /**
  *
@@ -35,7 +36,6 @@ exports.findLatest = findLatest;
  * @param {string} [metadataPath]
  * @param {Client} client
  * @param {string} incrementLevel incrementLevel major|minor|patch
- * @returns {Promise<ProposalResult>}
  */
 exports.incrementInstall = async (peers, {chaincodeId, chaincodePath, chaincodeType, metadataPath}, client, incrementLevel) => {
 	const logger = Logger.new(`install version ${incrementLevel}`, true);
@@ -61,15 +61,14 @@ exports.incrementInstall = async (peers, {chaincodeId, chaincodePath, chaincodeT
 		chaincodeVersion = nextVersion(lastChaincode.version, incrementLevel);
 	}
 
-	const result = await install(peers, {
+	const proposalResponses = await install(peers, {
 		chaincodeId,
 		chaincodePath,
 		chaincodeVersion,
 		chaincodeType,
 		metadataPath
 	}, client);
-	result.chaincodeVersion = chaincodeVersion;
-	return result;
+	return {chaincodeVersion, proposalResponses};
 };
 exports.incrementUpgrade = async (channel, peers, eventHubs, opts, orderer, proposalTimeOut, eventTimeOut) => {
 	const {chaincodeId} = opts;
@@ -77,12 +76,14 @@ exports.incrementUpgrade = async (channel, peers, eventHubs, opts, orderer, prop
 	const {pretty} = await chaincodesInstantiated(peers[0], channel);
 	const chaincode = pretty.find(({name}) => name === chaincodeId);
 	if (!chaincode) {
+		// eslint-disable-next-line require-atomic-updates
 		opts.chaincodeVersion = nextVersion();
-		await instantiateOrUpgrade('deploy', channel, peers, eventHubs, opts, orderer, proposalTimeOut, eventTimeOut);
+		await instantiateOrUpgrade(ChaincodeProposalCommand.deploy, channel, peers, eventHubs, opts, orderer, proposalTimeOut, eventTimeOut);
 	} else {
 		const {version} = chaincode;
+		// eslint-disable-next-line require-atomic-updates
 		opts.chaincodeVersion = nextVersion(version);
-		await instantiateOrUpgrade('upgrade', channel, peers, eventHubs, opts, orderer, proposalTimeOut, eventTimeOut);
+		await instantiateOrUpgrade(ChaincodeProposalCommand.upgrade, channel, peers, eventHubs, opts, orderer, proposalTimeOut, eventTimeOut);
 	}
 };
 /**
@@ -90,8 +91,6 @@ exports.incrementUpgrade = async (channel, peers, eventHubs, opts, orderer, prop
  * @param peer query peer to fetch instantiate info
  * @param channel
  * @param chaincodeId
- * @param [container_name] required if aim to clean  legacy chaincode package installed in peer
- * @return {Promise<void>}
  */
 exports.pruneChaincodeLegacy = async (peer, channel, chaincodeId) => {
 	const {pretty} = await chaincodesInstantiated(peer, channel);

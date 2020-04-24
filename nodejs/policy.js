@@ -26,7 +26,7 @@
   }
 */
 
-const {IdentityType} = require('./constants');
+const {IdentityType} = require('khala-fabric-formatter/constants');
 
 /**
  *

@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+option go_package = "github.com/hyperledger/fabric/protos/core/common/ccprovider";
+option java_package = "org.hyperledger.fabric.protos.core.common.ccprovider";
+
+package ccprovider;
+message SignedCDSData {
+    bytes hash = 1; // CodeHash
+    bytes metadatahash = 2; // MetaDataHash
+    bytes signaturehash = 3; // SignatureHash
+}
