@@ -10,6 +10,9 @@
     "khala-nodeutils": "^0.8.2",
     "tmp": "^0.1.0"
   },
+  "scripts": {
+    "install": "lerna bootstrap"
+  },
   "devDependencies": {
     "jsrsasign": "^7.2.2",
     "lerna": "^3.20.2"

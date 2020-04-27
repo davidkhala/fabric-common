@@ -10,7 +10,7 @@ matrix:
         - curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/scripts/npm.sh | bash -s packageLock false
         - ./install.sh fabricInstall
         - npm install --global lerna
-        - cd nodejs; lerna bootstrap; cd -;
+        - cd nodejs; npm install; cd -
       script:
         - node nodejs/test
 
