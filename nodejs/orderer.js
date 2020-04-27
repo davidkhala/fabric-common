@@ -1,4 +1,4 @@
-const Orderer = require('fabric-common/lib/Orderer');//TODO
+const Orderer = require('fabric-common/lib/Orderer');// TODO
 const fs = require('fs');
 const logger = require('./logger').new('orderer');
 const {LoggingLevel, RemoteOptsTransform} = require('./remote');

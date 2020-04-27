@@ -1,0 +1,7 @@
+{
+  "name": "khala-fabric-admin",
+  "version": "2.1.0-0.0.0",
+  "dependencies": {
+    "fabric-common": "2.1.0"
+  }
+}

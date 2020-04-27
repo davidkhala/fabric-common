@@ -5,8 +5,7 @@
     "install": "lerna bootstrap"
   },
   "dependencies": {
-    "fabric-ca-client": "^2.1.0",
-    "fabric-common": "^2.1.0",
+    "khala-fabric-admin": "2.1.0-0.0.0",
     "khala-dockerode": "^0.1.2",
     "khala-level": "^0.0.1",
     "khala-logger": "^0.2.0",
@@ -14,6 +13,8 @@
     "tmp": "^0.1.0"
   },
   "devDependencies": {
+    "fabric-ca-client": "^2.1.0",
+    "fabric-common": "^2.1.0",
     "jsrsasign": "^7.2.2",
     "lerna": "^3.20.2"
   },
