@@ -4,9 +4,6 @@ matrix:
       node_js:
         - "10"
       dist: bionic
-      cache:
-        directories:
-          - nodejs/node_modules
       install:
         - export nodejsInstall="curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/install.sh"
         - $nodejsInstall | bash -s nodeGYPDependencies
