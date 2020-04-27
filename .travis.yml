@@ -4,14 +4,13 @@ matrix:
       node_js:
         - "10"
       dist: bionic
-      cache:
-        directories:
-          - nodejs/node_modules
       install:
-        - ./install.sh
-        - export BIN_Parent=$PWD
-        - ./bash/pullBIN.sh
-        - cd nodejs; npm install; cd -;
+        - export nodejsInstall="curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/install.sh"
+        - $nodejsInstall | bash -s nodeGYPDependencies
+        - curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/scripts/npm.sh | bash -s packageLock false
+        - ./install.sh fabricInstall
+        - npm install --global lerna
+        - cd nodejs; npm install; cd -
       script:
         - node nodejs/test
 

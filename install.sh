@@ -67,7 +67,7 @@ softHSM() {
 	fi
 }
 fabricInstall() {
-	curl -sSL https://bit.ly/2ysbOFE | bash -s -- 2.0.1 1.4.6 0.4.18 -s
+	curl -sSL https://bit.ly/2ysbOFE | bash -s -- 2.1.0 1.4.6 0.4.18 -s
 }
 if [[ -n "$fcn" ]]; then
 	$fcn $remain_params
@@ -84,6 +84,6 @@ else
 	$dockerInstall | bash -s installjq
 	nodejsInstall="curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/install.sh"
 	$nodejsInstall | bash -s nodeGYPDependencies
-	$nodejsInstall | bash -s install8
+	$nodejsInstall | bash -s install10
 	curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/scripts/npm.sh | bash -s packageLock false
 fi
