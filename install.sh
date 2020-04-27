@@ -109,14 +109,6 @@ softHSM() {
 fabricInstall() {
 	curl -sSL http://bit.ly/2ysbOFE | bash -s -- 1.4.5 1.4.5 0.4.18 -s
 }
-sync() {
-	CURRENT=$(cd $(dirname ${BASH_SOURCE}) && pwd)
-	cd $CURRENT/nodejs
-	npm install
-	cd fabric-network
-	npm install
-	cd $CURRENT
-}
 if [[ -n "$fcn" ]]; then
 	$fcn $remain_params
 else

@@ -12,9 +12,8 @@ matrix:
         - $nodejsInstall | bash -s nodeGYPDependencies
         - curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/scripts/npm.sh | bash -s packageLock false
         - ./install.sh fabricInstall
-        - cd nodejs; npm install; cd -;
-        - cd nodejs/formatter; npm install; cd -;
-        - cd nodejs/fabric-network; npm install; cd -;
+        - npm install --global lerna
+        - cd nodejs; lerna bootstrap; cd -;
       script:
         - node nodejs/test
 
