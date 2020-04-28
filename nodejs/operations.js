@@ -1,5 +1,5 @@
 const {RequestPromise} = require('khala-nodeutils/request');
-const {LoggingLevel} = require('./remote');
+const {LoggingLevel} = require('khala-fabric-formatter/remote');
 /**
  * @typedef {Object} OperationHealthz
  * @property {string} status

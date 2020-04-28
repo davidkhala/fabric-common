@@ -1,4 +1,7 @@
 const EndPoint = require('fabric-common/lib/Endpoint');
+const Endorser = require('fabric-common/lib/Endorser');
+const Eventer = require('fabric-common/lib/Eventer');
+const {RemoteOptsTransform} = require('khala-fabric-formatter/remote');
 const fs = require('fs');
 
 class Peer {
@@ -15,8 +18,6 @@ class Peer {
 	 * @param {ClientCert} [clientCert]
 	 */
 	constructor({peerPort, peerHostName, cert, pem, host, clientKey, clientCert}) {
-
-
 		if (!pem) {
 			if (fs.existsSync(cert)) {
 				pem = fs.readFileSync(cert).toString();
@@ -38,27 +39,43 @@ class Peer {
 		}
 
 
-		// const opts = RemoteOptsTransform({host, pem, sslTargetNameOverride, clientKey, clientCert}); // TODO
-
-
-		const options = {
+		const options = RemoteOptsTransform({
 			url: peerUrl,
-			pem, clientKey, clientCert
-		};
-		this.endPoint = new EndPoint(options);
+			host: this.host,
+			pem,
+			sslTargetNameOverride: this.sslTargetNameOverride,
+			clientKey: this.clientKey,
+			clientCert: this.clientCert
+		});
+		this.endpoint = new EndPoint(options);
+		const endorser = new Endorser(this.endpoint.url, {}, undefined);
+		endorser.setEndpoint(this.endpoint);
+		this.endorser = endorser;
+
+		const eventer = new Eventer(this.endpoint.url, {}, undefined);
+		eventer.setEndpoint(this.endpoint);
+		this.eventer = eventer;
 	}
 
-	isTLS() {
-		return !!this.pem;
+	/**
+	 * basic health check as endorser role
+	 * @return {Promise<boolean>} false if connect trial failed
+	 */
+	async ping() {
+		try {
+			const endorser = this.endorser;
+			endorser.service = new endorser.serviceClass(this.endpoint.addr, this.endpoint.creds, endorser.options);
+			await endorser.waitForReady(endorser.service);
+			return true;
+		} catch (err) {
+			if (err.message.includes('Failed to connect before the deadline')) {
+				return false;
+			} else {
+				throw err;
+			}
+		}
 	}
 }
-
-Peer.container = {
-	MSPROOT: '/etc/hyperledger/crypto-config',
-	dockerSock: '/host/var/run/docker.sock',
-	state: '/var/hyperledger/production',
-	config: '/etc/hyperledger/'
-};
 
 
 module.exports = Peer;

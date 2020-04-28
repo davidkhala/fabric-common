@@ -9,19 +9,38 @@
  *    To use with the gRPC protocol (that is, with TransportCredentials).
  *    Required when using the grpcs protocol with client certificates.
  */
-const logger = require('./logger').new('remote');
-const RemoteOptsTransform = (opts = {}) => {
-	const {sslTargetNameOverride, host} = opts;
+
+/**
+ * @typedef {string} SSLTargetNameOverride Used in test environment only
+ *  when the server certificate's hostname (in the 'CN' field) does not match the actual host endpoint that the server process runs at,
+ *  the application can work around the client TLS verify failure by setting this property to the value of the server certificate's hostname
+ */
+
+
+/**
+ *
+ * @param {Object} opts
+ * @param [logger]
+ */
+const RemoteOptsTransform = (opts = {}, logger = console) => {
+	const {sslTargetNameOverride, host, waitForReadyTimeout, requestTimeout} = opts;
+
 	if (host && host.toLowerCase() !== host) {
-		logger.error(`invalid hostname [${host}] : [docker-network][gRpcs] host endpoint contains upper case is not allowed in TLS auth within docker network`);
+		logger.error(`invalid hostname [${host}] : [docker-network][gRPCs] host endpoint contains upper case is not allowed in TLS auth within docker network`);
 	}
 	if (sslTargetNameOverride) {
 		opts['ssl-target-name-override'] = sslTargetNameOverride;
 		logger.warn(`[ssl-target-name-override]=${sslTargetNameOverride} used for test environment only when the server certificate's hostname ('CN') does not match the actual host endpoint`);
+		opts['grpc.default_authority'] = sslTargetNameOverride;
 		delete opts.sslTargetNameOverride;
 		delete opts.clientKey;
 		delete opts.clientCert;
 	}
+	opts['grpc-wait-for-ready-timeout'] = waitForReadyTimeout && Number.isInteger(waitForReadyTimeout) ? waitForReadyTimeout : 3000;// default 3 seconds
+	delete opts.waitForReadyTimeout;
+
+	opts.requestTimeout = requestTimeout && Number.isInteger(requestTimeout) ? requestTimeout : 3000; // default 3 seconds
+
 	for (const [key, value] of Object.entries(opts)) {
 		if (!value) {
 			delete opts[key];
@@ -29,6 +48,8 @@ const RemoteOptsTransform = (opts = {}) => {
 	}
 	return opts;
 };
+
+
 exports.RemoteOptsTransform = RemoteOptsTransform;
 
 /**

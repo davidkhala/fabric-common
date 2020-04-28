@@ -1,48 +1,5 @@
-const Orderer = require('fabric-common/lib/Orderer');// TODO
-const fs = require('fs');
-const logger = require('./logger').new('orderer');
-const {LoggingLevel, RemoteOptsTransform} = require('./remote');
+const {LoggingLevel} = require('khala-fabric-formatter/remote');
 const {OrdererType, MetricsProvider} = require('./constants');
-exports.find = ({orderers, ordererUrl}) => {
-	return ordererUrl ? orderers.find((orderer) => orderer.getUrl() === ordererUrl) : orderers[0];
-};
-/**
- *
- * @param {intString} ordererPort
- * @param {string} [cert] TLS CA certificate file path
- * @param {CertificatePem} pem TLS CA certificate
- * @param {string} [ordererHostName] Used in test environment only, when the server certificate's
- *    hostname (in the 'CN' field) does not match the actual host endpoint that the server process runs
- *    at, the application can work around the client TLS verify failure by setting this property to the
- *    value of the server certificate's hostname
- * @param {string} [host]
- * @param {ClientKey} [clientKey]
- * @param {ClientCert} [clientCert]
- */
-exports.new = ({ordererPort, cert, pem, ordererHostName, host, clientKey, clientCert}) => {
-	const Host = host ? host : 'localhost';
-	let orderer_url = `grpcs://${Host}:${ordererPort}`;
-	if (!pem) {
-		if (fs.existsSync(cert)) {
-			pem = fs.readFileSync(cert).toString();
-		}
-	}
-	if (pem) {
-		// tls enabled
-		const opts = RemoteOptsTransform({host, pem, sslTargetNameOverride: ordererHostName, clientKey, clientCert});
-		const orderer = new Orderer(orderer_url, opts);
-		orderer.pem = pem;
-		orderer.host = host ? host : (ordererHostName ? ordererHostName : 'localhost');
-		return orderer;
-	} else {
-		// tls disabled
-		orderer_url = `grpc://${Host}:${ordererPort}`;
-		const orderer = new Orderer(orderer_url);
-		orderer.host = Host;
-		return orderer;
-	}
-
-};
 const containerDefaultPaths = {
 	CONFIGTX: '/etc/hyperledger/configtx',
 	state: '/var/hyperledger/production/orderer/',
@@ -132,21 +89,4 @@ exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, tls, ordererType, raft
 	}
 	return env;
 };
-/**
- * basic health check for an orderer
- * @param {Orderer} orderer
- */
-exports.ping = async (orderer) => {
-	try {
-		await orderer.waitForReady(orderer._ordererClient);
-		return true;
-	} catch (err) {
-		if (err.message.includes('Failed to connect before the deadline')) {
-			logger.warn('ping:dead', orderer.getName());
-			return false;
-		} else {
-			throw err;
-		}
-	}
-};
-exports.Orderer = Orderer;
+

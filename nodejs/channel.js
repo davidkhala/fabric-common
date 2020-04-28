@@ -4,36 +4,9 @@ const fs = require('fs');
 const {signChannelConfig} = require('./multiSign');
 const Channel = require('fabric-common/lib/Channel');
 const {sleep} = require('khala-nodeutils/helper');
-const OrdererUtil = require('./orderer');
-const Orderer = OrdererUtil.Orderer;
-exports.setClientContext = (channel, clientContext) => {
-	channel._clientContext = clientContext;
-};
-exports.clearOrderers = (channel) => {
-	channel._orderers = new Map();
-};
-exports.addOrderer = (channel, orderer) => {
-	channel._orderers.set(orderer.getName(), orderer);
-};
-exports.clearPeers = (channel) => {
-	channel._channel_peers = new Map();
-};
-exports.getOrderers = async (channel, healthyOnly) => {
-	const orderers = channel.getOrderers();
-	if (healthyOnly) {
-		const result = [];
-		for (const orderer of orderers) {
-			const isAlive = await OrdererUtil.ping(orderer);
-			if (isAlive) {
-				result.push(orderer);
-			}
-		}
-		logger.debug(`${result.length} alive in ${channel.getName()}`);
-		return result;
-	} else {
-		return orderers;
-	}
-};
+
+
+
 /**
  * could be ignored from 1.2
  * @author davidliu
@@ -86,7 +59,10 @@ exports.create = async (channel, orderer, channelConfigFile, signers = [channel.
 
 	const signatures = signChannelConfig(signers, config);
 	try {
-		return await ChannelConfig.channelUpdate(channel, orderer, undefined, undefined, undefined, {config, signatures});
+		return await ChannelConfig.channelUpdate(channel, orderer, undefined, undefined, undefined, {
+			config,
+			signatures
+		});
 	} catch (e) {
 		const {status, info} = e;
 		if (status === 'SERVICE_UNAVAILABLE' && info === 'will not enqueue, consenter for this channel hasn\'t started yet') {
@@ -135,11 +111,7 @@ const join = async (channel, peer, block, orderer, waitTime = 1000) => {
 
 	const channelClient = channel._clientContext;
 	if (!block) {
-		if (orderer instanceof Orderer) {
-			block = await getGenesisBlock(channel, orderer);
-		} else {
-			throw Error('either block: genesis_block or Orderer is required');
-		}
+		block = await getGenesisBlock(channel, orderer);
 	}
 
 	const request = {
