@@ -1,9 +1,9 @@
 const moduleName = 'configtxlator agent';
-const {RequestPromise} = require('khala-nodeutils/request');
+const {axiosPromise} = require('khala-axios');
 
 const requestPost = async (opt) => {
 	try {
-		return await RequestPromise(opt, {
+		return await axiosPromise(opt, {
 			json: null,
 			encoding: null// NOTE config :returning body to be of type Buffer not String
 		});

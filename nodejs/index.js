@@ -15,7 +15,7 @@ module.exports = {
 	CACryptoGen: require('./ca-crypto-gen'),
 	ChaincodeHelper: require('./chaincodeHelper'),
 	ChaincodeVersion: require('./chaincodeVersion'),
-	Helper: require('./helper'),
+	Helper: require('./admin/helper'),
 	Golang: require('./golang'),
 	Path: require('./path'),
 	BinaryManager: require('./binManager'),

@@ -1,11 +1,11 @@
 const dockerUtil = require('khala-dockerode/dockerode-util');
 const {ContainerOptsBuilder} = dockerUtil;
-const peerAdminUtil = require('./admin/peer');
+const peerUtil = require('./peer');
 const caUtil = require('./ca');
 const ordererUtil = require('./orderer');
 const couchdbUtil = require('./couchdb');
-const userUtil = require('./user');
-
+const {adminName: defaultAdminName, adminPwd: defaultAdminPwd} = require('khala-fabric-formatter/user');
+const query = require('./query');
 /**
  * @param [fabricTag]
  * @param [caTag]
@@ -55,11 +55,13 @@ exports.fabricImagePull = async ({fabricTag, caTag = fabricTag, thirdPartyTag, c
  * @param intermediate
  * @returns {Promise<*>}
  */
-exports.runCA = async ({
-	container_name, port, network, imageTag,
-	adminName = userUtil.adminName, adminPassword = userUtil.adminPwd,
-	TLS, issuer
-}, intermediate) => {
+exports.runCA = async ({container_name, port, network, imageTag, adminName, adminPassword, TLS, issuer}, intermediate) => {
+	if (!adminName) {
+		adminName = defaultAdminName;
+	}
+	if (!adminPassword) {
+		adminPassword = defaultAdminPwd;
+	}
 
 	const {caKey, caCert} = caUtil.container;
 	const {CN, OU, O, ST, C, L} = issuer;
@@ -87,13 +89,29 @@ exports.runCA = async ({
 };
 
 /**
- * TODO not sure it is possible
+ * docker exec $PEER_CONTAINER rm -rf /var/hyperledger/production/chaincodes/$CHAINCODE_NAME.$VERSION
+ * @param [peer] required if use sync fashion
+ * @param [client] required if use sync fashion
+ * @param {string} container_name peer container name
+ * @param {string} chaincodeId
+ * @param {string} chaincodeVersion
+ * @param [logger]
+ * @return {Promise<void>}
  */
-exports.uninstallChaincode = ({container_name, chaincodeId, chaincodeVersion}) => {
-	const Cmd = ['rm', '-rf', `/var/hyperledger/production/chaincodes/${chaincodeId}.${chaincodeVersion}`];
-	return dockerUtil.containerExec({container_name, Cmd});
+exports.uninstallChaincode = async ({container_name, chaincodeId, chaincodeVersion, peer, client}, logger = console) => {
+	const Cmd = ['rm', '-rf', `${peerUtil.container.state}/chaincodes/${chaincodeId}.${chaincodeVersion}`];
+	await dockerUtil.containerExec({container_name, Cmd});
+	if (peer && client) {
+		const loop = async () => {
+			const {pretty} = await query.chaincodesInstalled(peer, client);
+			if (pretty.find(({name, version}) => name === chaincodeId && version === chaincodeVersion)) {
+				logger.debug('uninstallChaincode', 'docekr exec lagging, retry...');
+				await loop();
+			}
+		};
+		await loop();
+	}
 
-// 	docker exec $PEER_CONTAINER rm -rf /var/hyperledger/production/chaincodes/$CHAINCODE_NAME.$VERSION
 };
 exports.chaincodeImageList = async () => {
 	const images = await dockerUtil.imageList();
@@ -109,26 +127,33 @@ exports.chaincodeContainerList = async () => {
 	const containers = await dockerUtil.containerList();
 	return containers.filter(container => container.Names.find(name => name.startsWith('/dev-')));
 };
-exports.chaincodeClean = async (prune, filter) => {
-	let containers = await exports.chaincodeContainerList();
+exports.chaincodeImageClear = async (filter) => {
+	let images = await exports.chaincodeImageList();
 	if (typeof filter === 'function') {
-		containers = containers.filter(container => container.Names.find(filter));
+		images = images.filter(filter);
 	}
-	await Promise.all(containers.map(async (container) => {
-		await dockerUtil.containerDelete(container.Id);
-		await dockerUtil.imageDelete(container.Image);
-	}));
-	if (prune) {
-		const images = await exports.chaincodeImageList();
-		await Promise.all(images.map(async (image) => {
-			await dockerUtil.imageDelete(image.Id);
-		}));
+	for (const image of images) {
+		await dockerUtil.imageDelete(image.Id);
 	}
 };
-exports.runOrderer = async ({
-	container_name, imageTag, port, network, BLOCK_FILE, CONFIGTXVolume,
-	msp: {id, configPath, volumeName}, ordererType, tls, stateVolume
-}, operations, metrics) => {
+/**
+ *
+ * @param [filter]
+ * @return {Promise<void>}
+ */
+exports.chaincodeClear = async (filter) => {
+	let containers = await exports.chaincodeContainerList();
+	if (typeof filter === 'function') {
+		containers = containers.filter(filter);
+	}
+	for (const container of containers) {
+		await dockerUtil.containerDelete(container.Id);
+		await dockerUtil.imageDelete(container.Image);
+	}
+};
+// eslint-disable-next-line max-len
+exports.runOrderer = async ({container_name, imageTag, port, network, BLOCK_FILE, CONFIGTXVolume, msp, ordererType, tls, stateVolume}, operations, metrics) => {
+	const {id, configPath, volumeName} = msp;
 	const Image = `hyperledger/fabric-orderer:${imageTag}`;
 	const Cmd = ['orderer'];
 	const Env = ordererUtil.envBuilder({
@@ -139,7 +164,7 @@ exports.runOrderer = async ({
 
 	const builder = new ContainerOptsBuilder(Image, Cmd);
 	builder.setName(container_name).setEnv(Env);
-	builder.setVolume(volumeName, peerAdminUtil.container.MSPROOT);
+	builder.setVolume(volumeName, peerUtil.container.MSPROOT);
 	builder.setVolume(CONFIGTXVolume, ordererUtil.container.CONFIGTX);
 	builder.setPortBind(`${port}:7050`).setNetwork(network, [container_name]);
 
@@ -162,7 +187,7 @@ exports.runPeer = async ({
 }, operations, metrics) => {
 	const Image = `hyperledger/fabric-peer:${imageTag}`;
 	const Cmd = ['peer', 'node', 'start'];
-	const Env = peerAdminUtil.envBuilder({
+	const Env = peerUtil.envBuilder({
 		network, msp: {
 			configPath, id, peerHostName
 		}, tls, couchDB
@@ -170,14 +195,14 @@ exports.runPeer = async ({
 
 	const builder = new ContainerOptsBuilder(Image, Cmd);
 	builder.setName(container_name).setEnv(Env);
-	builder.setVolume(volumeName, peerAdminUtil.container.MSPROOT);
-	builder.setVolume(peerAdminUtil.host.dockerSock, peerAdminUtil.container.dockerSock);
+	builder.setVolume(volumeName, peerUtil.container.MSPROOT);
+	builder.setVolume(peerUtil.host.dockerSock, peerUtil.container.dockerSock);
 	builder.setPortBind(`${port}:7051`).setNetwork(network, [peerHostName]);
 	if (operations) {
 		builder.setPortBind(`${operations.port}:9443`);
 	}
 	if (stateVolume) {
-		builder.setVolume(stateVolume, peerAdminUtil.container.state);
+		builder.setVolume(stateVolume, peerUtil.container.state);
 	}
 	const createOptions = builder.build();
 	return await dockerUtil.containerStart(createOptions);

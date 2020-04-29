@@ -35,7 +35,7 @@ exports.queryBuilder = (selector = {}, sorts = [], direction = 0, limit = 25) =>
 };
 
 const path = require('path');
-const {fsExtra} = require('khala-nodeutils/helper');
+const fsExtra = require('fs-extra');
 /**
  * overwrite couchdb index file
  * @param {string} metaINFPath file path

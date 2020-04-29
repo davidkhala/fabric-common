@@ -1,5 +1,5 @@
 const path = require('path');
-const {fsExtra} = require('khala-nodeutils/helper');
+const fsExtra = require('fs-extra');
 const {pkcs11_key} = require('./ca');
 const {FabricClient} = require('./client');
 exports.findKeyFiles = (dir) => {

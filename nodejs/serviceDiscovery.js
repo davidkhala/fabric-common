@@ -1,4 +1,4 @@
-const {FabricConfig} = require('./helper');
+const {FabricConfig} = require('./admin/helper');
 const logger = require('./logger').new('service discovery', true);
 /**
  * @typedef {Object} PeerQueryResponse
