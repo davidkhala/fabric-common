@@ -142,22 +142,7 @@ class BinManager {
 		}
 	}
 
-	// local chaincodeId=${chaincodeId}
-	// 	local chaincodePath=${chaincodePath}
-	// 	local chaincodeVersion=${chaincodeVersion:-0.0.0}
-	// 	local instantiatePolicy=$1
-	// 	local outputfile=${2:-"${chaincodeId}-${chaincodeVersion}.chaincodePack"}
-	// 	#	if --cc-package is not specified, the ouput raw CC deployment spec is deployable while skipping current inline instantiate policy setting
-	// 	local optionTokens="-n ${chaincodeId} -p ${chaincodePath} -v ${chaincodeVersion}"
-	// 	if [[ -n "${instantiatePolicy}" ]]; then
-	// 		optionTokens="$optionTokens --instantiate-policy ${instantiatePolicy} --cc-package"
-	// 	fi
-	// 	local cmd="peer chaincode package ${optionTokens} ${outputfile}"
-	// 	echo $cmd
-	// 	$cmd
 	peer() {
-
-
 		return {
 			/**
 			 *

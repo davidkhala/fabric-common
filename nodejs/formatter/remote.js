@@ -25,7 +25,7 @@
 const RemoteOptsTransform = (opts = {}, logger = console) => {
 	const {sslTargetNameOverride, host} = opts;
 	if (host && host.toLowerCase() !== host) {
-		logger.error(`invalid hostname [${host}] : [docker-network][gRpcs] host endpoint contains upper case is not allowed in TLS auth within docker network`);
+		logger.error(`invalid hostname [${host}] : [docker-network][gRPCs] host endpoint contains upper case is not allowed in TLS auth within docker network`);
 	}
 	if (sslTargetNameOverride) {
 		opts['ssl-target-name-override'] = sslTargetNameOverride;
