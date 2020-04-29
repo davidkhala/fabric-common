@@ -1,5 +1,5 @@
 const caUtil = require('./ca');
-const {toString:caStringify} = require('khala-fabric-formatter/ca');
+const {toString: caStringify} = require('khala-fabric-formatter/ca');
 const userUtil = require('./user');
 const UserBuilder = require('khala-fabric-sdk-node-builder/user');
 const logger = require('khala-logger/log4js').consoleLogger('ca-crypto-gen');
@@ -39,7 +39,7 @@ exports.initAdmin = async (caService, cryptoPath, nodeType, mspId, TLS) => {
 	}
 
 
-	const builder = new UserBuilder(userFull);
+	const builder = new UserBuilder({name: userFull});
 	const {key, certificate} = result;
 	return builder.build({key, certificate, mspId});
 };

@@ -1,7 +1,7 @@
 const Logger = require('khala-logger/log4js');
 const {ChaincodeType, nameMatcher, versionMatcher} = require('khala-fabric-formatter/chaincode');
 const {transientMapTransform} = require('khala-fabric-formatter/txProposal');
-
+const fs = require('fs');
 /**
  * install chaincode does not require channel existence
  * set golang path is required when chaincodeType is 'golang'
@@ -27,7 +27,6 @@ exports.install = async (peers,
 		targets: peers
 	};
 	if (chaincodePackage) {
-		const fs = require('fs');
 		logger.debug('use ChaincodePackageInstall fashion', chaincodePackage);
 		request.chaincodePackage = fs.readFileSync(chaincodePackage);
 	} else {
