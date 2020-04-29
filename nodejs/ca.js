@@ -1,5 +1,5 @@
 const path = require('path');
-const logger = require('./logger').new('CA core');
+const logger = require('khala-logger/log4js').consoleLogger('CA core');
 const FABRIC_CA_HOME = '/etc/hyperledger/fabric-ca-server';
 const IdentityService = require('khala-fabric-sdk-node-builder/identityService');
 exports.container = {

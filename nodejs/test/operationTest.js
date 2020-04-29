@@ -1,7 +1,7 @@
 const peerUrl = 'https://localhost:9443';
 const ordererUrl = 'https://localhost:8443';
 const OperationService = require('../operations');
-const logger = require('../logger').new('test:operation', true);
+const logger = require('khala-logger/log4js').consoleLogger('test:operation');
 const task = async () => {
 	let isHealth;
 	const httpsOptions = {rejectUnauthorized: false, json: true};

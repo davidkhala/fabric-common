@@ -1,7 +1,7 @@
 const {newerVersion, nextVersion} = require('khala-nodeutils/version');
 const {instantiateOrUpgrade} = require('./chaincodeHelper');
 const {install} = require('./chaincode');
-const Logger = require('./logger');
+const Logger = require('khala-logger/log4js')
 const {chaincodesInstalled, chaincodesInstantiated} = require('./query');
 const {chaincodeClear} = require('./fabric-dockerode');
 const {isArrayEven} = require('khala-nodeutils/helper');
@@ -38,7 +38,7 @@ exports.findLatest = findLatest;
  * @param {string} incrementLevel incrementLevel major|minor|patch
  */
 exports.incrementInstall = async (peers, {chaincodeId, chaincodePath, chaincodeType, metadataPath}, client, incrementLevel) => {
-	const logger = Logger.new(`install version ${incrementLevel}`, true);
+	const logger = Logger.consoleLogger(`install version ${incrementLevel}`);
 	const versions = [];
 	for (const peer of peers) {
 		const {pretty} = await chaincodesInstalled(peer, client);

@@ -1,4 +1,4 @@
 const helper = require('../builder/helper');
-const logger = require('../logger').new('test:helper', true);
+const logger = require('khala-logger/log4js').consoleLogger('test:helper');
 const hashed = helper.sha2_256('abc');
 logger.info(hashed);

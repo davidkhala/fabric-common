@@ -1,4 +1,4 @@
-const Logger = require('./logger');
+const Logger = require('khala-logger/log4js');
 const {ChaincodeType, nameMatcher, versionMatcher} = require('khala-fabric-formatter/chaincode');
 const {transientMapTransform} = require('khala-fabric-formatter/txProposal');
 
@@ -19,7 +19,7 @@ const {transientMapTransform} = require('khala-fabric-formatter/txProposal');
 exports.install = async (peers,
 	{chaincodeId, chaincodePath, chaincodeVersion, chaincodeType = ChaincodeType.golang, metadataPath, chaincodePackage},
 	client) => {
-	const logger = Logger.new('chaincode:install', true);
+	const logger = Logger.consoleLogger('chaincode:install');
 	if (peers.length > 1) {
 		logger.debug(peers.map(peer => peer.getName()));
 	}
@@ -65,7 +65,7 @@ exports.install = async (peers,
 exports.chaincodeProposal = async (
 	command, channel, peers, opts, proposalTimeOut
 ) => {
-	const logger = Logger.new(`${command}-chaincode:proposal`, true);
+	const logger = Logger.consoleLogger(`${command}-chaincode:proposal`);
 	const {chaincodeId, chaincodeVersion, args, fcn, endorsementPolicy, collectionConfig, chaincodeType, transientMap} = opts;
 
 	const client = channel._clientContext;

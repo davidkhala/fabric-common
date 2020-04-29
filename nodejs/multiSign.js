@@ -1,4 +1,4 @@
-const logger = require('./logger').new('multi-signature');
+const logger = require('khala-logger/log4js').consoleLogger('multi-signature');
 /**
  * @param {Client[]} clients
  * @param {Buffer<binary>|[]byte} proto

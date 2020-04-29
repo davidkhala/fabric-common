@@ -1,4 +1,4 @@
-const Logger = require('./logger');
+const Logger = require('khala-logger/log4js');
 const {commit} = require('khala-fabric-sdk-node-builder/transaction');
 const {chaincodeProposal} = require('./chaincode');
 const {transactionProposal} = require('khala-fabric-sdk-node-builder/transaction');
@@ -52,7 +52,7 @@ exports.instantiateOrUpgrade = async (
 	command, channel, peers, eventHubs,
 	opts, orderer, proposalTimeout, commitTimeout, eventTimeout
 ) => {
-	const logger = Logger.new(`${command}-chaincode`, true);
+	const logger = Logger.consoleLogger(`${command}-chaincode`);
 	if (!proposalTimeout) {
 		proposalTimeout = 50000 * peers.length;
 	}
@@ -98,7 +98,7 @@ exports.instantiateOrUpgrade = async (
 exports.invoke = async (client, channelName, peers, eventHubs, {
 	chaincodeId, fcn, args, transientMap
 }, orderer, proposalTimeout, commitTimeout, eventTimeout) => {
-	const logger = Logger.new('chaincode:invoke', true);
+	const logger = Logger.consoleLogger('chaincode:invoke');
 	logger.debug({channel: channelName, chaincodeId, fcn, args});
 	logger.debug({peers, args, transientMap});
 	if (!proposalTimeout) {

@@ -1,5 +1,5 @@
-const Logger = require('./logger');
-const logger = Logger.new('channel');
+const Logger = require('khala-logger/log4js');
+const logger = Logger.consoleLogger('channel');
 const fs = require('fs');
 const {signChannelConfig} = require('./multiSign');
 const {sleep} = require('khala-nodeutils/helper');
@@ -15,7 +15,7 @@ const ChannelConfig = require('./channelConfig');
  * @returns {Promise<Client.BroadcastResponse>}
  */
 exports.create = async (channel, orderer, channelConfigFile, signers = [channel._clientContext]) => {
-	const logger = Logger.new('create-channel');
+	const logger = Logger.consoleLogger('create-channel');
 	logger.debug({channelName: channel.getName(), channelConfigFile, orderer: orderer.toString()});
 
 	const channelClient = channel._clientContext;
@@ -72,7 +72,7 @@ exports.getGenesisBlock = getGenesisBlock;
  * @returns {Promise<*>}
  */
 const join = async (channel, peer, block, orderer, waitTime = 1000) => {
-	const logger = Logger.new('join-channel', true);
+	const logger = Logger.consoleLogger('join-channel', true);
 	logger.debug({channelName: channel.getName(), peer: peer.getName()});
 
 	const channelClient = channel._clientContext;

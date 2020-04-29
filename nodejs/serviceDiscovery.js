@@ -1,4 +1,4 @@
-const logger = require('./logger').new('service discovery', true);
+const logger = require('khala-logger/log4js').consoleLogger('service discovery');
 /**
  * @typedef {Object} PeerQueryResponse
  * @property {Object} local_peers

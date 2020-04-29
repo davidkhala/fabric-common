@@ -1,6 +1,6 @@
 const HSM = require('../hsm');
 const {HSMSuite} = require('../builder/cryptoSuite');
-const logger = require('../logger').new('test:hsm', true);
+const logger = require('khala-logger/log4js').consoleLogger('test:hsm');
 logger.info('libs', HSM.availablePKCSLibs);
 
 /**
