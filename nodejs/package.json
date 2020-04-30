@@ -4,7 +4,7 @@
   "dependencies": {
     "khala-axios": "^0.1.1",
     "khala-dockerode": "^0.1.2",
-    "khala-fabric-sdk-node-builder": "^0.2.2",
+    "khala-fabric-sdk-node-builder": "^0.2.3",
     "khala-level": "^0.0.1",
     "khala-logger": "^0.2.0",
     "khala-nodeutils": "^0.8.2",

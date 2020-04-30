@@ -18,21 +18,20 @@ class IdentityServiceBuilder {
 	}
 
 	/**
-	 * TODO WIP
-	 * @param admin
-	 * @param enrollmentID
-	 * @param enrollmentSecret
-	 * @param affiliation
-	 * @param role
-	 * @param attrs
-	 * @param caname
-	 * @param maxEnrollments
+	 * @param {User} admin
+	 * @param {string} enrollmentID
+	 * @param {string} enrollmentSecret
+	 * @param {string} affiliation
+	 * @param {string} role
+	 * @param [attrs]
+	 * @param [caname]
+	 * @param [maxEnrollments]
 	 * @return {Promise<void>}
 	 */
-	async create(admin, {
+	async create({
 		enrollmentID, enrollmentSecret, affiliation, role, attrs, caname,
 		maxEnrollments = -1,
-	}) {
+	},admin) {
 		const allowedType = Object.values(IdentityService.HFCAIdentityType);
 		if (!allowedType.includes(role)) {
 			throw Error(`invalid role:${role},should be one of ${allowedType}`);
