@@ -1,9 +1,10 @@
-const logger = require('./logger').new('channel-config');
+const logger = require('khala-logger/log4js').consoleLogger('channel-config');
 const fs = require('fs');
 const agent = require('./agent2configtxlator');
 const {JSONEqual} = require('khala-nodeutils/helper');
 const {signChannelConfig} = require('./multiSign');
-const {ChannelType, OrdererType} = require('./constants');
+const {ChannelType} = require('./constants');
+const {OrdererType} = require('khala-fabric-formatter/constants');
 
 /**
  * @callback configChangeCallback
@@ -508,23 +509,6 @@ exports.channelUpdate = async (channel, orderer, configChangeCallback, signature
 
 exports.ConfigFactory = ConfigFactory;
 
-/**
- * setup anchorPeers from anchorPeerTxFile, this could only be done once.
- * @param {Client.Channel} channel
- * @param {string} anchorPeerTxFile filePath
- * @param {Client.Orderer} orderer
- * @param {Client[]} [signers]
- * @param client
- * @returns {Promise<BroadcastResponse>}
- */
-exports.setupAnchorPeers = async (channel, orderer, anchorPeerTxFile,
-	signers = [channel._clientContext], {client = channel._clientContext} = {}) => {
-	const channelConfig_envelop = fs.readFileSync(anchorPeerTxFile);
-	const config = channel._clientContext.extractChannelConfig(channelConfig_envelop);// this is
-	const signatures = signChannelConfig(signers, config);
-
-	return await exports.channelUpdate(channel, orderer, undefined, undefined, {client}, {config, signatures});
-};
 exports.setAnchorPeers = async (channel, orderer, OrgName, anchorPeers,
 	signers = [channel._clientContext], {peer, client = channel._clientContext, viaServer} = {}) => {
 

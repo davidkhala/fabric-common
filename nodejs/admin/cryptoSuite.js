@@ -1,7 +1,7 @@
 const Utils = require('fabric-common/lib/Utils');
 /**
  *
- * @return {Client.ICryptoSuite}
+ * @return {Client.CryptoSuite}
  */
 exports.emptySuite = () => {
 	return Utils.newCryptoSuite();

@@ -1,6 +1,6 @@
 {
   "name": "khala-fabric-admin",
-  "version": "2.1.0-alpha.3",
+  "version": "2.1.0-alpha.5",
   "dependencies": {
     "fabric-common": "2.1.0",
     "khala-fabric-formatter": "^2.1.0-0.0.3",

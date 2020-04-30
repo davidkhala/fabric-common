@@ -1,42 +1,8 @@
-const Logger = require('./logger');
-const logger = Logger.new('channel');
+const Logger = require('khala-logger/log4js');
+const logger = Logger.consoleLogger('channel');
 const fs = require('fs');
 const {signChannelConfig} = require('./multiSign');
-const Channel = require('fabric-common/lib/Channel');
 const {sleep} = require('khala-nodeutils/helper');
-
-
-
-/**
- * could be ignored from 1.2
- * @author davidliu
- * @param {string} channelName
- * @param {boolean} toThrow
- */
-exports.nameMatcher = (channelName, toThrow) => {
-	const namePattern = /^[a-z][a-z0-9.-]*$/;
-	const result = channelName.match(namePattern);
-	if (!result && toThrow) {
-		throw Error(`invalid channel name ${channelName}; should match regx: ${namePattern}`);
-	}
-	return result;
-};
-
-/**
- * @param {Client} client
- * @param {string} channelName
- * @returns {Client.Channel}
- */
-exports.new = (client, channelName) => {
-
-	if (!channelName) {
-		logger.warn('default to using system channel', exports.genesis);
-		channelName = exports.genesis;
-	}
-	return new Channel(channelName, client);
-};
-
-exports.genesis = 'testchainid';
 
 const ChannelConfig = require('./channelConfig');
 /**
@@ -49,7 +15,7 @@ const ChannelConfig = require('./channelConfig');
  * @returns {Promise<Client.BroadcastResponse>}
  */
 exports.create = async (channel, orderer, channelConfigFile, signers = [channel._clientContext]) => {
-	const logger = Logger.new('create-channel');
+	const logger = Logger.consoleLogger('create-channel');
 	logger.debug({channelName: channel.getName(), channelConfigFile, orderer: orderer.toString()});
 
 	const channelClient = channel._clientContext;
@@ -106,12 +72,13 @@ exports.getGenesisBlock = getGenesisBlock;
  * @returns {Promise<*>}
  */
 const join = async (channel, peer, block, orderer, waitTime = 1000) => {
-	const logger = Logger.new('join-channel', true);
+	const logger = Logger.consoleLogger('join-channel', true);
 	logger.debug({channelName: channel.getName(), peer: peer.getName()});
 
 	const channelClient = channel._clientContext;
 	if (!block) {
 		block = await getGenesisBlock(channel, orderer);
+
 	}
 
 	const request = {
@@ -152,14 +119,3 @@ const join = async (channel, peer, block, orderer, waitTime = 1000) => {
 
 exports.join = join;
 
-exports.pretty = (channel) => {
-	return {
-		client: channel._clientContext,
-		name: channel._name,
-		peers: channel._channel_peers,
-		peerOrganization: Object.keys(channel._discovery_results.peers_by_org),
-		anchorPeers: channel._anchor_peers,
-		orderers: channel._orderers,
-		ordererOrganization: Object.keys(channel._discovery_results.orderers)
-	};
-};

@@ -34,7 +34,7 @@ class UserBuilder {
 		const {_cryptoSuite} = this.user;
 		const privateKey = (key.constructor.name === 'ECDSA_KEY') ? key : _cryptoSuite.importKey(key, {ephemeral: true});
 
-		const pubKey = _cryptoSuite.importKey(certificate, {ephemeral: true});
+		const pubKey = _cryptoSuite.createKeyFromRaw(certificate);
 
 		this.user._signingIdentity = new SigningIdentity(certificate, pubKey, mspId, _cryptoSuite, new Signer(_cryptoSuite, privateKey));
 		return this.user;
