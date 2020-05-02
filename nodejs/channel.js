@@ -7,7 +7,7 @@ const {sleep} = require('khala-nodeutils/helper');
 const ChannelConfig = require('./channelConfig');
 /**
  * different from `peer channel create`, this will not response back with genesisBlock for this channel.
- *
+ * TODO could we directly use signed channel.tx file along with using --asOrg in configtxgen
  * @param {Channel} channel
  * @param {Orderer} orderer
  * @param {string} channelConfigFile file path
