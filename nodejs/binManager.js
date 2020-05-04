@@ -145,6 +145,20 @@ class BinManager {
 	peer() {
 		//TODO `peer channel signconfigtx` to add signature to channel genesis envelop, that we could use another fashion to create/update channel
 		return {
+			//TODO which is output file
+			signconfigtx: async (configtxUpdateFile, localMspId, mspConfigPath) => {
+				const [FABRIC_CFG_PATH, t1] = createTmpDir();
+				fs.writeFileSync(path.resolve(FABRIC_CFG_PATH, 'core.yml'), '');
+				process.env.FABRIC_CFG_PATH = FABRIC_CFG_PATH;
+				process.env.CORE_PEER_LOCALMSPID = localMspId;
+				process.env.CORE_PEER_MSPCONFIGPATH = mspConfigPath;
+				const CMD = this._buildCMD('peer', `channel signconfigtx --file ${configtxUpdateFile}`);
+				this.logger.info('CMD', CMD);
+				const result = await exec(CMD);
+				execResponsePrint(result);
+				t1();
+			},
+
 			/**
 			 *
 			 * @param chaincodeId
