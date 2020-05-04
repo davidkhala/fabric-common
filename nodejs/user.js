@@ -10,17 +10,17 @@ const UserBuilder = require('khala-fabric-sdk-node-builder/user');
  * @returns {User}
  */
 exports.loadFromLocal = (cryptoPath, nodeType, mspId, toThrow) => {
-	const username = cryptoPath.userName;
+	const name = cryptoPath[`${nodeType}UserHostName`];
 	const exist = cryptoPath.cryptoExistLocal(`${nodeType}User`);
 	if (!exist) {
 		if (toThrow) {
-			throw Error(`User [${username}] from ${nodeType} organization [${mspId}] not found`);
+			throw Error(`User [${name}] from ${nodeType} organization [${mspId}] not found`);
 		}
 		return null;
 	}
 	const {keystore, signcerts} = exist;
 
-	const builder = new UserBuilder({name: username});
+	const builder = new UserBuilder({name});
 	return builder.build({
 		key: fs.readFileSync(keystore),
 		certificate: fs.readFileSync(signcerts),
