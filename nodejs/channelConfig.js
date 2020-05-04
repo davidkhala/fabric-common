@@ -434,6 +434,7 @@ exports.getChannelConfigReadable = async (channel, {peer, orderer}, viaServer) =
 		configJSON
 	};
 };
+
 /**
  * take effect in next block, it is recommended to register a block event after
  * @param {Client.Channel} channel with reader client
@@ -445,67 +446,80 @@ exports.getChannelConfigReadable = async (channel, {peer, orderer}, viaServer) =
  * @param {boolean} [viaServer]
  * @param {Buffer<binary>} [config]
  * @param {Client.ConfigSignature[]} [signatures]
+ * @param {Buffer} [envelope] A signed channel update config as a encoded grpc message. An example is output of `peer channel signconfigtx`
  * @returns {Promise<Client.BroadcastResponse>}
  */
-exports.channelUpdate = async (channel, orderer, configChangeCallback, signatureCollectCallback,
-	{peer, client = channel._clientContext, viaServer} = {}, {config, signatures} = {}) => {
+exports.channelUpdate = async (channel, orderer, configChangeCallback, signatureCollectCallback, {peer, client, viaServer} = {}, {config, signatures, envelope} = {}) => {
 
+	if (!client) {
+		client = channel._clientContext;
+	}
 	const channelName = channel.getName();
-	if (!config) {
-		const ERROR_NO_UPDATE = 'No update to original_config';
-
-		const {configProto, configJSON} = await exports.getChannelConfigReadable(channel, {peer, orderer}, viaServer);
-		const updateConfigJSON = await configChangeCallback(configJSON);
-		if (JSONEqual(updateConfigJSON, configJSON)) {
-			logger.warn(ERROR_NO_UPDATE);
-			return {status: ERROR_NO_UPDATE, info: updateConfigJSON};
-		}
-		let modified_config_proto;
-		if (viaServer) {
-			const updatedProto = await agent.encode.config(updateConfigJSON);
-			const formData = {
-				channel: channelName,
-				original: {
-					value: configProto,
-					options: {
-						filename: 'original.proto',
-						contentType: 'application/octet-stream'
-					}
-				},
-				updated: {
-					value: updatedProto,
-					options: {
-						filename: 'updated.proto',
-						contentType: 'application/octet-stream'
-					}
-				}
-			};
-			modified_config_proto = await agent.compute.updateFromConfigs(formData);
-		} else {
-			const BinManager = require('./binManager');
-			const binManager = new BinManager();
-
-			const updatedProto = await binManager.configtxlatorCMD.encode('common.Config', updateConfigJSON);
-			modified_config_proto = await binManager.configtxlatorCMD.computeUpdate(channelName, configProto, updatedProto);
-		}
-		config = Buffer.from(modified_config_proto, 'binary');
-	}
-	if (!signatures) {
-		signatures = await signatureCollectCallback(config);
-	}
 
 	/**
 	 * @type {ChannelRequest}
 	 */
 	const request = {
-		config,
-		signatures,
 		name: channelName,
 		orderer,
 		txId: client.newTransactionID()
 	};
 
+	if (!envelope) {
+		if (!config) {
+			const ERROR_NO_UPDATE = 'No update to original_config';
+
+			const {configProto, configJSON} = await exports.getChannelConfigReadable(channel, {
+				peer,
+				orderer
+			}, viaServer);
+			const updateConfigJSON = await configChangeCallback(configJSON);
+			if (JSONEqual(updateConfigJSON, configJSON)) {
+				logger.warn(ERROR_NO_UPDATE);
+				return {status: ERROR_NO_UPDATE, info: updateConfigJSON};
+			}
+			let modified_config_proto;
+			if (viaServer) {
+				const updatedProto = await agent.encode.config(updateConfigJSON);
+				const formData = {
+					channel: channelName,
+					original: {
+						value: configProto,
+						options: {
+							filename: 'original.proto',
+							contentType: 'application/octet-stream'
+						}
+					},
+					updated: {
+						value: updatedProto,
+						options: {
+							filename: 'updated.proto',
+							contentType: 'application/octet-stream'
+						}
+					}
+				};
+				modified_config_proto = await agent.compute.updateFromConfigs(formData);
+			} else {
+				const BinManager = require('./binManager');
+				const binManager = new BinManager();
+
+				const updatedProto = await binManager.configtxlatorCMD.encode('common.Config', updateConfigJSON);
+				modified_config_proto = await binManager.configtxlatorCMD.computeUpdate(channelName, configProto, updatedProto);
+			}
+			config = Buffer.from(modified_config_proto, 'binary');
+		}
+		if (!signatures) {
+			signatures = await signatureCollectCallback(config);
+		}
+		request.config = config;
+		request.signatures = signatures;
+	} else {
+		request.envelope = envelope;
+	}
+
+
 	const updateChannelResp = await client.updateChannel(request);
+
 	if (updateChannelResp.status !== 'SUCCESS') {
 		logger.error(updateChannelResp);
 		throw Object.assign(Error('Channel update'), updateChannelResp);
@@ -516,9 +530,14 @@ exports.channelUpdate = async (channel, orderer, configChangeCallback, signature
 
 exports.ConfigFactory = ConfigFactory;
 
-exports.setAnchorPeers = async (channel, orderer, OrgName, anchorPeers,
-	signers = [channel._clientContext], {peer, client = channel._clientContext, viaServer} = {}) => {
+exports.setAnchorPeers = async (channel, orderer, OrgName, anchorPeers, signers, {peer, client, viaServer} = {}) => {
 
+	if (!signers) {
+		signers = [channel._clientContext];
+	}
+	if (!client) {
+		client = channel._clientContext;
+	}
 	const configChangeCallback = (original_config) => {
 		const configFactory = new ConfigFactory(original_config);
 		configFactory.setAnchorPeers(OrgName, anchorPeers);
@@ -527,5 +546,9 @@ exports.setAnchorPeers = async (channel, orderer, OrgName, anchorPeers,
 	const signatureCollectCallback = (config) => {
 		return signChannelConfig(signers, config);
 	};
-	return await exports.channelUpdate(channel, orderer, configChangeCallback, signatureCollectCallback, {peer, client, viaServer});
+	return await exports.channelUpdate(channel, orderer, configChangeCallback, signatureCollectCallback, {
+		peer,
+		client,
+		viaServer
+	});
 };

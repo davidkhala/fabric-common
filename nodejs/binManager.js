@@ -143,9 +143,14 @@ class BinManager {
 	}
 
 	peer() {
-		//TODO `peer channel signconfigtx` to add signature to channel genesis envelop, that we could use another fashion to create/update channel
 		return {
-			//TODO which is output file
+			/**
+			 * Signs the supplied configtx update file in place on the filesystem.
+			 * [Inline signing] command output file path is same as configtxUpdateFile (overwrite)
+			 * @param {string} configtxUpdateFile file path
+			 * @param {string} localMspId
+			 * @param {string} mspConfigPath
+			 */
 			signconfigtx: async (configtxUpdateFile, localMspId, mspConfigPath) => {
 				const [FABRIC_CFG_PATH, t1] = createTmpDir();
 				fs.writeFileSync(path.resolve(FABRIC_CFG_PATH, 'core.yml'), '');

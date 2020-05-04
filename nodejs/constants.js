@@ -14,7 +14,16 @@ const NodeType = {
 	orderer: 'orderer',
 	peer: 'peer'
 };
+/**
+ *
+ * @enum {string}
+ */
+const MSPType = Object.assign({
+	peerUser: 'peerUser',
+	ordererUser: 'ordererUser'
+}, NodeType);
 module.exports = {
 	ChannelType,
-	NodeType
+	NodeType,
+	MSPType
 };

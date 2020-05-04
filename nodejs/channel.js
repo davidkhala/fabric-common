@@ -7,35 +7,39 @@ const {sleep} = require('khala-nodeutils/helper');
 const ChannelConfig = require('./channelConfig');
 /**
  * different from `peer channel create`, this will not response back with genesisBlock for this channel.
- * TODO could we directly use signed channel.tx file to create/update channel, put this to binManager via `peer channel signconfigtx`
- * @param {Channel} channel
- * @param {Orderer} orderer
+ * @param {Client.Channel} channel
+ * @param {Client.Orderer} orderer
  * @param {string} channelConfigFile file path
  * @param {Client[]} [signers]
+ * @param {boolean} [asEnvelop]
+ *  - if false, it means assuming signature in channelConfigFile is empty and require signer's signatures
  * @returns {Promise<Client.BroadcastResponse>}
  */
-exports.create = async (channel, orderer, channelConfigFile, signers = [channel._clientContext]) => {
+exports.create = async (channel, orderer, channelConfigFile, signers = [channel._clientContext], asEnvelop) => {
 	const logger = Logger.consoleLogger('create-channel');
 	logger.debug({channelName: channel.getName(), channelConfigFile, orderer: orderer.toString()});
 
 	const channelClient = channel._clientContext;
-	const channelConfig_envelop = fs.readFileSync(channelConfigFile);
-	// extract the channel config bytes from the envelope to be signed
-	const config = channelClient.extractChannelConfig(channelConfig_envelop);
+	const channelConfig = fs.readFileSync(channelConfigFile);
+	const content = {};
+	if (asEnvelop) {
+		content.envelope = channelConfig;
+	} else {
+		// extract the channel config bytes from the envelope to be signed
+		const config = channelClient.extractChannelConfig(channelConfig);
+		content.signatures = signChannelConfig(signers, config);
+		content.config = config;
+	}
 
-	const signatures = signChannelConfig(signers, config);
 	try {
-		return await ChannelConfig.channelUpdate(channel, orderer, undefined, undefined, undefined, {
-			config,
-			signatures
-		});
+		return await ChannelConfig.channelUpdate(channel, orderer, undefined, undefined, undefined, content);
 	} catch (e) {
 		const {status, info} = e;
 		if (status === 'SERVICE_UNAVAILABLE' && info === 'will not enqueue, consenter for this channel hasn\'t started yet') {
 			// TODO [fabric weakness] let healthz return whether it is ready
 			logger.warn('loop retry..', status);
 			await sleep(1000);
-			return await exports.create(channel, orderer, channelConfigFile);
+			return await exports.create(channel, orderer, channelConfigFile, signers, asEnvelop);
 		} else if (status === 'BAD_REQUEST' && info === 'error authorizing update: error validating ReadSet: readset expected key [Group]  /Channel/Application at version 0, but got version 1') {
 			logger.warn('exist swallow', status);
 			return {status, info};
@@ -43,6 +47,7 @@ exports.create = async (channel, orderer, channelConfigFile, signers = [channel.
 		throw e;
 	}
 };
+
 
 const getGenesisBlock = async (channel, orderer, waitTime = 1000) => {
 	try {

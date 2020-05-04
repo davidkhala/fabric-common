@@ -23,15 +23,11 @@ exports.initAdmin = async (caService, cryptoPath, nodeType, mspId, TLS) => {
 
 	const type = `${nodeType}User`;
 	const userFull = cryptoPath[`${nodeType}UserHostName`];
-	const user = userUtil.loadFromLocal(cryptoPath, nodeType, mspId);
-	if (user) {
-		logger.info(`${domain} admin found in local`);
-		return user;
-	}
 
 	const result = await caService.enroll({enrollmentID, enrollmentSecret});
 	cryptoPath.toMSP(result, type);
 	cryptoPath.toOrgAdmin(result, nodeType);
+	cryptoPath.toAdminCerts(result, type);// required for 'peer channel signconfigtx'
 	if (TLS) {
 		const tlsResult = await caService.enroll({enrollmentID, enrollmentSecret, profile: 'tls'});
 		cryptoPath.toTLS(tlsResult, type);
