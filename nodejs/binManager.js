@@ -143,6 +143,7 @@ class BinManager {
 	}
 
 	peer() {
+		//TODO `peer channel signconfigtx` to add signature to channel genesis envelop, that we could use another fashion to create/update channel
 		return {
 			/**
 			 *
