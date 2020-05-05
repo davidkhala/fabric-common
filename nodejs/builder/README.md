@@ -1,4 +1,5 @@
 # khala-fabric-sdk-node-builder
+Object-oriented wrapper set above fabric-sdk-node
 
 ## Notes
 -  `proposalResponse.js` provide alternative way to use
