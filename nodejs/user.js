@@ -1,96 +1,37 @@
 const fs = require('fs');
-const clientUtil = require('./client');
-const ECDSA_KEY = require('fabric-common/lib/impl/ecdsa/key');
-exports.formatUsername = (username, domain) => `${username}@${domain}`;
-const User = require('fabric-common/lib/User');
-
-const SigningIdentity = require('fabric-common/lib/SigningIdentity');
-const Signer = require('fabric-common/lib/Signer');
-/**
- * Set the enrollment object for this User instance
- * @param {User} user
- * @param {module:api.Key} privateKey the private key object
- * @param {string} certificate the PEM-encoded string of certificate
- * @param {MspId} mspId MSPID for the local signing identity. Note that this is required when Client#signChannelConfig
- */
-const setEnrollment = (user, privateKey, certificate, mspId) => {
-
-	if (!user._cryptoSuite) {
-		user._cryptoSuite = clientUtil.new();
-	}
-
-
-	const pubKey = user._cryptoSuite.createKeyFromRaw(certificate);
-
-
-	user._signingIdentity = new SigningIdentity(certificate, pubKey, mspId, user._cryptoSuite, new Signer(user._cryptoSuite, privateKey));
-};
-
-/**
- * @param name
- * @param key
- * @param certificate
- * @param mspId
- * @param cryptoSuite
- * @param roles
- * @param affiliation
- * @return {User}
- */
-const build = (name, {key, certificate}, mspId, cryptoSuite = clientUtil.newCryptoSuite(), {roles, affiliation} = {}) => {
-	/**
-	 * @type {User}
-	 */
-	const user = new User({name, roles, affiliation});
-	let privateKey;
-	if (key instanceof ECDSA_KEY) {
-		privateKey = key;
-	} else {
-		// FIXME: importKey.then is not function in some case;
-		privateKey = cryptoSuite.createKeyFromRaw(key);
-	}
-	user.setCryptoSuite(cryptoSuite);
-	setEnrollment(user, privateKey, certificate, mspId);
-	return user;
-};
-exports.build = build;
+const UserBuilder = require('khala-fabric-admin/user');
 
 /**
  *
  * @param cryptoPath
  * @param {NodeType} nodeType
  * @param mspId
- * @param cryptoSuite
+ * @param {boolean} [toThrow]
  * @returns {User}
  */
-exports.loadFromLocal = (cryptoPath, nodeType, mspId, cryptoSuite = clientUtil.newCryptoSuite()) => {
-	const username = cryptoPath.userName;
+exports.loadFromLocal = (cryptoPath, nodeType, mspId, toThrow) => {
+	const name = cryptoPath[`${nodeType}UserHostName`];
 	const exist = cryptoPath.cryptoExistLocal(`${nodeType}User`);
 	if (!exist) {
-		return undefined;
+		if (toThrow) {
+			throw Error(`User [${name}] from ${nodeType} organization [${mspId}] not found`);
+		}
+		return null;
 	}
 	const {keystore, signcerts} = exist;
 
-	return build(username, {
+	const builder = new UserBuilder({name});
+	return builder.build({
 		key: fs.readFileSync(keystore),
-		certificate: fs.readFileSync(signcerts)
-	}, mspId, cryptoSuite);
+		certificate: fs.readFileSync(signcerts),
+		mspId
+	});
 };
-
-exports.getCertificate = (user) => user.getSigningIdentity()._certificate;
-exports.getMSPID = (user) => user._mspId;
-exports.getPrivateKey = (user) => user.getSigningIdentity()._signer._key;
 
 /**
  *
- * @param {User} user
- * @param messageBytes
+ * @param {Client.User} user
+ * @param {Buffer} messageBytes
  * @return {Buffer}
  */
-exports.sign = (user, messageBytes) => user._signingIdentity.sign(messageBytes, undefined);
-
-exports.fromClient = (client) => {
-	return client._userContext;
-};
-
-exports.adminName = 'Admin';
-exports.adminPwd = 'passwd';
+exports.sign = (user, messageBytes) => user.getSigningIdentity().sign(messageBytes, undefined);

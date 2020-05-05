@@ -14,67 +14,16 @@ const NodeType = {
 	orderer: 'orderer',
 	peer: 'peer'
 };
-
-/**
- * @enum {string}
- */
-const MSPRoleType = {
-	admin: 'ADMIN',
-	peer: 'PEER',
-	member: 'MEMBER'
-};
-
-/**
- * @enum {string}
- */
-const OrdererType = {
-	etcdraft: 'etcdraft'
-};
 /**
  *
  * @enum {string}
  */
-const MetricsProvider = {
-	statsd: 'statsd',
-	prometheus: 'prometheus',
-	undefined: 'disabled',
-	null: 'disabled' // value in json file could not be undefined
+const MSPType = Object.assign({
+	peerUser: 'peerUser',
+	ordererUser: 'ordererUser'
+}, NodeType);
+module.exports = {
+	ChannelType,
+	NodeType,
+	MSPType
 };
-/**
- * @enum {string}
- */
-const ImplicitMetaPolicyRule = {
-	ANY: 'ANY',
-	ALL: 'ALL',
-	MAJORITY: 'MAJORITY'
-};
-/**
- * @enum {string}
- */
-const TransactionType = {
-	ENDORSER_TRANSACTION: 'ENDORSER_TRANSACTION',
-	CONFIG: 'CONFIG'
-};
-/**
- * @enum {string}
- */
-const PolicyType = {
-	IMPLICIT_META: 'IMPLICIT_META',
-	SIGNATURE: 'SIGNATURE'
-};
-/**
- * @enum {string}
- */
-const PolicyRuleType = {
-	n_out_of: 'n_out_of',
-	signed_by: 'signed_by'
-};
-exports.TransactionType = TransactionType;
-exports.MSPRoleType = MSPRoleType;
-exports.PolicyType = PolicyType;
-exports.PolicyRuleType = PolicyRuleType;
-exports.ImplicitMetaPolicyRule = ImplicitMetaPolicyRule;
-exports.MetricsProvider = MetricsProvider;
-exports.OrdererType = OrdererType;
-exports.ChannelType = ChannelType;
-exports.NodeType = NodeType;

@@ -5,9 +5,11 @@ const {signChannelConfig} = require('./multiSign');
 const {sleep} = require('khala-nodeutils/helper');
 
 const ChannelConfig = require('./channelConfig');
+const {extractChannelConfig} = require('./admin/channelConfig'); // FIXME fix dependency path;
 /**
  * different from `peer channel create`, this will not response back with genesisBlock for this channel.
  *
+ * TODO could we directly use signed channel.tx file along with using --asOrg in configtxgen
  * @param {Channel} channel
  * @param {Orderer} orderer
  * @param {string} channelConfigFile file path
@@ -15,13 +17,11 @@ const ChannelConfig = require('./channelConfig');
  * @returns {Promise<Client.BroadcastResponse>}
  */
 exports.create = async (channel, orderer, channelConfigFile, signers = [channel._clientContext]) => {
-	const logger = Logger.consoleLogger('create-channel');
 	logger.debug({channelName: channel.getName(), channelConfigFile, orderer: orderer.toString()});
 
-	const channelClient = channel._clientContext;
 	const channelConfig_envelop = fs.readFileSync(channelConfigFile);
 	// extract the channel config bytes from the envelope to be signed
-	const config = channelClient.extractChannelConfig(channelConfig_envelop);
+	const config = extractChannelConfig(channelConfig_envelop);
 
 	const signatures = signChannelConfig(signers, config);
 	try {
@@ -33,11 +33,11 @@ exports.create = async (channel, orderer, channelConfigFile, signers = [channel.
 		const {status, info} = e;
 		if (status === 'SERVICE_UNAVAILABLE' && info === 'will not enqueue, consenter for this channel hasn\'t started yet') {
 			// TODO [fabric weakness] let healthz return whether it is ready
-			logger.warn('loop retry..', status);
+			logger.warn('create-channel', 'loop retry..', status);
 			await sleep(1000);
 			return await exports.create(channel, orderer, channelConfigFile);
 		} else if (status === 'BAD_REQUEST' && info === 'error authorizing update: error validating ReadSet: readset expected key [Group]  /Channel/Application at version 0, but got version 1') {
-			logger.warn('exist swallow', status);
+			logger.warn('create-channel', 'exist swallow', status);
 			return {status, info};
 		}
 		throw e;
@@ -72,8 +72,7 @@ exports.getGenesisBlock = getGenesisBlock;
  * @returns {Promise<*>}
  */
 const join = async (channel, peer, block, orderer, waitTime = 1000) => {
-	const logger = Logger.consoleLogger('join-channel', true);
-	logger.debug({channelName: channel.getName(), peer: peer.getName()});
+	logger.debug('join-channel', {channelName: channel.getName(), peer: peer.getName()});
 
 	const channelClient = channel._clientContext;
 	if (!block) {
@@ -92,18 +91,18 @@ const join = async (channel, peer, block, orderer, waitTime = 1000) => {
 	const dataEntry = data[0];
 
 	if (dataEntry instanceof Error) {
-		logger.warn(dataEntry);
+		logger.warn('join-channel', dataEntry);
 		const errMessage = dataEntry.message;
 		const swallowSymptoms = ['NOT_FOUND', 'Stream removed'];
 
 		if (swallowSymptoms.map((symptom) => errMessage.includes(symptom)).find((isMatched) => !!isMatched) && waitTime) {
-			logger.warn('loopJoinChannel...', errMessage);
+			logger.warn('join-channel', 'loopJoinChannel...', errMessage);
 			await sleep(waitTime);
 			return await join(channel, peer, block, orderer, waitTime);
 		}
 		if (errMessage.includes(joinedBeforeSymptom)) {
 			// swallow 'joined before' error
-			logger.info('peer joined before', peer.getName());
+			logger.info('join-channel', 'peer joined before', peer.getName());
 			return;
 		}
 		throw dataEntry;

@@ -78,6 +78,10 @@ class CryptoPath {
 		return this.resolve(this.root, 'ordererOrganizations', this.ordererOrgName);
 	}
 
+	/**
+	 * used in generate configtxgen config yaml
+	 * @return {string}
+	 */
 	ordererOrgMSP() {
 		return this.resolve(this.ordererOrg(), 'msp');
 	}
@@ -86,6 +90,11 @@ class CryptoPath {
 		return this.resolve(this.root, 'peerOrganizations', this.peerOrgName);
 	}
 
+	/**
+	 * reply on functions {@link peerOrg}, {@link ordererOrg}
+	 * reply on properties {@link peerOrgName}, {@link ordererOrgName}
+	 * @param {NodeType} nodeType
+	 */
 	OrgFile(nodeType) {
 		const dir = this[`${nodeType}Org`]();
 		const mspDir = this.resolve(dir, 'msp');
@@ -104,10 +113,19 @@ class CryptoPath {
 		};
 	}
 
+	/**
+	 *
+	 * @param {MSPType} type
+	 * @return {string}
+	 */
 	static getNodeType(type) {
 		return type.includes('orderer') ? 'orderer' : 'peer';
 	}
 
+	/**
+	 * reply on {@link MSP}
+	 * @param {MSPType} type
+	 */
 	MSPFile(type) {
 		const nodeType = CryptoPath.getNodeType(type);
 		const mspDir = this.MSP(type);
@@ -123,6 +141,10 @@ class CryptoPath {
 		};
 	}
 
+	/**
+	 * used in generate configtxgen config yaml
+	 * @return {string}
+	 */
 	peerOrgMSP() {
 		return this.resolve(this.peerOrg(), 'msp');
 	}
@@ -143,10 +165,17 @@ class CryptoPath {
 		return this.resolve(this.peerOrg(), 'users');
 	}
 
+	/**
+	 * @param {MSPType} type
+	 */
 	tlsDir(type) {
 		return this.resolve(this[`${type}s`](), this[`${type}HostName`], 'tls');
 	}
 
+	/**
+	 *
+	 * @param {MSPType} type
+	 */
 	TLSFile(type) {
 		const tlsDIR = this.tlsDir(type);
 		return {
@@ -156,6 +185,10 @@ class CryptoPath {
 		};
 	}
 
+	/**
+	 *
+	 * @param {MSPType} type
+	 */
 	MSPKeystore(type) {
 		const dir = this.MSPFile(type).keystore;
 		const files = exports.findKeyFiles(dir);
@@ -164,10 +197,19 @@ class CryptoPath {
 		}
 	}
 
+	/**
+	 *
+	 * reply on {@link ordererUsers}, {@link peerUsers}, {@link orderers}, {@link peers}
+	 * @param {MSPType} type
+	 */
 	MSP(type) {
 		return this.resolve(this[`${type}s`](), this[`${type}HostName`], 'msp');
 	}
 
+	/**
+	 *
+	 * @param {MSPType} type
+	 */
 	cryptoExistLocal(type) {
 		const signcerts = this.MSPFile(type).signcerts;
 		if (!fsExtra.pathExistsSync(signcerts)) {
