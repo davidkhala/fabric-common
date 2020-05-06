@@ -17,7 +17,6 @@ Current version 1.4.6
 - [java](./java)
 - [nodejs](./nodejs)
 ## Design Notes
-- `configtxlator` handler in `nodejs/binManager.js`
 - CICD: using travis
 ## Milestone
 - [1.2]

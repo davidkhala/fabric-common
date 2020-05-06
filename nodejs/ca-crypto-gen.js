@@ -9,28 +9,25 @@ const {getCertificate, getMSPID} = require('khala-fabric-formatter/signingIdenti
 /**
  *
  * @param {FabricCAServices} caService
- * @param {CryptoPath} cryptoPath adminCryptoPath, should use host root path
+ * @param {CryptoPath} adminCryptoPath should use host root path
  * @param {string} nodeType
  * @param {string} mspId
  * @param {boolean} TLS
- * @returns {Promise<User>}
  */
-exports.initAdmin = async (caService, cryptoPath, nodeType, mspId, TLS) => {
-	const enrollmentID = cryptoPath.userName;
-	const enrollmentSecret = cryptoPath.password;
-
-	const {[`${nodeType}OrgName`]: domain} = cryptoPath;
+exports.initAdmin = async (caService, adminCryptoPath, nodeType, mspId, TLS) => {
+	const enrollmentID = adminCryptoPath.userName;
+	const enrollmentSecret = adminCryptoPath.password;
 
 	const type = `${nodeType}User`;
 
 	const result = await caService.enroll({enrollmentID, enrollmentSecret});
-	cryptoPath.toMSP(result, type);
-	cryptoPath.toOrgAdmin(result, nodeType);
-	cryptoPath.toAdminCerts(result, type);// required for 'peer channel signconfigtx'
+	adminCryptoPath.toMSP(result, type);
+	adminCryptoPath.toOrgAdmin(result, nodeType);
+	adminCryptoPath.toAdminCerts(result, type);// required for 'peer channel signconfigtx'
 	if (TLS) {
 		const tlsResult = await caService.enroll({enrollmentID, enrollmentSecret, profile: 'tls'});
-		cryptoPath.toTLS(tlsResult, type);
-		cryptoPath.toOrgTLS(tlsResult, nodeType);
+		adminCryptoPath.toTLS(tlsResult, type);
+		adminCryptoPath.toOrgTLS(tlsResult, nodeType);
 	}
 };
 /**
