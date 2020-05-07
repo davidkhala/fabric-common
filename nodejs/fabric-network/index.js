@@ -1,1 +1,4 @@
-exports.FabricNetwork = require('fabric-network');
+/**
+ * @typedef {Error} EvaluationError
+ * @property {Client.ProposalErrorResponse[]} responses
+ */
