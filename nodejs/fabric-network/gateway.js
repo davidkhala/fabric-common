@@ -1,7 +1,7 @@
 const {Gateway, DefaultEventHandlerStrategies} = require('fabric-network');
 const {NetworkConfig} = require('./NetworkConfig');
 
-class gateway {
+class GatewayManager {
 	constructor() {
 		this.gateWay = new Gateway();
 	}
@@ -11,14 +11,14 @@ class gateway {
 	 * @param {Client} client
 	 * @param {string} channelName
 	 * @param {Client.Peer[]} peers
-	 * @param {Orderer} orderer
+	 * @param {Orderer} [orderer] not required for evaluate
 	 * @param [discoveryOptions] TODO TO test
 	 * @param {TxEventHandlerFactory|boolean} strategy
 	 *  - true to use default strategy
 	 *  - `null` to skip event handling process
 	 * @return {Promise<Network>}
 	 */
-	async connect(client, channelName, peers, orderer, discoveryOptions, strategy ) {
+	async connect(client, channelName, peers, orderer, discoveryOptions, strategy) {
 
 		if (strategy === true) {
 			strategy = DefaultEventHandlerStrategies.MSPID_SCOPE_ALLFORTX;
@@ -33,11 +33,18 @@ class gateway {
 			wallet: {}, discovery: {enabled: !!discoveryOptions}, transaction: {strategy}
 		});
 
-		const channel = client.newChannel(channelName);
-		for (const peer of peers) {
-			channel.addPeer(peer);
+
+		let channel = client.getChannel(channelName, false);
+		if (!channel) {
+			channel = client.newChannel(channelName);
+			for (const peer of peers) {
+				channel.addPeer(peer);
+			}
+			if (orderer) {
+				channel.addOrderer(orderer);
+			}
 		}
-		channel.addOrderer(orderer);
+
 		const network = await this.gateWay.getNetwork(channelName);
 		return network;
 	}
@@ -47,4 +54,4 @@ class gateway {
 	}
 }
 
-module.exports = gateway;
+module.exports = GatewayManager;

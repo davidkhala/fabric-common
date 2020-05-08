@@ -18,8 +18,8 @@ exports.proposalFlatten = proposalFlatten;
 
 /**
  *
- * @param {object} jsObject
- * @return {Client.TransientMap}
+ * @param {TransientMap} jsObject
+ * @return {Client.TransientMap|TransientMap}
  */
 exports.transientMapTransform = (jsObject) => {
 	if (!jsObject) {

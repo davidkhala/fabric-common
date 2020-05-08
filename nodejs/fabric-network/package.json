@@ -1,7 +1,8 @@
 {
   "name": "khala-fabric-network",
-  "version": "1.4.6-0.0.1",
+  "version": "1.4.6-0.0.2",
   "dependencies": {
-    "fabric-network": "1.4.8"
+    "fabric-network": "1.4.8",
+    "khala-fabric-formatter": "^1.4.6-0.0.0"
   }
 }

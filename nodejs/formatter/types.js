@@ -1,11 +1,18 @@
 /**
- * @typedef {string} OrgName organization name (MSPName), mapping to MSP ID
+ * organization name (MSPName), mapping to MSP ID
+ * @typedef {string} OrgName
  */
 /**
- * @typedef {string} MspId msp_identifier, member service provider identifier
+ * msp_identifier, member service provider identifier
+ * @typedef {string} MspId
  */
 /**
- * @typedef {Object} TransientMap jsObject of key<string> --> value<string>
+ * jsObject of key<string> --> value<string>
+ * @typedef {Object} TransientMap
+ */
+/**
+ * Transaction function name
+ * @typedef {string} Fcn
  */
 
 /**
@@ -42,7 +49,8 @@
  * @property {ConfigEnvelope|EndorseTransaction} data
  */
 /**
- * @typedef {integer[]} TransactionsFilter see TxValidationCode in proto/peer/transaction.proto
+ * see TxValidationCode in proto/peer/transaction.proto
+ * @typedef {integer[]} TransactionsFilter
  */
 
 /**
