@@ -1,4 +1,5 @@
-const {Gateway} = require('fabric-network');
+const {Gateway, DefaultEventHandlerStrategies} = require('fabric-network');
+const {NetworkConfig} = require('./NetworkConfig');
 
 class gateway {
 	constructor() {
@@ -9,16 +10,33 @@ class gateway {
 	 *
 	 * @param {Client} client
 	 * @param {string} channelName
-	 * @param {Client.Peer} peer
-	 * @param {MspId} mspId peer MSP id
+	 * @param {Client.Peer[]} peers
 	 * @param {Orderer} orderer
-	 * @param {boolean} [useDiscovery]
+	 * @param [discoveryOptions] TODO TO test
+	 * @param {TxEventHandlerFactory|boolean} strategy
+	 *  - true to use default strategy
+	 *  - `null` to skip event handling process
 	 * @return {Promise<Network>}
 	 */
-	async connect(client, channelName, peer, mspId, orderer, useDiscovery) {
-		await this.gateWay.connect(client, {wallet: {}, discovery: {enabled: !!useDiscovery}});
+	async connect(client, channelName, peers, orderer, discoveryOptions, strategy ) {
+
+		if (strategy === true) {
+			strategy = DefaultEventHandlerStrategies.MSPID_SCOPE_ALLFORTX;
+		}
+
+		if (discoveryOptions) {
+			const {mspId, networkConfig, getPeersByOrgNameCallback} = discoveryOptions;
+			client._clientConfigMspid = mspId;
+			client._network_config = new NetworkConfig(networkConfig, getPeersByOrgNameCallback);
+		}
+		await this.gateWay.connect(client, {
+			wallet: {}, discovery: {enabled: !!discoveryOptions}, transaction: {strategy}
+		});
+
 		const channel = client.newChannel(channelName);
-		channel.addPeer(peer, mspId);
+		for (const peer of peers) {
+			channel.addPeer(peer);
+		}
 		channel.addOrderer(orderer);
 		const network = await this.gateWay.getNetwork(channelName);
 		return network;
