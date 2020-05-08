@@ -10,7 +10,7 @@ class GatewayManager {
 	 *
 	 * @param {Client} client
 	 * @param {string} channelName
-	 * @param {Client.Peer[]} peers
+	 * @param {Client.Peer[]} [peers] not required if use discovery
 	 * @param {Orderer} [orderer] not required for evaluate
 	 * @param [discoveryOptions] TODO TO test
 	 * @param {TxEventHandlerFactory|boolean} strategy
@@ -18,7 +18,7 @@ class GatewayManager {
 	 *  - `null` to skip event handling process
 	 * @return {Promise<Network>}
 	 */
-	async connect(client, channelName, peers, orderer, discoveryOptions, strategy) {
+	async connect(client, channelName, peers = [], orderer, discoveryOptions, strategy) {
 
 		if (strategy === true) {
 			strategy = DefaultEventHandlerStrategies.MSPID_SCOPE_ALLFORTX;
@@ -34,7 +34,7 @@ class GatewayManager {
 		});
 
 
-		let channel = client.getChannel(channelName, false);
+		let channel = client._channels.get(channelName);
 		if (!channel) {
 			channel = client.newChannel(channelName);
 			for (const peer of peers) {

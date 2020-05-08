@@ -1,5 +1,16 @@
+/**
+ * @callback GetPeersCallback
+ * @param {OrgName} name
+ * @return {Client.Peer[]}
+ */
+
 const Organization = class {
 
+	/**
+	 *
+	 * @param {OrgName} name
+	 * @param {GetPeersCallback} getPeersCallback
+	 */
 	constructor(name, getPeersCallback) {
 		this.name = name;
 		this.getPeersCallback = getPeersCallback;
@@ -14,9 +25,13 @@ const Organization = class {
  * NetworkConfig: another implementation
  * Aim to resolve problem: using discovery service by fabric-network
  */
-
 class NetworkConfig {
 
+	/**
+	 *
+	 * @param {{organizations:Object}} networkConfig
+	 * @param {GetPeersCallback} getPeersCallback
+	 */
 	constructor(networkConfig, getPeersCallback) {
 		this.organizationConfigs = networkConfig.organizations;
 		this.getPeersCallback = getPeersCallback;
@@ -31,6 +46,7 @@ class NetworkConfig {
 	}
 
 }
+
 
 
 module.exports = {
