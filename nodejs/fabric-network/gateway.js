@@ -25,9 +25,9 @@ class GatewayManager {
 		}
 
 		if (discoveryOptions) {
-			const {mspId, networkConfig, getPeersByOrgNameCallback} = discoveryOptions;
+			const {mspId, networkConfig, getPeersCallback} = discoveryOptions;
 			client._clientConfigMspid = mspId;
-			client._network_config = new NetworkConfig(networkConfig, getPeersByOrgNameCallback);
+			client._network_config = new NetworkConfig(networkConfig, getPeersCallback);
 		}
 		await this.gateWay.connect(client, {
 			wallet: {}, discovery: {enabled: !!discoveryOptions}, transaction: {strategy}
