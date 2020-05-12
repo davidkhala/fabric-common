@@ -21,8 +21,8 @@ class EventHub {
 	/**
 	 *
 	 * @param {IdentityContext} identityContext
-	 * @param {BlockNumberFilterType} startBlock
-	 * @param {BlockNumberFilterType} endBlock
+	 * @param {BlockNumberFilterType|number} startBlock
+	 * @param {BlockNumberFilterType|number} endBlock
 	 */
 	build(identityContext, {startBlock, endBlock}) {
 		const {eventService} = this;

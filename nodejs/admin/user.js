@@ -47,15 +47,22 @@ class UserBuilder {
 	}
 
 	getIdentityContext() {
-		return new IdentityContext(this.user, null);
+		return UserBuilder.getIdentityContext(this.user);
+	}
+
+	/**
+	 * @param {Client.User} user
+	 */
+	static getIdentityContext(user) {
+		return new IdentityContext(user, null);
 	}
 
 	/**
 	 * Builds a new transactionID based on a user's certificate and a nonce value.
-	 * @param {User} user
+	 * @param {Client.User} user
 	 */
 	static newTransactionID(user) {
-		const identityContext = new IdentityContext(user, null);
+		const identityContext = UserBuilder.getIdentityContext(user);
 		identityContext.calculateTransactionId();
 		const {nonce, transactionId} = identityContext;
 		return {nonce, transactionId};
