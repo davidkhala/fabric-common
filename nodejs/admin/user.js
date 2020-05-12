@@ -1,4 +1,4 @@
-const IdentityContext = require('fabric-common/lib/IdentityContext');// TODO TransactionID
+const IdentityContext = require('fabric-common/lib/IdentityContext');
 const SigningIdentity = require('fabric-common/lib/SigningIdentity');
 const Signer = require('fabric-common/lib/Signer');
 const User = require('fabric-common/lib/User');
@@ -28,16 +28,26 @@ class UserBuilder {
 	 * @param {module:api.Key} key the private key object
 	 * @param {CertificatePem} certificate
 	 * @param {MspId} mspId - This is required when Client#signChannelConfig
-	 * @return {User}
+	 * @return {Client.User}
 	 */
 	build({key, certificate, mspId}) {
 		const {_cryptoSuite} = this.user;
-		const privateKey = (key.constructor.name === 'ECDSA_KEY') ? key : _cryptoSuite.importKey(key, {ephemeral: true});
+		const privateKey = (key.constructor.name === 'ECDSA_KEY') ? key : _cryptoSuite.createKeyFromRaw(key);
 
 		const pubKey = _cryptoSuite.createKeyFromRaw(certificate);
-
 		this.user._signingIdentity = new SigningIdentity(certificate, pubKey, mspId, _cryptoSuite, new Signer(_cryptoSuite, privateKey));
+		this.user.getIdentity = () => {
+			return this.user._signingIdentity;
+		};
 		return this.user;
+	}
+
+	getSigningIdentity() {
+		return this.user._signingIdentity;
+	}
+
+	getIdentityContext() {
+		return new IdentityContext(this.user, null);
 	}
 
 	/**
@@ -45,7 +55,7 @@ class UserBuilder {
 	 * @param {User} user
 	 */
 	static newTransactionID(user) {
-		const identityContext = new IdentityContext(user, {});
+		const identityContext = new IdentityContext(user, null);
 		identityContext.calculateTransactionId();
 		const {nonce, transactionId} = identityContext;
 		return {nonce, transactionId};

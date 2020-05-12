@@ -26,10 +26,3 @@ exports.getCertificate = (signingIdentity) => signingIdentity._certificate.toStr
  * @return {MspId}
  */
 exports.getMSPID = (signingIdentity) => signingIdentity._mspId;
-
-/**
- * @param {SigningIdentity} signingIdentity
- * @param {Buffer} messageBytes
- * @return {Buffer}
- */
-exports.sign = (signingIdentity, messageBytes) => signingIdentity.sign(messageBytes);

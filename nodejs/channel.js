@@ -1,63 +1,67 @@
 const Logger = require('khala-logger/log4js');
 const logger = Logger.consoleLogger('channel');
 const fs = require('fs');
-const {signChannelConfig} = require('./multiSign');
-const {sleep} = require('khala-nodeutils/helper');
+const {sleep} = require('khala-light-util');
 
-const ChannelConfig = require('./channelConfig');
-const {extractChannelConfig} = require('./admin/channelConfig'); // FIXME fix dependency path;
+const ChannelUpdate = require('khala-fabric-admin/channelUpdate');
+const SigningIdentityUtil = require('khala-fabric-admin/signingIdentity');
+const {extractChannelConfig} = require('./admin/channelConfig');
 /**
  * different from `peer channel create`, this will not response back with genesisBlock for this channel.
  *
- * TODO could we directly use signed channel.tx file along with using --asOrg in configtxgen
- * @param {Channel} channel
+ * @param {string} channelName
+ * @param {Client.User} user
  * @param {Orderer} orderer
  * @param {string} channelConfigFile file path
- * @param {Client[]} [signers]
- * @returns {Promise<Client.BroadcastResponse>}
+ * @param {SigningIdentity[]} [signingIdentities]
+ * @param {boolean} asEnvelop
  */
-exports.create = async (channel, orderer, channelConfigFile, signers = [channel._clientContext]) => {
-	logger.debug({channelName: channel.getName(), channelConfigFile, orderer: orderer.toString()});
+exports.create = async (channelName, user, orderer, channelConfigFile, signingIdentities = [], asEnvelop) => {
+	logger.debug('create-channel', {channelName, channelConfigFile, orderer: orderer.toString()});
 
-	const channelConfig_envelop = fs.readFileSync(channelConfigFile);
-	// extract the channel config bytes from the envelope to be signed
-	const config = extractChannelConfig(channelConfig_envelop);
+	const channelConfig = fs.readFileSync(channelConfigFile);
+	const mainSigningIdentity = user.getSigningIdentity();
+	const channelUpdate = new ChannelUpdate(channelName, user, orderer.committer, logger);
+	if (asEnvelop) {
+		channelUpdate.useEnvelope(channelConfig);
+	} else {
 
-	const signatures = signChannelConfig(signers, config);
-	try {
-		return await ChannelConfig.channelUpdate(channel, orderer, undefined, undefined, undefined, {
-			config,
-			signatures
-		});
-	} catch (e) {
-		const {status, info} = e;
-		if (status === 'SERVICE_UNAVAILABLE' && info === 'will not enqueue, consenter for this channel hasn\'t started yet') {
-			// TODO [fabric weakness] let healthz return whether it is ready
-			logger.warn('create-channel', 'loop retry..', status);
-			await sleep(1000);
-			return await exports.create(channel, orderer, channelConfigFile);
-		} else if (status === 'BAD_REQUEST' && info === 'error authorizing update: error validating ReadSet: readset expected key [Group]  /Channel/Application at version 0, but got version 1') {
-			logger.warn('create-channel', 'exist swallow', status);
-			return {status, info};
+		// extract the channel config bytes from the envelope to be signed
+		const config = extractChannelConfig(channelConfig);
+		const signatures = [];
+		if (signingIdentities.length === 0) {
+			signingIdentities.push(mainSigningIdentity);
 		}
-		throw e;
+		for (const signingIdentity of signingIdentities) {
+			const extraSigningIdentityUtil = new SigningIdentityUtil(signingIdentity);
+			signatures.push(extraSigningIdentityUtil.signChannelConfig(config));
+		}
+
+		channelUpdate.useSignatures(config, signatures);
 	}
+
+	await orderer.connect();
+	const {status, info} = await channelUpdate.submit();
+	const swallowPattern = `error applying config update to existing channel '${channelName}': error authorizing update: error validating ReadSet: proposed update requires that key [Group]  /Channel/Application be at version 0, but it is currently at version 1`;
+	if (status === 'BAD_REQUEST' && info === swallowPattern) {
+		logger.warn('create-channel', `[${status}] channel[${channelName}] exist already`);
+	}
+	return {status, info};
 };
+//TODO WIP
+const getGenesisBlock = async (channel, user, orderer) => {
+	const EventHub = require('khala-fabric-admin/eventHub');
+	const IdentityContext = require('fabric-common/lib/IdentityContext');
+	const {BlockNumberFilterType: {NEWEST, OLDEST}} = require('khala-fabric-formatter/eventHub');
 
-const getGenesisBlock = async (channel, orderer, waitTime = 1000) => {
-	try {
-		const block = await channel.getGenesisBlock({orderer});
-		logger.info(`getGenesisBlock from orderer: ${orderer.getName()}`);
-		return block;
-	} catch (e) {
-		const {message} = e;
-		if (message.includes('SERVICE_UNAVAILABLE') || message.includes('NOT_FOUND')) {
-			await sleep(waitTime);
-			return getGenesisBlock(channel, orderer, waitTime);
-		} else {
-			throw e;
-		}
-	}
+	const targets = [orderer];
+	const eventhub = new EventHub(channel, targets);
+
+	const identityContext = new IdentityContext(user, null);
+	const startBlock = OLDEST;
+	const endBlock = NEWEST;
+	eventhub.build(identityContext, {startBlock, endBlock});
+	await eventhub.connect();
 };
 exports.getGenesisBlock = getGenesisBlock;
 

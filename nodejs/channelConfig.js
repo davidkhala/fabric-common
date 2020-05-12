@@ -1,22 +1,8 @@
 const logger = require('khala-logger/log4js').consoleLogger('channel-config');
 const fs = require('fs');
-const agent = require('./agent2configtxlator');
-const {JSONEqual} = require('khala-nodeutils/helper');
-const {signChannelConfig} = require('./multiSign');
+const agent = require('./configtxlator');
 const {ChannelType} = require('./constants');
 const {OrdererType} = require('khala-fabric-formatter/constants');
-
-/**
- * @callback configChangeCallback
- * @param {string|json} original_config
- * @return {string|json} update_config
- */
-
-/**
- * @callback signatureCollectCallback
- * @param {Buffer<binary>} config
- * @return {Client.ConfigSignature[]} signatures
- */
 
 /**
  * @class ConfigFactory
@@ -391,6 +377,7 @@ class ConfigFactory {
 }
 
 /**
+ * TODO migration
  * Note that it could be used to extract application channel from orderer
  * @param {Client.Channel} channel
  * @param {Client.Peer} [peer] targeted peer from which we fetch block
@@ -400,7 +387,7 @@ class ConfigFactory {
  *  false: use 'configtxlator' as command line tool
  * @returns {Promise<{configProto: Buffer, configJSON: string|json}>}
  */
-exports.getChannelConfigReadable = async (channel, {peer, orderer}, viaServer) => {
+const getChannelConfigReadable = async (channel, {peer, orderer}, viaServer) => {
 	let configEnvelope;
 	if (peer) {
 		configEnvelope = await channel.getChannelConfig(peer);
@@ -427,89 +414,11 @@ exports.getChannelConfigReadable = async (channel, {peer, orderer}, viaServer) =
 		configJSON
 	};
 };
-/**
- * take effect in next block, it is recommended to register a block event after
- * @param {Client.Channel} channel with reader client
- * @param {Client.Orderer} orderer
- * @param {configChangeCallback} [configChangeCallback]
- * @param {signatureCollectCallback} [signatureCollectCallback]
- * @param {Client} [client] tx committing client
- * @param {Client.Peer} [peer]
- * @param {boolean} [viaServer]
- * @param {Buffer<binary>} [config]
- * @param {Client.ConfigSignature[]} [signatures]
- * @returns {Promise<Client.BroadcastResponse>}
- */
-exports.channelUpdate = async (channel, orderer, configChangeCallback, signatureCollectCallback,
-	{peer, client = channel._clientContext, viaServer} = {}, {config, signatures} = {}) => {
 
-	const channelName = channel.getName();
-	if (!config) {
-		const ERROR_NO_UPDATE = 'No update to original_config';
 
-		const {configProto, configJSON} = await exports.getChannelConfigReadable(channel, {peer, orderer}, viaServer);
-		const updateConfigJSON = await configChangeCallback(configJSON);
-		if (JSONEqual(updateConfigJSON, configJSON)) {
-			logger.warn(ERROR_NO_UPDATE);
-			return {status: ERROR_NO_UPDATE, info: updateConfigJSON};
-		}
-		let modified_config_proto;
-		if (viaServer) {
-			const updatedProto = await agent.encode.config(updateConfigJSON);
-			const formData = {
-				channel: channelName,
-				original: {
-					value: configProto,
-					options: {
-						filename: 'original.proto',
-						contentType: 'application/octet-stream'
-					}
-				},
-				updated: {
-					value: updatedProto,
-					options: {
-						filename: 'updated.proto',
-						contentType: 'application/octet-stream'
-					}
-				}
-			};
-			modified_config_proto = await agent.compute.updateFromConfigs(formData);
-		} else {
-			const BinManager = require('./binManager');
-			const binManager = new BinManager();
+// TODO migration
 
-			const updatedProto = await binManager.configtxlatorCMD.encode('common.Config', updateConfigJSON);
-			modified_config_proto = await binManager.configtxlatorCMD.computeUpdate(channelName, configProto, updatedProto);
-		}
-		config = Buffer.from(modified_config_proto, 'binary');
-	}
-	if (!signatures) {
-		signatures = await signatureCollectCallback(config);
-	}
-
-	/**
-	 * @type {ChannelRequest}
-	 */
-	const request = {
-		config,
-		signatures,
-		name: channelName,
-		orderer,
-		txId: client.newTransactionID()
-	};
-
-	const updateChannelResp = await client.updateChannel(request);
-	if (updateChannelResp.status !== 'SUCCESS') {
-		logger.error(updateChannelResp);
-		throw Object.assign(Error('Channel update'), updateChannelResp);
-	}
-	logger.info(`[${channelName}] channel update: ${JSON.stringify(updateChannelResp)}`);
-	return updateChannelResp;
-};
-
-exports.ConfigFactory = ConfigFactory;
-
-exports.setAnchorPeers = async (channel, orderer, OrgName, anchorPeers,
+const setAnchorPeers = async (channel, orderer, OrgName, anchorPeers,
 	signers = [channel._clientContext], {peer, client = channel._clientContext, viaServer} = {}) => {
 
 	const configChangeCallback = (original_config) => {
@@ -521,4 +430,10 @@ exports.setAnchorPeers = async (channel, orderer, OrgName, anchorPeers,
 		return signChannelConfig(signers, config);
 	};
 	return await exports.channelUpdate(channel, orderer, configChangeCallback, signatureCollectCallback, {peer, client, viaServer});
+};
+
+
+module.exports = {
+	ConfigFactory,
+	// getChannelConfigReadable,
 };

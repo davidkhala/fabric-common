@@ -21,5 +21,6 @@ Component module list
 - Block data emitted in block event has a structure documented in [types.js](./formatter/types.js)
 - Now User and Client is separated.    
 - `configtxlator` handler in `nodejs/binManager.js`
- 
+- [gPRC] waitForReady will response back positive response with non-TLS protocol
+    - With grpcs://domain.org setup, we could get pong response from grpc://domain.org    
 ## TODO

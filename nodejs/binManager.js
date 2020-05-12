@@ -15,6 +15,9 @@ class BinManager {
 	 * @param [logger]
 	 */
 	constructor(binPath = process.env.binPath, logger = console) {
+		if (!binPath) {
+			throw Error('BinManager: environment <binPath> is undefined');
+		}
 		if (!fs.lstatSync(binPath).isDirectory()) {
 			throw Error('BinManager: environment <binPath> is not a directory');
 		}
@@ -147,6 +150,26 @@ class BinManager {
 
 		return {
 			/**
+			 * Signs the supplied configtx update file in place on the filesystem.
+			 * [Inline signing] command output file path is same as configtxUpdateFile (overwrite)
+			 * @param {string} configtxUpdateFile file path
+			 * @param {string} localMspId
+			 * @param {string} mspConfigPath
+			 */
+			signconfigtx: async (configtxUpdateFile, localMspId, mspConfigPath) => {
+				const [FABRIC_CFG_PATH, t1] = createTmpDir();
+				fs.writeFileSync(path.resolve(FABRIC_CFG_PATH, 'core.yml'), '');
+				process.env.FABRIC_CFG_PATH = FABRIC_CFG_PATH;
+				process.env.CORE_PEER_LOCALMSPID = localMspId;
+				process.env.CORE_PEER_MSPCONFIGPATH = mspConfigPath;
+				const CMD = this._buildCMD('peer', `channel signconfigtx --file ${configtxUpdateFile}`);
+				this.logger.info('CMD', CMD);
+				const result = await exec(CMD);
+				execResponsePrint(result);
+				t1();
+			},
+
+			/**
 			 *
 			 * @param chaincodeId
 			 * @param chaincodePath
@@ -159,8 +182,7 @@ class BinManager {
 			 * @param [instantiatePolicy]
 			 * @return {Promise<*>}
 			 */
-			package: async ({chaincodeId, chaincodePath, chaincodeType, chaincodeVersion, metadataPath},
-			                {localMspId, mspConfigPath}, outputFile, instantiatePolicy) => {
+			package: async ({chaincodeId, chaincodePath, chaincodeType, chaincodeVersion, metadataPath}, {localMspId, mspConfigPath}, outputFile, instantiatePolicy) => {
 				const [FABRIC_CFG_PATH, t1] = createTmpDir();
 				fs.writeFileSync(path.resolve(FABRIC_CFG_PATH, 'core.yml'), '');
 				process.env.FABRIC_CFG_PATH = FABRIC_CFG_PATH;

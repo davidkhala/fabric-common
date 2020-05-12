@@ -1,52 +1,39 @@
 const caUtil = require('./ca');
 const {toString: caStringify} = require('khala-fabric-formatter/ca');
 const userUtil = require('./user');
-const UserBuilder = require('khala-fabric-admin/user');
 const logger = require('khala-logger/log4js').consoleLogger('ca-crypto-gen');
-const Affiliation = require('khala-fabric-admin/affiliationService');
-const {sleep} = require('khala-nodeutils/helper');
+const AffiliationServiceBuilder = require('khala-fabric-admin/affiliationService');
+const {sleep} = require('khala-light-util');
 const {getCertificate, getMSPID} = require('khala-fabric-formatter/signingIdentity');
 /**
  *
  * @param {FabricCAServices} caService
- * @param {CryptoPath} cryptoPath should be host path
+ * @param {CryptoPath} adminCryptoPath should use host root path
  * @param {string} nodeType
  * @param {string} mspId
  * @param {boolean} TLS
- * @returns {Promise<User>}
  */
-exports.initAdmin = async (caService, cryptoPath, nodeType, mspId, TLS) => {
-	const enrollmentID = cryptoPath.userName;
-	const enrollmentSecret = cryptoPath.password;
+exports.initAdmin = async (caService, adminCryptoPath, nodeType, mspId, TLS) => {
+	const enrollmentID = adminCryptoPath.userName;
+	const enrollmentSecret = adminCryptoPath.password;
 
-	const {[`${nodeType}OrgName`]: domain} = cryptoPath;
 
 	const type = `${nodeType}User`;
-	const userFull = cryptoPath[`${nodeType}UserHostName`];
-	const user = userUtil.loadFromLocal(cryptoPath, nodeType, mspId);
-	if (user) {
-		logger.info(`${domain} admin found in local`);
-		return user;
-	}
 
 	const result = await caService.enroll({enrollmentID, enrollmentSecret});
-	cryptoPath.toMSP(result, type);
-	cryptoPath.toOrgAdmin(result, nodeType);
+	adminCryptoPath.toMSP(result, type);
+	adminCryptoPath.toOrgAdmin(result, nodeType);
+	adminCryptoPath.toAdminCerts(result, type);// required for 'peer channel signconfigtx'
 	if (TLS) {
 		const tlsResult = await caService.enroll({enrollmentID, enrollmentSecret, profile: 'tls'});
-		cryptoPath.toTLS(tlsResult, type);
-		cryptoPath.toOrgTLS(tlsResult, nodeType);
+		adminCryptoPath.toTLS(tlsResult, type);
+		adminCryptoPath.toOrgTLS(tlsResult, nodeType);
 	}
-
-
-	const builder = new UserBuilder(userFull);
-	const {key, certificate} = result;
-	return builder.build({key, certificate, mspId});
 };
 /**
  * @param {FabricCAServices} caService
  * @param {CryptoPath} adminCryptoPath should be host path
- * @param {string} nodeType
+ * @param {NodeType} nodeType
  * @param {string} mspId
  * @param {boolean} TLS
  * @param {string} affiliationRoot
@@ -58,25 +45,33 @@ exports.init = async (caService, adminCryptoPath, nodeType, mspId, TLS, {affilia
 	if (!affiliationRoot) {
 		affiliationRoot = domain;
 	}
-	const force = true;// true to create recursively
 
-	const initAdminRetry = async () => {
-		try {
-			return await exports.initAdmin(caService, adminCryptoPath, nodeType, mspId, TLS);
-		} catch (e) {
-			if (e.toString().includes('Calling enrollment endpoint failed with error')) {
-				const ms = 1000;
-				logger.warn(`ca ${caStringify(caService)} might not be ready, sleep and retry`);
-				await sleep(ms);
-				return initAdminRetry();
+	let adminUser = userUtil.loadFromLocal(adminCryptoPath, nodeType, mspId, false);
+
+	if (!adminUser) {
+		const initAdminRetry = async () => {
+			try {
+				await exports.initAdmin(caService, adminCryptoPath, nodeType, mspId, TLS);
+			} catch (e) {
+				if (e.toString().includes('Calling enrollment endpoint failed with error')) {
+					const ms = 1000;
+					logger.warn(`ca ${caStringify(caService)} might not be ready, sleep and retry`);
+					await sleep(ms);
+					return initAdminRetry();
+				}
+				throw e;
 			}
-			throw e;
-		}
-	};
+		};
 
-	const adminUser = await initAdminRetry();
-	const affiliationService = new Affiliation(caService);
+		await initAdminRetry();
+		adminUser = userUtil.loadFromLocal(adminCryptoPath, nodeType, mspId, true);
+	} else {
+		logger.info(`${adminCryptoPath.userName} of mspId[${mspId}] exists in local file system`);
+	}
 
+	const affiliationService = new AffiliationServiceBuilder(caService);
+
+	const force = true;// true to create recursively
 	await affiliationService.createIfNotExist({name: `${affiliationRoot}.client`, force}, adminUser);
 	await affiliationService.createIfNotExist({name: `${affiliationRoot}.user`, force}, adminUser);
 	await affiliationService.createIfNotExist({name: `${affiliationRoot}.peer`, force}, adminUser);
@@ -90,7 +85,7 @@ exports.init = async (caService, adminCryptoPath, nodeType, mspId, TLS, {affilia
  * @param {CryptoPath} cryptoPath
  * @param {User} admin
  * @param TLS
- * @param {string} affiliationRoot
+ * @param {string} [affiliationRoot]
  * @returns {Promise<*>}
  */
 exports.genOrderer = async (caService, cryptoPath, admin, {TLS, affiliationRoot} = {}) => {
@@ -133,8 +128,9 @@ exports.genOrderer = async (caService, cryptoPath, admin, {TLS, affiliationRoot}
 /**
  * @param {FabricCAServices} caService
  * @param {CryptoPath} cryptoPath
- * @param {string} affiliationRoot
  * @param {User} admin
+ * @param TLS
+ * @param {string} [affiliationRoot]
  * @returns {*}
  */
 exports.genPeer = async (caService, cryptoPath, admin, {TLS, affiliationRoot} = {}) => {

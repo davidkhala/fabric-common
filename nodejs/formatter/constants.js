@@ -112,6 +112,29 @@ const TxValidationCode = {
 	254: 'NOT_VALIDATED',
 	255: 'INVALID_OTHER_REASON'
 };
+/**
+ * selected HTTP status codes
+ * @enum
+ */
+const Status = {
+	UNKNOWN: 0,
+	SUCCESS: 200,
+	BAD_REQUEST: 400,
+	FORBIDDEN: 403,
+	NOT_FOUND: 404,
+	REQUEST_ENTITY_TOO_LARGE: 413,
+	INTERNAL_SERVER_ERROR: 500,
+	NOT_IMPLEMENTED: 501,
+	SERVICE_UNAVAILABLE: 503,
+};
+/**
+ *
+ * @enum {string}
+ */
+const BroadcastResponseStatus = {
+	SUCCESS: 'SUCCESS',
+	BAD_REQUEST: 'BAD_REQUEST'
+};
 module.exports = {
 	ChaincodeProposalCommand,
 	IdentityType,
@@ -123,6 +146,8 @@ module.exports = {
 	MetricsProvider,
 	OrdererType,
 	PolicyName,
-	TxValidationCode
+	TxValidationCode,
+	Status,
+	BroadcastResponseStatus
 };
 

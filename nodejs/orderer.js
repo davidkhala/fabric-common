@@ -49,6 +49,9 @@ exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, tls, ordererType, raft
 			`ORDERER_GENERAL_TLS_CERTIFICATE=${tls.cert}`,
 			`ORDERER_GENERAL_TLS_ROOTCAS=[${rootCAsStringBuild(tls)}]`]);
 	}
+	if (!ordererType) {
+		ordererType = OrdererType.etcdraft;
+	}
 	switch (ordererType) {
 		case OrdererType.etcdraft:
 			env = env.concat([

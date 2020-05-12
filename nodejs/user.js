@@ -7,7 +7,7 @@ const UserBuilder = require('khala-fabric-admin/user');
  * @param {NodeType} nodeType
  * @param mspId
  * @param {boolean} [toThrow]
- * @returns {User}
+ * @returns {Client.User}
  */
 exports.loadFromLocal = (cryptoPath, nodeType, mspId, toThrow) => {
 	const name = cryptoPath[`${nodeType}UserHostName`];
@@ -27,11 +27,3 @@ exports.loadFromLocal = (cryptoPath, nodeType, mspId, toThrow) => {
 		mspId
 	});
 };
-
-/**
- *
- * @param {Client.User} user
- * @param {Buffer} messageBytes
- * @return {Buffer}
- */
-exports.sign = (user, messageBytes) => user.getSigningIdentity().sign(messageBytes, undefined);

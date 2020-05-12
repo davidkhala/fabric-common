@@ -55,7 +55,6 @@ Current version 2.1.0
 - [reference]playback conference: https://wiki.hyperledger.org/display/fabric/Playbacks
 - individual properties may be overridden by setting environment variables, such as `CONFIGTX_ORDERER_ORDERERTYPE=etcdraft`.
 - [channel][system] peer could not join system channel
-    ` [Orderer.js]: sendDeliver - rejecting - status:FORBIDDEN`
 - [channel]channel ID length < 250 :initializing configtx manager failed: bad channel ID: channel ID illegal, cannot be longer than 249
 - [disaster]backup recovery: at least 1 anchor peer for each organization should be resumed to recover transaction process
 - [configtxgen]configtx.yaml: Organization Name and Organization ID can include alphanumeric characters as well as dots and dashes.
