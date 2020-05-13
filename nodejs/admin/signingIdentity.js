@@ -1,7 +1,7 @@
 const Utils = require('fabric-common/lib/Utils');
 const fabricProtos = require('fabric-protos');
 const commonProto = fabricProtos.common;
-const {buildSignatureHeader, buildChannelHeader, buildHeader, buildPayload} = require('./protoBuilder');
+const {buildSignatureHeader, buildChannelHeader, buildHeader, buildPayload, buildSeekPayload} = require('./protoBuilder');
 
 class SigningIdentityUtil {
 	/**
@@ -73,10 +73,8 @@ class SigningIdentityUtil {
 				Nonce: nonce,
 				ChannelHeader: channelHeader
 			});
-			const payload_bytes = buildPayload({Header: header}, configUpdateEnvelope);
-
-			signature = Buffer.from(signingIdentity.sign(payload_bytes));
-			payload = payload_bytes;
+			payload = buildPayload({Header: header, Data: configUpdateEnvelope.toBuffer()}).toBuffer();
+			signature = Buffer.from(signingIdentity.sign(payload));
 		}
 
 		const result = await committer.sendBroadcast({
@@ -85,6 +83,22 @@ class SigningIdentityUtil {
 		}, commitTimeout);
 		return result;
 
+	}
+
+	async getGenesisBlock(identityContext, ChannelId, orderer) {
+		const {signingIdentity} = this;
+		const {transactionId, nonce} = identityContext;
+		const seekPayload = buildSeekPayload({
+			Creator: signingIdentity.serialize(),
+			Nonce: nonce,
+			ChannelId,
+			TxId: transactionId,
+		}, 0, 0);
+		const payload = seekPayload.toBuffer();
+		const signature = Buffer.from(signingIdentity.sign(payload));
+
+		const result = await orderer.sendDeliver({signature, payload});
+		return result[0];
 	}
 }
 

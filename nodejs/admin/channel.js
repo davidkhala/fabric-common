@@ -1,11 +1,6 @@
 const Channel = require('fabric-common/lib/Channel');
 const {genesis} = require('khala-fabric-formatter/channel');
-const {buildChannelHeader, buildHeader, buildPayload} = require('./protoBuilder');
-const fabricProtos = require('fabric-protos');
-const ordererProto = fabricProtos.orderer;
-const commonProto = fabricProtos.common;
 
-// TODO Test
 class ChannelManager {
 
 	constructor({channelName}, channel, logger = console) {
@@ -18,9 +13,6 @@ class ChannelManager {
 		}
 		this.channel = channel;
 	}
-
-
-
 
 	clearOrderers() {
 		this.channel.committers = new Map();

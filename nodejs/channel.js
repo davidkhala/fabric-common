@@ -1,7 +1,6 @@
 const Logger = require('khala-logger/log4js');
 const logger = Logger.consoleLogger('channel');
 const fs = require('fs');
-const {sleep} = require('khala-light-util');
 
 const ChannelUpdate = require('khala-fabric-admin/channelUpdate');
 const SigningIdentityUtil = require('khala-fabric-admin/signingIdentity');
@@ -9,7 +8,7 @@ const {extractChannelConfig} = require('./admin/channelConfig');
 const IdentityContext = require('fabric-common/lib/IdentityContext');
 const EventHub = require('khala-fabric-admin/eventHub');
 const {getSingleBlock, getLastBlock} = require('./eventHub');
-const {BlockNumberFilterType: {OLDEST}} = require('khala-fabric-formatter/eventHub');
+const Proposal = require('khala-fabric-admin/proposal');
 /**
  * different from `peer channel create`, this will not response back with genesisBlock for this channel.
  *
@@ -53,14 +52,24 @@ const create = async (channelName, user, orderer, channelConfigFile, signingIden
 	return {status, info};
 };
 
-const getGenesisBlock = async (channel, user, orderer) => {
-	const targets = [orderer];
-	const eventHub = new EventHub(channel, targets);
+const getGenesisBlock = async (channel, user, orderer, verbose) => {
 
 	const identityContext = new IdentityContext(user, null);
 
-	const block = await getSingleBlock(eventHub, identityContext, 0);
-	await eventHub.disconnect();
+	let block;
+	if (verbose) {
+		const targets = [orderer];
+		const eventHub = new EventHub(channel, targets);
+		block = await getSingleBlock(eventHub, identityContext, 0);
+		await eventHub.disconnect();
+		orderer.resetEventer();
+	} else {
+		const signingIdentityUtil = new SigningIdentityUtil(user.getSigningIdentity());
+		identityContext.calculateTransactionId();
+		block = await signingIdentityUtil.getGenesisBlock(identityContext, channel.name, orderer);
+	}
+
+
 	return block;
 
 };
@@ -161,60 +170,58 @@ const getChannelConfigFromOrderer = async (channel, user, orderer) => {
 
 /**
  * TODO WIP
- * @param {Channel} channel
- * @param {Client.Peer} peer
- * @param {Object} [block] genesis_block
+ * @param {Client.Channel} channel
+ * @param {Peer[]} peers
+ * @param user
+ * @param {Object} [block] genesis block
  * @param {Orderer} [orderer] required if block is not provided
- * @param {number} waitTime default 1000, if set to false, will not retry channel join
  * @returns {Promise<*>}
  */
-const join = async (channel, peer, block, orderer, waitTime = 1000) => {
-	logger.debug('join-channel', {channelName: channel.getName(), peer: peer.getName()});
+const join = async (channel, peers, user, block, orderer) => {
+	logger.debug('join-channel', {channelName: channel.name, peer: peers.name});
 
-	const channelClient = channel._clientContext;
 	if (!block) {
-		block = await getGenesisBlock(channel, orderer);
-
+		block = await getGenesisBlock(channel, user, orderer);
 	}
+	const proposal = new Proposal('void', undefined, 'void');
+	const identityContext = new IdentityContext(user, null);
+	const result = await proposal.joinChannel(identityContext, block, peers.map(({endorser}) => endorser));
 
-	const request = {
-		targets: [peer],
-		txId: channelClient.newTransactionID(),
-		block
-	};
 
-	const data = await channel.joinChannel(request);
-	const joinedBeforeSymptom = 'LedgerID already exists';
-	const dataEntry = data[0];
-
-	if (dataEntry instanceof Error) {
-		logger.warn('join-channel', dataEntry);
-		const errMessage = dataEntry.message;
-		const swallowSymptoms = ['NOT_FOUND', 'Stream removed'];
-
-		if (swallowSymptoms.map((symptom) => errMessage.includes(symptom)).find((isMatched) => !!isMatched) && waitTime) {
-			logger.warn('join-channel', 'loopJoinChannel...', errMessage);
-			await sleep(waitTime);
-			return await join(channel, peer, block, orderer, waitTime);
-		}
-		if (errMessage.includes(joinedBeforeSymptom)) {
-			// swallow 'joined before' error
-			logger.info('join-channel', 'peer joined before', peer.getName());
-			return;
-		}
-		throw dataEntry;
-	}
-
-	const {response: {status, message}} = dataEntry;
-	if (status !== 200) {
-		throw Error(JSON.stringify({status, message}));
-	}
-	return dataEntry;
+	// const data = await channel.joinChannel(request);
+	// const joinedBeforeSymptom = 'LedgerID already exists';
+	// const dataEntry = data[0];
+	//
+	// if (dataEntry instanceof Error) {
+	// 	logger.warn('join-channel', dataEntry);
+	// 	const errMessage = dataEntry.message;
+	// 	const swallowSymptoms = ['NOT_FOUND', 'Stream removed'];
+	//
+	// 	if (swallowSymptoms.map((symptom) => errMessage.includes(symptom)).find((isMatched) => !!isMatched) && waitTime) {
+	// 		logger.warn('join-channel', 'loopJoinChannel...', errMessage);
+	// 		await sleep(waitTime);
+	// 		return await join(channel, peers, block, orderer, waitTime);
+	// 	}
+	// 	if (errMessage.includes(joinedBeforeSymptom)) {
+	// 		// swallow 'joined before' error
+	// 		logger.info('join-channel', 'peer joined before', peers.getName());
+	// 		return;
+	// 	}
+	// 	throw dataEntry;
+	// }
+	//
+	// const {response: {status, message}} = dataEntry;
+	// if (status !== 200) {
+	// 	throw Error(JSON.stringify({status, message}));
+	// }
+	// return dataEntry;
 
 };
+
 module.exports = {
 	getGenesisBlock,
 	getChannelConfigFromOrderer,
-	create
+	create,
+	join
 };
 

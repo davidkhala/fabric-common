@@ -8,6 +8,24 @@ const BlockEventFilterType = {
 	PRIVATE_BLOCK: 'private'// to receive full blocks and private data
 };
 /**
+ * response.Type
+ * @enum {string}
+ */
+const DeliverResponseType = {
+	FULL_BLOCK: 'block',
+	FILTERED_BLOCK: 'filtered_block',
+	PRIVATE_BLOCK: 'block_and_private_data',
+	STATUS: 'status'
+};
+/**
+ * response.status
+ * @enum {string}
+ */
+const DeliverResponseStatus = {
+	SUCCESS: 'SUCCESS',
+	NOT_FOUND: 'NOT_FOUND'
+};
+/**
  *
  * @enum {string}
  */
@@ -47,4 +65,6 @@ module.exports = {
 	TxEventFilterType,
 	BlockNumberFilterType,
 	ErrorSymptom,
+	DeliverResponseType,
+	DeliverResponseStatus,
 };

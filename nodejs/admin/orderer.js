@@ -1,5 +1,6 @@
 const fs = require('fs');
 const {RemoteOptsTransform} = require('khala-fabric-formatter/remote');
+const {DeliverResponseStatus: {SUCCESS, NOT_FOUND}, DeliverResponseType: {FULL_BLOCK, STATUS}} = require('khala-fabric-formatter/eventHub');
 const EndPoint = require('fabric-common/lib/Endpoint');
 const Committer = require('fabric-common/lib/Committer');
 const Eventer = require('fabric-common/lib/Eventer');
@@ -51,16 +52,17 @@ class Orderer {
 		}
 
 		this.committer = committer;
-		this.resetEventer();
-		this.logger = logger;
-	}
 
-	resetEventer() {
-		const {endpoint, serviceClass} = this.committer;
+		const {endpoint, serviceClass} = committer;
 		const eventer = new Eventer(endpoint.url, {}, undefined);
 		eventer.serviceClass = serviceClass;
 		eventer.setEndpoint(endpoint);
 		this.eventer = eventer;
+		this.logger = logger;
+	}
+
+	resetEventer() {
+		this.eventer.connectAttempted = false;
 	}
 
 	async connect() {
@@ -103,77 +105,77 @@ class Orderer {
 
 
 	/**
-	 * TODO why do we need this._sendDeliverConnect
 	 * Send a Deliver message to the orderer service.
 	 *
-	 * @param {Buffer} envelope - Byte data to be included in the broadcast. This must be a protobuf encoded byte array of the
-	 *                            [common.Envelope] that contains a [SeekInfo] in the <code>payload.data</code> property of the envelope.
-	 *                            The <code>header.channelHeader.type</code> must be set to [common.HeaderType.DELIVER_SEEK_INFO]
-	 * @param timeout
+	 * @param {{signature:Buffer, payload:Buffer}} envelope
+	 * @param [timeout]
 	 * @returns {Promise<Block[]>}
 	 */
 	async sendDeliver(envelope, timeout) {
-
 		const {logger} = this;
+		await this.connect();
 		const loggerPrefix = `${this.committer.name} sendDeliver`;
 		timeout = timeout || this.committer.options.requestTimeout;
 
 
 		// Send the seek info to the orderer via grpc
 		return new Promise((resolve, reject) => {
-			const deliver = this.committer.service.deliver();
+			const stream = this.committer.service.deliver();
 			const responses = [];
 			let error_msg = 'SYSTEM_TIMEOUT';
 
 			const deliver_timeout = setTimeout(() => {
 				logger.debug(loggerPrefix, `timed out after:${timeout}`);
-				deliver.end();
+				stream.end();
 				return reject(new Error(error_msg));
 			}, timeout);
-			deliver.on('data', (response) => {
-				logger.debug('sendDeliver - on data');
-
+			stream.on('data', (response) => {
+				// DeliverFiltered, DeliverWithPrivateData is designed for peer only
 				switch (response.Type) {
-					case 'block': {
+					case FULL_BLOCK: {
 						const {block} = response;
 
 						logger.debug(loggerPrefix, `received block[${block.header.number}]`);
 						responses.push(block);
 					}
 						break;
-					case 'status': {
-						deliver.end();
-						if (response.status === 'SUCCESS') {
-							logger.debug(loggerPrefix, `resolve - status:${response.status}`);
-							return resolve(responses);
-						} else {
-							logger.error(loggerPrefix, `rejecting - status:${response.status}`);
-							const err = Object.assign(Error('Invalid results returned'), response);
-							return reject(err);
+					case STATUS: {
+						stream.end();
+						switch (response.status) {
+							case SUCCESS:
+								logger.debug(loggerPrefix, `resolve - status:${response.status}`);
+								return resolve(responses);
+							case NOT_FOUND:
+							default: {
+								logger.error(loggerPrefix, `rejecting - status:${response.status}`);
+								const err = Object.assign(Error('Invalid status returned'), response);
+								return reject(err);
+							}
 						}
+
 					}
 					//  break;
 					default:
 						logger.error(loggerPrefix, `assertion ERROR - invalid response.Type=[${response.Type}]`);
-						deliver.end();
+						stream.end();
 						return reject(new Error('SYSTEM_ERROR'));
 				}
 			});
 
-			deliver.on('status', (response) => {
+			stream.on('status', (response) => {
 				logger.debug(loggerPrefix, 'on status', response);
 			});
 
-			deliver.on('end', () => {
+			stream.on('end', () => {
 				clearTimeout(deliver_timeout);
-				deliver.cancel();
+				stream.cancel();
 				logger.debug(loggerPrefix, 'on end');
 
 			});
 
-			deliver.on('error', (err) => {
+			stream.on('error', (err) => {
 				logger.debug(loggerPrefix, 'on error');
-				deliver.end();
+				stream.end();
 				if (err.code === 14) {
 					err.originalMessage = err.message;
 					err.message = 'SERVICE_UNAVAILABLE';
@@ -181,7 +183,7 @@ class Orderer {
 				return reject(err);
 			});
 
-			deliver.write(envelope);
+			stream.write(envelope);
 			error_msg = 'REQUEST_TIMEOUT';
 			logger.debug(loggerPrefix, 'sent envelope');
 		});

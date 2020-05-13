@@ -5,7 +5,14 @@ const ChaincodeProposalCommand = {
 	deploy: 'deploy',
 	upgrade: 'upgrade'
 };
-
+/**
+ * @enum {string}
+ */
+const SystemChaincodeID = {
+	LSCC: 'lscc',
+	QSCC: 'qscc',
+	CSCC: 'cscc'
+};
 /**
  * @enum {string}
  */
@@ -148,6 +155,7 @@ module.exports = {
 	PolicyName,
 	TxValidationCode,
 	Status,
-	BroadcastResponseStatus
+	BroadcastResponseStatus,
+	SystemChaincodeID
 };
 
