@@ -51,12 +51,16 @@ class Orderer {
 		}
 
 		this.committer = committer;
-		const {endpoint} = committer;
+		this.resetEventer();
+		this.logger = logger;
+	}
+
+	resetEventer() {
+		const {endpoint, serviceClass} = this.committer;
 		const eventer = new Eventer(endpoint.url, {}, undefined);
-		eventer.serviceClass = committer.serviceClass;
+		eventer.serviceClass = serviceClass;
 		eventer.setEndpoint(endpoint);
 		this.eventer = eventer;
-		this.logger = logger;
 	}
 
 	async connect() {

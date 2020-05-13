@@ -6,6 +6,10 @@ const {sleep} = require('khala-light-util');
 const ChannelUpdate = require('khala-fabric-admin/channelUpdate');
 const SigningIdentityUtil = require('khala-fabric-admin/signingIdentity');
 const {extractChannelConfig} = require('./admin/channelConfig');
+const IdentityContext = require('fabric-common/lib/IdentityContext');
+const EventHub = require('khala-fabric-admin/eventHub');
+const {getSingleBlock, getLastBlock} = require('./eventHub');
+const {BlockNumberFilterType: {OLDEST}} = require('khala-fabric-formatter/eventHub');
 /**
  * different from `peer channel create`, this will not response back with genesisBlock for this channel.
  *
@@ -16,7 +20,7 @@ const {extractChannelConfig} = require('./admin/channelConfig');
  * @param {SigningIdentity[]} [signingIdentities]
  * @param {boolean} asEnvelop
  */
-exports.create = async (channelName, user, orderer, channelConfigFile, signingIdentities = [], asEnvelop) => {
+const create = async (channelName, user, orderer, channelConfigFile, signingIdentities = [], asEnvelop) => {
 	logger.debug('create-channel', {channelName, channelConfigFile, orderer: orderer.toString()});
 
 	const channelConfig = fs.readFileSync(channelConfigFile);
@@ -48,26 +52,115 @@ exports.create = async (channelName, user, orderer, channelConfigFile, signingId
 	}
 	return {status, info};
 };
-//TODO WIP
-const getGenesisBlock = async (channel, user, orderer) => {
-	const EventHub = require('khala-fabric-admin/eventHub');
-	const IdentityContext = require('fabric-common/lib/IdentityContext');
-	const {BlockNumberFilterType: {NEWEST, OLDEST}} = require('khala-fabric-formatter/eventHub');
 
+const getGenesisBlock = async (channel, user, orderer) => {
 	const targets = [orderer];
-	const eventhub = new EventHub(channel, targets);
+	const eventHub = new EventHub(channel, targets);
 
 	const identityContext = new IdentityContext(user, null);
-	const startBlock = OLDEST;
-	const endBlock = NEWEST;
-	eventhub.build(identityContext, {startBlock, endBlock});
-	await eventhub.connect();
+
+	const block = await getSingleBlock(eventHub, identityContext, 0);
+	await eventHub.disconnect();
+	return block;
+
 };
-exports.getGenesisBlock = getGenesisBlock;
+/**
+ * // TODO WIP
+ * Asks the orderer for the current (latest) configuration block for this channel.
+ * This is similar to [getGenesisBlock()]{@link Channel#getGenesisBlock}, except
+ * that instead of getting block number 0 it gets the latest block that contains
+ * the channel configuration, and only returns the decoded {@link ConfigEnvelope}.
+ *
+ * @returns {Promise} A Promise for a {@link ConfigEnvelope} object containing the configuration items.
+ */
+const getChannelConfigFromOrderer = async (channel, user, orderer) => {
+
+	const targets = [orderer];
+	const eventHub = new EventHub(channel, targets);
+
+	const identityContext = new IdentityContext(user, null);
+	const block = await getLastBlock(eventHub, identityContext);
+	// logger.debug('%s - good results from seek block ', method); // :: %j',results);
+	// // verify that we have the genesis block
+	// if (block) {
+	// 	logger.debug('%s - found latest block', method);
+	// } else {
+	// 	logger.error('%s - did not find latest block', method);
+	// 	throw new Error('Failed to retrieve latest block', method);
+	// }
+	//
+	// logger.debug('%s - latest block is block number %s', block.header.number);
+	// // get the last config block number
+	// const metadata = _commonProto.Metadata.decode(block.metadata.metadata[_commonProto.BlockMetadataIndex.LAST_CONFIG]);
+	// const last_config = _commonProto.LastConfig.decode(metadata.value);
+	// logger.debug('%s - latest block has config block of %s', method, last_config.index);
+	//
+	// txId = new TransactionID(signer);
+	//
+	// // now build the seek info to get the block called out
+	// // as the latest config block
+	// seekSpecifiedStart = new _abProto.SeekSpecified();
+	// seekSpecifiedStart.setNumber(last_config.index);
+	// seekStart = new _abProto.SeekPosition();
+	// seekStart.setSpecified(seekSpecifiedStart);
+	//
+	// //   build stop
+	// seekSpecifiedStop = new _abProto.SeekSpecified();
+	// seekSpecifiedStop.setNumber(last_config.index);
+	// seekStop = new _abProto.SeekPosition();
+	// seekStop.setSpecified(seekSpecifiedStop);
+	//
+	// // seek info with all parts
+	// seekInfo = new _abProto.SeekInfo();
+	// seekInfo.setStart(seekStart);
+	// seekInfo.setStop(seekStop);
+	// seekInfo.setBehavior(_abProto.SeekInfo.SeekBehavior.BLOCK_UNTIL_READY);
+	// // logger.debug('initializeChannel - seekInfo ::' + JSON.stringify(seekInfo));
+	//
+	// // build the header for use with the seekInfo payload
+	// seekInfoHeader = client_utils.buildChannelHeader(
+	// 	_commonProto.HeaderType.DELIVER_SEEK_INFO,
+	// 	self._name,
+	// 	txId.getTransactionID(),
+	// 	self._initial_epoch,
+	// 	null,
+	// 	client_utils.buildCurrentTimestamp(),
+	// 	self._clientContext.getClientCertHash()
+	// );
+	//
+	// seekHeader = client_utils.buildHeader(signer, seekInfoHeader, txId.getNonce());
+	// seekPayload = new _commonProto.Payload();
+	// seekPayload.setHeader(seekHeader);
+	// seekPayload.setData(seekInfo.toBuffer());
+	//
+	// // building manually or will get protobuf errors on send
+	// envelope = client_utils.toEnvelope(client_utils.signProposal(signer, seekPayload));
+	// // this will return us a block
+	// block = await orderer.sendDeliver(envelope);
+	// if (!block) {
+	// 	throw new Error('Config block was not found');
+	// }
+	// // lets have a look at the block
+	// logger.debug('%s -  config block number ::%s  -- numberof tx :: %s', method, block.header.number, block.data.data.length);
+	// if (block.data.data.length !== 1) {
+	// 	throw new Error('Config block must only contain one transaction');
+	// }
+	// envelope = _commonProto.Envelope.decode(block.data.data[0]);
+	// const payload = _commonProto.Payload.decode(envelope.payload);
+	// const channel_header = _commonProto.ChannelHeader.decode(payload.header.channel_header);
+	// if (channel_header.type !== _commonProto.HeaderType.CONFIG) {
+	// 	throw new Error(`Block must be of type "CONFIG" (${_commonProto.HeaderType.CONFIG}), but got "${channel_header.type}" instead`);
+	// }
+	//
+	// const config_envelope = _configtxProto.ConfigEnvelope.decode(payload.data);
+	//
+	// // send back the envelope
+	// return config_envelope;
+};
+
 
 /**
- * different from `peer channel join`, since we do not have genesisBlock as output of `peer channel create`, we have to prepared one before.
- * to be atomic, join 1 peer each time
+ * TODO WIP
  * @param {Channel} channel
  * @param {Client.Peer} peer
  * @param {Object} [block] genesis_block
@@ -119,6 +212,9 @@ const join = async (channel, peer, block, orderer, waitTime = 1000) => {
 	return dataEntry;
 
 };
-
-exports.join = join;
+module.exports = {
+	getGenesisBlock,
+	getChannelConfigFromOrderer,
+	create
+};
 

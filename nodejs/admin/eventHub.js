@@ -21,10 +21,10 @@ class EventHub {
 	/**
 	 *
 	 * @param {IdentityContext} identityContext
-	 * @param {BlockNumberFilterType|number} startBlock
-	 * @param {BlockNumberFilterType|number} endBlock
+	 * @param {BlockNumberFilterType|number} [startBlock]
+	 * @param {BlockNumberFilterType|number} [endBlock]
 	 */
-	build(identityContext, {startBlock, endBlock}) {
+	build(identityContext, {startBlock, endBlock} = {}) {
 		const {eventService} = this;
 		eventService.build(identityContext, {
 			startBlock, endBlock, blockType: FULL_BLOCK
@@ -76,7 +76,6 @@ class EventHub {
 	 */
 	chaincodeEvent(chaincodeId, eventName, callback, options) {
 		const {eventService} = this;
-		this._throwIfNotConnected();
 		if (!options) {
 			options = {unregister: false, startBlock: undefined, endBlock: undefined};
 		}
@@ -89,12 +88,11 @@ class EventHub {
 	/**
 	 *
 	 * @param {EventCallback} callback
-	 * @param {EventRegistrationOptions} options
+	 * @param {EventRegistrationOptions} [options]
 	 * @return {EventListener}
 	 */
 	blockEvent(callback, options) {
 		const {eventService} = this;
-		this._throwIfNotConnected();
 		if (!options) {
 			options = {unregister: false, startBlock: undefined, endBlock: undefined};
 		}
@@ -128,7 +126,6 @@ class EventHub {
 	 */
 	txEvent(transactionID, callback, options) {
 		const {eventService} = this;
-		this._throwIfNotConnected();
 		if (!transactionID) {
 			transactionID = ALL;
 		}
