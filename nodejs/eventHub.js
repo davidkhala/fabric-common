@@ -23,6 +23,12 @@ const getSingleBlock = async (eventHub, identityContext, blockNumber) => {
 		eventHub.connect();
 	});
 };
+/**
+ * TODO WIP waijt for sdk-node fix
+ * @param eventHub
+ * @param identityContext
+ * @return {Promise<unknown>}
+ */
 const getLastBlock = async (eventHub, identityContext) => {
 	const startBlock = NEWEST;
 	const endBlock = NEWEST;

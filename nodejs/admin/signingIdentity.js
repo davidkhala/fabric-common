@@ -85,7 +85,7 @@ class SigningIdentityUtil {
 
 	}
 
-	async getGenesisBlock(identityContext, ChannelId, orderer) {
+	async getSpecificBlock(identityContext, ChannelId, orderer, blockHeight) {
 		const {signingIdentity} = this;
 		const {transactionId, nonce} = identityContext;
 		const seekPayload = buildSeekPayload({
@@ -93,7 +93,7 @@ class SigningIdentityUtil {
 			Nonce: nonce,
 			ChannelId,
 			TxId: transactionId,
-		}, 0, 0);
+		}, blockHeight, blockHeight);
 		const payload = seekPayload.toBuffer();
 		const signature = Buffer.from(signingIdentity.sign(payload));
 

@@ -161,16 +161,16 @@ const HeaderType = {
  * @param TxId
  * @param startHeight
  * @param stopHeight
+ * @param {SeekBehavior|string} [behavior]
  * @return {commonProto.Payload}
  */
-const buildSeekPayload = ({Creator, Nonce, ChannelId, TxId}, startHeight, stopHeight) => {
+const buildSeekPayload = ({Creator, Nonce, ChannelId, TxId}, startHeight, stopHeight, behavior = SeekBehavior.FAIL_IF_NOT_READY) => {
 
 	const startPosition = buildSeekPosition(startHeight);
 	const stopPosition = buildSeekPosition(stopHeight);
-	const seekInfo = buildSeekInfo(startPosition, stopPosition, SeekBehavior.BLOCK_UNTIL_READY); // TODO attempt to play with another behavior
+	const seekInfo = buildSeekInfo(startPosition, stopPosition, behavior); // TODO attempt to play with another behavior
 
 
-	// build the header for use with the seekInfo payload
 	const seekInfoHeader = buildChannelHeader({
 		Type: HeaderType.DELIVER_SEEK_INFO,
 		Version: 1,
@@ -180,11 +180,47 @@ const buildSeekPayload = ({Creator, Nonce, ChannelId, TxId}, startHeight, stopHe
 
 	const seekHeader = buildHeader({Creator, Nonce, ChannelHeader: seekInfoHeader});
 
-	const seekPayload = buildPayload({Header: seekHeader, Data: seekInfo.toBuffer()});
-	return seekPayload;
+	return buildPayload({Header: seekHeader, Data: seekInfo.toBuffer()});
 
 };
+const extractLastConfigIndex = (block) => {
+	const metadata = commonProto.Metadata.decode(block.metadata.metadata[commonProto.BlockMetadataIndex.LAST_CONFIG]);
+	const lastConfig = commonProto.LastConfig.decode(metadata.value);
+	return parseInt(lastConfig.index);
+};
+/**
+ * Extracts the protobuf 'ConfigUpdate' object out of the 'ConfigEnvelope' object
+ * @param {string|Buffer} configEnvelope - channel config file content
+ */
+const extractConfigUpdate = (configEnvelope) => {
+	const envelope = commonProto.Envelope.decode(configEnvelope);
+	const payload = commonProto.Payload.decode(envelope.payload);
+	const configtx = commonProto.ConfigUpdateEnvelope.decode(payload.data);
+	return configtx.config_update;
+};
 
+/**
+ *
+ * @param {BlockData} blockData
+ */
+const extractConfigEnvelopeFromBlockData = (blockData) => {
+	const envelope = commonProto.Envelope.decode(blockData);
+	const payload = commonProto.Payload.decode(envelope.payload);
+	return commonProto.ConfigEnvelope.decode(payload.data);
+};
+
+const assertConfigBlock = (block) => {
+	if (block.data.data.length !== 1) {
+		throw new Error('Config block must only contain one transaction');
+	}
+	const envelope = commonProto.Envelope.decode(block.data.data[0]);
+	const payload = commonProto.Payload.decode(envelope.payload);
+	const channel_header = commonProto.ChannelHeader.decode(payload.header.channel_header);
+	if (channel_header.type !== HeaderType.CONFIG) {
+		throw new Error(`Block must be of type "CONFIG" , but got "${HeaderType[channel_header.type]}" instead`);
+	}
+
+};
 
 module.exports = {
 	buildChannelHeader,
@@ -195,5 +231,9 @@ module.exports = {
 	buildSeekPosition,
 	buildSeekInfo,
 	buildSeekPayload,
+	extractLastConfigIndex,
+	extractConfigUpdate,
+	extractConfigEnvelopeFromBlockData,
 	SeekBehavior,
+	assertConfigBlock,
 };

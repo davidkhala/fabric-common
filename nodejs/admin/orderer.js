@@ -61,27 +61,28 @@ class Orderer {
 		this.logger = logger;
 	}
 
-	resetEventer() {
+	reset() {
 		this.eventer.connectAttempted = false;
+		this.committer.connectAttempted = false;
 	}
 
 	async connect() {
 		const {logger} = this;
-		try {
+		if (this.committer.connected || this.committer.service) {
+			logger.info(`${this.committer.name} connection exist already`);
+		} else {
 			await this.committer.connect();
-		} catch (e) {
-			const {message} = e;
-			if (message === `This service endpoint ${this.committer.name}-${this.committer.endpoint.url} is connected` ||
-				message === `This service endpoint ${this.committer.name}-${this.committer.endpoint.url} has an active grpc service connection`) {
-				logger.info(`${this.committer.name} connection exist already`);
-			} else {
-				throw e;
-			}
+		}
+		if (this.eventer.connected || this.eventer.service) {
+			logger.info(`${this.eventer.name} connection exist already`);
+		} else {
+			await this.eventer.connect();
 		}
 	}
 
-	close() {
+	disconnect() {
 		this.committer.disconnect();
+		this.eventer.disconnect();
 	}
 
 
@@ -113,7 +114,6 @@ class Orderer {
 	 */
 	async sendDeliver(envelope, timeout) {
 		const {logger} = this;
-		await this.connect();
 		const loggerPrefix = `${this.committer.name} sendDeliver`;
 		timeout = timeout || this.committer.options.requestTimeout;
 
@@ -143,7 +143,6 @@ class Orderer {
 						stream.end();
 						switch (response.status) {
 							case SUCCESS:
-								logger.debug(loggerPrefix, `resolve - status:${response.status}`);
 								return resolve(responses);
 							case NOT_FOUND:
 							default: {
@@ -185,12 +184,11 @@ class Orderer {
 
 			stream.write(envelope);
 			error_msg = 'REQUEST_TIMEOUT';
-			logger.debug(loggerPrefix, 'sent envelope');
 		});
 	}
 
 	toString() {
-		return this.committer.toString();
+		return JSON.stringify({Orderer: this.committer.endpoint.url});
 	}
 }
 

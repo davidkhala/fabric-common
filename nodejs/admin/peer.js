@@ -47,14 +47,38 @@ class Peer {
 			clientKey: this.clientKey,
 			clientCert: this.clientCert
 		});
-		this.endpoint = new EndPoint(options);
-		const endorser = new Endorser(this.endpoint.url, {}, undefined);
-		endorser.setEndpoint(this.endpoint);
+		const endpoint = new EndPoint(options);
+		const endorser = new Endorser(endpoint.url, {}, undefined);
+		endorser.setEndpoint(endpoint);
 		this.endorser = endorser;
 
-		const eventer = new Eventer(this.endpoint.url, {}, undefined);
-		eventer.setEndpoint(this.endpoint);
+		const eventer = new Eventer(endpoint.url, {}, undefined);
+		eventer.setEndpoint(endpoint);
 		this.eventer = eventer;
+	}
+
+	reset() {
+		this.eventer.connectAttempted = false;
+		this.endorser.connectAttempted = false;
+	}
+
+	async connect() {
+		const {logger} = this;
+		if (this.endorser.connected || this.endorser.service) {
+			logger.info(`${this.endorser.name} connection exist already`);
+		} else {
+			await this.endorser.connect();
+		}
+		if (this.eventer.connected || this.eventer.service) {
+			logger.info(`${this.eventer.name} connection exist already`);
+		} else {
+			await this.eventer.connect();
+		}
+	}
+
+	disconnect() {
+		this.endorser.disconnect();
+		this.eventer.disconnect();
 	}
 
 	/**
@@ -63,8 +87,9 @@ class Peer {
 	 */
 	async ping() {
 		try {
-			const endorser = this.endorser;
-			endorser.service = new endorser.serviceClass(this.endpoint.addr, this.endpoint.creds, endorser.options);
+			const {endorser} = this;
+			const {endpoint} = endorser;
+			endorser.service = new endorser.serviceClass(endpoint.addr, endpoint.creds, endorser.options);
 			await endorser.waitForReady(endorser.service);
 			return true;
 		} catch (err) {
@@ -74,6 +99,10 @@ class Peer {
 				throw err;
 			}
 		}
+	}
+
+	toString() {
+		return JSON.stringify({Peer: this.endorser.endpoint.url});
 	}
 }
 
