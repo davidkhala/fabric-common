@@ -1,5 +1,8 @@
-// TODO WIP
-const buildBlock = (block) => {
+const fabricProtos = require('fabric-protos');
+const commonProto = fabricProtos.common;
+
+
+const fromEvent = ({block}) => {
 	const blockHeader = new commonProto.BlockHeader();
 	blockHeader.setNumber(block.header.number);
 	blockHeader.setPreviousHash(block.header.previous_hash);
@@ -14,4 +17,7 @@ const buildBlock = (block) => {
 	blockEncoded.setData(blockData);
 	blockEncoded.setMetadata(blockMetadata);
 	return blockEncoded;
+};
+module.exports = {
+	fromEvent
 };

@@ -9,7 +9,9 @@ const IdentityContext = require('fabric-common/lib/IdentityContext');
 const EventHub = require('khala-fabric-admin/eventHub');
 const {getSingleBlock, getLastBlock} = require('./eventHub');
 const Proposal = require('khala-fabric-admin/proposal');
+const {fromEvent} = require('khala-fabric-admin/blockEncoder');
 /**
+ * TODO WIP
  * different from `peer channel create`, this will not response back with genesisBlock for this channel.
  *
  * @param {string} channelName
@@ -181,11 +183,25 @@ const join = async (channel, peers, user, block, orderer) => {
 	logger.debug('join-channel', {channelName: channel.name, peer: peers.name});
 
 	if (!block) {
-		block = await getGenesisBlock(channel, user, orderer);
+		const eventBlock = await getGenesisBlock(channel, user, orderer);
+		block = fromEvent({block: eventBlock}).toBuffer();
+		logger.debug({block});
 	}
-	const proposal = new Proposal('void', undefined, 'void');
+	for (const peer of peers) {
+		await peer.endorser.connect();
+	}
 	const identityContext = new IdentityContext(user, null);
-	const result = await proposal.joinChannel(identityContext, block, peers.map(({endorser}) => endorser));
+	const proposal = new Proposal(identityContext, '');
+	const result = await proposal.joinChannel(block, peers.map(({endorser}) => endorser));
+
+	const {errors, responses} = result;
+
+	for (const {response} of responses) {
+		logger.debug(response);
+	}
+
+
+	return result;
 
 
 	// const data = await channel.joinChannel(request);
