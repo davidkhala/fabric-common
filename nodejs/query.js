@@ -1,24 +1,31 @@
 // TODO replace some with system chaincode
-const Long = require('long');
-/**
- *
- * @param {Client.Peer} peer
- * @param {Client.Channel} channel
- * @returns {Promise<Client.BlockchainInfo>}
- */
-exports.chain = async (peer, channel) => {
-	const message = await channel.queryInfo(peer);
+const Proposal = require('khala-fabric-admin/proposal');
+const {getResponses} = require('khala-fabric-formatter/proposalResponse');
+const fabricProtos = require('fabric-protos');
+const protosProto = fabricProtos.protos;
+const commonProto = fabricProtos.common;
 
-	const {height, currentBlockHash, previousBlockHash} = message;
-	message.pretty = {
-		height: new Long(height.low, height.high, height.unsigned).toInt(),
-		currentBlockHash: currentBlockHash.toString('hex'),
-		previousBlockHash: previousBlockHash.toString('hex')
-	};
-	// npm long:to parse{ low: 4, high: 0, unsigned: true }
-	return message;
+exports.chain = async (peers, identityContext, channelName) => {
+	const proposal = new Proposal(identityContext, channelName, undefined, peers);
+	const result = await proposal.queryInfo();
+
+	const responses = getResponses(result);
+
+	responses.forEach((response, index) => {
+		const {height, currentBlockHash, previousBlockHash} = commonProto.BlockchainInfo.decode(response.payload);
+
+		Object.assign(response, {
+			height: height.toInt(),
+			currentBlockHash: currentBlockHash.toString('hex'),
+			previousBlockHash: previousBlockHash.toString('hex'),
+			peer: peers[index].toString()
+		});
+	});
+
+	return result;
 };
 /**
+ * TODO
  * @param {Client.Peer} peer
  * @param {Client} client
  * @return {Promise<Client.ChaincodeQueryResponse>}
@@ -29,6 +36,7 @@ exports.chaincodesInstalled = async (peer, client) => {
 	return {chaincodes, pretty};
 };
 /**
+ * TODO
  * only one latest version entry for each chaincode, thus no need to findLast
  * @param {Client.Peer} peer
  * @param {Client.Channel} channel
@@ -39,9 +47,47 @@ exports.chaincodesInstantiated = async (peer, channel) => {
 	const pretty = chaincodes.map(({name, version, path}) => ({name, version, path}));
 	return {chaincodes, pretty};
 };
-
+/**
+ * TODO
+ * @param peer
+ * @param channel
+ * @param hashHex
+ * @return {Promise<*>}
+ */
 exports.blockFromHash = async (peer, channel, hashHex) => channel.queryBlockByHash(Buffer.from(hashHex, 'hex'), peer);
-exports.blockFromHeight = async (peer, channel, blockNumber) => channel.queryBlock(parseInt(blockNumber), peer);
-exports.channelJoined = async (peer, client) => client.queryChannels(peer);
+/**
+ *
+ * @param peers
+ * @param identityContext
+ * @param channelName
+ * @param blockNumber
+ * @return {Promise<*>}
+ */
+exports.blockFromHeight = async (peers, identityContext, channelName, blockNumber) => {
+	const proposal = new Proposal(identityContext, channelName, undefined, peers);
+	return await proposal.queryBlock(blockNumber);
+};
 
+exports.channelJoined = async (peers, identityContext) => {
+	const proposal = new Proposal(identityContext, '', undefined, peers);
+
+	const result = await proposal.queryChannels();
+
+	const responses = getResponses(result);
+	responses.forEach((response, index) => {
+		const queryTrans = protosProto.ChannelQueryResponse.decode(response.payload);
+		response.channels = queryTrans.channels.map(({channel_id}) => channel_id);
+		response.peer = peers[index].toString();
+	});
+
+	return result;
+
+};
+/**
+ * TODO
+ * @param peer
+ * @param channel
+ * @param txId
+ * @return {Promise<*>}
+ */
 exports.tx = async (peer, channel, txId) => channel.queryTransaction(txId, peer);

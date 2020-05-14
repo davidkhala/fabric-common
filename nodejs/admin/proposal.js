@@ -1,6 +1,6 @@
 const Proposal = require('fabric-common/lib/Proposal');
 const ChannelManager = require('./channel');
-const {SystemChaincodeID: {CSCC}} = require('khala-fabric-formatter/constants');
+const {SystemChaincodeID: {CSCC, QSCC}} = require('khala-fabric-formatter/constants');
 
 class ProposalManager {
 
@@ -9,23 +9,46 @@ class ProposalManager {
 	 * @param {IdentityContext} identityContext
 	 * @param channelName
 	 * @param [chaincodeId]
+	 * @param [peers]
+	 * @param [requestTimeout]
 	 */
-	constructor(identityContext, channelName, chaincodeId) {
+	constructor(identityContext, channelName, chaincodeId, peers, requestTimeout) {
 		const channel = ChannelManager.emptyChannel(channelName);
-
 		this.proposal = new Proposal(chaincodeId || null, channel);
 		this.identityContext = identityContext;
+		this.requestTimeout = requestTimeout;
+		if (Array.isArray(peers)) {
+			this.targets = peers.map(({endorser}) => endorser);
+		}
 	}
 
 
 	/**
-	 * TODO WIP
-	 * @param {Buffer} blockBuffer
-	 * @param {Endorser[]} targets
+	 *
+	 * @param {BuildProposalRequest} buildProposalRequest
+	 * @param {Endorser[]} [targets]
+	 * @return {*}
 	 */
-	async joinChannel(blockBuffer, targets) {
+	async send(buildProposalRequest, targets) {
+		const {identityContext, requestTimeout} = this;
+
+		this.proposal.build(identityContext, buildProposalRequest);
+		this.proposal.sign(identityContext);// TODO take care of offline signing
+		/**
+		 * @type {SendProposalRequest}
+		 */
+		const sendProposalRequest = {
+			targets: targets || this.targets,
+			requestTimeout
+		};
+		return this.proposal.send(sendProposalRequest);
+	}
+
+	/**
+	 * @param {Buffer} blockBuffer
+	 */
+	async joinChannel(blockBuffer) {
 		this.proposal.chaincodeId = CSCC;
-		const {identityContext} = this;
 		/**
 		 * @type {BuildProposalRequest}
 		 */
@@ -33,30 +56,15 @@ class ProposalManager {
 			fcn: 'JoinChain',
 			args: [blockBuffer],
 		};
-		this.proposal.build(identityContext, buildProposalRequest);
-		this.proposal.sign(identityContext);
-		/**
-		 * @type {SendProposalRequest}
-		 */
-		const sendProposalRequest = {
-			targets,
-			requestTimeout: undefined
-		};
-		const result = await this.proposal.send(sendProposalRequest);
 
-		return result;
+		return await this.send(buildProposalRequest);
 	}
 
 	/**
-	 * Queries the target peer for the names of all the channels that a
-	 * peer has joined.
-	 *
-	 * @param {Endorser[]} targets - The target peers to send the query
-	 * @returns {Promise} A promise to return a {@link ChannelQueryResponse}
+	 * Query the names of all the channels each peer has joined.
 	 */
-	async queryChannels(targets) {
+	async queryChannels() {
 		this.proposal.chaincodeId = CSCC;
-		const {identityContext} = this;
 		/**
 		 * @type {BuildProposalRequest}
 		 */
@@ -64,44 +72,43 @@ class ProposalManager {
 			fcn: 'GetChannels',
 			args: [],
 		};
-		this.proposal.build(identityContext, buildProposalRequest);
-		this.proposal.sign(identityContext);
+		return await this.send(buildProposalRequest);
+
+	}
+
+	/**
+	 * Block inside response.payload
+	 * @param channelName
+	 * @param blockNumber
+	 * @return {Promise<*>}
+	 */
+	async queryBlock(blockNumber) {
+		this.proposal.chaincodeId = QSCC;
 
 		/**
-		 * @type {SendProposalRequest}
+		 * @type {BuildProposalRequest}
 		 */
-		const sendProposalRequest = {
-			targets,
-			requestTimeout: undefined
+		const buildProposalRequest = {
+			fcn: 'GetBlockByNumber',
+			args: [this.proposal.channel.name, blockNumber.toString()],
 		};
-		const result = await this.proposal.send(sendProposalRequest);
 
-		return result;
+		return await this.send(buildProposalRequest);
+	}
 
-		// const results = await Channel.sendTransactionProposal(request, '' /* special channel id */, this);
-		// const responses = results[0];
-		// if (responses && Array.isArray(responses)) {
-		// 	// will only be one response as we are only querying one peer
-		// 	if (responses.length > 1) {
-		// 		throw Error('Too many results returned');
-		// 	}
-		// 	const response = responses[0];
-		// 	if (response instanceof Error) {
-		// 		throw response;
-		// 	}
-		// 	if (response.response) {
-		// 		logger.debug('queryChannels - response status :: %d', response.response.status);
-		// 		const queryTrans = _queryProto.ChannelQueryResponse.decode(response.response.payload);
-		// 		logger.debug('queryChannels - ProcessedTransaction.channelInfo.length :: %s', queryTrans.channels.length);
-		// 		for (const channel of queryTrans.channels) {
-		// 			logger.debug('>>> channel id %s ', channel.channel_id);
-		// 		}
-		// 		return queryTrans;
-		// 	}
-		// 	// no idea what we have, lets fail it and send it back
-		// 	throw Error(response);
-		// }
-		// throw Error('Payload results are missing from the query');
+
+	async queryInfo() {
+		this.proposal.chaincodeId = QSCC;
+
+		/**
+		 * @type {BuildProposalRequest}
+		 */
+		const buildProposalRequest = {
+			fcn: 'GetChainInfo',
+			args: [this.proposal.channel.name],
+		};
+
+		return await this.send(buildProposalRequest);
 	}
 }
 

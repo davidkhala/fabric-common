@@ -57,10 +57,10 @@ const create = async (channelName, user, orderer, channelConfigFile, signingIden
 /**
  *
  * @param channel
- * @param user
+ * @param {Client.User} user
  * @param {Orderer} orderer
  * @param verbose
- * @return {Promise<Object>}
+ * @return {Promise<Object|Buffer>}
  */
 const getGenesisBlock = async (channel, user, orderer, verbose) => {
 
@@ -130,8 +130,8 @@ const join = async (channel, peers, user, block, orderer) => {
 		await peer.endorser.connect();
 	}
 	const identityContext = new IdentityContext(user, null);
-	const proposal = new Proposal(identityContext, '');
-	const result = await proposal.joinChannel(block, peers.map(({endorser}) => endorser));
+	const proposal = new Proposal(identityContext, '', undefined, peers);
+	const result = await proposal.joinChannel(block);
 
 	const {errors, responses} = result;
 
