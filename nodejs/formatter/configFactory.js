@@ -90,21 +90,25 @@ class ConfigFactory {
 		return this;
 	}
 
-	getAnchorPeers(OrgName) {
-		return this.newConfig.channel_group.groups.Application.groups[OrgName].values.AnchorPeers;
+	/**
+	 *
+	 * @param {OrgName} orgName
+	 */
+	getAnchorPeers(orgName) {
+		return this.newConfig.channel_group.groups.Application.groups[orgName].values.AnchorPeers;
 	}
 
 	/**
-	 * @param {string} OrgName
+	 * @param {OrgName} orgName
 	 * @param {[{host:string,port:number}]} anchorPeers
 	 */
-	setAnchorPeers(OrgName, anchorPeers) {
+	setAnchorPeers(orgName, anchorPeers) {
 		anchorPeers = anchorPeers.map(({host, port}) => ({host: host.toString(), port}));
-		const {AnchorPeers} = this.newConfig.channel_group.groups.Application.groups[OrgName].values;
+		const {AnchorPeers} = this.newConfig.channel_group.groups.Application.groups[orgName].values;
 		if (AnchorPeers) {
 			AnchorPeers.value.anchor_peers = anchorPeers;
 		} else {
-			this.newConfig.channel_group.groups.Application.groups[OrgName].values.AnchorPeers = {
+			this.newConfig.channel_group.groups.Application.groups[orgName].values.AnchorPeers = {
 				mod_policy: 'Admins',
 				value: {
 					anchor_peers: anchorPeers

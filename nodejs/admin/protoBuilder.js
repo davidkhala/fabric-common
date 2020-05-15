@@ -19,7 +19,7 @@ const buildCurrentTimestamp = () => {
  * @param [TLSCertHash]
  * @param [Timestamp]
  */
-const buildChannelHeader = ({Type, Version, ChannelId, TxId, ChaincodeID, TLSCertHash, Timestamp}) => {
+const buildChannelHeader = ({Type, Version = 1, ChannelId, TxId, ChaincodeID, TLSCertHash, Timestamp}) => {
 	const channelHeader = new commonProto.ChannelHeader();
 	channelHeader.setType(Type); // int32
 	channelHeader.setVersion(Version); // int32
@@ -173,7 +173,6 @@ const buildSeekPayload = ({Creator, Nonce, ChannelId, TxId}, startHeight, stopHe
 
 	const seekInfoHeader = buildChannelHeader({
 		Type: HeaderType.DELIVER_SEEK_INFO,
-		Version: 1,
 		ChannelId,
 		TxId,
 	});

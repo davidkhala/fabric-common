@@ -39,9 +39,8 @@ const create = async (channelName, user, orderer, channelConfigFile, signingIden
 		}
 		for (const signingIdentity of signingIdentities) {
 			const extraSigningIdentityUtil = new SigningIdentityUtil(signingIdentity);
-			signatures.push(extraSigningIdentityUtil.signChannelConfig(config));
+			signatures.push(extraSigningIdentityUtil.signChannelConfig(config).toBuffer());
 		}
-
 		channelUpdate.useSignatures(config, signatures);
 	}
 

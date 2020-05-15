@@ -39,14 +39,14 @@ class BinManager {
 			/**
 			 *
 			 * @param {EncodeType} type
-			 * @param {json} updateConfigJSON
+			 * @param {string} json
 			 * @return {Buffer}
 			 */
-			encode: async (type, updateConfigJSON) => {
+			encode: async (type, json) => {
 
 				const [tmpJSONFile, t1] = createTmpFile({postfix: '.json'});
 				const [tmpFile, t2] = createTmpFile();
-				fs.writeFileSync(tmpJSONFile, updateConfigJSON);
+				fs.writeFileSync(tmpJSONFile, json);
 				await this.configtxlatorCMD.encodeFile(type, {inputFile: tmpJSONFile, outputFile: tmpFile});
 				const returned = fs.readFileSync(tmpFile);
 				t1();
@@ -95,7 +95,7 @@ class BinManager {
 			},
 			/**
 			 *
-			 * @param channelID
+			 * @param {string} channelID
 			 * @param {Buffer} original_config_proto The original config message
 			 * @param {Buffer} updated_config_proto The updated config message
 			 * @return {Promise<Buffer>} modified_config_proto

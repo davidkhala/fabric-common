@@ -1,10 +1,11 @@
 const {axiosPromise} = require('khala-axios');
 const {EncodeType, DecodeType} = require('khala-fabric-formatter/configtxlator');
+const FormData = require('form-data');
 const requestPost = async (opt) => {
 	try {
 		return await axiosPromise(opt, {
 			json: null,
-			encoding: null// NOTE config :returning body to be of type Buffer not String
+			encoding: null, // NOTE config :returning body to be of type Buffer not String
 		});
 	} catch (e) {
 		if (e.statusCode && e.statusMessage && e.body) {
@@ -33,24 +34,23 @@ class ConfigtxlatorServer {
 
 	/**
 	 * TODO work as Buffer.from to 'binary'?
-	 * @param jsonString
 	 * @param {EncodeType} type
+	 * @param jsonString
 	 */
-	async encode(jsonString, type) {
+	async encode(type, jsonString) {
 		const baseUrl = `${this.baseUrl}/protolator/encode`;
 		const body = jsonString;
 		return requestPost({
 			url: `${baseUrl}/${type}`, body
 		});
-
 	}
 
 	/**
 	 *
-	 * @param {Buffer} data
 	 * @param {DecodeType} type
+	 * @param {Buffer} data
 	 */
-	async decode(data, type) {
+	async decode(type, data) {
 		const body = data;
 		return requestPost({url: `${this.baseUrl}/protolator/decode/${type}`, body});
 	}
@@ -64,37 +64,37 @@ class ConfigtxlatorServer {
 	}
 
 	async computeUpdate(channelName, originalConfig, updateConfig) {
-		let {proto: originalConfigProto} = originalConfig;
+		// TODO formData.getHeaders is not a function
+		const {proto: originalConfigProto} = originalConfig;
 		const {json: originalConfigJSON} = originalConfig;
-		let {proto: updatedConfigProto} = updateConfig;
+		const {proto: updatedConfigProto} = updateConfig;
 		const {json: updatedConfigJSON} = updateConfig;
 
-		if (!updatedConfigProto) {
-			updatedConfigProto = await this.encode(updatedConfigJSON, EncodeType.Config);
+
+		let originalConfigBuff, updatedConfigBuff;
+		if (!originalConfigProto) {
+			const originalConfigResult = await this.encode(EncodeType.Config, originalConfigJSON);
+			originalConfigBuff = Buffer.from(originalConfigResult);
+		} else {
+			originalConfigBuff = originalConfigProto.toBuffer();
 		}
 
-		if (!originalConfigProto) {
-			originalConfigProto = await this.encode(originalConfigJSON, EncodeType.Config);
+		if (!updatedConfigProto) {
+			const updatedConfigResult = await this.encode(EncodeType.Config, updatedConfigJSON);
+			updatedConfigBuff = Buffer.from(updatedConfigResult);
+		} else {
+			updatedConfigBuff = updatedConfigProto.toBuffer();
 		}
-		const formData = {
-			channel: channelName,
-			original: {
-				value: originalConfigProto,
-				options: {
-					filename: 'original.proto',
-					contentType: 'application/octet-stream'
-				}
-			},
-			updated: {
-				value: updatedConfigProto,
-				options: {
-					filename: 'updated.proto',
-					contentType: 'application/octet-stream'
-				}
-			}
-		};
+
+
+		const formData = new FormData();
+		// FIXME
+		formData.append('channel', channelName);
+		formData.append('original', originalConfigBuff, 'original.proto');
+		formData.append('updated', updatedConfigBuff, 'updated.proto');
+
 		const modified_config_proto = await this.compute(formData).updateFromConfigs();
-		return Buffer.from(modified_config_proto, 'binary'); //TODO is it what encode.configUpdate do?
+		return modified_config_proto;
 	}
 }
 

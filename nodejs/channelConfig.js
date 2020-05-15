@@ -4,32 +4,31 @@ const ConfigtxlatorServer = require('./configtxlator');
 const configtxlatorServer = new ConfigtxlatorServer();
 const {getChannelConfigFromOrderer} = require('./channel');
 const BinManager = require('./binManager');
-const {DecodeType} = require('khala-fabric-formatter/configtxlator');
+const {DecodeType, EncodeType} = require('khala-fabric-formatter/configtxlator');
 const ConfigFactory = require('khala-fabric-formatter/configFactory');
+const ChannelUpdate = require('khala-fabric-admin/channelUpdate');
+const SigningIdentityUtil = require('khala-fabric-admin/signingIdentity');
 /**
- * TODO migration
- * Note that it could be used to extract application channel from orderer
  * @param {string} channelName
- * @param user
- * @param {Orderer} orderer targeted orderer from which we fetch block
+ * @param {Client.User} user
+ * @param {Orderer} orderer
  * @param {boolean} [viaServer]
  *  true: This requires 'configtxlator' RESTful server running locally on port 7059
  *  false: use 'configtxlator' as command line tool
- * @returns {Promise<{proto: Buffer, json: string|json}>}
+ * @returns {Promise<{proto: protoMessage, json: string}>}
  */
 const getChannelConfigReadable = async (channelName, user, orderer, viaServer) => {
 
 	const configEnvelope = await getChannelConfigFromOrderer(channelName, user, orderer);
-	const proto = configEnvelope.config.toBuffer();
+	const proto = configEnvelope.config;
 
 	let json;
 	if (viaServer) {
-		const body = await configtxlatorServer.decode(proto, DecodeType.Config);
+		const body = await configtxlatorServer.decode(DecodeType.Config, proto.toBuffer());
 		json = JSON.stringify(body);
 	} else {
-
 		const binManager = new BinManager();
-		json = await binManager.configtxlatorCMD.decode(DecodeType.Config, proto);
+		json = await binManager.configtxlatorCMD.decode(DecodeType.Config, proto.toBuffer());
 	}
 
 	return {
@@ -38,28 +37,50 @@ const getChannelConfigReadable = async (channelName, user, orderer, viaServer) =
 	};
 };
 
+const setAnchorPeers = async (channelName, orderer, user, signingIdentities = [], orgName, anchorPeers, viaServer) => {
 
-// TODO migration
+	const channelUpdate = new ChannelUpdate(channelName, user, orderer.committer, logger);
+	const {proto, json} = await getChannelConfigReadable(channelName, user, orderer, viaServer);
+	const configFactory = new ConfigFactory(json, logger);
 
-const setAnchorPeers = async (channel, orderer, OrgName, anchorPeers,
-                              signers = [channel._clientContext], {peer, client = channel._clientContext, viaServer} = {}) => {
+	configFactory.setAnchorPeers(orgName, anchorPeers);
+	const updateConfigJSON = configFactory.build();
+	// TODO Does it apply to viaServer case only?
+	// const ERROR_NO_UPDATE = 'No update to original_config';
+	// if (JSONEqual(updateConfigJSON, json)) {
+	// 	logger.warn(ERROR_NO_UPDATE);
+	// 	return {status: ERROR_NO_UPDATE};
+	// }
+	let modified_config_proto;
+	if (viaServer) {
+		modified_config_proto = await configtxlatorServer.computeUpdate(channelName, {proto}, {json: updateConfigJSON});
 
-	const configChangeCallback = (original_config) => {
-		const configFactory = new ConfigFactory(original_config);
-		configFactory.setAnchorPeers(OrgName, anchorPeers);
-		return configFactory.build();
-	};
-	const signatureCollectCallback = (config) => {
-		return signChannelConfig(signers, config);
-	};
-	return await exports.channelUpdate(channel, orderer, configChangeCallback, signatureCollectCallback, {
-		peer,
-		client,
-		viaServer
-	});
+	} else {
+
+		const binManager = new BinManager();
+		const updatedProto = await binManager.configtxlatorCMD.encode(EncodeType.Config, updateConfigJSON);
+		modified_config_proto = await binManager.configtxlatorCMD.computeUpdate(channelName, proto.toBuffer(), updatedProto);
+	}
+
+	// TODO is it what encode.configUpdate do?
+	const config = Buffer.from(modified_config_proto, 'binary');
+
+	const mainSigningIdentity = user.getSigningIdentity();
+	if (signingIdentities.length === 0) {
+		signingIdentities.push(mainSigningIdentity);
+	}
+	const signatures = [];
+	for (const signingIdentity of signingIdentities) {
+		const extraSigningIdentityUtil = new SigningIdentityUtil(signingIdentity);
+		signatures.push(extraSigningIdentityUtil.signChannelConfig(config).toBuffer());
+	}
+	channelUpdate.useSignatures(config, signatures);
+	return await channelUpdate.submit();
+
 };
 
 
 module.exports = {
 	getChannelConfigReadable,
+	setAnchorPeers
 };
