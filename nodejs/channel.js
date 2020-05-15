@@ -85,29 +85,27 @@ const getGenesisBlock = async (channel, user, orderer, verbose) => {
 
 };
 /**
- * @param channel
- * @param user
+ * @param {string} channelName
+ * @param {Client.User} user
  * @param {Orderer} orderer
  */
-const getChannelConfigFromOrderer = async (channel, user, orderer) => {
+const getChannelConfigFromOrderer = async (channelName, user, orderer) => {
 
 	await orderer.connect();
 	const identityContext = new IdentityContext(user, null);
 	const signingIdentityUtil = new SigningIdentityUtil(user.getSigningIdentity());
 	identityContext.calculateTransactionId();
-	const eventBlock = await signingIdentityUtil.getSpecificBlock(identityContext, channel.name, orderer, NEWEST);
+	const eventBlock = await signingIdentityUtil.getSpecificBlock(identityContext, channelName, orderer, NEWEST);
 
 	const lastConfigBlockHeight = extractLastConfigIndex(eventBlock);
 
-	logger.info(`found lastConfigBlock[${lastConfigBlockHeight}] for channel [${channel.name}]`);
+	logger.info(`found lastConfigBlock[${lastConfigBlockHeight}] for channel [${channelName}]`);
 
-	const eventLastConfigBlock = await signingIdentityUtil.getSpecificBlock(identityContext, channel.name, orderer, lastConfigBlockHeight);
+	const eventLastConfigBlock = await signingIdentityUtil.getSpecificBlock(identityContext, channelName, orderer, lastConfigBlockHeight);
 
 	assertConfigBlock(eventLastConfigBlock);
 
-	const config_envelope = extractConfigEnvelopeFromBlockData(eventLastConfigBlock.data.data[0]);
-
-	return config_envelope;
+	return extractConfigEnvelopeFromBlockData(eventLastConfigBlock.data.data[0]);
 };
 
 

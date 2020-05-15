@@ -8,6 +8,13 @@ const ChaincodeProposalCommand = {
 /**
  * @enum {string}
  */
+const ChannelGroupType = {
+	system: 'Orderer',
+	application: 'Application'
+};
+/**
+ * @enum {string}
+ */
 const SystemChaincodeID = {
 	LSCC: 'lscc',
 	QSCC: 'qscc',
@@ -156,6 +163,7 @@ module.exports = {
 	TxValidationCode,
 	Status,
 	BroadcastResponseStatus,
-	SystemChaincodeID
+	SystemChaincodeID,
+	ChannelGroupType
 };
 

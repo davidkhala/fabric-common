@@ -1,5 +1,5 @@
 const {axiosPromise} = require('khala-axios');
-
+const {EncodeType, DecodeType} = require('khala-fabric-formatter/configtxlator');
 const requestPost = async (opt) => {
 	try {
 		return await axiosPromise(opt, {
@@ -18,7 +18,7 @@ const requestPost = async (opt) => {
 };
 
 class ConfigtxlatorServer {
-	constructor({protocol, host, port}) {
+	constructor({protocol, host, port} = {}) {
 		if (!protocol) {
 			protocol = 'http';
 		}
@@ -31,27 +31,28 @@ class ConfigtxlatorServer {
 		this.baseUrl = `${protocol}://${host}:${port}`;
 	}
 
-	encode(jsonString) {
+	/**
+	 * TODO work as Buffer.from to 'binary'?
+	 * @param jsonString
+	 * @param {EncodeType} type
+	 */
+	async encode(jsonString, type) {
 		const baseUrl = `${this.baseUrl}/protolator/encode`;
 		const body = jsonString;
-		return {
-			//TODO work as Buffer.from to 'binary'?
-			configUpdate: async () => requestPost({
-				url: `${baseUrl}/common.ConfigUpdate`, body
-			}),
-			config: async () => requestPost({
-				url: `${baseUrl}/common.Config`, body
-			})
-		};
+		return requestPost({
+			url: `${baseUrl}/${type}`, body
+		});
+
 	}
 
-	decode(data) {
+	/**
+	 *
+	 * @param {Buffer} data
+	 * @param {DecodeType} type
+	 */
+	async decode(data, type) {
 		const body = data;
-		return {
-			config: async () => requestPost({
-				url: `${this.baseUrl}/protolator/decode/common.Config`, body
-			})
-		};
+		return requestPost({url: `${this.baseUrl}/protolator/decode/${type}`, body});
 	}
 
 	compute(formData) {
@@ -69,11 +70,11 @@ class ConfigtxlatorServer {
 		const {json: updatedConfigJSON} = updateConfig;
 
 		if (!updatedConfigProto) {
-			updatedConfigProto = await this.encode(updatedConfigJSON).config();
+			updatedConfigProto = await this.encode(updatedConfigJSON, EncodeType.Config);
 		}
 
 		if (!originalConfigProto) {
-			originalConfigProto = await this.encode(originalConfigJSON).config();
+			originalConfigProto = await this.encode(originalConfigJSON, EncodeType.Config);
 		}
 		const formData = {
 			channel: channelName,

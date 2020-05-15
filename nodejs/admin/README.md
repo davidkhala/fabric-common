@@ -8,3 +8,6 @@ A way to compensate missing admin level node-sdk
     - Object-oriented
 - channel operation: create, join, update
 - chaincode operation: install, upgrade 
+
+## Notes
+- channel.getChannelConfig(peer) will not be rebuilt: always get it from orderer

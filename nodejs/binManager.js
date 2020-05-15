@@ -3,6 +3,7 @@ const yaml = require('khala-nodeutils/yaml');
 const path = require('path');
 const fs = require('fs');
 const {createTmpFile, createTmpDir} = require('khala-nodeutils/tmp');
+const {genesis} = require('khala-fabric-formatter/channel');
 
 class BinManager {
 	_buildCMD(executable, args) {
@@ -27,20 +28,17 @@ class BinManager {
 		this.configtxlatorCMD = {
 			/**
 			 * Converts a JSON document to protobuf.
-			 * @param {string} type The type of protobuf structure to encode to.
+			 * @param {EncodeType} type The type of protobuf structure to encode to.
 			 * @param {string} inputFile A file containing the JSON document.
 			 * @param {string} outputFile A file to write the output to.
 			 */
 			encodeFile: async (type, {inputFile, outputFile}) => {
-				if (!['common.Config', 'common.ConfigUpdate'].includes(type)) {
-					throw Error(`Unsupported encode type: ${type}`);
-				}
 				const CMD = this._buildCMD('configtxlator', `proto_encode --type=${type} --input=${inputFile} --output=${outputFile}`);
 				await exec(CMD);
 			},
 			/**
 			 *
-			 * @param type
+			 * @param {EncodeType} type
 			 * @param {json} updateConfigJSON
 			 * @return {Buffer}
 			 */
@@ -57,21 +55,18 @@ class BinManager {
 			},
 			/**
 			 * Converts a proto message to JSON.
-			 * @param {string} type The type of protobuf structure to decode from.
+			 * @param {DecodeType} type The type of protobuf structure to decode from.
 			 * @param {string} inputFile A file containing the proto message.
 			 * @param {string} outputFile A file to write the JSON document to.
 			 * @return {json} original_config
 			 */
 			decodeFile: async (type, {inputFile, outputFile}) => {
-				if (!['common.Config'].includes(type)) {
-					throw Error(`Unsupported encode type: ${type}`);
-				}
 				const CMD = this._buildCMD('configtxlator', `proto_decode --type=${type} --input=${inputFile} ${outputFile ? `--output=${outputFile}` : ''}`);
 				await exec(CMD);
 			},
 			/**
 			 *
-			 * @param type
+			 * @param {DecodeType} type
 			 * @param original_config_proto
 			 * @return {Promise<json|string>} original_config
 			 */
@@ -217,7 +212,7 @@ class BinManager {
 
 			genBlock: async (outputFile) => {
 				if (!channelName) {
-					channelName = 'testchainid';
+					channelName = genesis;
 				}
 				const CMD = `${this.binPath}/configtxgen -outputBlock ${outputFile} -profile ${profile} -channelID ${channelName} -configPath ${configPath}`;
 				this.logger.info('CMD', CMD);
