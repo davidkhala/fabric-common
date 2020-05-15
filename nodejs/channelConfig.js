@@ -45,15 +45,11 @@ const setAnchorPeers = async (channelName, orderer, user, signingIdentities = []
 
 	configFactory.setAnchorPeers(orgName, anchorPeers);
 	const updateConfigJSON = configFactory.build();
-	// TODO Does it apply to viaServer case only?
-	// const ERROR_NO_UPDATE = 'No update to original_config';
-	// if (JSONEqual(updateConfigJSON, json)) {
-	// 	logger.warn(ERROR_NO_UPDATE);
-	// 	return {status: ERROR_NO_UPDATE};
-	// }
+
 	let modified_config_proto;
 	if (viaServer) {
-		modified_config_proto = await configtxlatorServer.computeUpdate(channelName, {proto}, {json: updateConfigJSON});
+		const updatedProto = await configtxlatorServer.encode(EncodeType.Config, updateConfigJSON);
+		modified_config_proto = await configtxlatorServer.computeUpdate(channelName, proto.toBuffer(), updatedProto);
 
 	} else {
 

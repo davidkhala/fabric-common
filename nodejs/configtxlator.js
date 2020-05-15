@@ -1,20 +1,10 @@
 const {axiosPromise} = require('khala-axios');
 const {EncodeType, DecodeType} = require('khala-fabric-formatter/configtxlator');
 const FormData = require('form-data');
-const requestPost = async (opt) => {
-	try {
-		return await axiosPromise(opt, {
-			json: null,
-			encoding: null, // NOTE config :returning body to be of type Buffer not String
-		});
-	} catch (e) {
-		if (e.statusCode && e.statusMessage && e.body) {
-			const {statusCode, statusMessage, body} = e;
-			throw Error(`configtxlator server: ${statusCode} ${statusMessage}: ${body}`);
-		} else {
-			throw e;
-		}
-	}
+const requestPost = async (opt, otherOptions) => {
+
+	return await axiosPromise(opt, otherOptions);
+	//	TODO list out common error case
 
 };
 
@@ -42,6 +32,8 @@ class ConfigtxlatorServer {
 		const body = jsonString;
 		return requestPost({
 			url: `${baseUrl}/${type}`, body
+		}, {
+			responseType: 'arraybuffer'
 		});
 	}
 
@@ -55,46 +47,23 @@ class ConfigtxlatorServer {
 		return requestPost({url: `${this.baseUrl}/protolator/decode/${type}`, body});
 	}
 
-	compute(formData) {
-		return {
-			updateFromConfigs: async () => requestPost({
-				url: `${this.baseUrl}/configtxlator/compute/update-from-configs`, formData
-			})
-		};
-	}
-
-	async computeUpdate(channelName, originalConfig, updateConfig) {
-		// TODO formData.getHeaders is not a function
-		const {proto: originalConfigProto} = originalConfig;
-		const {json: originalConfigJSON} = originalConfig;
-		const {proto: updatedConfigProto} = updateConfig;
-		const {json: updatedConfigJSON} = updateConfig;
-
-
-		let originalConfigBuff, updatedConfigBuff;
-		if (!originalConfigProto) {
-			const originalConfigResult = await this.encode(EncodeType.Config, originalConfigJSON);
-			originalConfigBuff = Buffer.from(originalConfigResult);
-		} else {
-			originalConfigBuff = originalConfigProto.toBuffer();
-		}
-
-		if (!updatedConfigProto) {
-			const updatedConfigResult = await this.encode(EncodeType.Config, updatedConfigJSON);
-			updatedConfigBuff = Buffer.from(updatedConfigResult);
-		} else {
-			updatedConfigBuff = updatedConfigProto.toBuffer();
-		}
-
-
+	async computeUpdate(channelName, originalConfigProtoBuff, updatedConfigProtoBuff) {
 		const formData = new FormData();
-		// FIXME
 		formData.append('channel', channelName);
-		formData.append('original', originalConfigBuff, 'original.proto');
-		formData.append('updated', updatedConfigBuff, 'updated.proto');
+		formData.append('updated', updatedConfigProtoBuff, {
+			filename: 'updated.proto', contentType: 'application/octet-stream'
+		});
 
-		const modified_config_proto = await this.compute(formData).updateFromConfigs();
-		return modified_config_proto;
+
+		formData.append('original', originalConfigProtoBuff, {
+			filename: 'original.proto', contentType: 'application/octet-stream'
+		});
+
+
+		return await requestPost({
+			url: `${this.baseUrl}/configtxlator/compute/update-from-configs`, formData
+		}, {responseType: 'arraybuffer'});
+
 	}
 }
 
