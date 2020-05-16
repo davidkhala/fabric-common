@@ -58,7 +58,25 @@ Current version 2.1.0
 - [channel]channel ID length < 250 :initializing configtx manager failed: bad channel ID: channel ID illegal, cannot be longer than 249
 - [disaster]backup recovery: at least 1 anchor peer for each organization should be resumed to recover transaction process
 - [configtxgen]configtx.yaml: Organization Name and Organization ID can include alphanumeric characters as well as dots and dashes.
+- [configtxlator] The decoded ConfigUpdate structure
+    ```
+  { channel_id: 'allchannel',
+    isolated_data: {},
+    read_set:
+     { groups: { Application: [Object] },
+       mod_policy: '',
+       policies: {},
+       values: {},
+       version: '0' },
+    write_set:
+     { groups: { Application: [Object] },
+       mod_policy: '',
+       policies: {},
+       values: {},
+       version: '0' } }
 
+    ```
+      
 ### Notes: Private Data 
 
 - [privateData]requirePeerCount <= peerCount - 1 (1 for peer itself)
@@ -117,8 +135,5 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
 - [go mod support]`lib/packager/Golang.js` could not support project outside of GoPath (as usually in go mod)
     - `const projDir = path.join(goPath, 'src', chaincodePath);`
 ## Abandoned
-- what is peer_chaincode_id and peer_chaincode_path
-- keystore object un-promisify: https://gerrit.hyperledger.org/r/#/c/24749/
-- endpoint ping: https://gerrit.hyperledger.org/r/#/c/28115/
 - docker-swarm support
 - graphiteapp/graphite-statsd not working to receive metrics: push statsD to AWS 

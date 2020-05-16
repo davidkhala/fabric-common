@@ -28,7 +28,7 @@ class BinManager {
 		this.configtxlatorCMD = {
 			/**
 			 * Converts a JSON document to protobuf.
-			 * @param {EncodeType} type The type of protobuf structure to encode to.
+			 * @param {ConfigtxlatorType} type The type of protobuf structure to encode to.
 			 * @param {string} inputFile A file containing the JSON document.
 			 * @param {string} outputFile A file to write the output to.
 			 */
@@ -38,7 +38,7 @@ class BinManager {
 			},
 			/**
 			 *
-			 * @param {EncodeType} type
+			 * @param {ConfigtxlatorType} type
 			 * @param {string} json
 			 * @return {Buffer}
 			 */
@@ -55,7 +55,7 @@ class BinManager {
 			},
 			/**
 			 * Converts a proto message to JSON.
-			 * @param {DecodeType} type The type of protobuf structure to decode from.
+			 * @param {ConfigtxlatorType} type The type of protobuf structure to decode from.
 			 * @param {string} inputFile A file containing the proto message.
 			 * @param {string} outputFile A file to write the JSON document to.
 			 * @return {json} original_config
@@ -66,7 +66,7 @@ class BinManager {
 			},
 			/**
 			 *
-			 * @param {DecodeType} type
+			 * @param {ConfigtxlatorType} type
 			 * @param original_config_proto
 			 * @return {Promise<json|string>} original_config
 			 */

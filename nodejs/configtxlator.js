@@ -1,5 +1,4 @@
 const {axiosPromise} = require('khala-axios');
-const {EncodeType, DecodeType} = require('khala-fabric-formatter/configtxlator');
 const FormData = require('form-data');
 const requestPost = async (opt, otherOptions) => {
 
@@ -23,8 +22,7 @@ class ConfigtxlatorServer {
 	}
 
 	/**
-	 * TODO work as Buffer.from to 'binary'?
-	 * @param {EncodeType} type
+	 * @param {ConfigtxlatorType} type
 	 * @param jsonString
 	 */
 	async encode(type, jsonString) {
@@ -39,7 +37,7 @@ class ConfigtxlatorServer {
 
 	/**
 	 *
-	 * @param {DecodeType} type
+	 * @param {ConfigtxlatorType} type
 	 * @param {Buffer} data
 	 */
 	async decode(type, data) {

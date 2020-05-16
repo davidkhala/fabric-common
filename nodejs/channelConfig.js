@@ -4,7 +4,7 @@ const ConfigtxlatorServer = require('./configtxlator');
 const configtxlatorServer = new ConfigtxlatorServer();
 const {getChannelConfigFromOrderer} = require('./channel');
 const BinManager = require('./binManager');
-const {DecodeType, EncodeType} = require('khala-fabric-formatter/configtxlator');
+const {ConfigtxlatorType} = require('khala-fabric-formatter/configtxlator');
 const ConfigFactory = require('khala-fabric-formatter/configFactory');
 const ChannelUpdate = require('khala-fabric-admin/channelUpdate');
 const SigningIdentityUtil = require('khala-fabric-admin/signingIdentity');
@@ -24,11 +24,11 @@ const getChannelConfigReadable = async (channelName, user, orderer, viaServer) =
 
 	let json;
 	if (viaServer) {
-		const body = await configtxlatorServer.decode(DecodeType.Config, proto.toBuffer());
+		const body = await configtxlatorServer.decode(ConfigtxlatorType.Config, proto.toBuffer());
 		json = JSON.stringify(body);
 	} else {
 		const binManager = new BinManager();
-		json = await binManager.configtxlatorCMD.decode(DecodeType.Config, proto.toBuffer());
+		json = await binManager.configtxlatorCMD.decode(ConfigtxlatorType.Config, proto.toBuffer());
 	}
 
 	return {
@@ -46,20 +46,17 @@ const setAnchorPeers = async (channelName, orderer, user, signingIdentities = []
 	configFactory.setAnchorPeers(orgName, anchorPeers);
 	const updateConfigJSON = configFactory.build();
 
-	let modified_config_proto;
+	let config;
 	if (viaServer) {
-		const updatedProto = await configtxlatorServer.encode(EncodeType.Config, updateConfigJSON);
-		modified_config_proto = await configtxlatorServer.computeUpdate(channelName, proto.toBuffer(), updatedProto);
-
+		const updatedProto = await configtxlatorServer.encode(ConfigtxlatorType.Config, updateConfigJSON);
+		config = await configtxlatorServer.computeUpdate(channelName, proto.toBuffer(), updatedProto);
 	} else {
 
 		const binManager = new BinManager();
-		const updatedProto = await binManager.configtxlatorCMD.encode(EncodeType.Config, updateConfigJSON);
-		modified_config_proto = await binManager.configtxlatorCMD.computeUpdate(channelName, proto.toBuffer(), updatedProto);
-	}
+		const updatedProto = await binManager.configtxlatorCMD.encode(ConfigtxlatorType.Config, updateConfigJSON);
+		config = await binManager.configtxlatorCMD.computeUpdate(channelName, proto.toBuffer(), updatedProto);
 
-	// TODO is it what encode.configUpdate do?
-	const config = Buffer.from(modified_config_proto, 'binary');
+	}
 
 	const mainSigningIdentity = user.getSigningIdentity();
 	if (signingIdentities.length === 0) {
