@@ -122,6 +122,8 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
 - make use of npm jsrsasign
 - make use of softHSM in node-sdk
 - replace some function in query.js with system chaincode
+- What is this:
+    - chaincode package: `It is not necessary for organizations to use the same package label.`
 
 ## Fabric weakness
 - fabric RSA key support: 

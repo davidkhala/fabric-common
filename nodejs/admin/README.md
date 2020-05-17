@@ -7,7 +7,8 @@ A way to compensate missing admin level node-sdk
     - it depends on fabric-sdk components
     - Object-oriented
 - channel operation: create, join, update
-- chaincode operation: install, upgrade 
+- [TODO:WIP] chaincode operation: package, install, Approve, define, upgrade 
+
 
 ## Notes
 - channel.getChannelConfig(peer) will not be rebuilt: always get it from orderer
