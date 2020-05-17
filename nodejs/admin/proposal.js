@@ -1,6 +1,6 @@
 const Proposal = require('fabric-common/lib/Proposal');
 const ChannelManager = require('./channel');
-const {SystemChaincodeID: {CSCC, QSCC}} = require('khala-fabric-formatter/constants');
+const {SystemChaincodeID: {CSCC, QSCC}} = require('khala-fabric-formatter/systemChaincode');
 
 class ProposalManager {
 
@@ -83,7 +83,7 @@ class ProposalManager {
 	 * @return {Promise<*>}
 	 */
 	async queryBlock(blockNumber) {
-		this.proposal.chaincodeId = QSCC;
+		this.proposal.chaincodeId = 'QSCC';
 
 		/**
 		 * @type {BuildProposalRequest}

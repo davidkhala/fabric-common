@@ -1,7 +1,6 @@
-const {getActionSet} = require('../systemChaincode');
+const {} = require('khala-fabric-formatter/systemChaincode');
 const task = async (systemChaincode) => {
-	const actionsSet = getActionSet(systemChaincode);
-	console.log(`${systemChaincode} action set`, actionsSet);
+
 };
 task('lscc');
 

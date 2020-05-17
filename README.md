@@ -76,7 +76,7 @@ Current version 2.1.0
        version: '0' } }
 
     ```
-      
+-  chaincode package identifier is the package label combined with a hash of the package      
 ### Notes: Private Data 
 
 - [privateData]requirePeerCount <= peerCount - 1 (1 for peer itself)
