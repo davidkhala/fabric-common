@@ -75,7 +75,7 @@ const getGenesisBlock = async (channel, user, orderer, verbose) => {
 	} else {
 		const signingIdentityUtil = new SigningIdentityUtil(user.getSigningIdentity());
 		identityContext.calculateTransactionId();
-		const eventBlock = await signingIdentityUtil.getSpecificBlock(identityContext, channel.name, orderer, 0);
+		const eventBlock = await signingIdentityUtil.getSpecificBlock(identityContext, channel.name, orderer, 0, {waitIfUNAVAILABLE: true});
 		block = fromEvent({block: eventBlock}).toBuffer();
 	}
 

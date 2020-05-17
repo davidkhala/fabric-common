@@ -1,6 +1,6 @@
 const fs = require('fs');
 const {RemoteOptsTransform} = require('khala-fabric-formatter/remote');
-const {DeliverResponseStatus: {SUCCESS, NOT_FOUND}, DeliverResponseType: {FULL_BLOCK, STATUS}} = require('khala-fabric-formatter/eventHub');
+const {DeliverResponseStatus: {SUCCESS, SERVICE_UNAVAILABLE}, DeliverResponseType: {FULL_BLOCK, STATUS}} = require('khala-fabric-formatter/eventHub');
 const EndPoint = require('fabric-common/lib/Endpoint');
 const Committer = require('fabric-common/lib/Committer');
 const Eventer = require('fabric-common/lib/Eventer');
@@ -109,13 +109,15 @@ class Orderer {
 	 * Send a Deliver message to the orderer service.
 	 *
 	 * @param {{signature:Buffer, payload:Buffer}} envelope
-	 * @param [timeout]
+	 * @param [requestTimeout]
+	 * @param {boolean} waitIfUNAVAILABLE indicate whether we should end stream if received SERVICE_UNAVAILABLE status
+	 *  used instant after channel creation request, and we could wait until its ready.
 	 * @returns {Promise<Block[]>}
 	 */
-	async sendDeliver(envelope, timeout) {
+	async sendDeliver(envelope, requestTimeout, waitIfUNAVAILABLE) {
 		const {logger} = this;
 		const loggerPrefix = `${this.committer.name} sendDeliver`;
-		timeout = timeout || this.committer.options.requestTimeout;
+		requestTimeout = requestTimeout || this.committer.options.requestTimeout;
 
 
 		// Send the seek info to the orderer via grpc
@@ -125,10 +127,10 @@ class Orderer {
 			let error_msg = 'SYSTEM_TIMEOUT';
 
 			const deliver_timeout = setTimeout(() => {
-				logger.debug(loggerPrefix, `timed out after:${timeout}`);
+				logger.debug(loggerPrefix, `timed out after:${requestTimeout}`);
 				stream.end();
 				return reject(new Error(error_msg));
-			}, timeout);
+			}, requestTimeout);
 			stream.on('data', (response) => {
 				// DeliverFiltered, DeliverWithPrivateData is designed for peer only
 				switch (response.Type) {
@@ -140,12 +142,18 @@ class Orderer {
 					}
 						break;
 					case STATUS: {
-						stream.end();
 						switch (response.status) {
 							case SUCCESS:
+								stream.end();
 								return resolve(responses);
-							case NOT_FOUND:
+							case SERVICE_UNAVAILABLE:
+								if (waitIfUNAVAILABLE) {
+									logger.warn(loggerPrefix, 'wait until available');
+									break;
+								} // fall through to  default
+							// eslint-disable-next-line no-fallthrough
 							default: {
+								stream.end();
 								logger.error(loggerPrefix, `rejecting - status:${response.status}`);
 								const err = Object.assign(Error('Invalid status returned'), response);
 								return reject(err);
@@ -153,7 +161,7 @@ class Orderer {
 						}
 
 					}
-					//  break;
+						break;
 					default:
 						logger.error(loggerPrefix, `assertion ERROR - invalid response.Type=[${response.Type}]`);
 						stream.end();

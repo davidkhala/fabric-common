@@ -23,7 +23,8 @@ const DeliverResponseType = {
  */
 const DeliverResponseStatus = {
 	SUCCESS: 'SUCCESS',
-	NOT_FOUND: 'NOT_FOUND'
+	NOT_FOUND: 'NOT_FOUND',
+	SERVICE_UNAVAILABLE: 'SERVICE_UNAVAILABLE'
 };
 /**
  *

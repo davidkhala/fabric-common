@@ -85,7 +85,7 @@ class SigningIdentityUtil {
 
 	}
 
-	async getSpecificBlock(identityContext, ChannelId, orderer, blockHeight) {
+	async getSpecificBlock(identityContext, ChannelId, orderer, blockHeight, opts = {}) {
 		const {signingIdentity} = this;
 		const {transactionId, nonce} = identityContext;
 		const seekPayload = buildSeekPayload({
@@ -97,7 +97,8 @@ class SigningIdentityUtil {
 		const payload = seekPayload.toBuffer();
 		const signature = Buffer.from(signingIdentity.sign(payload));
 
-		const result = await orderer.sendDeliver({signature, payload});
+		const {waitIfUNAVAILABLE, requestTimeout} = opts;
+		const result = await orderer.sendDeliver({signature, payload}, requestTimeout, waitIfUNAVAILABLE);
 		return result[0];
 	}
 }
