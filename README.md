@@ -118,7 +118,6 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
 - npm couchdb-dump in nodejs/couchdbDump.sh
 - level db navigator(https://github.com/Level/level or https://github.com/syndtr/goleveldb) and richQuery for leveldb;leveldb analyzer 
 - NodeOUs enable and intermediate CA
-- channelEventHub.disconnect status sync
 - make use of npm jsrsasign
 - make use of softHSM in node-sdk
 - replace some function in query.js with system chaincode
@@ -129,13 +128,7 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
 - fabric RSA key support: 
     - not supported as peer|orderer keystore
 - new Feature required: GetPrivateStateByRangeWithPagination: https://jira.hyperledger.org/browse/FAB-11732
-- async or not: CryptoSuite importKey
 
-- client.newTransactionID(); --> new TransactionID(Identity,isAdmin)
-- create docker env manager to convert a env jsObject to env list(having same key checking)
-
-- [go mod support]`lib/packager/Golang.js` could not support project outside of GoPath (as usually in go mod)
-    - `const projDir = path.join(goPath, 'src', chaincodePath);`
 ## Abandoned
 - docker-swarm support
 - graphiteapp/graphite-statsd not working to receive metrics: push statsD to AWS 
