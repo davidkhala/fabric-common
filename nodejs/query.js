@@ -1,12 +1,13 @@
-// TODO replace some with system chaincode
-const Proposal = require('khala-fabric-admin/proposal');
+
+const QSCCProposal = require('khala-fabric-admin/QSCCProposal');
+const CSCCProposal = require('khala-fabric-admin/CSCCProposal');
 const {getResponses} = require('khala-fabric-formatter/proposalResponse');
 const fabricProtos = require('fabric-protos');
 const protosProto = fabricProtos.protos;
 const commonProto = fabricProtos.common;
 
 exports.chain = async (peers, identityContext, channelName) => {
-	const proposal = new Proposal(identityContext, channelName, undefined, peers);
+	const proposal = new QSCCProposal(identityContext, channelName, peers);
 	const result = await proposal.queryInfo();
 
 	const responses = getResponses(result);
@@ -64,12 +65,12 @@ exports.blockFromHash = async (peer, channel, hashHex) => channel.queryBlockByHa
  * @return {Promise<*>}
  */
 exports.blockFromHeight = async (peers, identityContext, channelName, blockNumber) => {
-	const proposal = new Proposal(identityContext, channelName, undefined, peers);
+	const proposal = new QSCCProposal(identityContext, channelName, peers);
 	return await proposal.queryBlock(blockNumber);
 };
 
 exports.channelJoined = async (peers, identityContext) => {
-	const proposal = new Proposal(identityContext, '', undefined, peers);
+	const proposal = new CSCCProposal(identityContext, '', peers);
 
 	const result = await proposal.queryChannels();
 

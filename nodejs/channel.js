@@ -8,7 +8,7 @@ const {extractConfigUpdate, extractLastConfigIndex, assertConfigBlock, extractCo
 const IdentityContext = require('fabric-common/lib/IdentityContext');
 const EventHub = require('khala-fabric-admin/eventHub');
 const {getSingleBlock} = require('./eventHub');
-const Proposal = require('khala-fabric-admin/proposal');
+const CSCCProposal = require('khala-fabric-admin/CSCCProposal');
 const {fromEvent} = require('khala-fabric-admin/blockEncoder');
 const {BlockNumberFilterType: {NEWEST}} = require('khala-fabric-formatter/eventHub');
 /**
@@ -127,7 +127,7 @@ const join = async (channel, peers, user, block, orderer) => {
 		await peer.endorser.connect();
 	}
 	const identityContext = new IdentityContext(user, null);
-	const proposal = new Proposal(identityContext, '', undefined, peers);
+	const proposal = new CSCCProposal(identityContext, '', undefined, peers);
 	const result = await proposal.joinChannel(block);
 
 	const {errors, responses} = result;

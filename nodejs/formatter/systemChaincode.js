@@ -1,4 +1,4 @@
-const systemChaincodes = {
+const SystemChaincodeFunctions = {
 	lscc: {
 		install: undefined,
 		deploy: undefined,
@@ -10,8 +10,14 @@ const systemChaincodes = {
 		getinstalledchaincodes: 'GetInstalledChaincodes',
 		getcollectionsconfig: 'GetCollectionsConfig'
 	},
-	qscc: {},
-	cscc: {},
+	qscc: {
+		GetBlockByNumber: 'GetBlockByNumber',
+		GetChainInfo: 'GetChainInfo'
+	},
+	cscc: {
+		JoinChain: 'JoinChain',
+		GetChannels: 'GetChannels',
+	},
 	_lifecycle: {
 		// InstallChaincodeFuncName is the chaincode function name used to install a chaincode
 		InstallChaincode: 'InstallChaincode',
@@ -42,6 +48,7 @@ const systemChaincodes = {
 
 	}
 };
+
 /**
  *
  * @enum {string}
@@ -52,16 +59,37 @@ const SystemChaincodeID = {
 	CSCC: 'cscc',
 	ESCC: 'escc',
 	VSCC: 'vscc',
+	LifeCycle: '_lifecycle'
 };
-exports.SystemChaincodeID = SystemChaincodeID;
+// TODO life cycle migration
+const ChaincodeExists = (channelName, chaincodeId) => {
+	return {
+		chaincodeId: SystemChaincodeID.LSCC,
+		fcn: SystemChaincodeFunctions.lscc.getid,
+		args: [channelName, chaincodeId]
+	};
+};
+// TODO life cycle migration
+const GetChaincodeData = (channelName, chaincodeId) => {
+	return {
+		chaincodeId: SystemChaincodeID.LSCC,
+		fcn: SystemChaincodeFunctions.lscc.getccdata,
+		args: [channelName, chaincodeId]
+	};
+};
+// TODO life cycle migration
+const GetDeploymentSpec = (channelName, chaincodeId) => {
+	return {
+		chaincodeId: SystemChaincodeID.LSCC,
+		fcn: SystemChaincodeFunctions.lscc.getdepspec,
+		args: [channelName, chaincodeId]
+	};
+};
 
 
-exports.ChaincodeExists = (channelName, chaincodeId) => {
-	return {chaincodeId: 'lscc', fcn: 'ChaincodeExists', args: [channelName, chaincodeId]};
+module.exports = {
+	SystemChaincodeFunctions,
+	SystemChaincodeID,
 };
-exports.GetChaincodeData = (channelName, chaincodeId) => {
-	return {chaincodeId: 'lscc', fcn: 'GetChaincodeData', args: [channelName, chaincodeId]};
-};
-exports.GetDeploymentSpec = (channelName, chaincodeId) => {
-	return {chaincodeId: 'lscc', fcn: 'GetDeploymentSpec', args: [channelName, chaincodeId]};
-};
+
+
