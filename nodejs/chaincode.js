@@ -11,7 +11,7 @@ exports.install = async (peers, chaincodePackagePath, user) => {
 	const lifeCycleProposal = new LifeCycleProposal(identityContext, '', peers);
 
 	const result = await lifeCycleProposal.installChaincode(chaincodePackagePath);
-	const responses = getResponses(result)
+	const responses = getResponses(result);
 	logger.debug(responses);
 };
 

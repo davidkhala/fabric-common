@@ -7,7 +7,8 @@ A way to compensate missing admin level node-sdk
     - it depends on fabric-sdk components
     - Object-oriented
 - [DONE] channel operation: create, join, update
-- [TODO:WIP] chaincode operation: package, install, Approve, define, upgrade 
+- [DONE] chaincode operation: package, install
+- [TODO:WIP] chaincode operation: Approve, define, upgrade 
 
 
 ## Notes

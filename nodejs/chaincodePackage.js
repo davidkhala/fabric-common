@@ -23,9 +23,13 @@ class ChaincodePackage {
 		const {Path, Type, Label} = this;
 		fs.writeFileSync(path.resolve(tmpRoot, 'metadata.json'), JSON.stringify({Path, Type, Label}));
 
-		await compress.tgz.compressDir(chaincodeRoot, path.resolve(tmpRoot, 'code.tar.gz'), {
+		const codeTarCompressOpts = {
 			ignoreBase: true
-		});
+		};
+		if (this.Type === ChaincodeType.golang) {
+			codeTarCompressOpts.relativePath = path.join('src', this.Path);
+		}
+		await compress.tgz.compressDir(chaincodeRoot, path.resolve(tmpRoot, 'code.tar.gz'), codeTarCompressOpts);
 		await compress.tgz.compressDir(tmpRoot, output, {
 			ignoreBase: true
 		});

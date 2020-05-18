@@ -6,6 +6,9 @@ const fs = require('fs');
 
 class LifeCycleProposal extends Proposal {
 	constructor(identityContext, channelName, peers, requestTimeout) {
+		if (!requestTimeout) {
+			requestTimeout = 30000;
+		}
 		super(identityContext, channelName, LifeCycle, peers, requestTimeout);
 	}
 
