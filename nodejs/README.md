@@ -11,16 +11,19 @@ Component module list
 
 ## Design Notes
 - Concept map:
-    - Orderer => Committer
+    - Orderer => Committer | Eventer*
     - Peer => Discoverer | Endorser | Eventer
     - EventHub => EventService
     - Client._userContext => IdentityContext
     - sideDB -> ?[TODO]
+    
+## Test
+    - intergration test and e2e test locates in [delphi-fabric](https://github.com/davidkhala/delphi-fabric)
 ## Notes
-- [sdk]node-gyp rebuild require `make` and `g++` 
+- node-gyp rebuild require `make` and `g++` 
 - Block data emitted in block event has a structure documented in [types.js](./formatter/types.js)
-- Now User and Client is separated.    
-- `configtxlator` handler in `nodejs/binManager.js`
+- Now User and Client is separated. Client is less usefull for most action
+- `configtxlator` handler (for both CLI or server based) in `binManager.js`
 - [gPRC] waitForReady will response back positive response with non-TLS protocol
     - With grpcs://domain.org setup, we could get pong response from grpc://domain.org    
 ## TODO
