@@ -1,25 +1,13 @@
-const Logger = require('khala-logger/log4js');
 
 const LifeCycleProposal = require('khala-fabric-admin/lifecycleProposal');
 const {getIdentityContext} = require('khala-fabric-admin/user');
-const {getResponses} = require('khala-fabric-formatter/proposalResponse');
-const fabprotos = require('fabric-protos');
-const lifeCycleProtos = fabprotos.lifecycle;
 exports.install = async (peers, chaincodePackagePath, user) => {
 	const identityContext = getIdentityContext(user);
 
 	const lifeCycleProposal = new LifeCycleProposal(identityContext, '', peers);
 
 	const result = await lifeCycleProposal.installChaincode(chaincodePackagePath);
-	const responses = getResponses(result);
-	responses.forEach((response, index) => {
-		const {package_id, label} = lifeCycleProtos.InstallChaincodeResult.decode(response.payload);
-		Object.assign(response, {
-			package_id,
-			label,
-			peer: peers[index].toString()
-		});
-	});
+	return result;
 };
 
 

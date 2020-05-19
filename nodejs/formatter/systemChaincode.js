@@ -22,7 +22,7 @@ const SystemChaincodeFunctions = {
 		// InstallChaincodeFuncName is the chaincode function name used to install a chaincode
 		InstallChaincode: 'InstallChaincode',
 
-		// QueryInstalledChaincodeFuncName is the chaincode function name used to query an installed chaincode
+		// QueryInstalledChaincodeFuncName is the chaincode function name used to query SINGLE installed chaincode
 		QueryInstalledChaincode: 'QueryInstalledChaincode',
 
 		// QueryInstalledChaincodesFuncName is the chaincode function name used to query all installed chaincodes
