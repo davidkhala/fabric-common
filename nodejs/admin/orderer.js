@@ -1,6 +1,6 @@
 const fs = require('fs');
 const {RemoteOptsTransform} = require('khala-fabric-formatter/remote');
-const {DeliverResponseStatus: {SUCCESS, SERVICE_UNAVAILABLE}, DeliverResponseType: {FULL_BLOCK, STATUS}} = require('khala-fabric-formatter/eventHub');
+const {DeliverResponseStatus: {SUCCESS}, DeliverResponseType: {FULL_BLOCK, STATUS}} = require('khala-fabric-formatter/eventHub');
 const EndPoint = require('fabric-common/lib/Endpoint');
 const Committer = require('fabric-common/lib/Committer');
 const Eventer = require('fabric-common/lib/Eventer');
@@ -110,11 +110,9 @@ class Orderer {
 	 *
 	 * @param {{signature:Buffer, payload:Buffer}} envelope
 	 * @param [requestTimeout]
-	 * @param {boolean} waitIfUNAVAILABLE indicate whether we should end stream if received SERVICE_UNAVAILABLE status
-	 *  used instant after channel creation request, and we could wait until its ready.
 	 * @returns {Promise<Block[]>}
 	 */
-	async sendDeliver(envelope, requestTimeout, waitIfUNAVAILABLE) {
+	async sendDeliver(envelope, requestTimeout) {
 		const {logger} = this;
 		const loggerPrefix = `${this.committer.name} sendDeliver`;
 		requestTimeout = requestTimeout || this.committer.options.requestTimeout;
@@ -142,26 +140,16 @@ class Orderer {
 					}
 						break;
 					case STATUS: {
-						switch (response.status) {
-							case SUCCESS:
-								stream.end();
-								return resolve(responses);
-							case SERVICE_UNAVAILABLE:
-								if (waitIfUNAVAILABLE) {
-									logger.warn(loggerPrefix, 'wait until available');
-									break;
-								} // fall through to  default
-							// eslint-disable-next-line no-fallthrough
-							default: {
-								stream.end();
-								logger.error(loggerPrefix, `rejecting - status:${response.status}`);
-								const err = Object.assign(Error('Invalid status returned'), response);
-								return reject(err);
-							}
+						if (response.status === SUCCESS) {
+							stream.end();
+							return resolve(responses);
+						} else {
+							stream.end();
+							logger.error(loggerPrefix, `rejecting - status:${response.status}`);
+							const err = Object.assign(Error('Invalid status returned'), response);
+							return reject(err);
 						}
-
 					}
-						break;
 					default:
 						logger.error(loggerPrefix, `assertion ERROR - invalid response.Type=[${response.Type}]`);
 						stream.end();

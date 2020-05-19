@@ -1,4 +1,4 @@
-const Proposal = require('./proposal');
+const ProposalManager = require('./proposal');
 const {
 	SystemChaincodeID: {LifeCycle}, SystemChaincodeFunctions: {
 		_lifecycle: {InstallChaincode, QueryInstalledChaincodes, QueryInstalledChaincode, ApproveChaincodeDefinitionForMyOrg}
@@ -6,19 +6,15 @@ const {
 } = require('khala-fabric-formatter/systemChaincode');
 const fabprotos = require('fabric-protos');
 const lifeCycleProtos = fabprotos.lifecycle;
-const protosProtos = fabprotos.protos;
 const fs = require('fs');
 const {getResponses} = require('khala-fabric-formatter/proposalResponse');
 
-class LifeCycleProposal extends Proposal {
-	constructor(identityContext, channelName, peers, requestTimeout) {
-		if (!requestTimeout) {
-			requestTimeout = 30000;
-		}
-		super(identityContext, channelName, LifeCycle, peers, requestTimeout);
+class LifeCycleProposal extends ProposalManager {
+	constructor(identityContext, channelName, peers) {
+		super(identityContext, channelName, LifeCycle, peers);
 	}
 
-	async installChaincode(packageTarGz) {
+	async installChaincode(packageTarGz, requestTimeout = 30000) {
 		const fileContent = fs.readFileSync(packageTarGz);
 		const installChaincodeArgs = new lifeCycleProtos.InstallChaincodeArgs();
 
@@ -30,14 +26,13 @@ class LifeCycleProposal extends Proposal {
 			fcn: InstallChaincode,
 			args: [installChaincodeArgs.toBuffer()],
 		};
-		const result = await this.send(buildProposalRequest);
+		const result = await this.send(buildProposalRequest, {requestTimeout});
 		////
 		const responses = getResponses(result);
 		responses.forEach((response, index) => {
 			const {package_id, label} = lifeCycleProtos.InstallChaincodeResult.decode(response.payload);
 			Object.assign(response, {
 				package_id, label,
-				endorser: this.targets[index].toString()
 			});
 		});
 		return result;
@@ -68,10 +63,8 @@ class LifeCycleProposal extends Proposal {
 		const result = await this.send(buildProposalRequest);
 		////
 		const responses = getResponses(result);
-		responses.forEach((response, index) => {
-			const amend = {
-				endorser: this.targets[index].toString(),
-			};
+		responses.forEach((response) => {
+			const amend = {};
 			if (packageId) {
 				const {package_id, label, references} = lifeCycleProtos.QueryInstalledChaincodeResult.decode(response.payload);
 				const References = {};
@@ -118,16 +111,19 @@ class LifeCycleProposal extends Proposal {
 	 * @return {Promise<void>}
 	 */
 	async approveForMyOrg({name, version = '', endorsement_plugin = '', validation_plugin = '', sequence, init_required, validation_parameter}, PackageID) {
-		const source = new lifeCycleProtos.ChaincodeSource(); //ChaincodeSource
+		const source = new lifeCycleProtos.ChaincodeSource();
 
-		let sourceType;
 
 		if (PackageID) {
-			sourceType = new lifeCycleProtos.ChaincodeSource.Local();
-			sourceType.setPackageId(PackageID);
+
+			const localPackage = new lifeCycleProtos.ChaincodeSource.Local();
+			localPackage.setPackageId(PackageID);
+			source.setLocalPackage(localPackage);
 		} else {
-			sourceType = new lifeCycleProtos.ChaincodeSource.Unavailable();
+			const unavailable = new lifeCycleProtos.ChaincodeSource.Unavailable();
+			source.setUnavailable(unavailable);
 		}
+
 
 		// const applicationPolicy = new protosProtos.ApplicationPolicy()
 		// const signaturePolicyEnvelop
@@ -136,12 +132,6 @@ class LifeCycleProposal extends Proposal {
 		// int32 version = 1;
 		// SignaturePolicy rule = 2;
 		// repeated MSPPrincipal identities = 3;
-
-		// chaincodeVersion
-		// TODO signature builder
-
-		source.setType(sourceType);
-		const collections;//protos.CollectionConfigPackage
 
 
 		// message ApproveChaincodeDefinitionForMyOrgArgs {
@@ -162,9 +152,17 @@ class LifeCycleProposal extends Proposal {
 
 		argsProto.setEndorsementPlugin(endorsement_plugin);
 		argsProto.setValidationPlugin(validation_plugin);
-		argsProto.setValidationParameter(validation_parameter);
-		argsProto.setCollections(collections);
+		if (!validation_parameter) {
+			console.debug('WIP');
+		} else {
+			argsProto.setValidationParameter(validation_parameter);
+		}
 
+		// const collections;//protos.CollectionConfigPackage
+		// argsProto.setCollections(collections);
+
+		argsProto.setInitRequired(init_required);
+		argsProto.setSource(source);
 		/**
 		 * @type {BuildProposalRequest}
 		 */
@@ -173,6 +171,8 @@ class LifeCycleProposal extends Proposal {
 			args: [argsProto.toBuffer()],
 		};
 		const result = await this.send(buildProposalRequest);
+		console.debug(getResponses(result));
+		return result;
 	}
 
 

@@ -1,14 +1,14 @@
-const Proposal = require('./proposal');
+const ProposalManager = require('./proposal');
 const {SystemChaincodeID: {QSCC}, SystemChaincodeFunctions: {qscc: {GetBlockByNumber, GetChainInfo}}} = require('khala-fabric-formatter/systemChaincode');
 
-class QSCCProposal extends Proposal {
-	constructor(identityContext, channelName, peers, requestTimeout) {
-		super(identityContext, channelName, QSCC, peers, requestTimeout);
+class QSCCProposal extends ProposalManager {
+	constructor(identityContext, channelName, peers) {
+		super(identityContext, channelName, QSCC, peers);
+		this.asQuery();
 	}
 
 	/**
 	 * Block inside response.payload
-	 * @param channelName
 	 * @param blockNumber
 	 * @return {Promise<*>}
 	 */

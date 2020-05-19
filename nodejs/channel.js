@@ -59,7 +59,7 @@ const create = async (channelName, user, orderer, channelConfigFile, signingIden
  * @param {Client.User} user
  * @param {Orderer} orderer
  * @param verbose
- * @return {Promise<Object|Buffer>}
+ * @return {Promise<Object|Buffer>} if !!verbose, it return an decoded block object
  */
 const getGenesisBlock = async (channel, user, orderer, verbose) => {
 
@@ -117,7 +117,11 @@ const getChannelConfigFromOrderer = async (channelName, user, orderer) => {
  * @returns {Promise<ProposalResponse>}
  */
 const join = async (channel, peers, user, block, orderer) => {
-	logger.debug('join-channel', {channelName: channel.name, peers: peers.map((peer) => peer.toString())});
+	logger.debug('join-channel', {
+		channelName: channel.name,
+		user: user.toString(),
+		peers: peers.map((peer) => peer.toString())
+	});
 
 	if (!block) {
 		await orderer.connect();
@@ -127,10 +131,11 @@ const join = async (channel, peers, user, block, orderer) => {
 		await peer.endorser.connect();
 	}
 	const identityContext = new IdentityContext(user, null);
-	const proposal = new CSCCProposal(identityContext, '', undefined, peers);
+	const proposal = new CSCCProposal(identityContext, '', peers, peers);
 	const result = await proposal.joinChannel(block);
 
 	const {errors, responses} = result;
+	logger.debug(result);
 
 	responses.forEach(({response}, index) => {
 		const {status, message} = response;

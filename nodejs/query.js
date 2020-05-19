@@ -1,4 +1,3 @@
-
 const QSCCProposal = require('khala-fabric-admin/QSCCProposal');
 const CSCCProposal = require('khala-fabric-admin/CSCCProposal');
 const {getResponses} = require('khala-fabric-formatter/proposalResponse');
@@ -76,9 +75,9 @@ exports.channelJoined = async (peers, identityContext) => {
 
 	const responses = getResponses(result);
 	responses.forEach((response, index) => {
-		const queryTrans = protosProto.ChannelQueryResponse.decode(response.payload);
-		response.channels = queryTrans.channels.map(({channel_id}) => channel_id);
-		response.peer = peers[index].toString();
+		const channelQueryResponse = protosProto.ChannelQueryResponse.decode(response.payload);
+		response.channels = channelQueryResponse.channels.map(({channel_id}) => channel_id);
+		result.responses[index].peer = peers[index].toString();
 	});
 
 	return result;

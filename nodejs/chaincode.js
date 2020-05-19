@@ -1,4 +1,3 @@
-
 const LifeCycleProposal = require('khala-fabric-admin/lifecycleProposal');
 const {getIdentityContext} = require('khala-fabric-admin/user');
 exports.install = async (peers, chaincodePackagePath, user) => {
@@ -10,6 +9,21 @@ exports.install = async (peers, chaincodePackagePath, user) => {
 	return result;
 };
 
+exports.approve = async (peers, {name, version, PackageID}, channelName, user, orderer) => {
+	const identityContext = getIdentityContext(user);
+
+	const lifeCycleProposal = new LifeCycleProposal(identityContext, channelName, peers);
+	const validation_parameter = undefined; // TODO WIP
+	const result = await lifeCycleProposal.approveForMyOrg({
+		name,
+		version,
+		init_required: true,
+		validation_parameter,
+		sequence: 1,
+	}, PackageID);
+	const commitResult = await lifeCycleProposal.commit([orderer.committer], 3000);
+	return result;
+};
 
 // const {ChaincodeType, nameMatcher, versionMatcher} = require('khala-fabric-formatter/chaincode');
 // const {transientMapTransform} = require('khala-fabric-formatter/txProposal');

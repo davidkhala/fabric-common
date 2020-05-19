@@ -1,8 +1,8 @@
 const Proposal = require('fabric-common/lib/Proposal');
 const ChannelManager = require('./channel');
+const Commit = require('fabric-common/lib/Commit');
 
-
-class ProposalManager {
+class ProposalManager extends Proposal {
 
 	/**
 	 *
@@ -10,38 +10,61 @@ class ProposalManager {
 	 * @param channelName
 	 * @param [chaincodeId]
 	 * @param [peers]
-	 * @param [requestTimeout]
 	 */
-	constructor(identityContext, channelName, chaincodeId, peers, requestTimeout) {
-		const channel = ChannelManager.emptyChannel(channelName);
-		this.proposal = new Proposal(chaincodeId || null, channel);
+	constructor(identityContext, channelName, chaincodeId, peers) {
+		super(chaincodeId || null, ChannelManager.emptyChannel(channelName));
 		this.identityContext = identityContext;
-		this.requestTimeout = requestTimeout;
 		if (Array.isArray(peers)) {
 			this.targets = peers.map(({endorser}) => endorser);
 		}
 	}
 
+	asQuery() {
+		this.type = 'Query';
+	}
 
 	/**
 	 *
 	 * @param {BuildProposalRequest} buildProposalRequest
-	 * @param {Endorser[]} [targets]
+	 * @param {{requestTimeout:number,targets:Endorser[]}} extraOptions
 	 * @return {*}
 	 */
-	async send(buildProposalRequest, targets) {
-		const {identityContext, requestTimeout} = this;
+	async send(buildProposalRequest, extraOptions = {}) {
+		const requestTimeout = extraOptions.requestTimeout || this.requestTimeout;
+		const targets = extraOptions.targets || this.targets;
 
-		this.proposal.build(identityContext, buildProposalRequest);
-		this.proposal.sign(identityContext);// TODO take care of offline signing
+		const {identityContext} = this;
+
+		this.build(identityContext, buildProposalRequest);
+		this.sign(identityContext); // TODO take care of offline signing
 		/**
 		 * @type {SendProposalRequest}
 		 */
 		const sendProposalRequest = {
-			targets: targets || this.targets,
+			targets,
 			requestTimeout
 		};
-		return this.proposal.send(sendProposalRequest);
+		return super.send(sendProposalRequest);
+	}
+
+	newCommit() {
+		return new Commit(this.chaincodeId, this.channel, this);
+	}
+
+	/**
+	 *
+	 * @param {Committers[]} targets
+	 * @param [requestTimeout]
+	 */
+	async commit(targets, requestTimeout) {
+		const commit = this.newCommit();
+
+		commit.build(this.identityContext);
+		commit.sign(this.identityContext);
+
+		const result = await commit.send({targets, requestTimeout});
+		console.debug(result);
+		return result;
 	}
 
 }

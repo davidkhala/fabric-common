@@ -4,7 +4,6 @@ const {install} = require('./chaincode');
 const Logger = require('khala-logger/log4js');
 const {chaincodesInstalled, chaincodesInstantiated} = require('./query');
 const {chaincodeClear} = require('./fabric-dockerode');
-const {isArrayEven} = require('khala-light-util');
 const {ChaincodeProposalCommand} = require('khala-fabric-formatter/constants');
 
 /**
@@ -27,49 +26,8 @@ const findLatest = (chaincodes, chaincodeId, comparator = newerVersion) => {
 };
 
 exports.findLatest = findLatest;
-/**
- *
- * @param {Client.Peer[]} peers
- * @param {string} chaincodeId
- * @param {string} [chaincodePath] if undefined, will use `path` of latest installed chaincode (in result of [queryInstalledChaincodes]).
- * @param {ChaincodeType} [chaincodeType]
- * @param {string} [metadataPath]
- * @param {Client} client
- * @param {string} incrementLevel incrementLevel major|minor|patch
- */
-exports.incrementInstall = async (peers, {chaincodeId, chaincodePath, chaincodeType, metadataPath}, client, incrementLevel) => {
-	const logger = Logger.consoleLogger(`install version ${incrementLevel}`);
-	const versions = [];
-	for (const peer of peers) {
-		const {pretty} = await chaincodesInstalled(peer, client);
-		const lastChaincode = findLatest(pretty, chaincodeId);
-		versions.push(lastChaincode);
-	}
-	if (!isArrayEven(versions)) {
-		logger.error('chaincode versions not even', versions);
-		throw Error('chaincode versions not even');
-	}
-	let chaincodeVersion;
-	const lastChaincode = versions[0];
-	if (!lastChaincode) {
-		logger.warn(`chaincode ${chaincodeId} not found`);
-		chaincodeVersion = nextVersion();
-	} else {
-		if (!chaincodePath) {
-			chaincodePath = lastChaincode.path;
-		}
-		chaincodeVersion = nextVersion(lastChaincode.version, incrementLevel);
-	}
 
-	const proposalResponses = await install(peers, {
-		chaincodeId,
-		chaincodePath,
-		chaincodeVersion,
-		chaincodeType,
-		metadataPath
-	}, client);
-	return {chaincodeVersion, proposalResponses};
-};
+// TODO migration
 exports.incrementUpgrade = async (channel, peers, eventHubs, opts, orderer, proposalTimeOut, eventTimeOut) => {
 	const {chaincodeId} = opts;
 
