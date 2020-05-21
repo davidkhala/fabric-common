@@ -1,6 +1,6 @@
 const Logger = require('khala-logger/log4js');
 
-const {chaincodeProposal, transactionProposal, invokeCommit} = require('./chaincode');
+const {chaincodeProposal, transactionProposal, invokeCommit} = require('./chaincodeAction');
 /**
  * @param {EventHub} eventHub
  * @param txId

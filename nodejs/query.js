@@ -69,7 +69,7 @@ exports.blockFromHeight = async (peers, identityContext, channelName, blockNumbe
 };
 
 exports.channelJoined = async (peers, identityContext) => {
-	const proposal = new CSCCProposal(identityContext, '', peers);
+	const proposal = new CSCCProposal(identityContext, '', peers.map(({endorser}) => endorser));
 
 	const result = await proposal.queryChannels();
 

@@ -31,8 +31,19 @@ const SystemChaincodeFunctions = {
 		// used to approve a chaincode definition for execution by the user's own org
 		ApproveChaincodeDefinitionForMyOrg: 'ApproveChaincodeDefinitionForMyOrg',
 
+		/**
+		 * 	type QueryApprovedChaincodeDefinitionResult struct
+			Sequence             int64                         `protobuf:"varint,1,opt,name=sequence,proto3" json:"sequence,omitempty"`
+			Version              string                        `protobuf:"bytes,2,opt,name=version,proto3" json:"version,omitempty"`
+			EndorsementPlugin    string                        `protobuf:"bytes,3,opt,name=endorsement_plugin,json=endorsementPlugin,proto3" json:"endorsement_plugin,omitempty"`
+			ValidationPlugin     string                        `protobuf:"bytes,4,opt,name=validation_plugin,json=validationPlugin,proto3" json:"validation_plugin,omitempty"`
+			ValidationParameter  []byte                        `protobuf:"bytes,5,opt,name=validation_parameter,json=validationParameter,proto3" json:"validation_parameter,omitempty"`
+			Collections          *peer.CollectionConfigPackage `protobuf:"bytes,6,opt,name=collections,proto3" json:"collections,omitempty"`
+			InitRequired         bool                          `protobuf:"varint,7,opt,name=init_required,json=initRequired,proto3" json:"init_required,omitempty"`
+			Source               *ChaincodeSource              `protobuf:"bytes,8,opt,name=source,proto3" json:"source,omitempty"`
+		 */
 		// used to query a approved chaincode definition for the user's own org
-		QueryApprovedChaincodeDefinition: 'QueryApprovedChaincodeDefinition',
+		QueryApprovedChaincodeDefinition: 'QueryApprovedChaincodeDefinition', // TODO args and result proto message definition not found
 
 		// used to check a specified chaincode definition is ready to be committed. It returns the approval status for a given definition over a given set of orgs
 		CheckCommitReadiness: 'CheckCommitReadiness',

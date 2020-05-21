@@ -7,15 +7,15 @@ class ProposalManager extends Proposal {
 	/**
 	 *
 	 * @param {IdentityContext} identityContext
-	 * @param channelName
+	 * @param {string} channelName
 	 * @param [chaincodeId]
-	 * @param [peers]
+	 * @param {Endorser[]} [endorsers]
 	 */
-	constructor(identityContext, channelName, chaincodeId, peers) {
+	constructor(identityContext, channelName, chaincodeId, endorsers) {
 		super(chaincodeId || null, ChannelManager.emptyChannel(channelName));
 		this.identityContext = identityContext;
-		if (Array.isArray(peers)) {
-			this.targets = peers.map(({endorser}) => endorser);
+		if (Array.isArray(endorsers)) {
+			this.targets = endorsers;
 		}
 	}
 
