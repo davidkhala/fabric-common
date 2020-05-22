@@ -44,19 +44,21 @@ const getLastBlock = async (eventHub, identityContext) => {
 	});
 };
 
-const waitForBlock = async (eventHub, identityContext) => {
+const waitForBlock = async (eventHub, identityContext, futureSteps = 1) => {
 	eventHub.build(identityContext, {startBlock: NEWEST});
 	return await new Promise((resolve, reject) => {
-		let currentBlock;
+		const futureBlocks = [];
 		const callback = (err, {block}) => {
 			if (err) {
 				reject(err);
 			} else {
-				if (currentBlock) {
+				if (futureBlocks.length < futureSteps) {
+					console.debug('currentBlock', block.header.number);
+					futureBlocks.push(block);
+				} else {
+					console.debug('comingBlock', block.header.number);
 					listener.unregisterEventListener();
 					resolve(block);
-				} else {
-					currentBlock = block;
 				}
 
 			}

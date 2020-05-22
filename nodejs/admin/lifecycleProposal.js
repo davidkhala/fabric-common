@@ -14,7 +14,7 @@ const lifeCycleProtos = fabprotos.lifecycle;
 const fs = require('fs');
 const {getResponses} = require('khala-fabric-formatter/proposalResponse');
 
-class LifeCycleProposal extends ProposalManager {
+class LifecycleProposal extends ProposalManager {
 	constructor(identityContext, channelName, endorsers, logger = console) {
 		super(identityContext, channelName, LifeCycle, endorsers);
 		this.logger = logger;
@@ -353,6 +353,6 @@ class LifeCycleProposal extends ProposalManager {
 
 }
 
-module.exports = LifeCycleProposal;
+module.exports = LifecycleProposal;
 
 

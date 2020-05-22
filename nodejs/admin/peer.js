@@ -17,7 +17,8 @@ class Peer {
 	 * @param {ClientKey} [clientKey]
 	 * @param {ClientCert} [clientCert]
 	 */
-	constructor({peerPort, peerHostName, cert, pem, host, clientKey, clientCert}) {
+	constructor({peerPort, peerHostName, cert, pem, host, clientKey, clientCert}, logger = console) {
+		this.logger = logger;
 		if (!pem) {
 			if (fs.existsSync(cert)) {
 				pem = fs.readFileSync(cert).toString();

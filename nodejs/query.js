@@ -4,7 +4,8 @@ const {getResponses} = require('khala-fabric-formatter/proposalResponse');
 const fabprotos = require('fabric-protos');
 const protosProto = fabprotos.protos;
 const commonProto = fabprotos.common;
-
+const LifecycleProposal = require('khala-fabric-admin/lifecycleProposal');
+const UserUtil = require('khala-fabric-admin/user');
 exports.chain = async (peers, identityContext, channelName) => {
 	const proposal = new QSCCProposal(identityContext, channelName, peers);
 	const result = await proposal.queryInfo();
@@ -18,34 +19,25 @@ exports.chain = async (peers, identityContext, channelName) => {
 			height: height.toInt(),
 			currentBlockHash: currentBlockHash.toString('hex'),
 			previousBlockHash: previousBlockHash.toString('hex'),
-			peer: peers[index].toString()
 		});
+		result[index].peer = peers[index].toString();
 	});
 
 	return result;
 };
-/**
- * TODO
- * @param {Client.Peer} peer
- * @param {Client} client
- * @return {Promise<Client.ChaincodeQueryResponse>}
- */
-exports.chaincodesInstalled = async (peer, client) => {
-	const {chaincodes} = await client.queryInstalledChaincodes(peer);
-	const pretty = chaincodes.map(({name, version, path}) => ({name, version, path}));
-	return {chaincodes, pretty};
+
+exports.chaincodesInstalled = async (peer, user) => {
+	await peer.connect();
+	const lifecycleProposal = new LifecycleProposal(UserUtil.getIdentityContext(user), '', [peer.endorser]);
+	const result = await lifecycleProposal.queryInstalledChaincodes();
+	return result.responses.map(({response}) => response.installed_chaincodes);
 };
-/**
- * TODO
- * only one latest version entry for each chaincode, thus no need to findLast
- * @param {Client.Peer} peer
- * @param {Client.Channel} channel
- * @return {Promise<Client.ChaincodeQueryResponse>}
- */
-exports.chaincodesInstantiated = async (peer, channel) => {
-	const {chaincodes} = await channel.queryInstantiatedChaincodes(peer);
-	const pretty = chaincodes.map(({name, version, path}) => ({name, version, path}));
-	return {chaincodes, pretty};
+
+exports.chaincodesInstantiated = async (peer, channelName, user) => {
+	await peer.connect();
+	const lifecycleProposal = new LifecycleProposal(UserUtil.getIdentityContext(user), channelName, [peer.endorser]);
+	const result = await lifecycleProposal.queryChaincodeDefinition();
+	return result.responses.map(({response}) => response.chaincode_definitions);
 };
 /**
  * TODO

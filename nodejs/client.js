@@ -7,8 +7,7 @@ class ClientManager {
 	 */
 	constructor(client) {
 		if (!client) {
-			const name = null;
-			client = new Client(name);
+			client = new Client(null);
 		}
 		this.client = client;
 	}

@@ -10,3 +10,5 @@ util for fabric-network
 ## [About strategy](./STRATEGY.md)
 
 
+### TODO
+- use TS for 2.x

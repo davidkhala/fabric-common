@@ -3,7 +3,6 @@ const {getIdentityContext} = require('khala-fabric-admin/user');
 const {getResponses} = require('khala-fabric-formatter/proposalResponse');
 const EventHub = require('khala-fabric-admin/eventHub');
 const {emptyChannel} = require('khala-fabric-admin/channel');
-const {BlockNumberFilterType: {NEWEST}} = require('khala-fabric-formatter/eventHub');
 const {waitForBlock} = require('./eventHub');
 
 class ChaincodeAction {
@@ -42,6 +41,9 @@ class ChaincodeAction {
 		this.logger.debug('approve:proposal', getResponses(result));
 		const commitResult = await lifeCycleProposal.commit([orderer.committer], 3000);
 		this.logger.info('approve:commit', commitResult);
+		const eventHub = new EventHub(emptyChannel(this.channel), this.eventers);
+		await waitForBlock(eventHub, this.identityContext);
+		eventHub.disconnect();
 		return result;
 	}
 
@@ -71,7 +73,12 @@ class ChaincodeAction {
 	async queryChaincodeDefinition(name) {
 		const lifeCycleProposal = new LifeCycleProposal(this.identityContext, this.channel, this.endorsers);
 		const result = await lifeCycleProposal.queryChaincodeDefinition(name);
-		this.logger.debug('queryChaincodeDefinition', getResponses(result));
+		if (name) {
+			this.logger.debug('queryChaincodeDefinition', getResponses(result));
+		} else {
+			this.logger.debug('queryChaincodeDefinition', getResponses(result).map(({chaincode_definitions}) => chaincode_definitions));
+		}
+
 		return result;
 	}
 }

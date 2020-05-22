@@ -1,3 +1,4 @@
+// TODO migration
 const {FabricConfig} = require('./admin/helper');
 const logger = require('./logger').new('service discovery', true);
 /**

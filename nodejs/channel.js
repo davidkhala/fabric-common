@@ -135,7 +135,6 @@ const join = async (channel, peers, user, block, orderer) => {
 	const result = await proposal.joinChannel(block);
 
 	const {errors, responses} = result;
-	logger.debug(result);
 
 	responses.forEach(({response}, index) => {
 		const {status, message} = response;
