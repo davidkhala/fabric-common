@@ -7,13 +7,13 @@ class EventHub {
 	 * This works as unsignedRegistration. Later we sign the registration by build
 	 * @constructor
 	 * @param {Client.Channel} channel
-	 * @param {Peer[]|Orderer[]} targets //TODO test on multiple eventhub ; Could we use orderer as eventer
+	 * @param {Eventer[]} targets //TODO test on multiple eventhub;
 	 * @param {EventService} [eventService] wrapped existing channelEventHub object
 	 */
 	constructor(channel, targets, eventService) {
 		if (!eventService) {
 			eventService = new EventService('-', channel);
-			eventService.setTargets(targets.map(target => target.eventer));
+			eventService.setTargets(targets);
 		}
 		this.eventService = eventService;
 	}
@@ -100,16 +100,8 @@ class EventHub {
 		return eventService.registerBlockListener(callback, options);
 	}
 
-	static _assertEventHubDisconnectError(err, onAssertFailure) {
-		// TODO align new message
-		const asserted = err.message === 'ChannelEventHub has been shutdown';
-		console.assert(asserted, 'expect "ChannelEventHub has been shutdown"');
-		if (!asserted) {
-			onAssertFailure(err);
-		}
-	}
-
 	/**
+	 * TODO is this structure?
 	 * @callback TxEventCallback
 	 * @param {Error} error
 	 * @param {string} transactionID

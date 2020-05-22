@@ -9,15 +9,24 @@ const {
 	}
 } = require('khala-fabric-formatter/systemChaincode');
 const fabprotos = require('fabric-protos');
+const protosProtos = fabprotos.protos;
 const lifeCycleProtos = fabprotos.lifecycle;
 const fs = require('fs');
 const {getResponses} = require('khala-fabric-formatter/proposalResponse');
 
 class LifeCycleProposal extends ProposalManager {
-	constructor(identityContext, channelName, endorsers) {
+	constructor(identityContext, channelName, endorsers, logger = console) {
 		super(identityContext, channelName, LifeCycle, endorsers);
+		this.logger = logger;
+		this.init_required = true;
 	}
 
+	/**
+	 * if default docker chaincode runtime is configured. the chaincode image is created during endorse
+	 * @param {string} packageTarGz file absolute path
+	 * @param [requestTimeout]
+	 * @return {Promise<*>}
+	 */
 	async installChaincode(packageTarGz, requestTimeout = 30000) {
 		const fileContent = fs.readFileSync(packageTarGz);
 		const installChaincodeArgs = new lifeCycleProtos.InstallChaincodeArgs();
@@ -40,6 +49,41 @@ class LifeCycleProposal extends ProposalManager {
 			});
 		});
 		return result;
+	}
+
+	setEndorsementPlugin(endorsement_plugin) {
+		this.endorsement_plugin = endorsement_plugin;
+	}
+
+	setValidationPlugin(validation_plugin) {
+		this.validation_plugin = validation_plugin;
+	}
+
+	/**
+	 * new chaincode lifeCycle do not have initialize phase. Thus Init function is optional in chaincode entrance
+	 * Be careful: init_required information is indexing information in chaincode definition.
+	 * @param init_required
+	 */
+	setInitRequired(init_required) {
+		this.init_required = init_required;
+	}
+
+	setCollections() {
+		// protos.CollectionConfigPackage collections
+		// TODO WIP
+	}
+
+	_propertyAssign(protobufMessage) {
+		const {endorsement_plugin, init_required, validation_plugin} = this;
+		if (endorsement_plugin) {
+			protobufMessage.setEndorsementPlugin(endorsement_plugin);
+		}
+		if (init_required) {
+			protobufMessage.setInitRequired(init_required);
+		}
+		if (validation_plugin) {
+			protobufMessage.setValidationPlugin(validation_plugin);
+		}
 	}
 
 	/**
@@ -101,19 +145,15 @@ class LifeCycleProposal extends ProposalManager {
 	// TODO WIP
 	/**
 	 * Chaincode is approved at the organization level, so the command only needs to target one peer.
-	 * Because the chaincode is being deployed to the channel for the first time, the sequence number is 1
+	 *
 	 *
 	 * @param name
-	 * @param version chaincodeVersion TODO could it be empty
-	 * @param endorsement_plugin
-	 * @param validation_plugin
+	 * @param version chaincodeVersion
 	 * @param {number} sequence starting from 1
-	 * @param {boolean} init_required
-	 * @param {Buffer} validation_parameter policyBytes of new protosProtos.ApplicationPolicy()
+	 * @param {Buffer} [validation_parameter] policyBytes of new protosProtos.ApplicationPolicy()
 	 * @param PackageID
-	 * @return {Promise<void>}
 	 */
-	async approveForMyOrg({name, version = '', endorsement_plugin = '', validation_plugin = '', sequence, validation_parameter}, PackageID) {
+	async approveForMyOrg({name, version, sequence, validation_parameter}, PackageID) {
 		const source = new lifeCycleProtos.ChaincodeSource();
 
 
@@ -152,18 +192,17 @@ class LifeCycleProposal extends ProposalManager {
 		approveChaincodeDefinitionForMyOrgArgs.setName(name);
 		approveChaincodeDefinitionForMyOrgArgs.setVersion(version);
 
-		approveChaincodeDefinitionForMyOrgArgs.setEndorsementPlugin(endorsement_plugin);
-		approveChaincodeDefinitionForMyOrgArgs.setValidationPlugin(validation_plugin);
-		if (!validation_parameter) {
-			console.debug('WIP');
-		} else {
+		this._propertyAssign(approveChaincodeDefinitionForMyOrgArgs);
+		if (validation_parameter) {
+			// TODO WIP
 			approveChaincodeDefinitionForMyOrgArgs.setValidationParameter(validation_parameter);
+		} else {
+			this.logger.info('apply default endorsement policy');
 		}
 
 		// const collections;//protos.CollectionConfigPackage
 		// argsProto.setCollections(collections);
 
-		approveChaincodeDefinitionForMyOrgArgs.setInitRequired(false);// TODO FIXME
 		approveChaincodeDefinitionForMyOrgArgs.setSource(source);
 		/**
 		 * @type {BuildProposalRequest}
@@ -172,12 +211,11 @@ class LifeCycleProposal extends ProposalManager {
 			fcn: ApproveChaincodeDefinitionForMyOrg,
 			args: [approveChaincodeDefinitionForMyOrgArgs.toBuffer()],
 		};
-		const result = await this.send(buildProposalRequest);
-		return result;
+		return await this.send(buildProposalRequest);
 	}
 
 
-	async checkCommitReadiness({name, version = '', endorsement_plugin = '', validation_plugin = '', sequence, validation_parameter}) {
+	async checkCommitReadiness({name, version, sequence}) {
 		// message CheckCommitReadinessArgs {
 		//     int64 sequence = 1;
 		//     string name = 2;
@@ -192,7 +230,7 @@ class LifeCycleProposal extends ProposalManager {
 		checkCommitReadinessArgs.setSequence(sequence);
 		checkCommitReadinessArgs.setName(name);
 		checkCommitReadinessArgs.setVersion(version);
-		checkCommitReadinessArgs.setInitRequired(false);
+		this._propertyAssign(checkCommitReadinessArgs);
 
 		/**
 		 * @type {BuildProposalRequest}
@@ -216,7 +254,15 @@ class LifeCycleProposal extends ProposalManager {
 
 	}
 
-	async commitChaincodeDefinition({sequence, name, version, endorsement_plugin = '', validation_plugin = '', validation_parameter}) {
+	/**
+	 * if default docker chaincode runtime is used. the chaincode container is created during endorse
+	 * @param sequence
+	 * @param name
+	 * @param version
+	 * @param validation_parameter
+	 * @return {Promise<*>}
+	 */
+	async commitChaincodeDefinition({sequence, name, version}) {
 		// message CommitChaincodeDefinitionArgs {
 		// 	int64 sequence = 1;
 		// 	string name = 2;
@@ -231,22 +277,13 @@ class LifeCycleProposal extends ProposalManager {
 		commitChaincodeDefinitionArgs.setSequence(sequence);
 		commitChaincodeDefinitionArgs.setName(name);
 		commitChaincodeDefinitionArgs.setVersion(version);
-		commitChaincodeDefinitionArgs.setInitRequired(false);
-
-
-		if (!validation_parameter) {
-			console.debug('WIP');
-		} else {
-			commitChaincodeDefinitionArgs.setValidationParameter(validation_parameter);
-		}
+		this._propertyAssign(commitChaincodeDefinitionArgs);
 
 		/**
 		 * @type {BuildProposalRequest}
 		 */
 		const buildProposalRequest = {fcn: CommitChaincodeDefinition, args: [commitChaincodeDefinitionArgs.toBuffer()]};
-		const result = await this.send(buildProposalRequest);
-		console.debug('commitChaincodeDefinition', getResponses(result));
-		return result;
+		return await this.send(buildProposalRequest);
 	}
 
 	async queryChaincodeDefinition(name) {
@@ -283,10 +320,16 @@ class LifeCycleProposal extends ProposalManager {
 				// 	map<string,bool> approvals = 8;
 				// }
 				const amend = lifeCycleProtos.QueryChaincodeDefinitionResult.decode(response.payload);
-				console.debug('queryChaincodeDefinition', amend);
+				const approvals = {};
+				amend.approvals.forEach((value, key) => {
+					approvals[key] = value;
+				});
+				amend.approvals = approvals;
+				amend.validation_parameter = protosProtos.ApplicationPolicy.decode(amend.validation_parameter);
+
 				Object.assign(response, amend);
 			} else {
-				//message QueryChaincodeDefinitionsResult {
+				// message QueryChaincodeDefinitionsResult {
 				//     message ChaincodeDefinition {
 				//         string name = 1;
 				//         int64 sequence = 2;
@@ -301,13 +344,8 @@ class LifeCycleProposal extends ProposalManager {
 				// }
 				const {chaincode_definitions} = lifeCycleProtos.QueryChaincodeDefinitionsResult.decode(response.payload);
 				Object.assign(response, {chaincode_definitions});
-				for (const chaincode_definition of chaincode_definitions) {
-					console.debug('queryChaincodeDefinition', chaincode_definition);
-				}
 			}
 		});
-		console.debug('queryChaincodeDefinition', getResponses(result));
-
 
 		return result;
 	}

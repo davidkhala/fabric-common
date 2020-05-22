@@ -1,6 +1,6 @@
+// TODO migration
 const Logger = require('khala-logger/log4js');
 
-const {chaincodeProposal, transactionProposal, invokeCommit} = require('./chaincodeAction');
 /**
  * @param {EventHub} eventHub
  * @param txId
@@ -36,40 +36,6 @@ const txTimerPromise = (eventHub, {txId}, eventTimeOut) => {
  * @property {Client.ChaincodeType} chaincodeType
  */
 
-/**
- * @param {string} command deploy|upgrade
- * @param {Channel} channel
- * @param {Client.Peer[]} peers default: all peers in channel
- * @param {EventHub[]} eventHubs
- * @param {ChaincodeProposalOpts} opts
- * @param {Orderer} orderer
- * @param {number} [proposalTimeOut]
- * @param {number} [eventTimeOut] default: 30000
- */
-exports.instantiateOrUpgrade = async (
-	command, channel, peers, eventHubs,
-	opts, orderer, proposalTimeOut = 50000 * peers.length,
-	eventTimeOut = 30000
-) => {
-	const logger = Logger.consoleLogger(`${command}-chaincode`);
-
-	const nextRequest = await chaincodeProposal(command, channel, peers, opts, proposalTimeOut);
-	const {txId} = nextRequest;
-	if (!txId) {// swallow case
-		return;
-	}
-
-	const promises = [];
-	for (const eventHub of eventHubs) {
-		promises.push(txTimerPromise(eventHub, {txId}, eventTimeOut));
-	}
-
-	nextRequest.orderer = orderer;
-	const response = await channel.sendTransaction(nextRequest);
-	logger.info('channel.sendTransaction', response);
-	await Promise.all(promises);
-
-};
 
 
 /**

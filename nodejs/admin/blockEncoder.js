@@ -1,5 +1,5 @@
-const fabricProtos = require('fabric-protos');
-const commonProto = fabricProtos.common;
+const fabprotos = require('fabric-protos');
+const commonProto = fabprotos.common;
 
 
 const fromEvent = ({block}) => {

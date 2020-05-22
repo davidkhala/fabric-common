@@ -4,7 +4,7 @@ const fs = require('fs');
 
 const ChannelUpdate = require('khala-fabric-admin/channelUpdate');
 const SigningIdentityUtil = require('khala-fabric-admin/signingIdentity');
-const {extractConfigUpdate, extractLastConfigIndex, assertConfigBlock, extractConfigEnvelopeFromBlockData} = require('khala-fabric-admin/protoBuilder');
+const {extractConfigUpdate, extractLastConfigIndex, assertConfigBlock, extractConfigEnvelopeFromBlockData} = require('khala-fabric-admin/protoTranslator');
 const IdentityContext = require('fabric-common/lib/IdentityContext');
 const EventHub = require('khala-fabric-admin/eventHub');
 const {getSingleBlock} = require('./eventHub');
@@ -59,23 +59,23 @@ const create = async (channelName, user, orderer, channelConfigFile, signingIden
  * @param {Client.User} user
  * @param {Orderer} orderer
  * @param verbose
+ * @param [blockTime] wait x ms if block is still UNAVAILABLE, then retry
  * @return {Promise<Object|Buffer>} if !!verbose, it return an decoded block object
  */
-const getGenesisBlock = async (channel, user, orderer, verbose) => {
+const getGenesisBlock = async (channel, user, orderer, verbose, blockTime = 1000) => {
 
 	const identityContext = new IdentityContext(user, null);
 
 	let block;
 	if (verbose) {
-		const targets = [orderer];
-		const eventHub = new EventHub(channel, targets);
+		const eventHub = new EventHub(channel, [orderer.eventer]);
 		block = await getSingleBlock(eventHub, identityContext, 0);
 		await eventHub.disconnect();
 		orderer.reset();
 	} else {
 		const signingIdentityUtil = new SigningIdentityUtil(user.getSigningIdentity());
 		identityContext.calculateTransactionId();
-		const eventBlock = await signingIdentityUtil.getSpecificBlock(identityContext, channel.name, orderer, 0, {waitIfUNAVAILABLE: true});
+		const eventBlock = await signingIdentityUtil.getSpecificBlock(identityContext, channel.name, orderer, 0, {waitIfUNAVAILABLE:blockTime});
 		block = fromEvent({block: eventBlock}).toBuffer();
 	}
 

@@ -53,7 +53,7 @@ class ProposalManager extends Proposal {
 
 	/**
 	 *
-	 * @param {Committers[]} targets
+	 * @param {Committer[]} targets
 	 * @param [requestTimeout]
 	 */
 	async commit(targets, requestTimeout) {
@@ -62,9 +62,7 @@ class ProposalManager extends Proposal {
 		commit.build(this.identityContext);
 		commit.sign(this.identityContext);
 
-		const result = await commit.send({targets, requestTimeout});
-		console.debug(result);
-		return result;
+		return await commit.send({targets, requestTimeout});
 	}
 
 }

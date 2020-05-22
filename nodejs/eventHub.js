@@ -24,26 +24,50 @@ const getSingleBlock = async (eventHub, identityContext, blockNumber) => {
 	});
 };
 /**
- * TODO WIP waijt for sdk-node fix
  * @param eventHub
  * @param identityContext
  * @return {Promise<unknown>}
  */
 const getLastBlock = async (eventHub, identityContext) => {
 	const startBlock = NEWEST;
-	const endBlock = NEWEST;
-	eventHub.build(identityContext, {startBlock, endBlock});
+	eventHub.build(identityContext, {startBlock});
 	return await new Promise((resolve, reject) => {
-		const listener = (err, info) => {
-			if (info) {
-				console.log(info);
+		const listener = (err, {block}) => {
+			if (err) {
+				reject(err);
+			} else {
+				resolve(block);
 			}
 		};
-		eventHub.blockEvent(listener);
+		eventHub.blockEvent(listener, {unregister: true});
+		eventHub.connect();
+	});
+};
+
+const waitForBlock = async (eventHub, identityContext) => {
+	eventHub.build(identityContext, {startBlock: NEWEST});
+	return await new Promise((resolve, reject) => {
+		let currentBlock;
+		const callback = (err, {block}) => {
+			if (err) {
+				reject(err);
+			} else {
+				if (currentBlock) {
+					listener.unregisterEventListener();
+					resolve(block);
+				} else {
+					currentBlock = block;
+				}
+
+			}
+
+		};
+		const listener = eventHub.blockEvent(callback, {unregister: false});
 		eventHub.connect();
 	});
 };
 module.exports = {
 	getSingleBlock,
-	getLastBlock
+	getLastBlock,
+	waitForBlock,
 };

@@ -11,3 +11,12 @@ exports.nameMatcher = (channelName, toThrow) => {
 	}
 	return result;
 };
+
+exports.configGroupMatcher = (configGroupName, toThrow) => {
+	const namePattern = /^[a-zA-Z0-9.-]+$/;
+	const result = configGroupName.match(namePattern) && configGroupName.length < 250;
+	if (!result && toThrow) {
+		throw Error(`invalid config group name [${configGroupName}] should match regx: ${namePattern} and with length < 250`);
+	}
+	return result;
+};

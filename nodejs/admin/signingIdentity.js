@@ -1,8 +1,11 @@
 const Utils = require('fabric-common/lib/Utils');
-const fabricProtos = require('fabric-protos');
-const commonProto = fabricProtos.common;
-const {buildSignatureHeader, buildChannelHeader, buildHeader, buildPayload, buildSeekPayload} = require('./protoBuilder');
+const fabprotos = require('fabric-protos');
+const commonProto = fabprotos.common;
+const {buildSignatureHeader, buildChannelHeader, buildHeader, buildPayload, buildSeekPayload} = require('./protoTranslator');
 const {DeliverResponseStatus: {SERVICE_UNAVAILABLE}, DeliverResponseType: {STATUS}} = require('khala-fabric-formatter/eventHub');
+const sleep = (ms) => {
+	return new Promise(resolve => setTimeout(resolve, ms));
+};
 
 class SigningIdentityUtil {
 	/**
@@ -108,6 +111,7 @@ class SigningIdentityUtil {
 				if (waitIfUNAVAILABLE) {
 					const {status, Type, block} = e;
 					if (status === SERVICE_UNAVAILABLE && Type === STATUS && block === null) {
+						await sleep(waitIfUNAVAILABLE);
 						return sendTry();
 					}
 				}

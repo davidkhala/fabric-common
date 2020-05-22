@@ -1,9 +1,9 @@
 const QSCCProposal = require('khala-fabric-admin/QSCCProposal');
 const CSCCProposal = require('khala-fabric-admin/CSCCProposal');
 const {getResponses} = require('khala-fabric-formatter/proposalResponse');
-const fabricProtos = require('fabric-protos');
-const protosProto = fabricProtos.protos;
-const commonProto = fabricProtos.common;
+const fabprotos = require('fabric-protos');
+const protosProto = fabprotos.protos;
+const commonProto = fabprotos.common;
 
 exports.chain = async (peers, identityContext, channelName) => {
 	const proposal = new QSCCProposal(identityContext, channelName, peers);
