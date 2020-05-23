@@ -1,6 +1,7 @@
 const {Gateway, DefaultEventHandlerStrategies} = require('fabric-network');
 const Client = require('fabric-common/lib/Client');
 const IdentityContext = require('fabric-common/lib/IdentityContext');
+const {SigningIdentity} = require('./signingIdentity');
 
 class GatewayManager {
 	constructor(user) {
@@ -10,7 +11,9 @@ class GatewayManager {
 	}
 
 	setIdentity(user) {
-		this.gateWay.identity = user;
+		const identity = new SigningIdentity(user._signingIdentity);
+
+		this.gateWay.identity = identity;
 		this.gateWay.identityContext = new IdentityContext(user, this.client);
 	}
 

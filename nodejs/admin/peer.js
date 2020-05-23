@@ -16,6 +16,7 @@ class Peer {
 	 * @param {string} [host]
 	 * @param {ClientKey} [clientKey]
 	 * @param {ClientCert} [clientCert]
+	 * @param [logger]
 	 */
 	constructor({peerPort, peerHostName, cert, pem, host, clientKey, clientCert}, logger = console) {
 		this.logger = logger;

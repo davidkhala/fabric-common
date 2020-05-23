@@ -11,4 +11,4 @@ util for fabric-network
 
 
 ### TODO
-- use TS for 2.x
+- [FIXME]`UNKNOWN: ChaincodeHeaderExtension.ChaincodeId is nil`
