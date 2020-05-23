@@ -8,7 +8,7 @@ A way to compensate missing admin level node-sdk
     - Object-oriented
 - [DONE] channel operation: create, join, update
 - [DONE] chaincode operation: package, install
-- [TODO:WIP] chaincode operation: Approve, define, upgrade 
+- chaincode operation: Approve, commitDefine, upgrade[WIP] 
 
 
 ## Notes
