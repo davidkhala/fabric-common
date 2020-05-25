@@ -131,7 +131,7 @@ const join = async (channel, peers, user, block, orderer) => {
 		await peer.endorser.connect();
 	}
 	const identityContext = new IdentityContext(user, null);
-	const proposal = new CSCCProposal(identityContext, '', peers.map(({endorser}) => endorser));
+	const proposal = new CSCCProposal(identityContext,  peers.map(({endorser}) => endorser));
 	const result = await proposal.joinChannel(block);
 
 	const {errors, responses} = result;

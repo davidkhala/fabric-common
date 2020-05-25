@@ -1,9 +1,10 @@
 const ProposalManager = require('./proposal');
 const {SystemChaincodeID: {CSCC}, SystemChaincodeFunctions: {cscc: {JoinChain, GetChannels}}} = require('khala-fabric-formatter/systemChaincode');
+const {emptyChannel} = require('./channel');
 
 class CSCCProposal extends ProposalManager {
-	constructor(identityContext, channelName, endorsers) {
-		super(identityContext, channelName, CSCC, endorsers);
+	constructor(identityContext, endorsers) {
+		super(identityContext, emptyChannel(''), CSCC, endorsers);
 	}
 
 	/**

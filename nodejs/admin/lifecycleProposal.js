@@ -15,8 +15,8 @@ const fs = require('fs');
 const {getResponses} = require('khala-fabric-formatter/proposalResponse');
 
 class LifecycleProposal extends ProposalManager {
-	constructor(identityContext, channelName, endorsers, logger = console) {
-		super(identityContext, channelName, LifeCycle, endorsers);
+	constructor(identityContext, channel, endorsers, logger = console) {
+		super(identityContext, channel, LifeCycle, endorsers);
 		this.logger = logger;
 		this.init_required = true;
 	}
@@ -282,7 +282,10 @@ class LifecycleProposal extends ProposalManager {
 		/**
 		 * @type {BuildProposalRequest}
 		 */
-		const buildProposalRequest = {fcn: CommitChaincodeDefinition, args: [commitChaincodeDefinitionArgs.toBuffer()]};
+		const buildProposalRequest = {
+			fcn: CommitChaincodeDefinition,
+			args: [commitChaincodeDefinitionArgs.toBuffer()],
+		};
 		return await this.send(buildProposalRequest);
 	}
 

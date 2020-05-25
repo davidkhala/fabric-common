@@ -1,5 +1,4 @@
 const Proposal = require('fabric-common/lib/Proposal');
-const ChannelManager = require('./channel');
 const Commit = require('fabric-common/lib/Commit');
 
 class ProposalManager extends Proposal {
@@ -7,12 +6,12 @@ class ProposalManager extends Proposal {
 	/**
 	 *
 	 * @param {IdentityContext} identityContext
-	 * @param {string} channelName
+	 * @param {Channel} channel
 	 * @param [chaincodeId]
 	 * @param {Endorser[]} [endorsers]
 	 */
-	constructor(identityContext, channelName, chaincodeId, endorsers) {
-		super(chaincodeId || null, ChannelManager.emptyChannel(channelName));
+	constructor(identityContext, channel, chaincodeId, endorsers) {
+		super(chaincodeId || null, channel);
 		this.identityContext = identityContext;
 		if (Array.isArray(endorsers)) {
 			this.targets = endorsers;

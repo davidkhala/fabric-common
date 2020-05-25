@@ -2,8 +2,8 @@ const ProposalManager = require('./proposal');
 const {SystemChaincodeID: {QSCC}, SystemChaincodeFunctions: {qscc: {GetBlockByNumber, GetChainInfo}}} = require('khala-fabric-formatter/systemChaincode');
 
 class QSCCProposal extends ProposalManager {
-	constructor(identityContext, channelName, peers) {
-		super(identityContext, channelName, QSCC, peers);
+	constructor(identityContext, channel, peers) {
+		super(identityContext, channel, QSCC, peers);
 		this.asQuery();
 	}
 

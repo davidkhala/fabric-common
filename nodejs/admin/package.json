@@ -1,11 +1,10 @@
 {
-  "name": "khala-fabric-admin",
-  "version": "2.1.0-alpha.11",
-  "dependencies": {
-    "fabric-common": "^2.1.0",
-    "fabric-ca-client": "^2.1.0",
-    "khala-fabric-formatter": "^2.1.0-0.0.5",
-    "fabric-protos": "2.1.0"
-  },
-  "devDependencies": {}
+	"name": "khala-fabric-admin",
+	"version": "2.1.0-alpha.11",
+	"dependencies": {
+		"fabric-ca-client": "2.1.1-snapshot.410",
+		"fabric-common": "2.1.1-snapshot.405",
+		"fabric-protos": "2.1.0",
+		"khala-fabric-formatter": "^2.1.0-0.0.5"
+	}
 }
