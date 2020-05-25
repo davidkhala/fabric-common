@@ -6,6 +6,7 @@ const protosProto = fabprotos.protos;
 const commonProto = fabprotos.common;
 const LifecycleProposal = require('khala-fabric-admin/lifecycleProposal');
 const UserUtil = require('khala-fabric-admin/user');
+const {emptyChannel} = require('khala-fabric-admin/channel');
 exports.chain = async (peers, identityContext, channelName) => {
 	const proposal = new QSCCProposal(identityContext, channelName, peers);
 	const result = await proposal.queryInfo();
@@ -26,16 +27,18 @@ exports.chain = async (peers, identityContext, channelName) => {
 	return result;
 };
 
-exports.chaincodesInstalled = async (peer, user) => {
-	await peer.connect();
-	const lifecycleProposal = new LifecycleProposal(UserUtil.getIdentityContext(user), '', [peer.endorser]);
+exports.chaincodesInstalled = async (peers, user) => {
+	for (const peer of peers) {
+		await peer.connect();
+	}
+	const lifecycleProposal = new LifecycleProposal(UserUtil.getIdentityContext(user), emptyChannel(''), peers.map(({endorser}) => endorser));
 	const result = await lifecycleProposal.queryInstalledChaincodes();
 	return result.responses.map(({response}) => response.installed_chaincodes);
 };
 
 exports.chaincodesInstantiated = async (peer, channelName, user) => {
 	await peer.connect();
-	const lifecycleProposal = new LifecycleProposal(UserUtil.getIdentityContext(user), channelName, [peer.endorser]);
+	const lifecycleProposal = new LifecycleProposal(UserUtil.getIdentityContext(user), emptyChannel(channelName), [peer.endorser]);
 	const result = await lifecycleProposal.queryChaincodeDefinition();
 	return result.responses.map(({response}) => response.chaincode_definitions);
 };

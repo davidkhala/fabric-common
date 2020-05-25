@@ -1,5 +1,6 @@
 const IdentityContext = require('fabric-common/lib/IdentityContext');
 const EventHub = require('khala-fabric-admin/eventHub');
+
 class ChaincodeAction {
 	constructor(peers, user, channel) {
 		this.channel = channel;
@@ -8,8 +9,8 @@ class ChaincodeAction {
 		this.eventers = peers.map(({eventer}) => eventer);
 	}
 
-	newEventHub() {
-		return new EventHub(this.channel, this.eventers);
+	newEventHub(options) {
+		return new EventHub(this.channel, this.eventers, undefined, options);
 	}
 }
 

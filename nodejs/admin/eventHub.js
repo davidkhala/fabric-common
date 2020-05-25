@@ -10,12 +10,13 @@ class EventHub {
 	 * @param {Eventer[]} targets //TODO test on multiple eventhub;
 	 * @param {EventService} [eventService] wrapped existing channelEventHub object
 	 */
-	constructor(channel, targets, eventService) {
+	constructor(channel, targets, eventService, options = {}) {
 		if (!eventService) {
 			eventService = new EventService('-', channel);
 			eventService.setTargets(targets);
 		}
 		this.eventService = eventService;
+		this.eventOptions = options;
 	}
 
 	/**
@@ -32,10 +33,9 @@ class EventHub {
 		eventService.sign(identityContext);
 	}
 
-	async connect({requestTimeout} = {}) {
+	async connect() {
 		const {eventService} = this;
-		await eventService.send({requestTimeout});
-
+		await eventService.send(this.eventOptions);
 	}
 
 	disconnect() {
@@ -63,7 +63,7 @@ class EventHub {
 	/**
 	 * @callback EventCallback
 	 * @param {Error} error
-	 * @param {EventInfo} event TODO inner data structure: Event or EventInfo
+	 * @param {EventInfo} event
 	 */
 
 	/**
@@ -101,18 +101,9 @@ class EventHub {
 	}
 
 	/**
-	 * TODO is this structure?
-	 * @callback TxEventCallback
-	 * @param {Error} error
-	 * @param {string} transactionID
-	 * @param {string} status
-	 * @param {long} blockNumber TODO need a parser
-	 */
-
-	/**
 	 *
 	 * @param {string|TxEventFilterType} transactionID
-	 * @param {TxEventCallback} callback
+	 * @param {EventCallback} callback
 	 * @param {EventRegistrationOptions} options
 	 * @return {EventListener}
 	 */

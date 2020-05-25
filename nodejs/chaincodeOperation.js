@@ -34,7 +34,7 @@ class ChaincodeOperation extends ChaincodeAction {
 			sequence,
 		}, PackageID);
 		this.logger.debug('approve:proposal', getResponses(result));
-		const commitResult = await lifeCycleProposal.commit([orderer.committer], 3000);
+		const commitResult = await lifeCycleProposal.commit([orderer.committer]);
 		this.logger.info('approve:commit', commitResult);
 		const eventHub = this.newEventHub();
 		await waitForBlock(eventHub, this.identityContext);
@@ -56,7 +56,7 @@ class ChaincodeOperation extends ChaincodeAction {
 		const lifeCycleProposal = new LifeCycleProposal(this.identityContext, this.channel, this.endorsers);
 		const result = await lifeCycleProposal.commitChaincodeDefinition({name, version, sequence});
 		this.logger.debug('commitChaincodeDefinition', getResponses(result));
-		const commitResult = await lifeCycleProposal.commit([orderer.committer], 3000);
+		const commitResult = await lifeCycleProposal.commit([orderer.committer]);
 		this.logger.debug('commitChaincodeDefinition:commit', commitResult);
 		const eventHub = this.newEventHub();
 		await waitForBlock(eventHub, this.identityContext);

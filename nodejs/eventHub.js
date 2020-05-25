@@ -68,8 +68,26 @@ const waitForBlock = async (eventHub, identityContext, futureSteps = 1) => {
 		eventHub.connect();
 	});
 };
+const waitForTx = async (eventHub, identityContext) => {
+	eventHub.build(identityContext, {startBlock: NEWEST});
+	const {transactionId} = identityContext;
+	return await new Promise((resolve, reject) => {
+		const callback = (err, event) => {
+			if (err) {
+				reject(err);
+			} else {
+				const {blockNumber, transactionId, status} = event;
+				resolve({blockNumber, transactionId, status});
+			}
+
+		};
+		eventHub.txEvent(transactionId, callback, {unregister: true});
+		eventHub.connect();
+	});
+};
 module.exports = {
 	getSingleBlock,
 	getLastBlock,
 	waitForBlock,
+	waitForTx,
 };

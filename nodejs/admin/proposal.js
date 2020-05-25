@@ -1,6 +1,20 @@
 const Proposal = require('fabric-common/lib/Proposal');
 const Commit = require('fabric-common/lib/Commit');
 
+/**
+ * @typedef {Object} BuildProposalRequest
+ * @property {string} [fcn] - Optional. The function name. May be used by
+ * the chaincode to control the flow within the chaincode. Default 'invoke'
+ * @property {string[]} [args] - Optional. The arguments needed by the
+ * chaincode execution. These should be strings or byte buffers.
+ * These will be converted into byte buffers before building the protobuf
+ * object to be sent to the fabric peer for endorsement.
+ * @property {Map} [transientMap] - Optional. A map with the key value pairs
+ * of the transient data.
+ * @property {boolean} [init] - Optional. If this proposal should be an
+ * chaincode initialization request. This will set the init setting in the
+ * protobuf object sent to the peer.
+ */
 class ProposalManager extends Proposal {
 
 	/**
@@ -55,7 +69,7 @@ class ProposalManager extends Proposal {
 	 * @param {Committer[]} targets
 	 * @param [requestTimeout]
 	 */
-	async commit(targets, requestTimeout) {
+	async commit(targets, {requestTimeout} = {}) {
 		const commit = this.newCommit();
 
 		commit.build(this.identityContext);
