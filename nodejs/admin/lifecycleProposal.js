@@ -40,7 +40,6 @@ class LifecycleProposal extends ProposalManager {
 			args: [installChaincodeArgs.toBuffer()],
 		};
 		const result = await this.send(buildProposalRequest, {requestTimeout});
-		////
 		const responses = getResponses(result);
 		responses.forEach((response) => {
 			const {package_id, label} = lifeCycleProtos.InstallChaincodeResult.decode(response.payload);

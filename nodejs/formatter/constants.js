@@ -30,15 +30,17 @@ const PolicyName = {
 	BlockValidation: 'BlockValidation'
 };
 /**
- * used in block content
+ * MSPRoleType defines which of the available, pre-defined MSP-roles
  * @enum {string}
  */
-const MSPRoleType = {
-	admin: 'ADMIN',
-	peer: 'PEER',
-	member: 'MEMBER',
-	client: 'CLIENT'
-};
+const MSPRoleType = [
+	'MEMBER', // Represents an MSP Member
+	'ADMIN', // Represents an MSP Admin
+	'CLIENT', // Represents an MSP Client
+	'PEER', // Represents an MSP Peer
+	'ORDERER', // Represents an MSP Orderer
+];
+
 
 /**
  * @enum {string}
