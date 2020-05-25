@@ -27,13 +27,23 @@ exports.chain = async (peers, identityContext, channelName) => {
 	return result;
 };
 
-exports.chaincodesInstalled = async (peers, user) => {
+exports.chaincodesInstalled = async (peers, user, packageId) => {
 	for (const peer of peers) {
 		await peer.connect();
 	}
 	const lifecycleProposal = new LifecycleProposal(UserUtil.getIdentityContext(user), emptyChannel(''), peers.map(({endorser}) => endorser));
-	const result = await lifecycleProposal.queryInstalledChaincodes();
-	return result.responses.map(({response}) => response.installed_chaincodes);
+	const result = await lifecycleProposal.queryInstalledChaincodes(packageId);
+	let mapFunction;
+	if (packageId) {
+		mapFunction = ({response}) => {
+			const {package_id, label, references} = response;
+			return {label, references};
+		};
+	} else {
+		mapFunction = ({response}) => response.installed_chaincodes;
+	}
+	return result.responses.map(mapFunction);
+
 };
 
 exports.chaincodesInstantiated = async (peer, channelName, user) => {

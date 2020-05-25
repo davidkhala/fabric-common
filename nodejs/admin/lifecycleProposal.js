@@ -62,7 +62,7 @@ class LifecycleProposal extends ProposalManager {
 	/**
 	 * new chaincode lifeCycle do not have initialize phase. Thus Init function is optional in chaincode entrance
 	 * Be careful: init_required information is indexing information in chaincode definition.
-	 * @param init_required
+	 * @param {boolean} init_required
 	 */
 	setInitRequired(init_required) {
 		this.init_required = init_required;
@@ -108,9 +108,7 @@ class LifecycleProposal extends ProposalManager {
 			args,
 		};
 		const result = await this.send(buildProposalRequest);
-		////
-		const responses = getResponses(result);
-		responses.forEach((response) => {
+		getResponses(result).forEach((response) => {
 			const amend = {};
 			if (packageId) {
 				const {package_id, label, references} = lifeCycleProtos.QueryInstalledChaincodeResult.decode(response.payload);
