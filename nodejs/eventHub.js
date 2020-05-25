@@ -69,8 +69,9 @@ const waitForBlock = async (eventHub, identityContext, futureSteps = 1) => {
 	});
 };
 const waitForTx = async (eventHub, identityContext) => {
-	eventHub.build(identityContext, {startBlock: NEWEST});
 	const {transactionId} = identityContext;
+	// Note identityContext.transactionId will change after `eventHub.build`
+	eventHub.build(identityContext, {startBlock: NEWEST});
 	return await new Promise((resolve, reject) => {
 		const callback = (err, event) => {
 			if (err) {

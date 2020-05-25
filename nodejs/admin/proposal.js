@@ -36,6 +36,10 @@ class ProposalManager extends Proposal {
 		this.type = 'Query';
 	}
 
+	asEndorsement() {
+		this.type = 'Endorsement';
+	}
+
 	/**
 	 *
 	 * @param {BuildProposalRequest} buildProposalRequest

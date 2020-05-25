@@ -27,15 +27,17 @@ class Transaction extends ChaincodeAction {
 		this.proposal = new ProposalManager(this.identityContext, this.channel, chaincodeId, this.endorsers);
 	}
 
-	async evaluate({fcn, args = [], transientMap}, options) {
-		const result = await this.proposal.send({fcn, args, transientMap}, this.proposalOptions);
-		this.logger.debug(result);
-		return result;
+	async evaluate({fcn, args = [], transientMap}) {
+		this.proposal.asQuery();
+		return await this.proposal.send({fcn, args, transientMap}, this.proposalOptions);
 	}
 
 	async submit({fcn, args = [], transientMap, init}, orderer) {
+		if (init) {
+			fcn = 'init';
+		}
+		this.proposal.asEndorsement();
 		const result = await this.proposal.send({fcn, args, transientMap, init}, this.proposalOptions);
-		this.logger.debug(result.responses.map(({response}) => response));
 		const commitResult = await this.proposal.commit([orderer.committer], this.commitOptions);
 		this.logger.debug(commitResult);
 		const eventHub = this.newEventHub(this.eventOptions);
