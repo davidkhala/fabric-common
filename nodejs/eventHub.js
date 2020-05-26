@@ -1,4 +1,5 @@
 const {BlockNumberFilterType: {NEWEST}} = require('khala-fabric-formatter/eventHub');
+const {TxValidationCode} = require('khala-fabric-formatter/constants');
 /**
  *
  * @param eventHub
@@ -78,7 +79,13 @@ const waitForTx = async (eventHub, identityContext) => {
 				reject(err);
 			} else {
 				const {blockNumber, transactionId, status} = event;
-				resolve({blockNumber, transactionId, status});
+				if (status !== TxValidationCode['0']) {
+					const error = Error(`Invalid transaction status[${status}]`);
+					Object.assign(error, event);
+					reject(error);
+				} else {
+					resolve({blockNumber, transactionId, status});
+				}
 			}
 
 		};

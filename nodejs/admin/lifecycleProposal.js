@@ -50,6 +50,7 @@ class LifecycleProposal extends ProposalManager {
 		return result;
 	}
 
+
 	setEndorsementPlugin(endorsement_plugin) {
 		this.endorsement_plugin = endorsement_plugin;
 	}
@@ -70,6 +71,9 @@ class LifecycleProposal extends ProposalManager {
 	setCollections() {
 		// protos.CollectionConfigPackage collections
 		// TODO WIP
+
+		// const collections;//protos.CollectionConfigPackage
+		// argsProto.setCollections(collections);
 	}
 
 	_propertyAssign(protobufMessage) {
@@ -82,6 +86,14 @@ class LifecycleProposal extends ProposalManager {
 		}
 		if (validation_plugin) {
 			protobufMessage.setValidationPlugin(validation_plugin);
+		}
+	}
+
+	_endorsementPolicyAssign(protobufMessage) {
+		if (this.validation_parameter) {
+			protobufMessage.setValidationParameter(this.validation_parameter);
+		} else {
+			this.logger.info('apply default endorsement policy');
 		}
 	}
 
@@ -136,10 +148,21 @@ class LifecycleProposal extends ProposalManager {
 		return result;
 	}
 
-	//
-	//
-	// validation_parameter: Bytes:
-	// TODO WIP
+	static buildValidationParameter({signature_policy, channel_config_policy_reference}) {
+		const applicationPolicy = new protosProtos.ApplicationPolicy();
+
+		if (channel_config_policy_reference) {
+			applicationPolicy.setChannelConfigPolicyReference(channel_config_policy_reference);
+		} else {
+			applicationPolicy.setSignaturePolicy(signature_policy);
+		}
+		return applicationPolicy.toBuffer();
+	}
+
+	setValidationParameter(validation_parameter) {
+		this.validation_parameter = validation_parameter;
+	}
+
 	/**
 	 * Chaincode is approved at the organization level, so the command only needs to target one peer.
 	 *
@@ -147,58 +170,29 @@ class LifecycleProposal extends ProposalManager {
 	 * @param name
 	 * @param version chaincodeVersion
 	 * @param {number} sequence starting from 1
-	 * @param {Buffer} [validation_parameter] policyBytes of new protosProtos.ApplicationPolicy()
 	 * @param PackageID
 	 */
-	async approveForMyOrg({name, version, sequence, validation_parameter}, PackageID) {
+	async approveForMyOrg({name, version, sequence}, PackageID) {
 		const source = new lifeCycleProtos.ChaincodeSource();
-
 
 		if (PackageID) {
 			const localPackage = new lifeCycleProtos.ChaincodeSource.Local();
 			localPackage.setPackageId(PackageID);
 			source.setLocalPackage(localPackage);
+			source.Type = 'local_package';
 		} else {
 			const unavailable = new lifeCycleProtos.ChaincodeSource.Unavailable();
 			source.setUnavailable(unavailable);
+			source.Type = 'unavailable';
 		}
 
-
-		// const applicationPolicy = new protosProtos.ApplicationPolicy()
-		// const signaturePolicyEnvelop
-
-		// common.SignaturePolicyEnvelope
-		// int32 version = 1;
-		// SignaturePolicy rule = 2;
-		// repeated MSPPrincipal identities = 3;
-
-
-		// message ApproveChaincodeDefinitionForMyOrgArgs {
-		// 	int64 sequence = 1;
-		// 	string name = 2;
-		// 	string version = 3;
-		// 	string endorsement_plugin = 4;
-		// 	string validation_plugin = 5;
-		// 	bytes validation_parameter = 6;
-		// 	protos.CollectionConfigPackage collections = 7;
-		// 	bool init_required = 8;
-		// 	ChaincodeSource source = 9;
-		// }
 		const approveChaincodeDefinitionForMyOrgArgs = new lifeCycleProtos.ApproveChaincodeDefinitionForMyOrgArgs();
 		approveChaincodeDefinitionForMyOrgArgs.setSequence(sequence);
 		approveChaincodeDefinitionForMyOrgArgs.setName(name);
 		approveChaincodeDefinitionForMyOrgArgs.setVersion(version);
 
 		this._propertyAssign(approveChaincodeDefinitionForMyOrgArgs);
-		if (validation_parameter) {
-			// TODO WIP
-			approveChaincodeDefinitionForMyOrgArgs.setValidationParameter(validation_parameter);
-		} else {
-			this.logger.info('apply default endorsement policy');
-		}
-
-		// const collections;//protos.CollectionConfigPackage
-		// argsProto.setCollections(collections);
+		this._endorsementPolicyAssign(approveChaincodeDefinitionForMyOrgArgs);
 
 		approveChaincodeDefinitionForMyOrgArgs.setSource(source);
 		/**
@@ -256,8 +250,6 @@ class LifecycleProposal extends ProposalManager {
 	 * @param sequence
 	 * @param name
 	 * @param version
-	 * @param validation_parameter
-	 * @return {Promise<*>}
 	 */
 	async commitChaincodeDefinition({sequence, name, version}) {
 		// message CommitChaincodeDefinitionArgs {
@@ -275,6 +267,7 @@ class LifecycleProposal extends ProposalManager {
 		commitChaincodeDefinitionArgs.setName(name);
 		commitChaincodeDefinitionArgs.setVersion(version);
 		this._propertyAssign(commitChaincodeDefinitionArgs);
+		this._endorsementPolicyAssign(commitChaincodeDefinitionArgs);
 
 		/**
 		 * @type {BuildProposalRequest}
@@ -350,7 +343,12 @@ class LifecycleProposal extends ProposalManager {
 		return result;
 	}
 
-
+	/**
+	 * MAGIC CODE for [Illegal value for versionvalue element of type int32: object (not an integer)]
+	 */
+	static getFabprotos() {
+		return fabprotos;
+	}
 }
 
 module.exports = LifecycleProposal;

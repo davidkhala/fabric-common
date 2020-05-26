@@ -1,4 +1,3 @@
-// TODO WIP
 const EventService = require('fabric-common/lib/EventService');
 const {BlockEventFilterType: {FULL_BLOCK}, TxEventFilterType: {ALL}} = require('khala-fabric-formatter/eventHub.js');
 
@@ -9,6 +8,7 @@ class EventHub {
 	 * @param {Client.Channel} channel
 	 * @param {Eventer[]} targets //TODO test on multiple eventhub;
 	 * @param {EventService} [eventService] wrapped existing channelEventHub object
+	 * @param options
 	 */
 	constructor(channel, targets, eventService, options = {}) {
 		if (!eventService) {

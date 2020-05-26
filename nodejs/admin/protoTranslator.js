@@ -168,7 +168,7 @@ const buildSeekPayload = ({Creator, Nonce, ChannelId, TxId}, startHeight, stopHe
 
 	const startPosition = buildSeekPosition(startHeight);
 	const stopPosition = buildSeekPosition(stopHeight);
-	const seekInfo = buildSeekInfo(startPosition, stopPosition, behavior); // TODO attempt to play with another behavior
+	const seekInfo = buildSeekInfo(startPosition, stopPosition, behavior);
 
 
 	const seekInfoHeader = buildChannelHeader({

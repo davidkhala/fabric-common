@@ -1,8 +1,11 @@
 const LifeCycleProposal = require('khala-fabric-admin/lifecycleProposal');
 const {getResponses} = require('khala-fabric-formatter/proposalResponse');
-const {waitForBlock} = require('./eventHub');
+const {waitForTx} = require('./eventHub');
 const ChaincodeAction = require('./chaincodeAction');
-const {emptyChannel} = require('khala-fabric-admin/channel')
+const {emptyChannel} = require('khala-fabric-admin/channel');
+const Policy = require('./policy');
+
+
 class ChaincodeOperation extends ChaincodeAction {
 	constructor(peers, user, channel, logger) {
 		super(peers, user, channel);
@@ -24,20 +27,27 @@ class ChaincodeOperation extends ChaincodeAction {
 		return result;
 	}
 
-	async approve({name, sequence, PackageID, version}, orderer) {
-		version = version || ChaincodeOperation._defaultVersion(sequence);
-		const lifeCycleProposal = new LifeCycleProposal(this.identityContext, this.channel, this.endorsers);
+	static _endorsementPolicyAssign(lifecycleProposal, endorsementPolicy) {
+		const policy = new Policy(LifeCycleProposal.getFabprotos());
+		const signature_policy = policy.buildSignaturePolicyEnvelope(endorsementPolicy);
+		const validation_parameter = LifeCycleProposal.buildValidationParameter({signature_policy});
+		lifecycleProposal.setValidationParameter(validation_parameter);
+	}
 
-		const result = await lifeCycleProposal.approveForMyOrg({
+	async approve({name, sequence, PackageID, version}, orderer, endorsementPolicy) {
+		version = version || ChaincodeOperation._defaultVersion(sequence);
+		const lifecycleProposal = new LifeCycleProposal(this.identityContext, this.channel, this.endorsers);
+		ChaincodeOperation._endorsementPolicyAssign(lifecycleProposal, endorsementPolicy);
+		const result = await lifecycleProposal.approveForMyOrg({
 			name,
 			version,
 			sequence,
 		}, PackageID);
 		this.logger.debug('approve:proposal', getResponses(result));
-		const commitResult = await lifeCycleProposal.commit([orderer.committer]);
+		const commitResult = await lifecycleProposal.commit([orderer.committer]);
 		this.logger.info('approve:commit', commitResult);
 		const eventHub = this.newEventHub();
-		await waitForBlock(eventHub, this.identityContext);
+		await waitForTx(eventHub, this.identityContext);
 		eventHub.disconnect();
 		return result;
 	}
@@ -51,15 +61,16 @@ class ChaincodeOperation extends ChaincodeAction {
 
 	}
 
-	async commitChaincodeDefinition({name, version, sequence}, orderer) {
+	async commitChaincodeDefinition({name, version, sequence}, orderer, endorsementPolicy) {
 		version = version || ChaincodeOperation._defaultVersion(sequence);
-		const lifeCycleProposal = new LifeCycleProposal(this.identityContext, this.channel, this.endorsers);
-		const result = await lifeCycleProposal.commitChaincodeDefinition({name, version, sequence});
+		const lifecycleProposal = new LifeCycleProposal(this.identityContext, this.channel, this.endorsers);
+		ChaincodeOperation._endorsementPolicyAssign(lifecycleProposal, endorsementPolicy);
+		const result = await lifecycleProposal.commitChaincodeDefinition({name, version, sequence});
 		this.logger.debug('commitChaincodeDefinition', getResponses(result));
-		const commitResult = await lifeCycleProposal.commit([orderer.committer]);
+		const commitResult = await lifecycleProposal.commit([orderer.committer]);
 		this.logger.debug('commitChaincodeDefinition:commit', commitResult);
 		const eventHub = this.newEventHub();
-		await waitForBlock(eventHub, this.identityContext);
+		await waitForTx(eventHub, this.identityContext);
 		eventHub.disconnect();
 
 		return result;

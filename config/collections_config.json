@@ -4,23 +4,23 @@
       "identities": [{
           "role": {
             "name": "member",
-            "mspId": "Org1MSP"
+            "mspid": "Org1MSP"
           }
         },
         {
           "role": {
             "name": "member",
-            "mspId": "Org2MSP"
+            "mspid": "Org2MSP"
           }
         }
       ],
       "policy": {
         "1-of": [
           {
-            "signed-by": 0
+            "signedBy": 0
           },
           {
-            "signed-by": 1
+            "signedBy": 1
           }
         ]
       }
@@ -35,12 +35,12 @@
       "identities": [{
         "role": {
           "name": "member",
-          "mspId": "Org1MSP"
+          "mspid": "Org1MSP"
         }
       }],
       "policy": {
         "1-of": [{
-          "signed-by": 0
+          "signedBy": 0
         }]
       }
     },

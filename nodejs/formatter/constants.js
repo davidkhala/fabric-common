@@ -42,6 +42,8 @@ const MSPRoleType = [
 ];
 
 
+
+
 /**
  * @enum {string}
  */
@@ -166,6 +168,6 @@ module.exports = {
 	Status,
 	BroadcastResponseStatus,
 	SystemChaincodeID,
-	ChannelGroupType
+	ChannelGroupType,
 };
 
