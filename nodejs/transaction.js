@@ -41,8 +41,12 @@ class Transaction extends ChaincodeAction {
 		const commitResult = await this.proposal.commit([orderer.committer], this.commitOptions);
 		this.logger.debug(commitResult);
 		const eventHub = this.newEventHub(this.eventOptions);
-		await waitForTx(eventHub, this.proposal.identityContext);
-		eventHub.disconnect();
+		try {
+			await waitForTx(eventHub, this.proposal.identityContext);
+		} finally {
+			eventHub.disconnect();
+		}
+
 		return result;
 
 	}

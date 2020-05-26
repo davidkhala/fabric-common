@@ -47,8 +47,11 @@ class ChaincodeOperation extends ChaincodeAction {
 		const commitResult = await lifecycleProposal.commit([orderer.committer]);
 		this.logger.info('approve:commit', commitResult);
 		const eventHub = this.newEventHub();
-		await waitForTx(eventHub, this.identityContext);
-		eventHub.disconnect();
+		try {
+			await waitForTx(eventHub, this.identityContext);
+		} finally {
+			eventHub.disconnect();
+		}
 		return result;
 	}
 
@@ -70,8 +73,11 @@ class ChaincodeOperation extends ChaincodeAction {
 		const commitResult = await lifecycleProposal.commit([orderer.committer]);
 		this.logger.debug('commitChaincodeDefinition:commit', commitResult);
 		const eventHub = this.newEventHub();
-		await waitForTx(eventHub, this.identityContext);
-		eventHub.disconnect();
+		try {
+			await waitForTx(eventHub, this.identityContext);
+		}finally {
+			eventHub.disconnect();
+		}
 
 		return result;
 	}
