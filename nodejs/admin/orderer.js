@@ -151,7 +151,7 @@ class Orderer {
 						}
 					}
 					default:
-						logger.error(loggerPrefix, `assertion ERROR - invalid response.Type=[${response.Type}]`);
+						logger.error(loggerPrefix, `assertion ERROR - unimplemented response.Type=[${response.Type}]`);
 						stream.end();
 						return reject(new Error('SYSTEM_ERROR'));
 				}

@@ -29,6 +29,7 @@
 
 class Policy {
 	/**
+	 * FIXME
 	 * MAGIC CODE for [Illegal value for versionvalue element of type int32: object (not an integer)]
 	 * Note Please use same dependency object with protos.ApplicationPolicy
 	 * Otherwise grpc message wire will crash magically
