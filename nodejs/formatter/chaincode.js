@@ -1,27 +1,19 @@
-exports.nameMatcher = (chaincodeName, toThrow) => {
+exports.nameMatcher = (chaincodeName) => {
 	const namePattern = /^[a-zA-Z0-9]+([-_][a-zA-Z0-9]+)*$/;
-	const result = chaincodeName.match(namePattern);
-	if (!result && toThrow) {
-		throw Error(`invalid chaincode name:${chaincodeName}; should match regx: ${namePattern}`);
-	}
-	return result;
+	return chaincodeName.match(namePattern);
 };
-exports.versionMatcher = (ccVersionName, toThrow) => {
+exports.versionMatcher = (ccVersionName) => {
 	const namePattern = /^[A-Za-z0-9_.+-]+$/;
-	const result = ccVersionName.match(namePattern);
-	if (!result && toThrow) {
-		throw Error(`invalid chaincode version:${ccVersionName}; should match regx: ${namePattern}`);
-	}
-	return result;
+	return ccVersionName.match(namePattern);
 };
 
-exports.collectionMatcher = (collectionName, toThrow) => {
+exports.collectionMatcher = (collectionName) => {
 	const namePattern = /^[A-Za-z0-9-]+([A-Za-z0-9_-]+)*$/;
-	const result = collectionName.match(namePattern);
-	if (!result && toThrow) {
-		throw Error(`invalid collection name:[${collectionName}] should match regx: ${namePattern}`);
-	}
-	return result;
+	return collectionName.match(namePattern);
+};
+exports.packageFileMatcher = (packageFileName) => {
+	const namePattern = /^(.+)[.]([0-9a-f]{64})[.]tar[.]gz$/;
+	return packageFileName.match(namePattern);
 };
 
 /**
