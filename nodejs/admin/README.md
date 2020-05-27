@@ -6,15 +6,17 @@ A way to compensate missing admin level node-sdk
 - This derives from 'khala-fabric-sdk-node-builder' design
     - it depends on fabric-sdk components
     - Object-oriented
-- [DONE] channel operation: create, join, update
-- [DONE] chaincode operation: package, install
-- chaincode operation: Approve, commitDefine, upgrade[WIP] 
+- channel operation: create, join, update
+- chaincode operation: package, install, Approve, commit
 
 
 ## Notes
 - channel.getChannelConfig(peer) will not be rebuilt: always get it from orderer
 
 ## Entry Points
+- `peer.js` work as [endorser] and [eventer]
+- `orderer.js` work as [committer] and [eventer];
+		
 ### Channel create
 
 Channel create is same as channel update action
@@ -30,5 +32,14 @@ peer joining to a channel in nature is sending a system chaincode proposal to pe
 ### Channel Update
 
 
-### Chaincode Package 
+### Chaincode Package
    
+
+### Chaincode Install
+- See in `lifeCycleProposal.installChaincode`
+
+### Chaincode Approve
+- See in `lifeCycleProposal.approveForMyOrg`
+
+### Chaincode Commit
+- See in `lifeCycleProposal.commitChaincodeDefinition`
