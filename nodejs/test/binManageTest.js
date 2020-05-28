@@ -4,7 +4,7 @@ const BinManager = require('../binManager');
 const fsExtra = require('fs-extra');
 const binManager = new BinManager();
 const configtxYaml = path.resolve(__dirname, '../../config/configtx.yaml');
-const logger = require('../logger').new('test:binManager', true);
+const logger = require('khala-logger/log4js').consoleLogger('test:binManager');
 const blockProfiles = [
 	'SampleDevModeEtcdRaft'
 ];

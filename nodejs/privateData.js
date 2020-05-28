@@ -1,6 +1,6 @@
 const sideDB = require('fabric-common/lib/SideDB');
 const {RoleIdentity, simplePolicyBuilder} = require('./policy');
-const logger = require('./logger').new('privateData');
+const logger = require('khala-logger/log4js').consoleLogger('privateData');
 
 
 /**

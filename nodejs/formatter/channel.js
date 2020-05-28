@@ -20,3 +20,9 @@ exports.configGroupMatcher = (configGroupName, toThrow) => {
 	}
 	return result;
 };
+
+exports.mspIdMatcher = (mspId) => {
+	const namePattern = /^[a-zA-Z0-9.-]+$/;
+	return mspId.match(namePattern);
+
+};
