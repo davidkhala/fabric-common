@@ -1,5 +1,5 @@
 /* eslint-disable quotes */
-const Policy = require('../policy');
+const Policy = require('../gatePolicy');
 const fabprotos = require('fabric-protos');
 const policy = new Policy(fabprotos);
 describe('policy parser', () => {

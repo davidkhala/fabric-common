@@ -27,3 +27,32 @@ Component module list
 - [gPRC] waitForReady will response back positive response with non-TLS protocol
     - With grpcs://domain.org setup, we could get pong response from grpc://domain.org    
 ## TODO
+- translator for OR('Org1MSP.member', 'Org2MSP.member') <=> N out of
+    - reference: `common/policydsl/policyparser.go`
+        - `func FromString(policy string) (*cb.SignaturePolicyEnvelope, error)`
+- tranlastor for 
+```
+    // collections_config.json
+    
+    [
+      {
+           "name": "collectionMarbles",
+           "policy": "OR('Org1MSP.member', 'Org2MSP.member')",
+           "requiredPeerCount": 0,
+           "maxPeerCount": 3,
+           "blockToLive":1000000,
+           "memberOnlyRead": true
+      },
+    
+      {
+           "name": "collectionMarblePrivateDetails",
+           "policy": "OR('Org1MSP.member')",
+           "requiredPeerCount": 0,
+           "maxPeerCount": 3,
+           "blockToLive":3,
+           "memberOnlyRead": true
+      }
+    ]
+
+
+```

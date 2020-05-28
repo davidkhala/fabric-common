@@ -72,12 +72,67 @@ class LifecycleProposal extends ProposalManager {
 		// protos.CollectionConfigPackage collections
 		// TODO WIP
 
-		// const collections;//protos.CollectionConfigPackage
-		// argsProto.setCollections(collections);
+		// message CollectionConfig {
+		//     oneof payload {
+		//         StaticCollectionConfig static_collection_config = 1;
+		//     }
+		// }
+
+		//// StaticCollectionConfig constitutes the configuration parameters of a
+		// // static collection object. Static collections are collections that are
+		// // known at chaincode instantiation time, and that cannot be changed.
+		// // Dynamic collections are deferred.
+		// message StaticCollectionConfig {
+		//     // the name of the collection inside the denoted chaincode
+		//     string name = 1;
+		//     // a reference to a policy residing / managed in the config block
+		//     // to define which orgs have access to this collection’s private data
+		//     CollectionPolicyConfig member_orgs_policy = 2;
+		//     // The minimum number of peers private data will be sent to upon
+		//     // endorsement. The endorsement would fail if dissemination to at least
+		//     // this number of peers is not achieved.
+		//     int32 required_peer_count = 3;
+		//     // The maximum number of peers that private data will be sent to
+		//     // upon endorsement. This number has to be bigger than required_peer_count.
+		//     int32 maximum_peer_count = 4;
+		//     // The number of blocks after which the collection data expires.
+		//     // For instance if the value is set to 10, a key last modified by block number 100
+		//     // will be purged at block number 111. A zero value is treated same as MaxUint64
+		//     uint64 block_to_live = 5;
+		//     // The member only read access denotes whether only collection member clients
+		//     // can read the private data (if set to true), or even non members can
+		//     // read the data (if set to false, for example if you want to implement more granular
+		//     // access logic in the chaincode)
+		//     bool member_only_read = 6;
+		//     // The member only write access denotes whether only collection member clients
+		//     // can write the private data (if set to true), or even non members can
+		//     // write the data (if set to false, for example if you want to implement more granular
+		//     // access logic in the chaincode)
+		//     bool member_only_write = 7;
+		//     // a reference to a policy residing / managed in the config block
+		//     // to define the endorsement policy for this collection
+		//     ApplicationPolicy endorsement_policy= 8;
+		// }
+
+		//
+
+
+		// const config =new CollectionConfig();
+
+		// message CollectionConfigPackage {
+		// 	repeated CollectionConfig config = 1;
+		// }
+
+	}
+
+	_collectionAssign(protobufMessage) {
+		// TODO WIP
+		const collections = new protosProtos.CollectionConfigPackage();
+		protobufMessage.setCollections(collections);
 	}
 
 	_propertyAssign(protobufMessage) {
-		const {endorsement_plugin, init_required, validation_plugin} = this;
+		const {endorsement_plugin, init_required, validation_plugin, validation_parameter} = this;
 		if (endorsement_plugin) {
 			protobufMessage.setEndorsementPlugin(endorsement_plugin);
 		}
@@ -87,11 +142,8 @@ class LifecycleProposal extends ProposalManager {
 		if (validation_plugin) {
 			protobufMessage.setValidationPlugin(validation_plugin);
 		}
-	}
-
-	_endorsementPolicyAssign(protobufMessage) {
-		if (this.validation_parameter) {
-			protobufMessage.setValidationParameter(this.validation_parameter);
+		if (validation_parameter) {
+			protobufMessage.setValidationParameter(validation_parameter);
 		} else {
 			this.logger.info('apply default endorsement policy');
 		}
@@ -192,7 +244,6 @@ class LifecycleProposal extends ProposalManager {
 		approveChaincodeDefinitionForMyOrgArgs.setVersion(version);
 
 		this._propertyAssign(approveChaincodeDefinitionForMyOrgArgs);
-		this._endorsementPolicyAssign(approveChaincodeDefinitionForMyOrgArgs);
 
 		approveChaincodeDefinitionForMyOrgArgs.setSource(source);
 		/**
@@ -267,7 +318,6 @@ class LifecycleProposal extends ProposalManager {
 		commitChaincodeDefinitionArgs.setName(name);
 		commitChaincodeDefinitionArgs.setVersion(version);
 		this._propertyAssign(commitChaincodeDefinitionArgs);
-		this._endorsementPolicyAssign(commitChaincodeDefinitionArgs);
 
 		/**
 		 * @type {BuildProposalRequest}

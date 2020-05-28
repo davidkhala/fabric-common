@@ -42,7 +42,6 @@ class Policy {
 	/**
 	 *
 	 * @param {Policy} policy
-	 * @return {Buffer}
 	 */
 	buildSignaturePolicyEnvelope(policy) {
 		const envelope = new this.commonProto.SignaturePolicyEnvelope();

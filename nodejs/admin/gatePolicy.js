@@ -9,7 +9,7 @@ const MSPRoleTypeInverse = {
 const GateClausePattern = /^(AND|OR)\(([\w,.\s()']+)\)$/;
 const RoleClausePattern = /^'([0-9A-Za-z.-]+)(\.)(admin|member|client|peer|orderer)'$/;
 
-class Policy {
+class GatePolicy {
 	/**
 	 *  Reference: `common/policydsl/policyparser.go`
 	 *      `func FromString(policy string) (*cb.SignaturePolicyEnvelope, error)`
@@ -116,8 +116,8 @@ class Policy {
 	}
 }
 
-Policy.MSPRoleTypeInverse = MSPRoleTypeInverse;
-Policy.GateClausePattern = GateClausePattern;
-Policy.RoleClausePattern = RoleClausePattern;
-module.exports = Policy;
+GatePolicy.MSPRoleTypeInverse = MSPRoleTypeInverse;
+GatePolicy.GateClausePattern = GateClausePattern;
+GatePolicy.RoleClausePattern = RoleClausePattern;
+module.exports = GatePolicy;
 
