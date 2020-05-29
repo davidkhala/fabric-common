@@ -3,7 +3,7 @@ const {getResponses} = require('khala-fabric-formatter/proposalResponse');
 const {waitForTx} = require('./eventHub');
 const ChaincodeAction = require('./chaincodeAction');
 const {emptyChannel} = require('khala-fabric-admin/channel');
-
+const {buildCollectionConfig} = require('./privateData');
 
 class ChaincodeOperation extends ChaincodeAction {
 	constructor(peers, user, channel, logger) {
@@ -26,30 +26,44 @@ class ChaincodeOperation extends ChaincodeAction {
 		return result;
 	}
 
-	static _endorsementPolicyAssign(lifecycleProposal, endorsementPolicy) {
-		if (!endorsementPolicy) {
-			return;
-		}
-		const {json, gate} = endorsementPolicy;
-		let signature_policy = null;
-		if (json) {
-			const Policy = require('./policy');
-			const policy = new Policy(LifecycleProposal.getFabprotos());
-			signature_policy = policy.buildSignaturePolicyEnvelope(json);
-		} else if (gate) {
-			const GatePolicy = require('khala-fabric-admin/gatePolicy');
-			const policy = new GatePolicy(LifecycleProposal.getFabprotos());
-			signature_policy = policy.FromString(gate);
-		}
-		const validation_parameter = LifecycleProposal.buildValidationParameter({signature_policy});
-		// TODO what will happen if we give empty buffer to ValidationParameter
-		lifecycleProposal.setValidationParameter(validation_parameter);
+	setEndorsementPolicy(endorsementPolicy) {
+		this.endorsementPolicy = endorsementPolicy;
 	}
 
-	async approve({name, sequence, PackageID, version}, orderer, endorsementPolicy) {
+	setCollectionsConfig(collectionsConfig) {
+		this.collectionsConfig = collectionsConfig;
+	}
+
+	assign(lifecycleProposal) {
+		const {endorsementPolicy, collectionsConfig} = this;
+		if (endorsementPolicy) {
+			const {json, gate} = endorsementPolicy;
+			let signature_policy = null;
+			if (json) {
+				const Policy = require('./policy');
+				const policy = new Policy(LifecycleProposal.getFabprotos());
+				signature_policy = policy.buildSignaturePolicyEnvelope(json);
+			} else if (gate) {
+				const GatePolicy = require('khala-fabric-admin/gatePolicy');
+				const policy = new GatePolicy(LifecycleProposal.getFabprotos());
+				signature_policy = policy.FromString(gate);
+			}
+			const validation_parameter = LifecycleProposal.buildValidationParameter({signature_policy});
+			lifecycleProposal.setValidationParameter(validation_parameter); // if empty buffer is set. Apply default
+		}
+		if (collectionsConfig) {
+			const collectionConfigPackage = Object.entries(collectionsConfig).map(([name, config]) => {
+				return buildCollectionConfig(name, config);
+			});
+			lifecycleProposal.setCollectionConfigPackage(collectionConfigPackage);
+		}
+
+	}
+
+	async approve({name, sequence, PackageID, version}, orderer) {
 		version = version || ChaincodeOperation._defaultVersion(sequence);
 		const lifecycleProposal = new LifecycleProposal(this.identityContext, this.channel, this.endorsers);
-		ChaincodeOperation._endorsementPolicyAssign(lifecycleProposal, endorsementPolicy);
+		this.assign(lifecycleProposal);
 		const result = await lifecycleProposal.approveForMyOrg({
 			name,
 			version,
@@ -67,20 +81,20 @@ class ChaincodeOperation extends ChaincodeAction {
 		return result;
 	}
 
-	async checkCommitReadiness({name, version, sequence}, endorsementPolicy) {
+	async checkCommitReadiness({name, version, sequence}) {
 		version = version || ChaincodeOperation._defaultVersion(sequence);
 		const lifecycleProposal = new LifecycleProposal(this.identityContext, this.channel, this.endorsers);
-		ChaincodeOperation._endorsementPolicyAssign(lifecycleProposal, endorsementPolicy);
+		this.assign(lifecycleProposal);
 		const result = await lifecycleProposal.checkCommitReadiness({name, version, sequence});
 		this.logger.debug('checkCommitReadiness', getResponses(result));
 		return result;
 
 	}
 
-	async commitChaincodeDefinition({name, version, sequence}, orderer, endorsementPolicy) {
+	async commitChaincodeDefinition({name, version, sequence}, orderer) {
 		version = version || ChaincodeOperation._defaultVersion(sequence);
 		const lifecycleProposal = new LifecycleProposal(this.identityContext, this.channel, this.endorsers);
-		ChaincodeOperation._endorsementPolicyAssign(lifecycleProposal, endorsementPolicy);
+		this.assign(lifecycleProposal);
 		const result = await lifecycleProposal.commitChaincodeDefinition({name, version, sequence});
 		this.logger.debug('commitChaincodeDefinition', getResponses(result));
 		const commitResult = await lifecycleProposal.commit([orderer.committer]);

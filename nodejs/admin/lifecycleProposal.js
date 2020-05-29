@@ -68,71 +68,14 @@ class LifecycleProposal extends ProposalManager {
 		this.init_required = init_required;
 	}
 
-	setCollections() {
-		// protos.CollectionConfigPackage collections
-		// TODO WIP
-
-		// message CollectionConfig {
-		//     oneof payload {
-		//         StaticCollectionConfig static_collection_config = 1;
-		//     }
-		// }
-
-		//// StaticCollectionConfig constitutes the configuration parameters of a
-		// // static collection object. Static collections are collections that are
-		// // known at chaincode instantiation time, and that cannot be changed.
-		// // Dynamic collections are deferred.
-		// message StaticCollectionConfig {
-		//     // the name of the collection inside the denoted chaincode
-		//     string name = 1;
-		//     // a reference to a policy residing / managed in the config block
-		//     // to define which orgs have access to this collection’s private data
-		//     CollectionPolicyConfig member_orgs_policy = 2;
-		//     // The minimum number of peers private data will be sent to upon
-		//     // endorsement. The endorsement would fail if dissemination to at least
-		//     // this number of peers is not achieved.
-		//     int32 required_peer_count = 3;
-		//     // The maximum number of peers that private data will be sent to
-		//     // upon endorsement. This number has to be bigger than required_peer_count.
-		//     int32 maximum_peer_count = 4;
-		//     // The number of blocks after which the collection data expires.
-		//     // For instance if the value is set to 10, a key last modified by block number 100
-		//     // will be purged at block number 111. A zero value is treated same as MaxUint64
-		//     uint64 block_to_live = 5;
-		//     // The member only read access denotes whether only collection member clients
-		//     // can read the private data (if set to true), or even non members can
-		//     // read the data (if set to false, for example if you want to implement more granular
-		//     // access logic in the chaincode)
-		//     bool member_only_read = 6;
-		//     // The member only write access denotes whether only collection member clients
-		//     // can write the private data (if set to true), or even non members can
-		//     // write the data (if set to false, for example if you want to implement more granular
-		//     // access logic in the chaincode)
-		//     bool member_only_write = 7;
-		//     // a reference to a policy residing / managed in the config block
-		//     // to define the endorsement policy for this collection
-		//     ApplicationPolicy endorsement_policy= 8;
-		// }
-
-		//
-
-
-		// const config =new CollectionConfig();
-
-		// message CollectionConfigPackage {
-		// 	repeated CollectionConfig config = 1;
-		// }
-
-	}
-
-	_collectionAssign(protobufMessage) {
-		// TODO WIP
-		const collections = new protosProtos.CollectionConfigPackage();
-		protobufMessage.setCollections(collections);
+	setCollectionConfigPackage(collectionConfigs) {
+		const collectionConfigPackage = new protosProtos.CollectionConfigPackage();
+		collectionConfigPackage.setConfig(collectionConfigs);
+		this.collectionConfigPackage = collectionConfigPackage;
 	}
 
 	_propertyAssign(protobufMessage) {
-		const {endorsement_plugin, init_required, validation_plugin, validation_parameter} = this;
+		const {endorsement_plugin, init_required, validation_plugin, validation_parameter, collectionConfigPackage} = this;
 		if (endorsement_plugin) {
 			protobufMessage.setEndorsementPlugin(endorsement_plugin);
 		}
@@ -146,6 +89,10 @@ class LifecycleProposal extends ProposalManager {
 			protobufMessage.setValidationParameter(validation_parameter);
 		} else {
 			this.logger.info('apply default endorsement policy');
+		}
+		if (collectionConfigPackage) {
+			protobufMessage.setCollections(collectionConfigPackage);
+			this.logger.info('private data enabled');
 		}
 	}
 
@@ -205,7 +152,7 @@ class LifecycleProposal extends ProposalManager {
 
 		if (channel_config_policy_reference) {
 			applicationPolicy.setChannelConfigPolicyReference(channel_config_policy_reference);
-		} else {
+		} else if (signature_policy) {
 			applicationPolicy.setSignaturePolicy(signature_policy);
 		}
 		return applicationPolicy.toBuffer();

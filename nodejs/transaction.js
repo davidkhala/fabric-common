@@ -1,6 +1,7 @@
 const ChaincodeAction = require('./chaincodeAction');
 const ProposalManager = require('khala-fabric-admin/proposal');
 const {waitForTx} = require('./eventHub');
+const {transientMapTransform} = require('khala-fabric-formatter/txProposal');
 
 class Transaction extends ChaincodeAction {
 	constructor(peers, user, channel, logger) {
@@ -29,7 +30,11 @@ class Transaction extends ChaincodeAction {
 
 	async evaluate({fcn, args = [], transientMap}) {
 		this.proposal.asQuery();
-		return await this.proposal.send({fcn, args, transientMap}, this.proposalOptions);
+		return await this.proposal.send({
+			fcn,
+			args,
+			transientMap: transientMapTransform(transientMap)
+		}, this.proposalOptions);
 	}
 
 	async submit({fcn, args = [], transientMap, init}, orderer) {
@@ -37,7 +42,12 @@ class Transaction extends ChaincodeAction {
 			fcn = 'init';
 		}
 		this.proposal.asEndorsement();
-		const result = await this.proposal.send({fcn, args, transientMap, init}, this.proposalOptions);
+		const result = await this.proposal.send({
+			fcn,
+			args,
+			transientMap: transientMapTransform(transientMap),
+			init
+		}, this.proposalOptions);
 		const commitResult = await this.proposal.commit([orderer.committer], this.commitOptions);
 		this.logger.debug(commitResult);
 		const eventHub = this.newEventHub(this.eventOptions);

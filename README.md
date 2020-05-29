@@ -90,6 +90,12 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
 - [privateData] collectionConfig.memberOnlyRead
     -  expected symptom: `Error: GET_STATE failed: transaction ID: 35175d5ac4ccaa44ad77257a25caca5999c1a70fdee27174f0b7d9df1c39cfe5: tx creator does not have read access permission on privatedata in chaincodeName:diagnose collectionName: private`
 - [privateData] private data will automatic sync on new peer(process last for seconds)
+- only `OR` is allowed in collection distribution policy(`member_orgs_policy`), see in [Architecture Reference: Private Data](https://hyperledger-fabric.readthedocs.io/en/master/private-data-arch.html)
+- the private data distribution policy must define a broader set of organizations than the chaincode endorsement policy
+- [collection-level-endorsement-policies](https://hyperledger-fabric.readthedocs.io/en/master/endorsement-policies.html#setting-collection-level-endorsement-policies)
+    - If a collection-level endorsement policy is set, transactions that write to a private data collection key will require that the specified organization peers have endorsed the transaction.
+    - The collection-level endorsement policy may be less restrictive or more restrictive than the chaincode-level endorsement policy and the collection’s private data distribution policy.
+
 
 ### [Notes: Chaincode](./CHAINCODE.md)
 

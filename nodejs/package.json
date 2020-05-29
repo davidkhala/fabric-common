@@ -16,7 +16,9 @@
     "khala-fabric-admin": "file:./admin",
     "khala-fabric-formatter": "file:./formatter",
     "jsrsasign": "^7.2.2",
-    "lerna": "^3.20.2"
+    "lerna": "^3.20.2",
+    "mocha": "^7.2.0",
+    "chai": "^4.2.0"
   },
   "keywords": [
     "fabric-sdk-node",
