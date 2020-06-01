@@ -64,17 +64,13 @@ class ProposalManager extends Proposal {
 		return super.send(sendProposalRequest);
 	}
 
-	newCommit() {
-		return new Commit(this.chaincodeId, this.channel, this);
-	}
-
 	/**
 	 *
 	 * @param {Committer[]} targets
 	 * @param [requestTimeout]
 	 */
 	async commit(targets, {requestTimeout} = {}) {
-		const commit = this.newCommit();
+		const commit = new Commit(this.chaincodeId, this.channel, this);
 
 		commit.build(this.identityContext);
 		commit.sign(this.identityContext);

@@ -8,7 +8,7 @@ exports.emptySuite = () => {
 };
 
 /**
- * TODO
+ * TODO WIP
  * @param {string} lib library path, such as '/usr/lib/softhsm/libsofthsm2.so'
  * @param {integer} slot
  * @param {string} pin password

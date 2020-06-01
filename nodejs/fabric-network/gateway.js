@@ -48,7 +48,7 @@ class GatewayManager {
 		client.channels.set(channelName, channel);
 
 
-		channel.getEndorsers = () => Array.from(channel.endorsers.values());
+		channel.getEndorsers = (mspid) => Array.from(channel.endorsers.values());
 
 		for (const peer of peers) {
 			await peer.connect();

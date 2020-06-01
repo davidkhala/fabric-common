@@ -1,1 +1,0 @@
-//TODO WIP work as javascript version of configtxlator

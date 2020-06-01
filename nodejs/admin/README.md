@@ -9,6 +9,9 @@ A way to compensate missing admin level node-sdk
 - channel operation: create, join, update
 - chaincode operation: package, install, Approve, commit
 
+## TODO
+- `configDecoder.js`: work as javascript version of configtxlator
+
 
 ## Notes
 - channel.getChannelConfig(peer) will not be rebuilt: always get it from orderer

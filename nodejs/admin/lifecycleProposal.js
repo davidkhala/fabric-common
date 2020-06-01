@@ -15,6 +15,13 @@ const fs = require('fs');
 const {getResponses} = require('khala-fabric-formatter/proposalResponse');
 
 class LifecycleProposal extends ProposalManager {
+	/**
+	 *
+	 * @param {Client.IdentityContext} identityContext
+	 * @param {Client.Channel} channel
+	 * @param {Client.Endorser[]} endorsers
+	 * @param [logger]
+	 */
 	constructor(identityContext, channel, endorsers, logger = console) {
 		super(identityContext, channel, LifeCycle, endorsers);
 		this.logger = logger;

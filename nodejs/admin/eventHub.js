@@ -46,12 +46,6 @@ class EventHub {
 		return this.eventService.isStarted();
 	}
 
-	_throwIfNotConnected() {
-		if (!this.isConnected()) {
-			throw Error('eventHub connection is required to be established');
-		}
-	}
-
 	/**
 	 * @param {EventListener} listener
 	 */
