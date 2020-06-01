@@ -25,7 +25,7 @@ class UserBuilder {
 	 * We use ephemeral key manage fashion
 	 *  - ensure no local wallet in server
 	 *  - cryptoSuite.importKey return a non-promise object
-	 * @param {module:api.Key} key the private key object
+	 * @param {module:api.Key|string} key The private key object or the file path of pem format key
 	 * @param {CertificatePem} certificate
 	 * @param {MspId} mspId - This is required when Client#signChannelConfig
 	 * @return {Client.User}

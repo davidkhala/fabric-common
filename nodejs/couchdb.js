@@ -1,3 +1,5 @@
+const path = require('path');
+const fsExtra = require('fs-extra');
 exports.envBuilder = (user = '', password = '', clusterOpt) => {
 	let env = [`COUCHDB_USER=${user}`, `COUCHDB_PASSWORD=${password}`];
 	if (clusterOpt) {
@@ -34,8 +36,6 @@ exports.queryBuilder = (selector = {}, sorts = [], direction = 0, limit = 25) =>
 	return JSON.stringify(query);
 };
 
-const path = require('path');
-const fsExtra = require('fs-extra');
 /**
  * overwrite couchdb index file
  * @param {string} metaINFPath file path

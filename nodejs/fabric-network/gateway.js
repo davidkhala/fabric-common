@@ -23,7 +23,7 @@ class GatewayManager {
 	 * @param {Peer[]} [peers]
 	 * @param {Orderer} [orderer] not required for evaluate
 	 * @param [discoveryOptions] TODO TO test
-	 * @param {TxEventHandlerFactory|boolean} strategy
+	 * @param {TxEventHandlerFactory|boolean} [strategy]
 	 *  - true to use default strategy
 	 *  - `null` to skip event handling process
 	 * @return {Promise<Network>}
@@ -62,8 +62,7 @@ class GatewayManager {
 			wallet: {}, discovery: {enabled: !!discoveryOptions}, transaction: {strategy}, identity
 		});
 
-		const network = await this.gateWay.getNetwork(channelName);
-		return network;
+		return await this.gateWay.getNetwork(channelName);
 	}
 
 	disconnect() {
