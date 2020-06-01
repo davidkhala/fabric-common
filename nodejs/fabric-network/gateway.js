@@ -48,11 +48,15 @@ class GatewayManager {
 		client.channels.set(channelName, channel);
 
 
+		channel.getEndorsers = () => Array.from(channel.endorsers.values());
+
 		for (const peer of peers) {
+			await peer.connect();
 			const {endorser} = peer;
 			channel.endorsers.set(endorser.toString(), endorser);
 		}
 		if (orderer) {
+			await orderer.connect();
 			const {committer} = orderer;
 			channel.committers.set(committer.toString(), committer);
 		}
@@ -62,7 +66,9 @@ class GatewayManager {
 			wallet: {}, discovery: {enabled: !!discoveryOptions}, transaction: {strategy}, identity
 		});
 
-		return await this.gateWay.getNetwork(channelName);
+		const network = await this.gateWay.getNetwork(channelName);
+
+		return network;
 	}
 
 	disconnect() {
