@@ -44,7 +44,6 @@ const create = async (channelName, user, orderer, channelConfigFile, signingIden
 		channelUpdate.useSignatures(config, signatures);
 	}
 
-	await orderer.connect();
 	const {status, info} = await channelUpdate.submit();
 	const swallowPattern = `error applying config update to existing channel '${channelName}': error authorizing update: error validating ReadSet: proposed update requires that key [Group]  /Channel/Application be at version 0, but it is currently at version 1`;
 	if (status === 'BAD_REQUEST' && info === swallowPattern) {
@@ -90,7 +89,6 @@ const getGenesisBlock = async (channel, user, orderer, verbose, blockTime = 1000
  */
 const getChannelConfigFromOrderer = async (channelName, user, orderer) => {
 
-	await orderer.connect();
 	const identityContext = new IdentityContext(user, null);
 	const signingIdentityUtil = new SigningIdentityUtil(user.getSigningIdentity());
 	identityContext.calculateTransactionId();
@@ -124,7 +122,6 @@ const join = async (channel, peers, user, block, orderer) => {
 	});
 
 	if (!block) {
-		await orderer.connect();
 		block = await getGenesisBlock(channel, user, orderer);
 	}
 	for (const peer of peers) {
