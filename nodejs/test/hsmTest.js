@@ -15,11 +15,14 @@ const ECDSATask = async (cryptoSuite, ephemeral) => {
 	const verifyResult = cryptoSuite.verify(key, sig, message);
 	logger.info('ECDSATask:verifyResult', verifyResult);
 };
-
-const task = async () => {
+describe('HSM', () => {
 	const slot = 0;
 	const pin = 'fabric';
-	const cryptoSuite = HSM.newHSMCryptoSuite({slot, pin});
-	await ECDSATask(cryptoSuite, true);
-};
-task();
+	it('callsite', async () => {
+		require('fabric-common/lib/impl/bccsp_pkcs11'); // FIXME: sdk problem
+	});
+	it('ECDSA', async () => {
+		const cryptoSuite = HSM.newHSMCryptoSuite({slot, pin});
+		await ECDSATask(cryptoSuite, true);
+	});
+});

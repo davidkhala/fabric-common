@@ -3,9 +3,9 @@
 
 Current version 2.1.0
 ## Prerequisite
-- docker: 17.06.2-ce +
+- docker: 18.03 +
 - docker-compose: 1.14.0 +
-- golang: 1.13.x
+- golang: 1.14.x
 - fabric-node-sdk:
     - nodejs: 10.x
     - npm: 6 + 

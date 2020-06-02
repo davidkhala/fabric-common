@@ -5,7 +5,7 @@ const commonPKCSPaths = [
 ];
 const fs = require('fs');
 exports.availablePKCSLibs = commonPKCSPaths.filter((lib) => fs.existsSync(lib));
-const Client = require('fabric-client');
+const Utils = require('fabric-common/lib/Utils');
 exports.newHSMCryptoSuite = ({lib = exports.availablePKCSLibs[0], slot, pin}) => {
-	return Client.newCryptoSuite({software: false, lib, slot, pin}); // software false to use HSM
+	return Utils.newCryptoSuite({software: false, lib, slot, pin}); // software false to use HSM
 };
