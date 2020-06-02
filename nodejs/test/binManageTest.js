@@ -32,27 +32,27 @@ const viewChannelTest = async (channelProfile, channelName = channelProfile) => 
 	logger.info(`viewChannel[${channelProfile}]`, result);
 };
 
-const configtxlatorRestart = async () => {
-	await binManager.configtxlatorRESTServer('start');
-	await binManager.configtxlatorRESTServer('down');
-};
-const taskConfigtxlator = async () => {
-	await configtxlatorRestart();
-};
-
-const taskConfigtxgen = async () => {
-	for (const profile of blockProfiles) {
-		if (profile === 'SampleDevModeEtcdRaft') {
-			logger.warn('skip SampleDevModeEtcdRaft due to : path/to/ClientTLSCert0: no such file or directory');
-			continue;
+describe('configtxlator', () => {
+	it('configtxlatorRestart', async () => {
+		await binManager.configtxlatorRESTServer('start');
+		await binManager.configtxlatorRESTServer('down');
+	});
+});
+describe('configtxgen', () => {
+	it('blockProfiles', async () => {
+		for (const profile of blockProfiles) {
+			if (profile === 'SampleDevModeEtcdRaft') {
+				logger.warn('skip SampleDevModeEtcdRaft due to : path/to/ClientTLSCert0: no such file or directory');
+				continue;
+			}
+			await genBlockTest(profile);
+			await viewBlockTest(profile);
 		}
-		await genBlockTest(profile);
-		await viewBlockTest(profile);
-	}
-	for (const profile of channelProfiles) {
-		await genChannelTest(profile);
-		await viewChannelTest(profile);
-	}
-};
-taskConfigtxlator();
-taskConfigtxgen();
+	});
+	it('channelProfiles', async () => {
+		for (const profile of channelProfiles) {
+			await genChannelTest(profile);
+			await viewChannelTest(profile);
+		}
+	});
+});

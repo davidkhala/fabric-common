@@ -1,7 +1,9 @@
 {
   "name": "khala-fabric-sdk-node",
   "version": "2.1.0-alpha.0",
-  "scripts": {},
+  "scripts": {
+    "test": "mocha test"
+  },
   "dependencies": {
     "khala-dockerode": "^0.1.2",
     "khala-level": "^0.0.1",

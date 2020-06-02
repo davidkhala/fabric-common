@@ -12,7 +12,8 @@ matrix:
         - npm install --global lerna
         - cd nodejs; npm install; cd -
       script:
-        - node nodejs/test
+        - cd nodejs;
+        - npm test
 
 
 
