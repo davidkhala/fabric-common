@@ -26,6 +26,7 @@ class CSCCProposal extends ProposalManager {
 	 * Query the names of all the channels each peer has joined.
 	 */
 	async queryChannels() {
+		this.asQuery();
 		/**
 		 * @type {BuildProposalRequest}
 		 */
@@ -34,7 +35,6 @@ class CSCCProposal extends ProposalManager {
 			args: [],
 		};
 		return await this.send(buildProposalRequest);
-
 	}
 }
 

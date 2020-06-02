@@ -1,98 +1,85 @@
 const QSCCProposal = require('khala-fabric-admin/QSCCProposal');
 const CSCCProposal = require('khala-fabric-admin/CSCCProposal');
-const {getResponses} = require('khala-fabric-formatter/proposalResponse');
 const fabprotos = require('fabric-protos');
 const protosProto = fabprotos.protos;
 const commonProto = fabprotos.common;
 const LifecycleProposal = require('khala-fabric-admin/lifecycleProposal');
-const UserUtil = require('khala-fabric-admin/user');
 const {emptyChannel} = require('khala-fabric-admin/channel');
-exports.chain = async (peers, identityContext, channelName) => {
-	const proposal = new QSCCProposal(identityContext, channelName, peers);
-	const result = await proposal.queryInfo();
+const BlockDecoder = require('fabric-common/lib/BlockDecoder');
+const IdentityContext = require('fabric-common/lib/IdentityContext');
 
-	const responses = getResponses(result);
+class QueryHub {
+	constructor(peers, user) {
+		this.targets = peers.map(({endorser}) => endorser);
+		this.identityContext = new IdentityContext(user, null);
+	}
 
-	responses.forEach((response, index) => {
-		const {height, currentBlockHash, previousBlockHash} = commonProto.BlockchainInfo.decode(response.payload);
+	async chain(channelName) {
+		const channel = emptyChannel(channelName);
+		const proposal = new QSCCProposal(this.identityContext, channel, this.targets);
+		const result = await proposal.queryInfo();
 
-		Object.assign(response, {
-			height: height.toInt(),
-			currentBlockHash: currentBlockHash.toString('hex'),
-			previousBlockHash: previousBlockHash.toString('hex'),
+		const {queryResults} = result;
+
+		return queryResults.map((payload) => {
+			const {height, currentBlockHash, previousBlockHash} = commonProto.BlockchainInfo.decode(payload);
+			return {
+				height: height.toInt(),
+				currentBlockHash: currentBlockHash.toString('hex'),
+				previousBlockHash: previousBlockHash.toString('hex'),
+			};
 		});
-		result[index].peer = peers[index].toString();
-	});
-
-	return result;
-};
-
-exports.chaincodesInstalled = async (peers, user, packageId) => {
-	for (const peer of peers) {
-		await peer.connect();
 	}
-	const lifecycleProposal = new LifecycleProposal(UserUtil.getIdentityContext(user), emptyChannel(''), peers.map(({endorser}) => endorser));
-	const result = await lifecycleProposal.queryInstalledChaincodes(packageId);
-	let mapFunction;
-	if (packageId) {
-		mapFunction = ({response}) => {
-			const {package_id, label, references} = response;
-			return {label, references};
-		};
-	} else {
-		mapFunction = ({response}) => response.installed_chaincodes;
+
+	async chaincodesInstalled(packageId) {
+		const lifecycleProposal = new LifecycleProposal(this.identityContext, emptyChannel(''), this.targets);
+		const result = await lifecycleProposal.queryInstalledChaincodes(packageId);
+		return result.queryResults;
 	}
-	return result.responses.map(mapFunction);
 
-};
+	async chaincodesInstantiated(peers, identityContext, channelName) {
+		const lifecycleProposal = new LifecycleProposal(this.identityContext, emptyChannel(channelName), this.targets);
+		const result = await lifecycleProposal.queryChaincodeDefinition();
+		return result.queryResults;
+	}
 
-exports.chaincodesInstantiated = async (peer, channelName, user) => {
-	await peer.connect();
-	const lifecycleProposal = new LifecycleProposal(UserUtil.getIdentityContext(user), emptyChannel(channelName), [peer.endorser]);
-	const result = await lifecycleProposal.queryChaincodeDefinition();
-	return result.responses.map(({response}) => response.chaincode_definitions);
-};
-/**
- * TODO
- * @param peer
- * @param channel
- * @param hashHex
- * @return {Promise<*>}
- */
-exports.blockFromHash = async (peer, channel, hashHex) => channel.queryBlockByHash(Buffer.from(hashHex, 'hex'), peer);
-/**
- *
- * @param peers
- * @param identityContext
- * @param channelName
- * @param blockNumber
- * @return {Promise<*>}
- */
-exports.blockFromHeight = async (peers, identityContext, channelName, blockNumber) => {
-	const proposal = new QSCCProposal(identityContext, channelName, peers);
-	return await proposal.queryBlock(blockNumber);
-};
+	async blockFromHash(channelName, hashHex) {
+		const blockHash = Buffer.from(hashHex, 'hex');
+		const qsccProposal = new QSCCProposal(this.identityContext, emptyChannel(channelName), this.targets);
+		const result = await qsccProposal.queryBlockByHash(blockHash);
+		const {queryResults} = result;
+		return queryResults.map(payload => BlockDecoder.decode(payload));
+	}
 
-exports.channelJoined = async (peers, identityContext) => {
-	const proposal = new CSCCProposal(identityContext, peers.map(({endorser}) => endorser));
+	async blockFromHeight(channelName, blockNumber) {
+		const proposal = new QSCCProposal(this.identityContext, emptyChannel(channelName), this.targets);
+		const result = await proposal.queryBlock(blockNumber);
+		const {queryResults} = result;
+		return queryResults.map(payload => BlockDecoder.decode(payload));
+	}
 
-	const result = await proposal.queryChannels();
+	async channelJoined() {
+		const csccProposal = new CSCCProposal(this.identityContext, this.targets);
 
-	const responses = getResponses(result);
-	responses.forEach((response, index) => {
-		const channelQueryResponse = protosProto.ChannelQueryResponse.decode(response.payload);
-		response.channels = channelQueryResponse.channels.map(({channel_id}) => channel_id);
-		result.responses[index].peer = peers[index].toString();
-	});
+		const result = await csccProposal.queryChannels();
 
-	return result;
+		const {queryResults} = result;
+		return queryResults.map((payload) => {
+			const channelQueryResponse = protosProto.ChannelQueryResponse.decode(payload);
+			return channelQueryResponse.channels.map(({channel_id}) => channel_id);
+		});
 
-};
-/**
- * TODO
- * @param peer
- * @param channel
- * @param txId
- * @return {Promise<*>}
- */
-exports.tx = async (peer, channel, txId) => channel.queryTransaction(txId, peer);
+	}
+
+	//TODO test
+	async tx(channelName, txId) {
+		const qsccProposal = new QSCCProposal(this.identityContext, emptyChannel(channelName), this.targets);
+		const result = await qsccProposal.queryTransaction(txId);
+		const {queryResults} = result;
+		return queryResults.map((payload) => {
+			return BlockDecoder.decodeTransaction(payload);
+		});
+	}
+}
+
+module.exports = QueryHub;

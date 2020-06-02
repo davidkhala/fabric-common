@@ -108,6 +108,7 @@ class LifecycleProposal extends ProposalManager {
 	 * @param {string} [packageId] if specified, only query for single chaincode
 	 */
 	async queryInstalledChaincodes(packageId) {
+		this.asQuery();
 		let args;
 		if (packageId) {
 			const queryInstalledChaincodeArgs = new lifeCycleProtos.QueryInstalledChaincodeArgs();
@@ -125,17 +126,17 @@ class LifecycleProposal extends ProposalManager {
 			args,
 		};
 		const result = await this.send(buildProposalRequest);
-		getResponses(result).forEach((response) => {
-			const amend = {};
+		const {queryResults} = result;
+		const decodedQueryResult = queryResults.map(payload => {
 			if (packageId) {
-				const {package_id, label, references} = lifeCycleProtos.QueryInstalledChaincodeResult.decode(response.payload);
+				const {package_id, label, references} = lifeCycleProtos.QueryInstalledChaincodeResult.decode(payload);
 				const References = {};
 				references.forEach((value, key) => {
 					References[key] = value;
 				});
-				Object.assign(amend, {package_id, label, references: References});
+				return {package_id, label, references: References};
 			} else {
-				const {installed_chaincodes} = lifeCycleProtos.QueryInstalledChaincodesResult.decode(response.payload);
+				const {installed_chaincodes} = lifeCycleProtos.QueryInstalledChaincodesResult.decode(payload);
 				const installedChaincodes = {};
 				for (const {package_id, label, references} of installed_chaincodes) {
 					installedChaincodes[package_id] = {};
@@ -144,13 +145,11 @@ class LifecycleProposal extends ProposalManager {
 					});
 				}
 
-				Object.assign(amend, {installed_chaincodes: installedChaincodes});
+				return installedChaincodes;
 			}
-
-			Object.assign(response, amend);
-
 		});
 
+		result.queryResults = decodedQueryResult;
 		return result;
 	}
 
@@ -212,16 +211,7 @@ class LifecycleProposal extends ProposalManager {
 
 
 	async checkCommitReadiness({name, version, sequence}) {
-		// message CheckCommitReadinessArgs {
-		//     int64 sequence = 1;
-		//     string name = 2;
-		//     string version = 3;
-		//     string endorsement_plugin = 4;
-		//     string validation_plugin = 5;
-		//     bytes validation_parameter = 6;
-		//     protos.CollectionConfigPackage collections = 7;
-		//     bool init_required = 8;
-		// }
+		this.asQuery();
 		const checkCommitReadinessArgs = new lifeCycleProtos.CheckCommitReadinessArgs();
 		checkCommitReadinessArgs.setSequence(sequence);
 		checkCommitReadinessArgs.setName(name);
@@ -237,15 +227,16 @@ class LifecycleProposal extends ProposalManager {
 		};
 		const result = await this.send(buildProposalRequest2);
 
-		getResponses(result).forEach((response) => {
-			const {approvals} = lifeCycleProtos.CheckCommitReadinessResult.decode(response.payload);
-			if (approvals.size !== 0) {
-				response.approvals = {};
-				approvals.forEach((value, key) => {
-					response.approvals[key] = value;
-				});
-			}
+		const {queryResults} = result;
+		const decodedQueryResults = queryResults.map(payload => {
+			const {approvals} = lifeCycleProtos.CheckCommitReadinessResult.decode(payload);
+			const returned = {};
+			approvals.forEach((value, key) => {
+				returned[key] = value;
+			});
+			return returned;
 		});
+		result.queryResults = decodedQueryResults;
 		return result;
 
 	}
@@ -257,16 +248,6 @@ class LifecycleProposal extends ProposalManager {
 	 * @param version
 	 */
 	async commitChaincodeDefinition({sequence, name, version}) {
-		// message CommitChaincodeDefinitionArgs {
-		// 	int64 sequence = 1;
-		// 	string name = 2;
-		// 	string version = 3;
-		// 	string endorsement_plugin = 4;
-		// 	string validation_plugin = 5;
-		// 	bytes validation_parameter = 6;
-		// 	protos.CollectionConfigPackage collections = 7;
-		// 	bool init_required = 8;
-		// }
 		const commitChaincodeDefinitionArgs = new lifeCycleProtos.CommitChaincodeDefinitionArgs();
 		commitChaincodeDefinitionArgs.setSequence(sequence);
 		commitChaincodeDefinitionArgs.setName(name);
@@ -286,6 +267,7 @@ class LifecycleProposal extends ProposalManager {
 	async queryChaincodeDefinition(name) {
 		let fcn;
 		let args;
+		this.asQuery();
 		if (name) {
 			fcn = QueryChaincodeDefinition;
 			const queryChaincodeDefinitionArgs = new lifeCycleProtos.QueryChaincodeDefinitionArgs();
@@ -303,8 +285,18 @@ class LifecycleProposal extends ProposalManager {
 		const buildProposalRequest = {fcn, args};
 		const result = await this.send(buildProposalRequest);
 
+		const {queryResults} = result;
+		const singleChaincodeDefinitionAmend = (chaincodeDefinition) => {
+			const approvals = {};
+			chaincodeDefinition.approvals.forEach((value, key) => {
+				approvals[key] = value;
+			});
+			chaincodeDefinition.approvals = approvals;
+			chaincodeDefinition.validation_parameter = protosProtos.ApplicationPolicy.decode(chaincodeDefinition.validation_parameter);
+			return chaincodeDefinition;
+		};
+		const decodedQueryResults = queryResults.map(payload => {
 
-		getResponses(result).forEach((response) => {
 			if (name) {
 				// message QueryChaincodeDefinitionResult {
 				// 	int64 sequence = 1;
@@ -316,15 +308,8 @@ class LifecycleProposal extends ProposalManager {
 				// 	bool init_required = 7;
 				// 	map<string,bool> approvals = 8;
 				// }
-				const amend = lifeCycleProtos.QueryChaincodeDefinitionResult.decode(response.payload);
-				const approvals = {};
-				amend.approvals.forEach((value, key) => {
-					approvals[key] = value;
-				});
-				amend.approvals = approvals;
-				amend.validation_parameter = protosProtos.ApplicationPolicy.decode(amend.validation_parameter);
-
-				Object.assign(response, amend);
+				const resultSingle = lifeCycleProtos.QueryChaincodeDefinitionResult.decode(payload);
+				return singleChaincodeDefinitionAmend(resultSingle);
 			} else {
 				// message QueryChaincodeDefinitionsResult {
 				//     message ChaincodeDefinition {
@@ -339,10 +324,14 @@ class LifecycleProposal extends ProposalManager {
 				//     }
 				//     repeated ChaincodeDefinition chaincode_definitions = 1;
 				// }
-				const {chaincode_definitions} = lifeCycleProtos.QueryChaincodeDefinitionsResult.decode(response.payload);
-				Object.assign(response, {chaincode_definitions});
+				const {chaincode_definitions} = lifeCycleProtos.QueryChaincodeDefinitionsResult.decode(payload);
+				return chaincode_definitions.map(definition => {
+					const resultSingle = lifeCycleProtos.QueryChaincodeDefinitionsResult.ChaincodeDefinition.decode(definition);
+					return singleChaincodeDefinitionAmend(resultSingle);
+				});
 			}
 		});
+		result.queryResults = decodedQueryResults;
 
 		return result;
 	}

@@ -12,7 +12,9 @@ const SystemChaincodeFunctions = {
 	},
 	qscc: {
 		GetBlockByNumber: 'GetBlockByNumber',
-		GetChainInfo: 'GetChainInfo'
+		GetChainInfo: 'GetChainInfo',
+		GetBlockByHash: 'GetBlockByHash',
+		GetTransactionByID: 'GetTransactionByID',
 	},
 	cscc: {
 		JoinChain: 'JoinChain',

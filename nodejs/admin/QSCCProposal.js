@@ -1,9 +1,14 @@
 const ProposalManager = require('./proposal');
-const {SystemChaincodeID: {QSCC}, SystemChaincodeFunctions: {qscc: {GetBlockByNumber, GetChainInfo}}} = require('khala-fabric-formatter/systemChaincode');
+const {
+	SystemChaincodeID: {QSCC},
+	SystemChaincodeFunctions: {
+		qscc: {GetBlockByNumber, GetChainInfo, GetBlockByHash, GetTransactionByID}
+	}
+} = require('khala-fabric-formatter/systemChaincode');
 
 class QSCCProposal extends ProposalManager {
-	constructor(identityContext, channel, peers) {
-		super(identityContext, channel, QSCC, peers);
+	constructor(identityContext, channel, endorsers) {
+		super(identityContext, channel, QSCC, endorsers);
 		this.asQuery();
 	}
 
@@ -19,23 +24,47 @@ class QSCCProposal extends ProposalManager {
 		 */
 		const buildProposalRequest = {
 			fcn: GetBlockByNumber,
-			args: [this.proposal.channel.name, blockNumber.toString()],
+			args: [this.channel.name, blockNumber.toString()],
 		};
 
 		return await this.send(buildProposalRequest);
 	}
 
-
 	async queryInfo() {
-
 		/**
 		 * @type {BuildProposalRequest}
 		 */
 		const buildProposalRequest = {
 			fcn: GetChainInfo,
-			args: [this.proposal.channel.name],
+			args: [this.channel.name],
 		};
 
+		return await this.send(buildProposalRequest);
+	}
+
+	/**
+	 *
+	 * @param {Buffer} blockHash
+	 */
+	async queryBlockByHash(blockHash) {
+		/**
+		 * @type {BuildProposalRequest}
+		 */
+		const buildProposalRequest = {
+			fcn: GetBlockByHash,
+			args: [this.channel.name, blockHash],
+		};
+		return await this.send(buildProposalRequest);
+	}
+
+	async queryTransaction(tx_id) {
+		/**
+		 * @type {BuildProposalRequest}
+		 */
+		const buildProposalRequest = {
+			fcn: GetTransactionByID,
+			args: [this.channel.name, tx_id],
+		};
 		return await this.send(buildProposalRequest);
 	}
 }

@@ -22,7 +22,7 @@ class ProposalManager extends Proposal {
 	 * @param {IdentityContext} identityContext
 	 * @param {Channel} channel
 	 * @param [chaincodeId]
-	 * @param {Endorser[]} [endorsers]
+	 * @param {Endorser[]} [endorsers] We could specify targets during {@link send}
 	 */
 	constructor(identityContext, channel, chaincodeId, endorsers) {
 		super(chaincodeId || null, channel);
