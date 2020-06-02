@@ -86,8 +86,7 @@ class ChaincodeOperation extends ChaincodeAction {
 		const lifecycleProposal = new LifecycleProposal(this.identityContext, this.channel, this.endorsers);
 		this.assign(lifecycleProposal);
 		const result = await lifecycleProposal.checkCommitReadiness({name, version, sequence});
-		this.logger.debug('checkCommitReadiness', getResponses(result));
-		return result;
+		return result.queryResults;
 
 	}
 

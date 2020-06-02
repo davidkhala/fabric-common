@@ -1,7 +1,6 @@
 const {newerVersion, nextVersion} = require('khala-nodeutils/version');
 const {instantiateOrUpgrade} = require('./chaincodeHelper');
 const Logger = require('khala-logger/log4js');
-const {chaincodesInstalled, chaincodesInstantiated} = require('./query');
 const {chaincodeClear} = require('./fabric-dockerode');
 const {ChaincodeProposalCommand} = require('khala-fabric-formatter/constants');
 

@@ -7,6 +7,7 @@ const LifecycleProposal = require('khala-fabric-admin/lifecycleProposal');
 const {emptyChannel} = require('khala-fabric-admin/channel');
 const BlockDecoder = require('fabric-common/lib/BlockDecoder');
 const IdentityContext = require('fabric-common/lib/IdentityContext');
+const {getResponses} = require('khala-fabric-formatter/proposalResponse');
 
 class QueryHub {
 	constructor(peers, user) {
@@ -63,15 +64,13 @@ class QueryHub {
 
 		const result = await csccProposal.queryChannels();
 
-		const {queryResults} = result;
-		return queryResults.map((payload) => {
-			const channelQueryResponse = protosProto.ChannelQueryResponse.decode(payload);
+		return getResponses(result).map((response) => {
+			const channelQueryResponse = protosProto.ChannelQueryResponse.decode(response.payload);
 			return channelQueryResponse.channels.map(({channel_id}) => channel_id);
 		});
 
 	}
 
-	//TODO test
 	async tx(channelName, txId) {
 		const qsccProposal = new QSCCProposal(this.identityContext, emptyChannel(channelName), this.targets);
 		const result = await qsccProposal.queryTransaction(txId);

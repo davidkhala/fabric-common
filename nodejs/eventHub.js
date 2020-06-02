@@ -1,4 +1,4 @@
-const {BlockNumberFilterType: {NEWEST}} = require('khala-fabric-formatter/eventHub');
+const {BlockNumberFilterType: {NEWEST, OLDEST}, TxEventFilterType: {ALL}} = require('khala-fabric-formatter/eventHub');
 const {TxValidationCode} = require('khala-fabric-formatter/constants');
 /**
  *
@@ -93,9 +93,36 @@ const waitForTx = async (eventHub, identityContext) => {
 		eventHub.connect();
 	});
 };
+const replayTx = async (eventHub, identityContext, endBlockHeight) => {
+
+	eventHub.build(identityContext, {startBlock: OLDEST, endBlock: NEWEST});
+	return await new Promise((resolve, reject) => {
+		const result = [];
+		const callback = (err, event) => {
+			if (err) {
+				listener.unregisterEventListener();
+				reject(err);
+			} else {
+				const {blockNumber, transactionId, status} = event;
+				result.push({blockNumber, transactionId, status});
+				if (parseInt(blockNumber) > endBlockHeight) {
+					listener.unregisterEventListener();
+					return reject(Error(`assertion error: blockNumber[${blockNumber}]>endBlockHeight[${endBlockHeight}]`));
+				}
+				if (parseInt(blockNumber) === endBlockHeight) {
+					listener.unregisterEventListener();
+					resolve(result);
+				}
+			}
+		};
+		const listener = eventHub.txEvent(ALL, callback, {unregister: true});
+		eventHub.connect();
+	});
+};
 module.exports = {
 	getSingleBlock,
 	getLastBlock,
 	waitForBlock,
 	waitForTx,
+	replayTx,
 };

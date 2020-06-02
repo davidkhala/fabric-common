@@ -96,7 +96,7 @@ class EventHub {
 
 	/**
 	 *
-	 * @param {string|TxEventFilterType} transactionID
+	 * @param {string|TxEventFilterType} [transactionID]
 	 * @param {EventCallback} callback
 	 * @param {EventRegistrationOptions} options
 	 * @return {EventListener}

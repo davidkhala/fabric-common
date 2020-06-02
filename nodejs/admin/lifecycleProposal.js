@@ -104,11 +104,10 @@ class LifecycleProposal extends ProposalManager {
 	}
 
 	/**
-	 *
+	 * due to `response.endorsement` === null for this. mannual parser is required
 	 * @param {string} [packageId] if specified, only query for single chaincode
 	 */
 	async queryInstalledChaincodes(packageId) {
-		this.asQuery();
 		let args;
 		if (packageId) {
 			const queryInstalledChaincodeArgs = new lifeCycleProtos.QueryInstalledChaincodeArgs();
@@ -126,17 +125,18 @@ class LifecycleProposal extends ProposalManager {
 			args,
 		};
 		const result = await this.send(buildProposalRequest);
-		const {queryResults} = result;
-		const decodedQueryResult = queryResults.map(payload => {
+
+		result.queryResults = getResponses(result).map(response => {
 			if (packageId) {
-				const {package_id, label, references} = lifeCycleProtos.QueryInstalledChaincodeResult.decode(payload);
+				const {package_id, label, references} = lifeCycleProtos.QueryInstalledChaincodeResult.decode(response.payload);
 				const References = {};
 				references.forEach((value, key) => {
 					References[key] = value;
 				});
 				return {package_id, label, references: References};
 			} else {
-				const {installed_chaincodes} = lifeCycleProtos.QueryInstalledChaincodesResult.decode(payload);
+				const {installed_chaincodes} = lifeCycleProtos.QueryInstalledChaincodesResult.decode(response.payload);
+				this.logger.debug({installed_chaincodes});
 				const installedChaincodes = {};
 				for (const {package_id, label, references} of installed_chaincodes) {
 					installedChaincodes[package_id] = {};
@@ -149,7 +149,6 @@ class LifecycleProposal extends ProposalManager {
 			}
 		});
 
-		result.queryResults = decodedQueryResult;
 		return result;
 	}
 
