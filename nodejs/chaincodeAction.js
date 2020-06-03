@@ -9,8 +9,18 @@ class ChaincodeAction {
 		this.eventers = peers.map(({eventer}) => eventer);
 	}
 
-	newEventHub(options) {
-		return new EventHub(this.channel, this.eventers, undefined, options);
+	newEventHubs(options) {
+		return this.eventers.map(eventer => (new EventHub(this.channel, eventer, undefined, options)));
+	}
+
+	newEventHub(options, selector) {
+		const eventHubs = this.newEventHubs(options);
+		if (typeof selector !== 'function') {
+			selector = (hubs) => {
+				return hubs[0];
+			};
+		}
+		return selector(eventHubs);
 	}
 }
 

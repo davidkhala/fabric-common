@@ -3,18 +3,23 @@ const {BlockEventFilterType: {FULL_BLOCK}, TxEventFilterType: {ALL}} = require('
 
 class EventHub {
 	/**
-	 * This works as unsignedRegistration. Later we sign the registration by build
+	 * Does not support multiple stream managed in single EventService
+	 * Only single `eventService._current_eventer` take effect
+	 * `_current_eventer` is set from either one workable target
+	 *
 	 * @constructor
-	 * @param {Client.Channel} channel
-	 * @param {Eventer[]} targets //TODO test on multiple eventhub;
-	 * @param {EventService} [eventService] wrapped existing channelEventHub object
-	 * @param options
+	 * @param {Client.Channel} [channel]
+	 * @param {Eventer} [eventer]
+	 * @param {EventService} [eventService] existing eventService object
+	 * @param [options]
 	 */
-	constructor(channel, targets, eventService, options = {}) {
+	constructor(channel, eventer, eventService, options = {}) {
 		if (!eventService) {
 			eventService = new EventService('-', channel);
-			eventService.setTargets(targets);
+
+			eventService.setTargets([eventer]);
 		}
+
 		this.eventService = eventService;
 		this.eventOptions = options;
 	}

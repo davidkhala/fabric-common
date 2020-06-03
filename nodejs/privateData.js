@@ -28,7 +28,7 @@ exports.buildCollectionConfig = (name, config) => {
 		member_only_read,
 		required_peer_count,
 		member_orgs: identities,
-		block_to_live, // TODO [uint64 block_to_live] should it be a long type?
+		block_to_live,
 		maximum_peer_count,
 		// endorsement_policy, // TODO
 	});

@@ -15,7 +15,7 @@ Component module list
     - Peer => Discoverer | Endorser | Eventer
     - EventHub => EventService
     - Client._userContext => IdentityContext
-    - sideDB -> ?[TODO]
+    - sideDB, policy => deprecated
     
 ## Test
     - intergration test and e2e test locates in [delphi-fabric](https://github.com/davidkhala/delphi-fabric)
@@ -57,3 +57,9 @@ Component module list
 - [collection-level-endorsement-policies](https://hyperledger-fabric.readthedocs.io/en/master/endorsement-policies.html#setting-collection-level-endorsement-policies)
     - If a collection-level endorsement policy is set, transactions that write to a private data collection key will require that the specified organization peers have endorsed the transaction.
     - The collection-level endorsement policy may be less restrictive or more restrictive than the chaincode-level endorsement policy and the collection’s private data distribution policy. 
+```
+
+## Fabric weakness
+- Does not support multiple stream managed in single EventService even with multiple targets configured
+    - Only single `eventService._current_eventer` take effect
+    - `_current_eventer` is set from either one workable target
