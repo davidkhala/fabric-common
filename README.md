@@ -54,6 +54,8 @@ Current version 2.1.0
     - The latter (above) is not the channel genesis block (available from `Channel.getGenesisBlock`), but the one after, which `block.header.number='1'`.
 - [reference]playback conference: https://wiki.hyperledger.org/display/fabric/Playbacks
 - individual properties may be overridden by setting environment variables, such as `CONFIGTX_ORDERER_ORDERERTYPE=etcdraft`.
+- [keyValue] Value size limit is now available at 4194304 bytes
+    - `'Received message larger than max (<yourOverFlowValue> vs. 4194304)'`
 - [channel][system] peer could not join system channel
 - [channel]channel ID length < 250 :initializing configtx manager failed: bad channel ID: channel ID illegal, cannot be longer than 249
 - [disaster]backup recovery: at least 1 anchor peer for each organization should be resumed to recover transaction process
