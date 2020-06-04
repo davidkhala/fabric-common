@@ -4,7 +4,7 @@ const userUtil = require('./user');
 const logger = require('khala-logger/log4js').consoleLogger('ca-crypto-gen');
 const AffiliationServiceBuilder = require('khala-fabric-admin/affiliationService');
 const {sleep} = require('khala-light-util');
-const {getCertificate, getMSPID} = require('khala-fabric-formatter/signingIdentity');
+const {getCertificate} = require('khala-fabric-formatter/signingIdentity');
 /**
  *
  * @param {FabricCAServices} caService
@@ -184,7 +184,7 @@ exports.genUser = async (caService, cryptoPath, nodeType, admin, {TLS, affiliati
 		affiliationRoot = cryptoPath[`${nodeType}OrgName`];
 	}
 
-	const mspId = getMSPID(admin.getSigningIdentity());
+	const mspId = admin.getSigningIdentity()._mspId;
 	let user = userUtil.loadFromLocal(cryptoPath, nodeType, mspId);
 	if (user) {
 		logger.info('user exist', {name: user.getName()});

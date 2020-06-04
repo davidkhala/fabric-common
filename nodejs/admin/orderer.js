@@ -85,15 +85,15 @@ class Orderer {
 		this.eventer.disconnect();
 	}
 
-
 	/**
 	 * basic health check for an orderer
-	 * @param {Committer} orderer
+	 * @param {Committer} committer
 	 */
-	static async ping(orderer) {
+	async ping() {
+		const {committer} = this;
 		try {
-			orderer.service = new orderer.serviceClass(orderer.endpoint.addr, orderer.endpoint.creds, orderer.options);
-			await orderer.waitForReady(orderer.service);
+			committer.service = new committer.serviceClass(committer.endpoint.addr, committer.endpoint.creds, committer.options);
+			await committer.waitForReady(committer.service);
 			return true;
 		} catch (err) {
 			if (err.message.includes('Failed to connect before the deadline')) {
