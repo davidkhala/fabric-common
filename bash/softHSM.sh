@@ -6,8 +6,12 @@ for ((i = 2; i <= ${#}; i++)); do
 	j=${!i}
 	remain_params="$remain_params $j"
 done
+if [[ -z "$SOFTHSM2_CONF" ]]; then
+	echo "[ERROR] environment SOFTHSM2_CONF not set"
+	exit 1
+fi
 if [[ ! -f "$SOFTHSM2_CONF" ]]; then
-	echo "[ERROR] environment SOFTHSM2_CONF not found"
+	echo "[ERROR] File $SOFTHSM2_CONF not found"
 	exit 1
 fi
 initToken() {
