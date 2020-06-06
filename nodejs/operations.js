@@ -1,4 +1,4 @@
-const {RequestPromise} = require('khala-nodeutils/request');
+const {axiosPromise} = require('khala-axios');
 const {LoggingLevel} = require('khala-fabric-formatter/remote');
 /**
  * @typedef {Object} OperationHealthz
@@ -34,7 +34,7 @@ class OperationService {
 	 */
 	async health() {
 		const url = `${this.url}/healthz`;
-		const result = await RequestPromise({url, method: 'GET'}, this.options);
+		const result = await axiosPromise({url, method: 'GET'}, this.options);
 		if (result.status === 'OK') {
 			return result;
 		} else {
@@ -51,7 +51,7 @@ class OperationService {
 	 */
 	async version() {
 		const url = `${this.url}/version`;
-		return await RequestPromise({url, method: 'GET'}, this.options);
+		return await axiosPromise({url, method: 'GET'}, this.options);
 	}
 
 	/**
@@ -63,7 +63,7 @@ class OperationService {
 		/**
 		 * @type OperationLogSpec
 		 */
-		const result = await RequestPromise({url, method: 'GET'}, this.options);
+		const result = await axiosPromise({url, method: 'GET'}, this.options);
 		return result.spec;
 	}
 
@@ -73,7 +73,7 @@ class OperationService {
 	 */
 	async setLogLevel(level) {
 		const url = `${this.url}/logspec`;
-		await RequestPromise({url, method: 'PUT', body: {spec: LoggingLevel[level]}}, this.options); // body is undefined
+		await axiosPromise({url, method: 'PUT', body: {spec: LoggingLevel[level]}}, this.options); // response is undefined
 	}
 }
 

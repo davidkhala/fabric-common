@@ -1,6 +1,7 @@
 const EndPoint = require('fabric-common/lib/Endpoint');
 const Endorser = require('fabric-common/lib/Endorser');
 const Eventer = require('fabric-common/lib/Eventer');
+const Discoverer = require('fabric-common/lib/Discoverer');
 const {RemoteOptsTransform} = require('khala-fabric-formatter/remote');
 const fs = require('fs');
 
@@ -16,9 +17,10 @@ class Peer {
 	 * @param {string} [host]
 	 * @param {ClientKey} [clientKey]
 	 * @param {ClientCert} [clientCert]
+	 * @param {MspId} [mspid]
 	 * @param [logger]
 	 */
-	constructor({peerPort, peerHostName, cert, pem, host, clientKey, clientCert}, logger = console) {
+	constructor({peerPort, peerHostName, cert, pem, host, clientKey, clientCert, mspid}, logger = console) {
 		this.logger = logger;
 		if (!pem) {
 			if (fs.existsSync(cert)) {
@@ -50,37 +52,46 @@ class Peer {
 			clientCert: this.clientCert
 		});
 		const endpoint = new EndPoint(options);
-		const endorser = new Endorser(endpoint.url, {}, undefined);
+		const endorser = new Endorser(endpoint.url, {}, mspid);
 		endorser.setEndpoint(endpoint);
 		this.endorser = endorser;
 
-		const eventer = new Eventer(endpoint.url, {}, undefined);
+		const eventer = new Eventer(endpoint.url, {}, mspid);
 		eventer.setEndpoint(endpoint);
 		this.eventer = eventer;
+
+		const discoverer = new Discoverer(endpoint.url, {}, mspid);
+		discoverer.setEndpoint(endpoint);
+		this.discoverer = discoverer;
+	}
+
+	getServiceEndpoints() {
+		const {endorser, eventer, discoverer} = this;
+		return [endorser, eventer, discoverer];
 	}
 
 	reset() {
-		this.eventer.connectAttempted = false;
-		this.endorser.connectAttempted = false;
+		this.getServiceEndpoints().forEach((serviceEndpoint) => {
+			serviceEndpoint.connectAttempted = false;
+		});
 	}
 
 	async connect() {
 		const {logger} = this;
-		if (this.endorser.connected || this.endorser.service) {
-			logger.info(`${this.endorser.name} connection exist already`);
-		} else {
-			await this.endorser.connect();
+		for (const serviceEndpoint of this.getServiceEndpoints()) {
+			if (serviceEndpoint.connected || serviceEndpoint.service) {
+				logger.info(`${serviceEndpoint.name} connection exist already`);
+			} else {
+				await serviceEndpoint.connect();
+			}
 		}
-		if (this.eventer.connected || this.eventer.service) {
-			logger.info(`${this.eventer.name} connection exist already`);
-		} else {
-			await this.eventer.connect();
-		}
+
 	}
 
 	disconnect() {
-		this.endorser.disconnect();
-		this.eventer.disconnect();
+		this.getServiceEndpoints().forEach((serviceEndpoint) => {
+			serviceEndpoint.disconnect();
+		});
 	}
 
 	/**

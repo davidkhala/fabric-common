@@ -77,7 +77,6 @@ exports.initialize = async (channel, peer, {asLocalhost, TLS} = {}) => {
 exports.endorsementHintsBuilder = (configs) => {
 	return {chaincodes: Object.entries(configs).map(([name, collection_names]) => ({name, collection_names}))};
 };
-exports.discoveryChaincodeCallBuilder = exports.endorsementHintsBuilder;
 
 /**
  *

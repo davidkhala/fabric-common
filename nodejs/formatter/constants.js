@@ -41,7 +41,15 @@ const MSPRoleType = [
 	'ORDERER', // Represents an MSP Orderer
 ];
 
-
+/**
+ * @enum
+ */
+const DiscoveryResultType = {
+	config_result: 'config_result',
+	error: 'error',
+	cc_query_res: 'cc_query_res',
+	members: 'members'
+};
 
 
 /**
@@ -169,5 +177,6 @@ module.exports = {
 	BroadcastResponseStatus,
 	SystemChaincodeID,
 	ChannelGroupType,
+	DiscoveryResultType,
 };
 

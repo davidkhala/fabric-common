@@ -11,7 +11,8 @@ A way to compensate missing admin level node-sdk
 
 ## TODO
 - `configDecoder.js`: work as javascript version of configtxlator
-
+- make good use of `fabric-common/lib/ServiceHandler.js`
+- service discovery
 
 ## Notes
 - channel.getChannelConfig(peer) will not be rebuilt: always get it from orderer
