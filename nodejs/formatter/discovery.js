@@ -9,7 +9,7 @@ const resultParser = ({results}) => {
 				returned.error = error;
 				break;
 			case DiscoveryResultType.cc_query_res:
-				returned.cc_query_res = cc_query_res;
+				returned.cc_query_res = cc_query_res.content;
 				break;
 			case DiscoveryResultType.config_result: {
 

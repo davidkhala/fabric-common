@@ -32,11 +32,11 @@ class SlimDiscoveryService extends DiscoveryService {
 		return response;
 	}
 
-	build(idContext, {config = null, local = null, interest, endorsement, onlineSign = true}) {
+	build(idContext, {config = null, local = null, interest, onlineSign = true}) {
 		if (config) {
 			local = false; // otherwise we will have multiple result with type 'members'
 		}
-		const result = super.build(idContext, {config, local, interest, endorsement});
+		const result = super.build(idContext, {config, local, interest, endorsement: null});// endorsement work as a helper to build interest
 		if (onlineSign) {
 			super.sign(idContext);
 		}
