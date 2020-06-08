@@ -1,4 +1,3 @@
-// TODO WIP
 const fabprotos = require('fabric-protos');
 const {MSPRoleType}  = require('khala-fabric-formatter/constants');
 const {ROLE, ORGANIZATION_UNIT, IDENTITY} = fabprotos.common.MSPPrincipal.Classification;
