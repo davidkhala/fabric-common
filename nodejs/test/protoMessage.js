@@ -36,7 +36,7 @@ describe('ApplicationPolicy', () => {
 		};
 		const policy = new Policy(LifecycleProposal.getFabprotos());
 		const signature_policy = policy.buildSignaturePolicyEnvelope(endorsementPolicy);
-		const validation_parameter = LifecycleProposal.buildValidationParameter({signature_policy});
+		const validation_parameter = LifecycleProposal.buildApplicationPolicy({signature_policy});
 	});
 
 });

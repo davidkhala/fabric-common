@@ -5,16 +5,15 @@ const GatePolicy = require('./gatePolicy');
 
 const gatePolicy = new GatePolicy(fabprotos);
 
-
 /**
  *
  * @param name
- * @param required_peer_count
- * @param [maximum_peer_count]
- * @param [endorsement_policy]
- * @param [block_to_live]
- * @param {boolean} [member_only_read]
- * @param {boolean} [member_only_write]
+ * @param {integer} required_peer_count
+ * @param {integer} [maximum_peer_count]
+ * @param {ApplicationPolicy} [endorsement_policy]
+ * @param {integer} [block_to_live]
+ * @param {boolean} [member_only_read] whether only collection member clients can read the private data
+ * @param {boolean} [member_only_write] whether only collection member clients can write the private data
  * @param {MspId[]} member_orgs
  * @return {protos.CollectionConfig}
  */
@@ -63,8 +62,15 @@ const buildCollectionConfig = ({name, required_peer_count, maximum_peer_count, e
 
 	staticCollectionConfig.setMemberOrgsPolicy(collectionPolicyConfig);
 	if (endorsement_policy) {
-		// TODO
-		staticCollectionConfig.setEndorsementPolicy(endorsement_policy);
+		const {channel_config_policy_reference, signature_policy} = endorsement_policy;
+		const applicationPolicy = new protosProtos.ApplicationPolicy();
+
+		if (channel_config_policy_reference) {
+			applicationPolicy.setChannelConfigPolicyReference(channel_config_policy_reference);
+		} else if (signature_policy) {
+			applicationPolicy.setSignaturePolicy(signature_policy);
+		}
+		staticCollectionConfig.setEndorsementPolicy(applicationPolicy);
 	}
 
 	collectionConfig.setStaticCollectionConfig(staticCollectionConfig);

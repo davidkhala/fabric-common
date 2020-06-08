@@ -3,7 +3,11 @@ const {getResponses} = require('khala-fabric-formatter/proposalResponse');
 const {waitForTx} = require('./eventHub');
 const ChaincodeAction = require('./chaincodeAction');
 const {emptyChannel} = require('khala-fabric-admin/channel');
-const {buildCollectionConfig} = require('./privateData');
+const Policy = require('./policy');
+const GatePolicy = require('khala-fabric-admin/gatePolicy');
+
+
+const {buildCollectionConfig} = require('khala-fabric-admin/SideDB');
 
 class ChaincodeOperation extends ChaincodeAction {
 	constructor(peers, user, channel, logger) {
@@ -34,26 +38,52 @@ class ChaincodeOperation extends ChaincodeAction {
 		this.collectionsConfig = collectionsConfig;
 	}
 
+	buildCollectionConfig(name, config) {
+		const {identities, required_peer_count, maximum_peer_count, block_to_live, member_only_write, member_only_read, endorsement_policy} = config;
+		if (required_peer_count < identities.length - 1) {
+			this.logger.warn(`[recommend] collectionConfig ${name}:requiredPeerCount > ${identities.length - 2} is suggested in production`);
+		}
+		return buildCollectionConfig({
+			name,
+			member_only_write,
+			member_only_read,
+			required_peer_count,
+			member_orgs: identities,
+			block_to_live,
+			maximum_peer_count,
+			endorsement_policy,
+		});
+	}
+
+	static applicationPolicyBuilder(_endorsementPolicy) {
+		const {json, gate, reference} = _endorsementPolicy;
+		let signature_policy = null;
+		if (json) {
+			const policy = new Policy(LifecycleProposal.getFabprotos());
+			signature_policy = policy.buildSignaturePolicyEnvelope(json);
+		} else if (gate) {
+			const policy = new GatePolicy(LifecycleProposal.getFabprotos());
+			signature_policy = policy.FromString(gate);
+		}
+		return LifecycleProposal.buildApplicationPolicy({
+			signature_policy,
+			channel_config_policy_reference: reference
+		});
+	}
+
 	assign(lifecycleProposal) {
 		const {endorsementPolicy, collectionsConfig} = this;
 		if (endorsementPolicy) {
-			const {json, gate} = endorsementPolicy;
-			let signature_policy = null;
-			if (json) {
-				const Policy = require('./policy');
-				const policy = new Policy(LifecycleProposal.getFabprotos());
-				signature_policy = policy.buildSignaturePolicyEnvelope(json);
-			} else if (gate) {
-				const GatePolicy = require('khala-fabric-admin/gatePolicy');
-				const policy = new GatePolicy(LifecycleProposal.getFabprotos());
-				signature_policy = policy.FromString(gate);
-			}
-			const validation_parameter = LifecycleProposal.buildValidationParameter({signature_policy});
-			lifecycleProposal.setValidationParameter(validation_parameter); // if empty buffer is set. Apply default
+			const applicationPolicy = ChaincodeOperation.applicationPolicyBuilder(endorsementPolicy);
+			lifecycleProposal.setValidationParameter(applicationPolicy); // if empty buffer is set. Apply default
 		}
 		if (collectionsConfig) {
 			const collectionConfigPackage = Object.entries(collectionsConfig).map(([name, config]) => {
-				return buildCollectionConfig(name, config);
+				const collectionEndorsementPolicy = config.endorsementPolicy;
+				if (collectionEndorsementPolicy) {
+					config.endorsement_policy = ChaincodeOperation.applicationPolicyBuilder(collectionEndorsementPolicy);
+				}
+				return this.buildCollectionConfig(name, config);
 			});
 			lifecycleProposal.setCollectionConfigPackage(collectionConfigPackage);
 		}
@@ -111,13 +141,7 @@ class ChaincodeOperation extends ChaincodeAction {
 	async queryChaincodeDefinition(name) {
 		const lifeCycleProposal = new LifecycleProposal(this.identityContext, this.channel, this.endorsers);
 		const result = await lifeCycleProposal.queryChaincodeDefinition(name);
-		if (name) {
-			this.logger.debug('queryChaincodeDefinition', getResponses(result));
-		} else {
-			this.logger.debug('queryChaincodeDefinition', getResponses(result).map(({chaincode_definitions}) => chaincode_definitions));
-		}
-
-		return result;
+		return result.queryResults;
 	}
 }
 

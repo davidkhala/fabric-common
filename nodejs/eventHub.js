@@ -80,7 +80,7 @@ const waitForTx = async (eventHub, identityContext) => {
 			} else {
 				const {blockNumber, transactionId, status} = event;
 				if (status !== TxValidationCode['0']) {
-					const error = Error(`Invalid transaction status[${status}]`);
+					const error = Error(`Invalid transaction status [${status}]`);
 					Object.assign(error, event);
 					reject(error);
 				} else {

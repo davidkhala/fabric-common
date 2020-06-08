@@ -46,7 +46,6 @@ class Policy {
 	buildSignaturePolicyEnvelope(policy) {
 		const envelope = new this.commonProto.SignaturePolicyEnvelope();
 		const principals = policy.identities.map((identity) => this.buildPrincipal(identity));
-
 		const thePolicy = this.parsePolicy(policy.policy);
 
 		envelope.setVersion(0);

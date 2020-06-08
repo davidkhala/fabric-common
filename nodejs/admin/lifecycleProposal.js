@@ -152,7 +152,7 @@ class LifecycleProposal extends ProposalManager {
 		return result;
 	}
 
-	static buildValidationParameter({signature_policy, channel_config_policy_reference}) {
+	static buildApplicationPolicy({signature_policy, channel_config_policy_reference}) {
 		const applicationPolicy = new protosProtos.ApplicationPolicy();
 
 		if (channel_config_policy_reference) {
@@ -160,11 +160,11 @@ class LifecycleProposal extends ProposalManager {
 		} else if (signature_policy) {
 			applicationPolicy.setSignaturePolicy(signature_policy);
 		}
-		return applicationPolicy.toBuffer();
+		return applicationPolicy;
 	}
 
-	setValidationParameter(validation_parameter) {
-		this.validation_parameter = validation_parameter;
+	setValidationParameter(applicationPolicy) {
+		this.validation_parameter = applicationPolicy.toBuffer();
 	}
 
 	/**
