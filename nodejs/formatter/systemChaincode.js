@@ -1,15 +1,5 @@
 const SystemChaincodeFunctions = {
-	lscc: {
-		install: undefined,
-		deploy: undefined,
-		upgrade: undefined,
-		getid: 'ChaincodeExists',
-		getdepspec: 'GetDeploymentSpec',
-		getccdata: 'GetChaincodeData',
-		getchaincodes: 'GetChaincodes',
-		getinstalledchaincodes: 'GetInstalledChaincodes',
-		getcollectionsconfig: 'GetCollectionsConfig'
-	},
+	// LSCC is now read-only as legacy for 1.x
 	qscc: {
 		GetBlockByNumber: 'GetBlockByNumber',
 		GetChainInfo: 'GetChainInfo',
