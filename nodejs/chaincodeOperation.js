@@ -1,21 +1,28 @@
 const LifecycleProposal = require('khala-fabric-admin/lifecycleProposal');
-const {getResponses} = require('khala-fabric-formatter/proposalResponse');
 const {waitForTx} = require('./eventHub');
 const ChaincodeAction = require('./chaincodeAction');
 const {emptyChannel} = require('khala-fabric-admin/channel');
 const Policy = require('./policy');
 const GatePolicy = require('khala-fabric-admin/gatePolicy');
 
-
 const {buildCollectionConfig} = require('khala-fabric-admin/SideDB');
 
 class ChaincodeOperation extends ChaincodeAction {
-	constructor(peers, user, channel, logger) {
+	/**
+	 *
+	 * @param peers
+	 * @param user
+	 * @param channel
+	 * @param {EndorseResultHandler} endorseResultInterceptor
+	 * @param logger
+	 */
+	constructor(peers, user, channel, endorseResultInterceptor, logger) {
 		super(peers, user, channel);
 		if (!logger) {
 			logger = require('khala-logger/log4js').consoleLogger('Chaincode Operation');
 		}
 		this.logger = logger;
+		this.endorseResultInterceptor = endorseResultInterceptor;
 	}
 
 	static _defaultVersion(sequence) {
@@ -26,7 +33,7 @@ class ChaincodeOperation extends ChaincodeAction {
 		const lifeCycleProposal = new LifecycleProposal(this.identityContext, emptyChannel(''), this.endorsers);
 
 		const result = await lifeCycleProposal.installChaincode(chaincodePackagePath);
-		this.logger.debug('installChaincode', getResponses(result));
+		this.endorseResultInterceptor(result);
 		return result;
 	}
 
@@ -99,7 +106,7 @@ class ChaincodeOperation extends ChaincodeAction {
 			version,
 			sequence,
 		}, PackageID);
-		this.logger.debug('approve:proposal', getResponses(result));
+		this.endorseResultInterceptor(result);
 		const commitResult = await lifecycleProposal.commit([orderer.committer]);
 		this.logger.info('approve:commit', commitResult);
 		const eventHub = this.newEventHub();
@@ -125,7 +132,7 @@ class ChaincodeOperation extends ChaincodeAction {
 		const lifecycleProposal = new LifecycleProposal(this.identityContext, this.channel, this.endorsers);
 		this.assign(lifecycleProposal);
 		const result = await lifecycleProposal.commitChaincodeDefinition({name, version, sequence});
-		this.logger.debug('commitChaincodeDefinition', getResponses(result));
+		this.endorseResultInterceptor(result);
 		const commitResult = await lifecycleProposal.commit([orderer.committer]);
 		this.logger.debug('commitChaincodeDefinition:commit', commitResult);
 		const eventHub = this.newEventHub();

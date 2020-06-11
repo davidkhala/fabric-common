@@ -3,30 +3,15 @@ const ProposalManager = require('khala-fabric-admin/proposal');
 const {waitForTx} = require('./eventHub');
 const {transientMapTransform} = require('khala-fabric-formatter/txProposal');
 
-const EndorseALL = (result) => {
-	const {errors, responses} = result;
-	if (errors.length > 0) {
-		const err = Error('SYSTEM_ERROR');
-		err.errors = errors;
-		throw err;
-	}
+/**
+ * @typedef {function} EndorseResultHandler
+ * @param {ProposalResponse} result
+ * @return ProposalResponse
+ */
 
-	const endorsementErrors = [];
-	for (const Response of responses) {
-		const {response, connection} = Response;
-		if (response.status !== 200) {
-			endorsementErrors.push({response, connection});
-		}
-
-	}
-	if (endorsementErrors.length > 0) {
-		const err = Error('ENDORSE_ERROR');
-		err.errors = endorsementErrors;
-		throw err;
-	}
-	return result;
-};
-
+/**
+ *
+ */
 class Transaction extends ChaincodeAction {
 	constructor(peers, user, channel, logger) {
 		super(peers, user, channel);
@@ -48,6 +33,11 @@ class Transaction extends ChaincodeAction {
 		this.eventOptions = options;
 	}
 
+	/**
+	 *
+	 * @param chaincodeId
+	 * @param {EndorseResultHandler} endorseResultHandler
+	 */
 	build(chaincodeId, endorseResultHandler) {
 		this.proposal = new ProposalManager(this.identityContext, this.channel, chaincodeId, this.endorsers);
 		if (typeof endorseResultHandler === 'function') {
@@ -100,5 +90,4 @@ class Transaction extends ChaincodeAction {
 	}
 }
 
-Transaction.EndorseALL = EndorseALL;
 module.exports = Transaction;

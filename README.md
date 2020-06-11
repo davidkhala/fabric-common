@@ -96,8 +96,7 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
 - only `OR` is allowed in collection distribution policy(`member_orgs_policy`), see in [Architecture Reference: Private Data](https://hyperledger-fabric.readthedocs.io/en/master/private-data-arch.html)
 - the private data distribution policy must define a broader set of organizations than the chaincode endorsement policy
 - [collection-level-endorsement-policies](https://hyperledger-fabric.readthedocs.io/en/master/endorsement-policies.html#setting-collection-level-endorsement-policies)
-    - If a collection-level endorsement policy is set, transactions that write to a private data collection key will require that the specified organization peers have endorsed the transaction.
-    - The collection-level endorsement policy may be less restrictive or more restrictive than the chaincode-level endorsement policy and the collection’s private data distribution policy.
+    - Collection-level endorsement policy override chaincode-level endorsement policy for any data written to the collection
     - if collection-level endorsement policy is unset, instead of having default policy such as `channel_config_policy_reference = '/Channel/Application/Endorsement'`, no collection-level endorsement policy apply.
 
 ### [Notes: Chaincode](./CHAINCODE.md)

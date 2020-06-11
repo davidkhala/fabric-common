@@ -25,3 +25,4 @@ const ChaincodeType = {
 	java: 'java'
 };
 exports.ChaincodeType = ChaincodeType;
+exports.implicitCollection = (mspId) => `_implicit_org_${mspId}`;
