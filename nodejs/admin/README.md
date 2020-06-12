@@ -1,6 +1,9 @@
 # khala-fabric-admin
 A way to compensate missing admin level node-sdk
 
+## Documents
+Code as document at current stage. Raise issue when you get confused. 
+
 
 ## Design
 - This derives from 'khala-fabric-sdk-node-builder' design
