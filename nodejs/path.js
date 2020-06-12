@@ -1,23 +1,8 @@
 const path = require('path');
 const fsExtra = require('fs-extra');
-const {normalizeX509} = require('khala-fabric-admin/helper');
+
 const {ECDSA_PrvKey, ECDSA_Key} = require('khala-fabric-formatter/key');
-exports.findKeyFiles = (dir) => {
-	const files = fsExtra.readdirSync(dir);
-	return files.filter((fileName) => fileName.endsWith('_sk')).map((fileName) => path.resolve(dir, fileName));
-};
-exports.findCertFiles = (dir) => {
-	const files = fsExtra.readdirSync(dir);
-	return files.map((fileName) => path.resolve(dir, fileName)).filter(filePath => {
-		try {
-			const pem = fsExtra.readFileSync(filePath).toString();
-			normalizeX509(pem);
-			return true;
-		} catch (e) {
-			return false;
-		}
-	});
-};
+const {findKeyFiles} = require('khala-fabric-formatter/path');
 
 /**
  * @class
@@ -191,7 +176,7 @@ class CryptoPath {
 	 */
 	MSPKeystore(type) {
 		const dir = this.MSPFile(type).keystore;
-		const files = exports.findKeyFiles(dir);
+		const files = findKeyFiles(dir);
 		if (files.length > 0) {
 			return files[0];
 		}
