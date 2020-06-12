@@ -95,7 +95,7 @@ const waitForTx = async (eventHub, identityContext) => {
 };
 const replayTx = async (eventHub, identityContext, endBlockHeight) => {
 
-	eventHub.build(identityContext, {startBlock: OLDEST, endBlock: NEWEST});
+	eventHub.build(identityContext, {startBlock: OLDEST, endBlock: endBlockHeight});
 	return await new Promise((resolve, reject) => {
 		const result = [];
 		const callback = (err, event) => {

@@ -7,7 +7,7 @@ A way to compensate missing admin level node-sdk
     - it depends on fabric-sdk components
     - Object-oriented
 - channel operation: create, join, update
-- chaincode operation: package, install, Approve, commit
+- chaincode operation: install, Approve, commit
 
 ## TODO
 - `configDecoder.js`: work as javascript version of configtxlator
@@ -15,7 +15,7 @@ A way to compensate missing admin level node-sdk
 - service discovery
 
 ## Notes
-- channel.getChannelConfig(peer) will not be rebuilt: always get it from orderer
+- channel.getChannelConfig(peer) will not be rebuilt, please use event service to get block from peer; or get it from orderer
 
 ## Entry Points
 - `peer.js` work as [endorser] and [eventer]
@@ -34,10 +34,10 @@ peer joining to a channel in nature is sending a system chaincode proposal to pe
 - Or you could use method `getSpecificBlock` in `signingIdentity.js` to get genesis block from orderer
 
 ### Channel Update
-
+Tutorial WIP
 
 ### Chaincode Package
-   
+There is multiple way we could make archive. My sample use `chaincodePackage.js` in `npm khala-fabric-sdk-node`     
 
 ### Chaincode Install
 - See in `lifeCycleProposal.installChaincode`
@@ -47,3 +47,6 @@ peer joining to a channel in nature is sending a system chaincode proposal to pe
 
 ### Chaincode Commit
 - See in `lifeCycleProposal.commitChaincodeDefinition`
+
+### Discovery service
+- SlimDiscoveryService in `discovery.js` 
