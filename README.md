@@ -1,9 +1,10 @@
 # fabric-common
 [![Build Status](https://travis-ci.com/davidkhala/fabric-common.svg?branch=master)](https://travis-ci.com/davidkhala/fabric-common)
 
-Current version 2.1.0
+Current version 2.1.1
 ## Prerequisite
 - docker: 18.03 +
+### Prerequisite: For development
 - docker-compose: 1.14.0 +
 - golang: 1.14.x
 - fabric-node-sdk:

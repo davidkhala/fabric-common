@@ -67,14 +67,15 @@ softHSM() {
 	fi
 }
 fabricInstall() {
-	curl -sSL https://bit.ly/2ysbOFE | bash -s -- 2.1.0 1.4.6 0.4.18 -s
+	#	If you want the latest production release, omit all version identifiers.
+	curl -sSL https://bit.ly/2ysbOFE | bash -s -- -s
 }
 if [[ -n "$fcn" ]]; then
 	$fcn $remain_params
 else
 	# install home brew
 	if [[ $(uname) == "Darwin" ]]; then
-		if ! brew config > /dev/null; then
+		if ! brew config >/dev/null; then
 			/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 		fi
 	fi

@@ -103,7 +103,6 @@ class LifecycleProposal extends ProposalManager {
 	}
 
 	/**
-	 * due to `response.endorsement` === null for this. mannual parser is required
 	 * @param {string} [packageId] if specified, only query for single chaincode
 	 */
 	async queryInstalledChaincodes(packageId) {
@@ -124,7 +123,6 @@ class LifecycleProposal extends ProposalManager {
 			args,
 		};
 		const result = await this.send(buildProposalRequest);
-
 		result.queryResults = getResponses(result).map(response => {
 			if (packageId) {
 				const {package_id, label, references} = lifeCycleProtos.QueryInstalledChaincodeResult.decode(response.payload);
@@ -135,7 +133,6 @@ class LifecycleProposal extends ProposalManager {
 				return {package_id, label, references: References};
 			} else {
 				const {installed_chaincodes} = lifeCycleProtos.QueryInstalledChaincodesResult.decode(response.payload);
-				this.logger.debug({installed_chaincodes});
 				const installedChaincodes = {};
 				for (const {package_id, label, references} of installed_chaincodes) {
 					installedChaincodes[package_id] = {};

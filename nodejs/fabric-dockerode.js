@@ -5,7 +5,6 @@ const caUtil = require('./ca');
 const ordererUtil = require('./orderer');
 const couchdbUtil = require('./couchdb');
 const {adminName: defaultAdminName, adminPwd: defaultAdminPwd} = require('khala-fabric-formatter/user');
-const query = require('./query');
 /**
  * @param [fabricTag]
  * @param [caTag]
@@ -89,29 +88,13 @@ exports.runCA = async ({container_name, port, network, imageTag, adminName, admi
 };
 
 /**
- * docker exec $PEER_CONTAINER rm -rf /var/hyperledger/production/chaincodes/$CHAINCODE_NAME.$VERSION
- * @param [peer] required if use sync fashion
- * @param [client] required if use sync fashion
+ * TODO queryInstalled would not change even after removal
  * @param {string} container_name peer container name
- * @param {string} chaincodeId
- * @param {string} chaincodeVersion
- * @param [logger]
- * @return {Promise<void>}
+ * @param {string} chaincodePackageId
  */
-exports.uninstallChaincode = async ({container_name, chaincodeId, chaincodeVersion, peer, client}, logger = console) => {
-	const Cmd = ['rm', '-rf', `${peerUtil.container.state}/chaincodes/${chaincodeId}.${chaincodeVersion}`];
+exports.uninstallChaincode = async (container_name, chaincodePackageId) => {
+	const Cmd = ['rm', `${peerUtil.container.state}/lifecycle/chaincodes/${chaincodePackageId.replace(':', '.')}.tar.gz`];
 	await dockerUtil.containerExec({container_name, Cmd});
-	if (peer && client) {
-		const loop = async () => {
-			const {pretty} = await query.chaincodesInstalled(peer, client);
-			if (pretty.find(({name, version}) => name === chaincodeId && version === chaincodeVersion)) {
-				logger.debug('uninstallChaincode', 'docekr exec lagging, retry...');
-				await loop();
-			}
-		};
-		await loop();
-	}
-
 };
 exports.chaincodeImageList = async () => {
 	const images = await dockerUtil.imageList();
@@ -151,8 +134,8 @@ exports.chaincodeClear = async (filter) => {
 		await dockerUtil.imageDelete(container.Image);
 	}
 };
-// eslint-disable-next-line max-len
-exports.runOrderer = async ({container_name, imageTag, port, network, BLOCK_FILE, CONFIGTXVolume, msp, ordererType, tls, stateVolume}, operations, metrics) => {
+exports.runOrderer = async (opts, operations, metrics) => {
+	const {container_name, imageTag, port, network, BLOCK_FILE, CONFIGTXVolume, msp, ordererType, tls, stateVolume} = opts;
 	const {id, configPath, volumeName} = msp;
 	const Image = `hyperledger/fabric-orderer:${imageTag}`;
 	const Cmd = ['orderer'];
@@ -178,13 +161,14 @@ exports.runOrderer = async ({container_name, imageTag, port, network, BLOCK_FILE
 	return await dockerUtil.containerStart(createOptions);
 };
 
-exports.runPeer = async ({
-	container_name, port, network, imageTag,
-	msp: {
-		id, volumeName,
-		configPath
-	}, peerHostName, tls, couchDB, stateVolume
-}, operations, metrics) => {
+exports.runPeer = async (opts, operations, metrics) => {
+	const {
+		container_name, port, network, imageTag,
+		msp: {
+			id, volumeName,
+			configPath
+		}, peerHostName, tls, couchDB, stateVolume
+	} = opts;
 	const Image = `hyperledger/fabric-peer:${imageTag}`;
 	const Cmd = ['peer', 'node', 'start'];
 	const Env = peerUtil.envBuilder({
