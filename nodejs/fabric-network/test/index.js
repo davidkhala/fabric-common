@@ -12,12 +12,10 @@ describe('unit', async () => {
 		const GatewayManager = require('../gateway');
 
 		let gatewayManager;
-		it('constructor', () => {
+		it('constructor', async () => {
 			const user = getSampleUser();
 
 			gatewayManager = new GatewayManager(user);
-		});
-		it('connect', async () => {
 			await gatewayManager.connect('allchannel', undefined, undefined, undefined, undefined);
 		});
 
