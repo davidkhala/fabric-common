@@ -115,7 +115,7 @@ const replayTx = async (eventHub, identityContext, endBlockHeight) => {
 				}
 			}
 		};
-		const listener = eventHub.txEvent(ALL, callback, {unregister: true});
+		const listener = eventHub.txEvent(ALL, callback, {unregister: false});
 		eventHub.connect();
 	});
 };

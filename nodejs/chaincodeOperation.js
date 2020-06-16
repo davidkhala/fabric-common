@@ -49,6 +49,10 @@ class ChaincodeOperation extends ChaincodeAction {
 		this.collectionsConfig = collectionsConfig;
 	}
 
+	setInitRequired(init_required) {
+		this.init_required = init_required;
+	}
+
 	buildCollectionConfig(name, config) {
 		const {identities, required_peer_count, maximum_peer_count, block_to_live, member_only_write, member_only_read, endorsement_policy} = config;
 		if (required_peer_count < identities.length - 1) {
@@ -83,7 +87,7 @@ class ChaincodeOperation extends ChaincodeAction {
 	}
 
 	assign(lifecycleProposal) {
-		const {endorsementPolicy, collectionsConfig} = this;
+		const {endorsementPolicy, collectionsConfig, init_required} = this;
 		if (endorsementPolicy) {
 			const applicationPolicy = ChaincodeOperation.applicationPolicyBuilder(endorsementPolicy);
 			lifecycleProposal.setValidationParameter(applicationPolicy); // if empty buffer is set. Apply default
@@ -98,6 +102,7 @@ class ChaincodeOperation extends ChaincodeAction {
 			});
 			lifecycleProposal.setCollectionConfigPackage(collectionConfigPackage);
 		}
+		lifecycleProposal.setInitRequired(init_required);
 
 	}
 
