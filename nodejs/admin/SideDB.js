@@ -44,36 +44,36 @@ const buildCollectionConfig = ({name, required_peer_count, maximum_peer_count, e
 	});
 	const nOutOf = gatePolicy.buildNOutOf({n: 1, rules});
 	const rule = gatePolicy.buildSignaturePolicy({n_out_of: nOutOf});
-	signaturePolicyEnvelope.setRule(rule);
-	signaturePolicyEnvelope.setIdentities(identities);
+	signaturePolicyEnvelope.rule = rule;
+	signaturePolicyEnvelope.identities = identities;
 
-	collectionPolicyConfig.setSignaturePolicy(signaturePolicyEnvelope);
+	collectionPolicyConfig.signature_policy = signaturePolicyEnvelope;
 
 	const staticCollectionConfig = new protosProtos.StaticCollectionConfig();
-	staticCollectionConfig.setName(name);
-	staticCollectionConfig.setRequiredPeerCount(required_peer_count);
-	staticCollectionConfig.setMaximumPeerCount(maximum_peer_count);
+	staticCollectionConfig.name = name;
+	staticCollectionConfig.required_peer_count = required_peer_count;
+	staticCollectionConfig.maximum_peer_count = maximum_peer_count;
 	if (block_to_live) {
-		staticCollectionConfig.setBlockToLive(block_to_live);
+		staticCollectionConfig.block_to_live = block_to_live;
 	}
 
-	staticCollectionConfig.setMemberOnlyWrite(member_only_write);
-	staticCollectionConfig.setMemberOnlyRead(member_only_read);
+	staticCollectionConfig.member_only_write = member_only_write;
+	staticCollectionConfig.member_only_read = member_only_read;
 
-	staticCollectionConfig.setMemberOrgsPolicy(collectionPolicyConfig);
+	staticCollectionConfig.member_orgs_policy = collectionPolicyConfig;
 	if (endorsement_policy) {
 		const {channel_config_policy_reference, signature_policy} = endorsement_policy;
 		const applicationPolicy = new protosProtos.ApplicationPolicy();
 
 		if (channel_config_policy_reference) {
-			applicationPolicy.setChannelConfigPolicyReference(channel_config_policy_reference);
+			applicationPolicy.channel_config_policy_reference = channel_config_policy_reference;
 		} else if (signature_policy) {
-			applicationPolicy.setSignaturePolicy(signature_policy);
+			applicationPolicy.signature_policy = signature_policy;
 		}
-		staticCollectionConfig.setEndorsementPolicy(applicationPolicy);
+		staticCollectionConfig.endorsement_policy = applicationPolicy;
 	}
 
-	collectionConfig.setStaticCollectionConfig(staticCollectionConfig);
+	collectionConfig.static_collection_config = staticCollectionConfig;
 	return collectionConfig;
 };
 

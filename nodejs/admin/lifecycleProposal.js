@@ -38,7 +38,7 @@ class LifecycleProposal extends ProposalManager {
 		const fileContent = fs.readFileSync(packageTarGz);
 		const installChaincodeArgs = new lifeCycleProtos.InstallChaincodeArgs();
 
-		installChaincodeArgs.setChaincodeInstallPackage(fileContent);
+		installChaincodeArgs.chaincode_install_package = fileContent;
 		/**
 		 * @type {BuildProposalRequest}
 		 */
@@ -76,28 +76,28 @@ class LifecycleProposal extends ProposalManager {
 
 	setCollectionConfigPackage(collectionConfigs) {
 		const collectionConfigPackage = new protosProtos.CollectionConfigPackage();
-		collectionConfigPackage.setConfig(collectionConfigs);
+		collectionConfigPackage.config = collectionConfigs;
 		this.collectionConfigPackage = collectionConfigPackage;
 	}
 
 	_propertyAssign(protobufMessage) {
 		const {endorsement_plugin, init_required, validation_plugin, validation_parameter, collectionConfigPackage} = this;
 		if (endorsement_plugin) {
-			protobufMessage.setEndorsementPlugin(endorsement_plugin);
+			protobufMessage.endorsement_plugin = endorsement_plugin;
 		}
 		if (init_required) {
-			protobufMessage.setInitRequired(init_required);
+			protobufMessage.init_required = init_required;
 		}
 		if (validation_plugin) {
-			protobufMessage.setValidationPlugin(validation_plugin);
+			protobufMessage.validation_plugin = validation_plugin;
 		}
 		if (validation_parameter) {
-			protobufMessage.setValidationParameter(validation_parameter);
+			protobufMessage.validation_parameter = validation_parameter;
 		} else {
 			this.logger.info('apply default endorsement policy');
 		}
 		if (collectionConfigPackage) {
-			protobufMessage.setCollections(collectionConfigPackage);
+			protobufMessage.collections = collectionConfigPackage;
 			this.logger.info('private data enabled');
 		}
 	}
@@ -109,7 +109,7 @@ class LifecycleProposal extends ProposalManager {
 		let args;
 		if (packageId) {
 			const queryInstalledChaincodeArgs = new lifeCycleProtos.QueryInstalledChaincodeArgs();
-			queryInstalledChaincodeArgs.setPackageId(packageId);
+			queryInstalledChaincodeArgs.package_id = packageId;
 			args = [queryInstalledChaincodeArgs.toBuffer()];
 		} else {
 			const queryInstalledChaincodesArgs = new lifeCycleProtos.QueryInstalledChaincodesArgs();
@@ -152,9 +152,9 @@ class LifecycleProposal extends ProposalManager {
 		const applicationPolicy = new protosProtos.ApplicationPolicy();
 
 		if (channel_config_policy_reference) {
-			applicationPolicy.setChannelConfigPolicyReference(channel_config_policy_reference);
+			applicationPolicy.channel_config_policy_reference = channel_config_policy_reference;
 		} else if (signature_policy) {
-			applicationPolicy.setSignaturePolicy(signature_policy);
+			applicationPolicy.signature_policy = signature_policy;
 		}
 		return applicationPolicy;
 	}
@@ -177,23 +177,22 @@ class LifecycleProposal extends ProposalManager {
 
 		if (PackageID) {
 			const localPackage = new lifeCycleProtos.ChaincodeSource.Local();
-			localPackage.setPackageId(PackageID);
-			source.setLocalPackage(localPackage);
+			localPackage.package_id = PackageID;
+			source.local_package = localPackage;
 			source.Type = 'local_package';
 		} else {
-			const unavailable = new lifeCycleProtos.ChaincodeSource.Unavailable();
-			source.setUnavailable(unavailable);
+			source.unavailable = new lifeCycleProtos.ChaincodeSource.Unavailable();
 			source.Type = 'unavailable';
 		}
 
 		const approveChaincodeDefinitionForMyOrgArgs = new lifeCycleProtos.ApproveChaincodeDefinitionForMyOrgArgs();
-		approveChaincodeDefinitionForMyOrgArgs.setSequence(sequence);
-		approveChaincodeDefinitionForMyOrgArgs.setName(name);
-		approveChaincodeDefinitionForMyOrgArgs.setVersion(version);
+		approveChaincodeDefinitionForMyOrgArgs.sequence = sequence;
+		approveChaincodeDefinitionForMyOrgArgs.name = name;
+		approveChaincodeDefinitionForMyOrgArgs.version = version;
 
 		this._propertyAssign(approveChaincodeDefinitionForMyOrgArgs);
 
-		approveChaincodeDefinitionForMyOrgArgs.setSource(source);
+		approveChaincodeDefinitionForMyOrgArgs.source = source;
 		/**
 		 * @type {BuildProposalRequest}
 		 */
@@ -208,9 +207,9 @@ class LifecycleProposal extends ProposalManager {
 	async checkCommitReadiness({name, version, sequence}) {
 		this.asQuery();
 		const checkCommitReadinessArgs = new lifeCycleProtos.CheckCommitReadinessArgs();
-		checkCommitReadinessArgs.setSequence(sequence);
-		checkCommitReadinessArgs.setName(name);
-		checkCommitReadinessArgs.setVersion(version);
+		checkCommitReadinessArgs.sequence = sequence;
+		checkCommitReadinessArgs.name = name;
+		checkCommitReadinessArgs.version = version;
 		this._propertyAssign(checkCommitReadinessArgs);
 
 		/**
@@ -244,9 +243,9 @@ class LifecycleProposal extends ProposalManager {
 	 */
 	async commitChaincodeDefinition({sequence, name, version}) {
 		const commitChaincodeDefinitionArgs = new lifeCycleProtos.CommitChaincodeDefinitionArgs();
-		commitChaincodeDefinitionArgs.setSequence(sequence);
-		commitChaincodeDefinitionArgs.setName(name);
-		commitChaincodeDefinitionArgs.setVersion(version);
+		commitChaincodeDefinitionArgs.sequence = sequence;
+		commitChaincodeDefinitionArgs.name = name;
+		commitChaincodeDefinitionArgs.version = version;
 		this._propertyAssign(commitChaincodeDefinitionArgs);
 
 		/**
@@ -266,7 +265,7 @@ class LifecycleProposal extends ProposalManager {
 		if (name) {
 			fcn = QueryChaincodeDefinition;
 			const queryChaincodeDefinitionArgs = new lifeCycleProtos.QueryChaincodeDefinitionArgs();
-			queryChaincodeDefinitionArgs.setName(name);
+			queryChaincodeDefinitionArgs.name = name;
 			args = [queryChaincodeDefinitionArgs.toBuffer()];
 		} else {
 			const queryChaincodeDefinitionsArgs = new lifeCycleProtos.QueryChaincodeDefinitionsArgs();
@@ -293,32 +292,9 @@ class LifecycleProposal extends ProposalManager {
 		const decodedQueryResults = queryResults.map(payload => {
 
 			if (name) {
-				// message QueryChaincodeDefinitionResult {
-				// 	int64 sequence = 1;
-				// 	string version = 2;
-				// 	string endorsement_plugin = 3;
-				// 	string validation_plugin = 4;
-				// 	bytes validation_parameter = 5;
-				// 	protos.CollectionConfigPackage collections = 6;
-				// 	bool init_required = 7;
-				// 	map<string,bool> approvals = 8;
-				// }
 				const resultSingle = lifeCycleProtos.QueryChaincodeDefinitionResult.decode(payload);
 				return singleChaincodeDefinitionAmend(resultSingle);
 			} else {
-				// message QueryChaincodeDefinitionsResult {
-				//     message ChaincodeDefinition {
-				//         string name = 1;
-				//         int64 sequence = 2;
-				//         string version = 3;
-				//         string endorsement_plugin = 4;
-				//         string validation_plugin = 5;
-				//         bytes validation_parameter = 6;
-				//         protos.CollectionConfigPackage collections = 7;
-				//         bool init_required = 8;
-				//     }
-				//     repeated ChaincodeDefinition chaincode_definitions = 1;
-				// }
 				const {chaincode_definitions} = lifeCycleProtos.QueryChaincodeDefinitionsResult.decode(payload);
 				return chaincode_definitions.map(definition => {
 					const resultSingle = lifeCycleProtos.QueryChaincodeDefinitionsResult.ChaincodeDefinition.decode(definition);

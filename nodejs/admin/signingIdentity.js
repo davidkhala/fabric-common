@@ -32,8 +32,8 @@ class SigningIdentityUtil {
 
 		// build the return object
 		const proto_config_signature = new commonProto.ConfigSignature();
-		proto_config_signature.setSignatureHeader(signature_header_bytes);
-		proto_config_signature.setSignature(signature);
+		proto_config_signature.signature_header = signature_header_bytes;
+		proto_config_signature.signature = signature;
 
 		return proto_config_signature;
 	}
@@ -62,9 +62,9 @@ class SigningIdentityUtil {
 			payload = envelopeDecoded.payload;
 		} else {
 			const configUpdateEnvelope = new commonProto.ConfigUpdateEnvelope();
-			configUpdateEnvelope.setConfigUpdate(config);
+			configUpdateEnvelope.config_update = config;
 			const signaturesDecoded = signatures.map(_signature => commonProto.ConfigSignature.decode(_signature));
-			configUpdateEnvelope.setSignatures(signaturesDecoded);
+			configUpdateEnvelope.signatures = signaturesDecoded;
 
 			const channelHeader = buildChannelHeader({
 				Type: commonProto.HeaderType.CONFIG_UPDATE,

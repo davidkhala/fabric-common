@@ -1,4 +1,3 @@
-
 const MSPRoleTypeInverse = {
 	'MEMBER': 0,
 	'ADMIN': 1,
@@ -23,19 +22,19 @@ class GatePolicy {
 	buildMSPPrincipal(MSPRoleType, mspid) {
 		const {commonProtos} = this;
 		const newPrincipal = new commonProtos.MSPPrincipal();
-		newPrincipal.setPrincipalClassification(commonProtos.MSPPrincipal.Classification.ROLE);
+		newPrincipal.principal_classification = commonProtos.MSPPrincipal.Classification.ROLE;
 		const newRole = new commonProtos.MSPRole();
-		newRole.setRole(MSPRoleType);
-		newRole.setMspIdentifier(mspid);
-		newPrincipal.setPrincipal(newRole.toBuffer());
+		newRole.role = MSPRoleType;
+		newRole.msp_identifier = mspid;
+		newPrincipal.principal = newRole.toBuffer();
 		return newPrincipal;
 	}
 
 	buildNOutOf({n, rules: SignaturePolicyArray}) {
 		const {commonProtos} = this;
 		const n_out_of = new commonProtos.SignaturePolicy.NOutOf();
-		n_out_of.setN(n);
-		n_out_of.setRules(SignaturePolicyArray);
+		n_out_of.n = n;
+		n_out_of.rules = SignaturePolicyArray;
 		return n_out_of;
 	}
 
@@ -45,10 +44,10 @@ class GatePolicy {
 		const signaturePolicy = new commonProtos.SignaturePolicy();
 		if (n_out_of) {
 			signaturePolicy.Type = 'n_out_of';
-			signaturePolicy.setNOutOf(n_out_of);
+			signaturePolicy.n_out_of = n_out_of;
 		} else if (signed_by || signed_by === 0) {
 			signaturePolicy.Type = 'signed_by';
-			signaturePolicy.setSignedBy(signed_by);
+			signaturePolicy.signed_by = signed_by;
 		}
 		return signaturePolicy;
 	}
@@ -109,8 +108,8 @@ class GatePolicy {
 		const rule = parseGateClause(policyString);
 
 		const signaturePolicyEnvelope = new commonProtos.SignaturePolicyEnvelope();
-		signaturePolicyEnvelope.setRule(rule);
-		signaturePolicyEnvelope.setIdentities(identities);
+		signaturePolicyEnvelope.rule = rule;
+		signaturePolicyEnvelope.identities = identities;
 
 		return signaturePolicyEnvelope;
 	}

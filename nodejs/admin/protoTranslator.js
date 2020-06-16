@@ -5,8 +5,8 @@ const ordererProto = fabprotos.orderer;
 const buildCurrentTimestamp = () => {
 	const now = new Date();
 	const timestamp = new fabprotos.google.protobuf.Timestamp();
-	timestamp.setSeconds(now.getTime() / 1000);
-	timestamp.setNanos((now.getTime() % 1000) * 1000000);
+	timestamp.seconds = now.getTime() / 1000;
+	timestamp.nanos = (now.getTime() % 1000) * 1000000;
 	return timestamp;
 };
 /**
@@ -21,25 +21,25 @@ const buildCurrentTimestamp = () => {
  */
 const buildChannelHeader = ({Type, Version = 1, ChannelId, TxId, ChaincodeID, TLSCertHash, Timestamp}) => {
 	const channelHeader = new commonProto.ChannelHeader();
-	channelHeader.setType(Type); // int32
-	channelHeader.setVersion(Version); // int32
+	channelHeader.type = Type; // int32
+	channelHeader.version = Version; // int32
 
-	channelHeader.setChannelId(ChannelId); // string
-	channelHeader.setTxId(TxId); // string
+	channelHeader.channel_id = ChannelId; // string
+	channelHeader.tx_id = TxId; // string
 	// 	channelHeader.setEpoch(epoch); // uint64
 
 
 	const headerExt = new fabprotos.protos.ChaincodeHeaderExtension();
 	if (ChaincodeID) {
 		const chaincodeID = new fabprotos.protos.ChaincodeID();
-		chaincodeID.setName(ChaincodeID);
-		headerExt.setChaincodeId(chaincodeID);
+		chaincodeID.name = ChaincodeID;
+		headerExt.chaincode_id = chaincodeID;
 	}
 
-	channelHeader.setExtension(headerExt.toBuffer());
-	channelHeader.setTimestamp(Timestamp || buildCurrentTimestamp()); // google.protobuf.Timestamp
+	channelHeader.extension = headerExt.toBuffer();
+	channelHeader.timestamp = Timestamp || buildCurrentTimestamp(); // google.protobuf.Timestamp
 	if (TLSCertHash) {
-		channelHeader.setTlsCertHash(TLSCertHash);
+		channelHeader.tls_cert_hash = TLSCertHash;
 	}
 
 
@@ -53,8 +53,8 @@ const buildChannelHeader = ({Type, Version = 1, ChannelId, TxId, ChaincodeID, TL
  */
 const buildSignatureHeader = ({Creator, Nonce}) => {
 	const signatureHeader = new commonProto.SignatureHeader();
-	signatureHeader.setCreator(Creator);
-	signatureHeader.setNonce(Nonce);
+	signatureHeader.creator = Creator;
+	signatureHeader.nonce = Nonce;
 	return signatureHeader;
 };
 /**
@@ -67,8 +67,8 @@ const buildHeader = ({Creator, Nonce, ChannelHeader}) => {
 	const signatureHeader = buildSignatureHeader({Creator, Nonce});
 
 	const header = new commonProto.Header();
-	header.setSignatureHeader(signatureHeader.toBuffer());
-	header.setChannelHeader(ChannelHeader.toBuffer());
+	header.signature_header = signatureHeader.toBuffer();
+	header.channel_header = ChannelHeader.toBuffer();
 
 	return header;
 };
@@ -80,8 +80,8 @@ const buildHeader = ({Creator, Nonce, ChannelHeader}) => {
  */
 const buildPayload = ({Header, Data}) => {
 	const payload = new commonProto.Payload();
-	payload.setHeader(Header);
-	payload.setData(Data);
+	payload.header = Header;
+	payload.data = Data;
 	return payload;
 };
 /**
@@ -95,20 +95,18 @@ const buildSeekPosition = (heightFilter) => {
 	switch (typeof heightFilter) {
 		case 'number': {
 			const seekSpecified = new ordererProto.SeekSpecified();
-			seekSpecified.setNumber(heightFilter);
-			seekPosition.setSpecified(seekSpecified);
+			seekSpecified.number = heightFilter;
+			seekPosition.specified = seekSpecified;
 		}
 			break;
 		case 'string':
 			switch (heightFilter) {
 				case NEWEST: {
-					const seekNewest = new fabprotos.orderer.SeekNewest();
-					seekPosition.setNewest(seekNewest);
+					seekPosition.newest = new ordererProto.SeekNewest();
 				}
 					break;
 				case OLDEST: {
-					const seekOldest = new ordererProto.SeekOldest();
-					seekPosition.setOldest(seekOldest);
+					seekPosition.oldest = new ordererProto.SeekOldest();
 				}
 					break;
 			}
@@ -131,11 +129,12 @@ const SeekBehavior = {
  */
 const buildSeekInfo = (startSeekPosition, stopSeekPosition, behavior) => {
 	const seekInfo = new ordererProto.SeekInfo();
-	seekInfo.setStart(startSeekPosition);
-	seekInfo.setStop(stopSeekPosition);
+	seekInfo.start = startSeekPosition;
+	seekInfo.stop = stopSeekPosition;
 	if (behavior) {
-		seekInfo.setBehavior(ordererProto.SeekInfo.SeekBehavior[behavior]);
+		seekInfo.behavior = ordererProto.SeekInfo.SeekBehavior[behavior];
 	}
+	seekInfo.error_response = ordererProto.SeekInfo.SeekErrorResponse.STRICT;
 	return seekInfo;
 };
 

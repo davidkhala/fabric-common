@@ -48,9 +48,9 @@ class Policy {
 		const principals = policy.identities.map((identity) => this.buildPrincipal(identity));
 		const thePolicy = this.parsePolicy(policy.policy);
 
-		envelope.setVersion(0);
-		envelope.setRule(thePolicy);
-		envelope.setIdentities(principals);
+		envelope.version = 0;
+		envelope.rule = thePolicy;
+		envelope.identities = principals;
 
 		return envelope;
 	}
@@ -60,13 +60,12 @@ class Policy {
 		const {type, mspid} = identity.role;
 
 		const newPrincipal = new commonProto.MSPPrincipal();
-		newPrincipal.setPrincipalClassification(commonProto.MSPPrincipal.Classification.ROLE);
+		newPrincipal.principal_classification = commonProto.MSPPrincipal.Classification.ROLE;
 		const newRole = new commonProto.MSPRole();
-		newRole.setRole(type);
-		newRole.setMspIdentifier(mspid);
+		newRole.role = type;
+		newRole.msp_identifier = mspid;
 
-		newPrincipal.setPrincipal(newRole.toBuffer());
-
+		newPrincipal.principal = newRole.toBuffer();
 
 		return newPrincipal;
 	}
@@ -76,23 +75,20 @@ class Policy {
 		const signedByConfig = spec.signedBy;
 		const signaturePolicy = new commonProto.SignaturePolicy();
 		if (signedByConfig || signedByConfig === 0) {
-			if (signedByConfig === 0) {
-				signaturePolicy.Type = 'signed_by';
-			}
-			signaturePolicy.setSignedBy(signedByConfig);
+			signaturePolicy.Type = 'signed_by';
+			signaturePolicy.signed_by = signedByConfig;
 		} else {
 			const key = Object.keys(spec)[0];
 			const array = spec[key];
 			const n = key.match(/^(\d+)-of$/)[1];
 
 			const nOutOf = new commonProto.SignaturePolicy.NOutOf();
-			nOutOf.setN(parseInt(n));
 
-			const subs = array.map((sub) => this.parsePolicy(sub));
+			nOutOf.n = parseInt(n);
+			nOutOf.rules = array.map((sub) => this.parsePolicy(sub));
 
-			nOutOf.setRules(subs);
-
-			signaturePolicy.setNOutOf(nOutOf);
+			signaturePolicy.n_out_of = nOutOf;
+			signaturePolicy.Type = 'n_out_of';
 		}
 		return signaturePolicy;
 	}
