@@ -29,10 +29,14 @@ class ChaincodeOperation extends ChaincodeAction {
 		return sequence.toString();
 	}
 
-	async install(chaincodePackagePath) {
+	async install(chaincodePackagePath, useDynamicTimeout) {
 		const lifeCycleProposal = new LifecycleProposal(this.identityContext, emptyChannel(''), this.endorsers);
 
-		const result = await lifeCycleProposal.installChaincode(chaincodePackagePath);
+		let requestTimeout;
+		if (useDynamicTimeout) {
+			requestTimeout = 30000 * this.endorsers.length;
+		}
+		const result = await lifeCycleProposal.installChaincode(chaincodePackagePath, requestTimeout);
 		this.endorseResultInterceptor(result);
 		return result;
 	}
