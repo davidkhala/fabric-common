@@ -14,6 +14,8 @@ golang() {
 	if [[ "$1" == "remove" ]]; then
 		if [[ $(uname) == "Darwin" ]]; then
 			brew uninstall go || true
+		elif lsb_release -d | grep "Ubuntu 20."; then
+			sudo apt -y remove golang-1.14-go
 		else
 			sudo apt-get -y remove golang-go
 			sudo add-apt-repository --remove -y ppa:longsleep/golang-backports
@@ -22,6 +24,8 @@ golang() {
 	else
 		if [[ $(uname) == "Darwin" ]]; then
 			brew install go || true
+		elif lsb_release -d | grep "Ubuntu 20."; then
+			sudo apt install -y golang-1.14-go
 		else
 			sudo add-apt-repository -y ppa:longsleep/golang-backports
 			sudo apt update
