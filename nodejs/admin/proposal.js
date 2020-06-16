@@ -51,7 +51,7 @@ class ProposalManager extends Proposal {
 		const targets = extraOptions.targets || this.targets;
 
 		const {identityContext} = this;
-
+		console.debug({requestTimeout});
 		this.build(identityContext, buildProposalRequest);
 		this.sign(identityContext); // TODO take care of offline signing
 		/**
