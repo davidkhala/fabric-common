@@ -26,7 +26,12 @@ Component module list
 - `configtxlator` handler (for both CLI or server based) in `binManager.js`
 - [gPRC] waitForReady will response back positive response with non-TLS protocol
     - With grpcs://domain.org setup, we could get pong response from grpc://domain.org
-- proposal response `.responses.map(({connection})=>connection)` could label each response with Endorser detail    
+- proposal response `.responses.map(({connection})=>connection)` could label each response with Endorser detail
+- configtxlator Rest server is deprecated but kept in `BinManger` 
+      ```
+        const binManager = new BinManager();
+        await binManager.configtxlatorRESTServer('down|start');
+      ```    
 ## TODO
 - translator for OR('Org1MSP.member', 'Org2MSP.member') <=> N out of
     - reference: `common/policydsl/policyparser.go`

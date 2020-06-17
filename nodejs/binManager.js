@@ -117,6 +117,7 @@ class BinManager {
 	}
 
 	/**
+	 * @deprecated
 	 * @param {string} action start|stop
 	 * @param {string} hostname The hostname or IP on which the REST server will listen
 	 * @param {number} port The port on which the REST server will listen
