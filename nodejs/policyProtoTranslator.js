@@ -5,30 +5,30 @@ const decodeIdentity = (id_bytes) => {
 	const identity = {};
 
 	const proto_identity = fabprotos.msp.SerializedIdentity.decode(id_bytes);
-	identity.Mspid = proto_identity.getMspid();
-	identity.IdBytes = proto_identity.getIdBytes().toBuffer().toString();
+	identity.Mspid = proto_identity.mspid;
+	identity.IdBytes = proto_identity.id_bytes.toBuffer().toString();
 
 	return identity;
 };
 
 const decodeMSPPrincipal = (proto_msp_principal) => {
 	let msp_principal = {};
-	msp_principal.principal_classification = proto_msp_principal.getPrincipalClassification();
+	msp_principal.principal_classification = proto_msp_principal.principal_classification;
 	let proto_principal = null;
 	switch (msp_principal.principal_classification) {
 		case ROLE:
-			proto_principal = fabprotos.common.MSPRole.decode(proto_msp_principal.getPrincipal());
-			msp_principal.msp_identifier = proto_principal.getMspIdentifier();
-			msp_principal.Role = MSPRoleType[proto_principal.getRole()];
+			proto_principal = fabprotos.common.MSPRole.decode(proto_msp_principal.principal);
+			msp_principal.msp_identifier = proto_principal.msp_identifier;
+			msp_principal.Role = MSPRoleType[proto_principal.role];
 			break;
 		case ORGANIZATION_UNIT:
-			proto_principal = fabprotos.common.OrganizationUnit.decode(proto_msp_principal.getPrincipal());
-			msp_principal.msp_identifier = proto_principal.getMspIdentifier(); // string
-			msp_principal.organizational_unit_identifier = proto_principal.getOrganizationalUnitIdentifier(); // string
-			msp_principal.certifiers_identifier = proto_principal.getCertifiersIdentifier().toBuffer(); // bytes
+			proto_principal = fabprotos.common.OrganizationUnit.decode(proto_msp_principal.principal);
+			msp_principal.msp_identifier = proto_principal.msp_identifier; // string
+			msp_principal.organizational_unit_identifier = proto_principal.organizational_unit_identifier; // string
+			msp_principal.certifiers_identifier = proto_principal.certifiers_identifier.toBuffer(); // bytes
 			break;
 		case IDENTITY:
-			msp_principal = decodeIdentity(proto_msp_principal.getPrincipal());
+			msp_principal = decodeIdentity(proto_msp_principal.principal);
 			break;
 	}
 
@@ -40,7 +40,7 @@ const decodeSignaturePolicy = (proto_signature_policy) => {
 	switch (signature_policy.Type) {
 		case 'n_out_of':
 			signature_policy.n_out_of = {};
-			signature_policy.n_out_of.N = proto_signature_policy.n_out_of.getN();
+			signature_policy.n_out_of.N = proto_signature_policy.n_out_of.n;
 			signature_policy.n_out_of.rules = [];
 			for (const proto_policy of proto_signature_policy.n_out_of.rules) {
 				const policy = decodeSignaturePolicy(proto_policy);
@@ -48,7 +48,7 @@ const decodeSignaturePolicy = (proto_signature_policy) => {
 			}
 			break;
 		case 'signed_by':
-			signature_policy.signed_by = proto_signature_policy.getSignedBy();
+			signature_policy.signed_by = proto_signature_policy.signed_by;
 			break;
 	}
 	return signature_policy;
@@ -56,9 +56,9 @@ const decodeSignaturePolicy = (proto_signature_policy) => {
 const decodeSignaturePolicyEnvelope = (signature_policy_envelope_bytes) => {
 	const signature_policy_envelope = {};
 	const proto_signature_policy_envelope = fabprotos.common.SignaturePolicyEnvelope.decode(signature_policy_envelope_bytes);
-	signature_policy_envelope.version = proto_signature_policy_envelope.getVersion();
-	signature_policy_envelope.rule = decodeSignaturePolicy(proto_signature_policy_envelope.getRule());
-	const proto_identities = proto_signature_policy_envelope.getIdentities();
+	signature_policy_envelope.version = proto_signature_policy_envelope.version;
+	signature_policy_envelope.rule = decodeSignaturePolicy(proto_signature_policy_envelope.rule);
+	const proto_identities = proto_signature_policy_envelope.identities;
 	if (proto_identities) {
 		signature_policy_envelope.identities = proto_identities.map(proto_identity => {
 			return decodeMSPPrincipal(proto_identity);

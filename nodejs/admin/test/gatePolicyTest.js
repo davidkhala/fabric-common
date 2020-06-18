@@ -23,7 +23,7 @@ describe('policy parser', () => {
 	it('RoleClausePattern', () => {
 		const str = `'abc.org.member'`;
 		const result = str.match(Policy.RoleClausePattern);
-		console.debug(result);
+		console.info(result);
 	});
 
 });

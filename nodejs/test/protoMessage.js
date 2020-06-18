@@ -11,18 +11,16 @@ describe('ApplicationPolicy', () => {
 		const identities = [];
 		const identity = new commonProtos.MSPPrincipal();
 		identities.push(identity);
-		identity.setPrincipalClassification(0);
+		identity.principal_classification = 0;
 		const pricipal = new commonProtos.MSPRole();
-		identity.setPrincipal(pricipal.toBuffer());
-		pricipal.setMspIdentifier('icddMSP');
-		pricipal.setRole(0);
+		pricipal.msp_identifier = 'icddMSP';
+		pricipal.role = 0;
+		identity.pricipal = commonProtos.MSPRole.encode(pricipal).finish();
 
-		envelope.setRule(rule);
-		envelope.setIdentities(identities);
+		envelope.rule = rule;
+		envelope.identities = identities;
 
-		applicationPolicy.setSignaturePolicy(envelope);
-		console.debug(applicationPolicy);
-		applicationPolicy.toBuffer();
+		applicationPolicy.signature_policy = envelope;
 	});
 	it('e2e', () => {
 		const endorsementPolicy = {
@@ -36,7 +34,6 @@ describe('ApplicationPolicy', () => {
 		};
 		const policy = new Policy(LifecycleProposal.getFabprotos());
 		const signature_policy = policy.buildSignaturePolicyEnvelope(endorsementPolicy);
-		const validation_parameter = LifecycleProposal.buildApplicationPolicy({signature_policy});
 	});
 
 });

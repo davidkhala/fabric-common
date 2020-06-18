@@ -18,9 +18,6 @@ const ECDSATask = async (cryptoSuite, ephemeral) => {
 describe('HSM', () => {
 	const slot = 0;
 	const pin = 'fabric';
-	it('callsite', async () => {
-		require('fabric-common/lib/impl/bccsp_pkcs11'); // FIXME: sdk problem
-	});
 	it('ECDSA', async () => {
 		const cryptoSuite = HSM.newHSMCryptoSuite({slot, pin});
 		await ECDSATask(cryptoSuite, true);

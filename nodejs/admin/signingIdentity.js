@@ -16,15 +16,14 @@ class SigningIdentityUtil {
 		this.signingIdentity = signingIdentity;
 	}
 
-	signChannelConfig(config, nonce) {
+	signChannelConfig(config, nonce, asBuffer) {
 
 		if (!nonce) {
 			nonce = Utils.getNonce();
 		}
 		const {signingIdentity} = this;
 
-		const signatureHeader = buildSignatureHeader({Creator: signingIdentity.serialize(), Nonce: nonce});
-		const signature_header_bytes = signatureHeader.toBuffer();
+		const signature_header_bytes = buildSignatureHeader({Creator: signingIdentity.serialize(), Nonce: nonce}, true);
 
 		// get all the bytes to be signed together, then sign
 		const signing_bytes = Buffer.concat([signature_header_bytes, config]);
@@ -35,6 +34,9 @@ class SigningIdentityUtil {
 		proto_config_signature.signature_header = signature_header_bytes;
 		proto_config_signature.signature = signature;
 
+		if (asBuffer) {
+			return commonProto.ConfigSignature.encode(proto_config_signature).finish();
+		}
 		return proto_config_signature;
 	}
 
@@ -77,7 +79,10 @@ class SigningIdentityUtil {
 				Nonce: nonce,
 				ChannelHeader: channelHeader
 			});
-			payload = buildPayload({Header: header, Data: configUpdateEnvelope.toBuffer()}).toBuffer();
+			payload = buildPayload({
+				Header: header,
+				Data: commonProto.ConfigUpdateEnvelope.encode(configUpdateEnvelope).finish()
+			}, true);
 			signature = Buffer.from(signingIdentity.sign(payload));
 		}
 
@@ -92,13 +97,12 @@ class SigningIdentityUtil {
 	async getSpecificBlock(identityContext, ChannelId, orderer, blockHeight, opts = {}) {
 		const {signingIdentity} = this;
 		const {transactionId, nonce} = identityContext;
-		const seekPayload = buildSeekPayload({
+		const payload = buildSeekPayload({
 			Creator: signingIdentity.serialize(),
 			Nonce: nonce,
 			ChannelId,
 			TxId: transactionId,
-		}, blockHeight, blockHeight);
-		const payload = seekPayload.toBuffer();
+		}, blockHeight, blockHeight, undefined, true);
 		const signature = Buffer.from(signingIdentity.sign(payload));
 
 		const {waitIfUNAVAILABLE, requestTimeout} = opts;

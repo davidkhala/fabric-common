@@ -2,7 +2,7 @@ const fabprotos = require('fabric-protos');
 const commonProto = fabprotos.common;
 
 
-const fromEvent = ({block}) => {
+const fromEvent = ({block}, asBuffer) => {
 	const blockHeader = new commonProto.BlockHeader();
 	blockHeader.number = block.header.number;
 	blockHeader.previous_hash = block.header.previous_hash;
@@ -16,6 +16,9 @@ const fromEvent = ({block}) => {
 	blockEncoded.header = blockHeader;
 	blockEncoded.data = blockData;
 	blockEncoded.metadata = blockMetadata;
+	if (asBuffer) {
+		return commonProto.Block.encode(blockEncoded).finish();
+	}
 	return blockEncoded;
 };
 module.exports = {

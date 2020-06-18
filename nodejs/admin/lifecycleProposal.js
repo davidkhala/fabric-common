@@ -11,8 +11,17 @@ const {
 const fabprotos = require('fabric-protos');
 const protosProtos = fabprotos.protos;
 const lifeCycleProtos = fabprotos.lifecycle;
+const {
+	CheckCommitReadinessArgs, InstallChaincodeResult, QueryInstalledChaincodeResult, QueryInstalledChaincodesResult,
+	CheckCommitReadinessResult, QueryChaincodeDefinitionResult, QueryChaincodeDefinitionsResult, ChaincodeSource,
+	ApproveChaincodeDefinitionForMyOrgArgs, CommitChaincodeDefinitionArgs, InstallChaincodeArgs,
+	QueryChaincodeDefinitionArgs, QueryChaincodeDefinitionsArgs,
+} = lifeCycleProtos;
 const fs = require('fs');
 const {getResponses} = require('khala-fabric-formatter/proposalResponse');
+
+const {ApplicationPolicy, CollectionConfigPackage} = protosProtos;
+
 
 class LifecycleProposal extends ProposalManager {
 	/**
@@ -36,19 +45,16 @@ class LifecycleProposal extends ProposalManager {
 	 */
 	async installChaincode(packageTarGz, requestTimeout = 30000) {
 		const fileContent = fs.readFileSync(packageTarGz);
-		const installChaincodeArgs = new lifeCycleProtos.InstallChaincodeArgs();
-
-		installChaincodeArgs.chaincode_install_package = fileContent;
 		/**
 		 * @type {BuildProposalRequest}
 		 */
 		const buildProposalRequest = {
 			fcn: InstallChaincode,
-			args: [installChaincodeArgs.toBuffer()],
+			args: [InstallChaincodeArgs.encode({chaincode_install_package: fileContent}).finish()],
 		};
 		const result = await this.send(buildProposalRequest, {requestTimeout});
 		getResponses(result).forEach((response) => {
-			const {package_id, label} = lifeCycleProtos.InstallChaincodeResult.decode(response.payload);
+			const {package_id, label} = InstallChaincodeResult.decode(response.payload);
 			Object.assign(response, {
 				package_id, label,
 			});
@@ -75,7 +81,7 @@ class LifecycleProposal extends ProposalManager {
 	}
 
 	setCollectionConfigPackage(collectionConfigs) {
-		const collectionConfigPackage = new protosProtos.CollectionConfigPackage();
+		const collectionConfigPackage = new CollectionConfigPackage();
 		collectionConfigPackage.config = collectionConfigs;
 		this.collectionConfigPackage = collectionConfigPackage;
 	}
@@ -107,13 +113,11 @@ class LifecycleProposal extends ProposalManager {
 	 */
 	async queryInstalledChaincodes(packageId) {
 		let args;
+		const {QueryInstalledChaincodeArgs, QueryInstalledChaincodesArgs} = lifeCycleProtos;
 		if (packageId) {
-			const queryInstalledChaincodeArgs = new lifeCycleProtos.QueryInstalledChaincodeArgs();
-			queryInstalledChaincodeArgs.package_id = packageId;
-			args = [queryInstalledChaincodeArgs.toBuffer()];
+			args = [QueryInstalledChaincodeArgs.encode({package_id: packageId}).finish()];
 		} else {
-			const queryInstalledChaincodesArgs = new lifeCycleProtos.QueryInstalledChaincodesArgs();
-			args = [queryInstalledChaincodesArgs.toBuffer()];
+			args = [QueryInstalledChaincodesArgs.encode({}).finish()];
 		}
 		/**
 		 * @type {BuildProposalRequest}
@@ -125,20 +129,20 @@ class LifecycleProposal extends ProposalManager {
 		const result = await this.send(buildProposalRequest);
 		result.queryResults = getResponses(result).map(response => {
 			if (packageId) {
-				const {package_id, label, references} = lifeCycleProtos.QueryInstalledChaincodeResult.decode(response.payload);
+				const {package_id, label, references} = QueryInstalledChaincodeResult.decode(response.payload);
 				const References = {};
 				references.forEach((value, key) => {
 					References[key] = value;
 				});
 				return {package_id, label, references: References};
 			} else {
-				const {installed_chaincodes} = lifeCycleProtos.QueryInstalledChaincodesResult.decode(response.payload);
+				const {installed_chaincodes} = QueryInstalledChaincodesResult.decode(response.payload);
 				const installedChaincodes = {};
 				for (const {package_id, label, references} of installed_chaincodes) {
 					installedChaincodes[package_id] = {};
-					references.forEach((value, key) => {
+					for (const [key, value] of Object.entries(references)) {
 						installedChaincodes[package_id][key] = value;
-					});
+					}
 				}
 
 				return installedChaincodes;
@@ -148,19 +152,8 @@ class LifecycleProposal extends ProposalManager {
 		return result;
 	}
 
-	static buildApplicationPolicy({signature_policy, channel_config_policy_reference}) {
-		const applicationPolicy = new protosProtos.ApplicationPolicy();
-
-		if (channel_config_policy_reference) {
-			applicationPolicy.channel_config_policy_reference = channel_config_policy_reference;
-		} else if (signature_policy) {
-			applicationPolicy.signature_policy = signature_policy;
-		}
-		return applicationPolicy;
-	}
-
 	setValidationParameter(applicationPolicy) {
-		this.validation_parameter = applicationPolicy.toBuffer();
+		this.validation_parameter = ApplicationPolicy.encode(applicationPolicy).finish();
 	}
 
 	/**
@@ -173,32 +166,30 @@ class LifecycleProposal extends ProposalManager {
 	 * @param PackageID
 	 */
 	async approveForMyOrg({name, version, sequence}, PackageID) {
-		const source = new lifeCycleProtos.ChaincodeSource();
+		const source = new ChaincodeSource();
 
 		if (PackageID) {
-			const localPackage = new lifeCycleProtos.ChaincodeSource.Local();
+			const localPackage = new ChaincodeSource.Local();
 			localPackage.package_id = PackageID;
 			source.local_package = localPackage;
 			source.Type = 'local_package';
 		} else {
-			source.unavailable = new lifeCycleProtos.ChaincodeSource.Unavailable();
+			source.unavailable = new ChaincodeSource.Unavailable();
 			source.Type = 'unavailable';
 		}
 
-		const approveChaincodeDefinitionForMyOrgArgs = new lifeCycleProtos.ApproveChaincodeDefinitionForMyOrgArgs();
-		approveChaincodeDefinitionForMyOrgArgs.sequence = sequence;
-		approveChaincodeDefinitionForMyOrgArgs.name = name;
-		approveChaincodeDefinitionForMyOrgArgs.version = version;
+		const approveChaincodeDefinitionForMyOrgArgs = {
+			sequence, name, version, source,
+		};
 
 		this._propertyAssign(approveChaincodeDefinitionForMyOrgArgs);
 
-		approveChaincodeDefinitionForMyOrgArgs.source = source;
 		/**
 		 * @type {BuildProposalRequest}
 		 */
 		const buildProposalRequest = {
 			fcn: ApproveChaincodeDefinitionForMyOrg,
-			args: [approveChaincodeDefinitionForMyOrgArgs.toBuffer()],
+			args: [ApproveChaincodeDefinitionForMyOrgArgs.encode(approveChaincodeDefinitionForMyOrgArgs).finish()],
 		};
 		return await this.send(buildProposalRequest);
 	}
@@ -206,10 +197,10 @@ class LifecycleProposal extends ProposalManager {
 
 	async checkCommitReadiness({name, version, sequence}) {
 		this.asQuery();
-		const checkCommitReadinessArgs = new lifeCycleProtos.CheckCommitReadinessArgs();
-		checkCommitReadinessArgs.sequence = sequence;
-		checkCommitReadinessArgs.name = name;
-		checkCommitReadinessArgs.version = version;
+		const checkCommitReadinessArgs = {
+			sequence, name, version
+		};
+
 		this._propertyAssign(checkCommitReadinessArgs);
 
 		/**
@@ -217,13 +208,13 @@ class LifecycleProposal extends ProposalManager {
 		 */
 		const buildProposalRequest2 = {
 			fcn: CheckCommitReadiness,
-			args: [checkCommitReadinessArgs.toBuffer()]
+			args: [CheckCommitReadinessArgs.encode(checkCommitReadinessArgs).finish()]
 		};
 		const result = await this.send(buildProposalRequest2);
 
 		const {queryResults} = result;
 		const decodedQueryResults = queryResults.map(payload => {
-			const {approvals} = lifeCycleProtos.CheckCommitReadinessResult.decode(payload);
+			const {approvals} = CheckCommitReadinessResult.decode(payload);
 			const returned = {};
 			approvals.forEach((value, key) => {
 				returned[key] = value;
@@ -242,10 +233,9 @@ class LifecycleProposal extends ProposalManager {
 	 * @param version
 	 */
 	async commitChaincodeDefinition({sequence, name, version}) {
-		const commitChaincodeDefinitionArgs = new lifeCycleProtos.CommitChaincodeDefinitionArgs();
-		commitChaincodeDefinitionArgs.sequence = sequence;
-		commitChaincodeDefinitionArgs.name = name;
-		commitChaincodeDefinitionArgs.version = version;
+		const commitChaincodeDefinitionArgs = {
+			sequence, name, version
+		};
 		this._propertyAssign(commitChaincodeDefinitionArgs);
 
 		/**
@@ -253,7 +243,7 @@ class LifecycleProposal extends ProposalManager {
 		 */
 		const buildProposalRequest = {
 			fcn: CommitChaincodeDefinition,
-			args: [commitChaincodeDefinitionArgs.toBuffer()],
+			args: [CommitChaincodeDefinitionArgs.encode(commitChaincodeDefinitionArgs).finish()],
 		};
 		return await this.send(buildProposalRequest);
 	}
@@ -264,13 +254,10 @@ class LifecycleProposal extends ProposalManager {
 		this.asQuery();
 		if (name) {
 			fcn = QueryChaincodeDefinition;
-			const queryChaincodeDefinitionArgs = new lifeCycleProtos.QueryChaincodeDefinitionArgs();
-			queryChaincodeDefinitionArgs.name = name;
-			args = [queryChaincodeDefinitionArgs.toBuffer()];
+			args = [QueryChaincodeDefinitionArgs.encode({name}).finish()];
 		} else {
-			const queryChaincodeDefinitionsArgs = new lifeCycleProtos.QueryChaincodeDefinitionsArgs();
 			fcn = QueryChaincodeDefinitions;
-			args = [queryChaincodeDefinitionsArgs.toBuffer()];
+			args = [QueryChaincodeDefinitionsArgs.encode({}).finish()];
 		}
 
 		/**
@@ -286,18 +273,18 @@ class LifecycleProposal extends ProposalManager {
 				approvals[key] = value;
 			});
 			chaincodeDefinition.approvals = approvals;
-			chaincodeDefinition.validation_parameter = protosProtos.ApplicationPolicy.decode(chaincodeDefinition.validation_parameter);
+			chaincodeDefinition.validation_parameter = ApplicationPolicy.decode(chaincodeDefinition.validation_parameter);
 			return chaincodeDefinition;
 		};
 		const decodedQueryResults = queryResults.map(payload => {
 
 			if (name) {
-				const resultSingle = lifeCycleProtos.QueryChaincodeDefinitionResult.decode(payload);
+				const resultSingle = QueryChaincodeDefinitionResult.decode(payload);
 				return singleChaincodeDefinitionAmend(resultSingle);
 			} else {
-				const {chaincode_definitions} = lifeCycleProtos.QueryChaincodeDefinitionsResult.decode(payload);
+				const {chaincode_definitions} = QueryChaincodeDefinitionsResult.decode(payload);
 				return chaincode_definitions.map(definition => {
-					const resultSingle = lifeCycleProtos.QueryChaincodeDefinitionsResult.ChaincodeDefinition.decode(definition);
+					const resultSingle = QueryChaincodeDefinitionsResult.ChaincodeDefinition.decode(definition);
 					return singleChaincodeDefinitionAmend(resultSingle);
 				});
 			}

@@ -80,10 +80,11 @@ class ChaincodeOperation extends ChaincodeAction {
 			const policy = new GatePolicy(LifecycleProposal.getFabprotos());
 			signature_policy = policy.FromString(gate);
 		}
-		return LifecycleProposal.buildApplicationPolicy({
+		// TODO allow undefined/ null
+		return {
 			signature_policy,
 			channel_config_policy_reference: reference
-		});
+		};
 	}
 
 	assign(lifecycleProposal) {

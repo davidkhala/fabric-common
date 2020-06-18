@@ -8,6 +8,9 @@ const {ConfigtxlatorType} = require('khala-fabric-formatter/configtxlator');
 const ConfigFactory = require('khala-fabric-formatter/configFactory');
 const ChannelUpdate = require('khala-fabric-admin/channelUpdate');
 const SigningIdentityUtil = require('khala-fabric-admin/signingIdentity');
+const fabprotos = require('fabric-protos');
+const commonProto = fabprotos.common;
+
 /**
  * @param {string} channelName
  * @param {Client.User} user
@@ -20,19 +23,19 @@ const SigningIdentityUtil = require('khala-fabric-admin/signingIdentity');
 const getChannelConfigReadable = async (channelName, user, orderer, viaServer) => {
 
 	const configEnvelope = await getChannelConfigFromOrderer(channelName, user, orderer);
-	const proto = configEnvelope.config;
+	const protoBytes = commonProto.Config.encode(configEnvelope.config).finish() ;
 
 	let json;
 	if (viaServer) {
-		const body = await configtxlatorServer.decode(ConfigtxlatorType.Config, proto.toBuffer());
+		const body = await configtxlatorServer.decode(ConfigtxlatorType.Config, protoBytes);
 		json = JSON.stringify(body);
 	} else {
 		const binManager = new BinManager();
-		json = await binManager.configtxlatorCMD.decode(ConfigtxlatorType.Config, proto.toBuffer());
+		json = await binManager.configtxlatorCMD.decode(ConfigtxlatorType.Config, protoBytes);
 	}
 
 	return {
-		proto,
+		proto: protoBytes,
 		json
 	};
 };
@@ -49,12 +52,12 @@ const setAnchorPeers = async (channelName, orderer, user, signingIdentities = []
 	let config;
 	if (viaServer) {
 		const updatedProto = await configtxlatorServer.encode(ConfigtxlatorType.Config, updateConfigJSON);
-		config = await configtxlatorServer.computeUpdate(channelName, proto.toBuffer(), updatedProto);
+		config = await configtxlatorServer.computeUpdate(channelName, proto, updatedProto);
 	} else {
 
 		const binManager = new BinManager();
 		const updatedProto = await binManager.configtxlatorCMD.encode(ConfigtxlatorType.Config, updateConfigJSON);
-		config = await binManager.configtxlatorCMD.computeUpdate(channelName, proto.toBuffer(), updatedProto);
+		config = await binManager.configtxlatorCMD.computeUpdate(channelName, proto, updatedProto);
 
 	}
 
@@ -65,7 +68,7 @@ const setAnchorPeers = async (channelName, orderer, user, signingIdentities = []
 	const signatures = [];
 	for (const signingIdentity of signingIdentities) {
 		const extraSigningIdentityUtil = new SigningIdentityUtil(signingIdentity);
-		signatures.push(extraSigningIdentityUtil.signChannelConfig(config).toBuffer());
+		signatures.push(extraSigningIdentityUtil.signChannelConfig(config, undefined, true));
 	}
 	channelUpdate.useSignatures(config, signatures);
 	return await channelUpdate.submit();

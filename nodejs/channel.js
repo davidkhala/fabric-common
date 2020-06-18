@@ -32,14 +32,14 @@ const create = async (channelName, user, orderer, channelConfigFile, signingIden
 	} else {
 
 		// extract the channel config bytes from the envelope to be signed
-		const config = extractConfigUpdate(channelConfig).toBuffer();
+		const config = extractConfigUpdate(channelConfig);
 		const signatures = [];
 		if (signingIdentities.length === 0) {
 			signingIdentities.push(mainSigningIdentity);
 		}
 		for (const signingIdentity of signingIdentities) {
 			const extraSigningIdentityUtil = new SigningIdentityUtil(signingIdentity);
-			signatures.push(extraSigningIdentityUtil.signChannelConfig(config).toBuffer());
+			signatures.push(extraSigningIdentityUtil.signChannelConfig(config, undefined, true));
 		}
 		channelUpdate.useSignatures(config, signatures);
 	}
@@ -74,8 +74,8 @@ const getGenesisBlock = async (channel, user, orderer, verbose, blockTime = 1000
 	} else {
 		const signingIdentityUtil = new SigningIdentityUtil(user.getSigningIdentity());
 		identityContext.calculateTransactionId();
-		const eventBlock = await signingIdentityUtil.getSpecificBlock(identityContext, channel.name, orderer, 0, {waitIfUNAVAILABLE:blockTime});
-		block = fromEvent({block: eventBlock}).toBuffer();
+		const eventBlock = await signingIdentityUtil.getSpecificBlock(identityContext, channel.name, orderer, 0, {waitIfUNAVAILABLE: blockTime});
+		block = fromEvent({block: eventBlock}, true);
 	}
 
 
@@ -128,7 +128,7 @@ const join = async (channel, peers, user, block, orderer) => {
 		await peer.endorser.connect();
 	}
 	const identityContext = new IdentityContext(user, null);
-	const proposal = new CSCCProposal(identityContext,  peers.map(({endorser}) => endorser));
+	const proposal = new CSCCProposal(identityContext, peers.map(({endorser}) => endorser));
 	const result = await proposal.joinChannel(block);
 
 	const {errors, responses} = result;

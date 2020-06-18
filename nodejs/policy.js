@@ -61,11 +61,8 @@ class Policy {
 
 		const newPrincipal = new commonProto.MSPPrincipal();
 		newPrincipal.principal_classification = commonProto.MSPPrincipal.Classification.ROLE;
-		const newRole = new commonProto.MSPRole();
-		newRole.role = type;
-		newRole.msp_identifier = mspid;
 
-		newPrincipal.principal = newRole.toBuffer();
+		newPrincipal.principal = commonProto.MSPRole.encode({role: type, msp_identifier: mspid}).finish();
 
 		return newPrincipal;
 	}

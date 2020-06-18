@@ -26,7 +26,7 @@ class GatePolicy {
 		const newRole = new commonProtos.MSPRole();
 		newRole.role = MSPRoleType;
 		newRole.msp_identifier = mspid;
-		newPrincipal.principal = newRole.toBuffer();
+		newPrincipal.principal = commonProtos.MSPRole.encode(newRole).finish();
 		return newPrincipal;
 	}
 

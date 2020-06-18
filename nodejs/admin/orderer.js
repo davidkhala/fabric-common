@@ -140,7 +140,8 @@ class Orderer {
 					}
 						break;
 					case STATUS: {
-						if (response.status === SUCCESS) {
+						const {status} = response;
+						if (status === SUCCESS || status === 200) {
 							stream.end();
 							return resolve(responses);
 						} else {

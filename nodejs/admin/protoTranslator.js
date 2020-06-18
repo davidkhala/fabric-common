@@ -2,6 +2,8 @@ const fabprotos = require('fabric-protos');
 const {BlockNumberFilterType: {NEWEST, OLDEST}} = require('khala-fabric-formatter/eventHub');
 const commonProto = fabprotos.common;
 const ordererProto = fabprotos.orderer;
+const protosProto = fabprotos.protos;
+
 const buildCurrentTimestamp = () => {
 	const now = new Date();
 	const timestamp = new fabprotos.google.protobuf.Timestamp();
@@ -29,19 +31,18 @@ const buildChannelHeader = ({Type, Version = 1, ChannelId, TxId, ChaincodeID, TL
 	// 	channelHeader.setEpoch(epoch); // uint64
 
 
-	const headerExt = new fabprotos.protos.ChaincodeHeaderExtension();
+	const headerExt = new protosProto.ChaincodeHeaderExtension();
 	if (ChaincodeID) {
-		const chaincodeID = new fabprotos.protos.ChaincodeID();
+		const chaincodeID = new protosProto.ChaincodeID();
 		chaincodeID.name = ChaincodeID;
 		headerExt.chaincode_id = chaincodeID;
 	}
 
-	channelHeader.extension = headerExt.toBuffer();
+	channelHeader.extension = protosProto.ChaincodeHeaderExtension.encode(headerExt).finish();
 	channelHeader.timestamp = Timestamp || buildCurrentTimestamp(); // google.protobuf.Timestamp
 	if (TLSCertHash) {
 		channelHeader.tls_cert_hash = TLSCertHash;
 	}
-
 
 	return channelHeader;
 };
@@ -51,10 +52,13 @@ const buildChannelHeader = ({Type, Version = 1, ChannelId, TxId, ChaincodeID, TL
  * @param Creator from Identity.js#serialize
  * @param Nonce from 'fabric-common/lib/Util.js#getNonce'
  */
-const buildSignatureHeader = ({Creator, Nonce}) => {
+const buildSignatureHeader = ({Creator, Nonce}, asBuffer) => {
 	const signatureHeader = new commonProto.SignatureHeader();
 	signatureHeader.creator = Creator;
 	signatureHeader.nonce = Nonce;
+	if (asBuffer) {
+		return commonProto.SignatureHeader.encode(signatureHeader).finish();
+	}
 	return signatureHeader;
 };
 /**
@@ -64,11 +68,11 @@ const buildSignatureHeader = ({Creator, Nonce}) => {
  * @param ChannelHeader
  */
 const buildHeader = ({Creator, Nonce, ChannelHeader}) => {
-	const signatureHeader = buildSignatureHeader({Creator, Nonce});
+	const signatureHeaderBytes = buildSignatureHeader({Creator, Nonce}, true);
 
 	const header = new commonProto.Header();
-	header.signature_header = signatureHeader.toBuffer();
-	header.channel_header = ChannelHeader.toBuffer();
+	header.signature_header = signatureHeaderBytes;
+	header.channel_header = commonProto.ChannelHeader.encode(ChannelHeader).finish();
 
 	return header;
 };
@@ -78,10 +82,13 @@ const buildHeader = ({Creator, Nonce, ChannelHeader}) => {
  * @param {Buffer} Data
  * @return {commonProto.Payload}
  */
-const buildPayload = ({Header, Data}) => {
+const buildPayload = ({Header, Data}, asBuffer) => {
 	const payload = new commonProto.Payload();
 	payload.header = Header;
 	payload.data = Data;
+	if (asBuffer) {
+		return commonProto.Payload.encode(payload).finish();
+	}
 	return payload;
 };
 /**
@@ -127,7 +134,7 @@ const SeekBehavior = {
  * @param {ordererProto.SeekPosition} stopSeekPosition
  * @param {SeekBehavior|string} [behavior]
  */
-const buildSeekInfo = (startSeekPosition, stopSeekPosition, behavior) => {
+const buildSeekInfo = (startSeekPosition, stopSeekPosition, behavior, asBuffer) => {
 	const seekInfo = new ordererProto.SeekInfo();
 	seekInfo.start = startSeekPosition;
 	seekInfo.stop = stopSeekPosition;
@@ -135,6 +142,9 @@ const buildSeekInfo = (startSeekPosition, stopSeekPosition, behavior) => {
 		seekInfo.behavior = ordererProto.SeekInfo.SeekBehavior[behavior];
 	}
 	seekInfo.error_response = ordererProto.SeekInfo.SeekErrorResponse.STRICT;
+	if (asBuffer) {
+		return ordererProto.SeekInfo.encode(seekInfo).finish();
+	}
 	return seekInfo;
 };
 
@@ -163,11 +173,11 @@ const HeaderType = {
  * @param {SeekBehavior|string} [behavior]
  * @return {commonProto.Payload}
  */
-const buildSeekPayload = ({Creator, Nonce, ChannelId, TxId}, startHeight, stopHeight, behavior = SeekBehavior.FAIL_IF_NOT_READY) => {
+const buildSeekPayload = ({Creator, Nonce, ChannelId, TxId}, startHeight, stopHeight, behavior = SeekBehavior.FAIL_IF_NOT_READY, asBuffer) => {
 
 	const startPosition = buildSeekPosition(startHeight);
 	const stopPosition = buildSeekPosition(stopHeight);
-	const seekInfo = buildSeekInfo(startPosition, stopPosition, behavior);
+	const seekInfoBytes = buildSeekInfo(startPosition, stopPosition, behavior, true);
 
 
 	const seekInfoHeader = buildChannelHeader({
@@ -178,7 +188,7 @@ const buildSeekPayload = ({Creator, Nonce, ChannelId, TxId}, startHeight, stopHe
 
 	const seekHeader = buildHeader({Creator, Nonce, ChannelHeader: seekInfoHeader});
 
-	return buildPayload({Header: seekHeader, Data: seekInfo.toBuffer()});
+	return buildPayload({Header: seekHeader, Data: seekInfoBytes}, asBuffer);
 
 };
 const extractLastConfigIndex = (block) => {
@@ -188,7 +198,7 @@ const extractLastConfigIndex = (block) => {
 };
 /**
  * Extracts the protobuf 'ConfigUpdate' object out of the 'ConfigEnvelope' object
- * @param {string|Buffer} configEnvelope - channel config file content
+ * @param {Buffer} configEnvelope - channel config file content
  */
 const extractConfigUpdate = (configEnvelope) => {
 	const envelope = commonProto.Envelope.decode(configEnvelope);
