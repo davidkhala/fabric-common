@@ -5,6 +5,9 @@ curl https://raw.githubusercontent.com/hyperledger/fabric-sdk-node/master/test/t
 export SOFTHSM2_CONF=softhsm2.conf
 export FABRIC_VERSION=2.1
 sudo apt-get install -y softhsm2
+set +e
+softhsm2-util --delete-token --token "ForFabric"
+set -e
 softhsm2-util --init-token --slot 0 --label "ForFabric" --pin 98765432 --so-pin 1234
 npm install
 npm run installAndGenerateCerts
