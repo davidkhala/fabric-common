@@ -1,8 +1,8 @@
 {
   "name": "khala-fabric-network",
-  "version": "2.1.0-alpha.0",
+  "version": "2.1.1-beta.0",
   "dependencies": {
-    "fabric-network": "2.1.1-snapshot.377",
+    "fabric-network": "^2.1.1",
     "khala-fabric-formatter": "^2.1.0-0.1.0"
   }
 }
