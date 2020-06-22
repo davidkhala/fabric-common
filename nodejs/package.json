@@ -13,7 +13,7 @@
     "khala-light-util": "^0.0.3",
     "tmp": "^0.1.0",
     "compressing": "^1.5.1",
-    "khala-fabric-formatter": "^2.1.0-0.1.0",
+    "khala-fabric-formatter": "^2.1.0-0.1.1",
     "khala-fabric-admin": "^2.1.1-beta.0"
   },
   "devDependencies": {
