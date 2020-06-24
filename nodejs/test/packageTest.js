@@ -1,12 +1,14 @@
 const Package = require('../chaincodePackage');
-const {homeResolve} = require('khala-light-util');
 const fs = require('fs');
+const path = require('path');
+const logger = require('khala-logger/log4js').consoleLogger('test:package');
 describe('package', () => {
 	it('pack', async () => {
-		const srcRoot = homeResolve('go/src/github.com/davidkhala/chaincode/golang/diagnose/');
+		const srcRoot = path.resolve(__dirname, 'artifacts');
+		logger.info({srcRoot});
 		const Label = 'ccID';
 		const output = 'ccPack.tar';
-		const pack = new Package({Path: 'github.com/davidkhala/chaincode/golang/diagnose', Label});
+		const pack = new Package({Path: 'artifacts', Label});
 		await pack.pack(srcRoot, output);
 		fs.unlinkSync(output);
 

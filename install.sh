@@ -65,9 +65,8 @@ else
 
 	dockerInstall="curl --silent --show-error https://raw.githubusercontent.com/davidkhala/docker-manager/master/install.sh"
 	$dockerInstall | bash -s installDocker
-	$dockerInstall | bash -s installjq
 	nodejsInstall="curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/install.sh"
 	$nodejsInstall | bash -s nodeGYPDependencies
-	$nodejsInstall | bash -s install10
+	$nodejsInstall | bash -s install12
 	curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/scripts/npm.sh | bash -s packageLock false
 fi

@@ -7,10 +7,12 @@ Current version 2.1.1
 ### Prerequisite: For development
 - docker-compose: 1.14.0 +
 - golang: 1.14.x
-- fabric-node-sdk:
-    - nodejs: 10.x
+- fabric-sdk-node
+    - nodejs: 12.x
     - npm: 6 + 
     - Python: 2.7
+- fabric-sdk-java
+    - java: 1.8.0_151
 ### Prerequisite: [Windows 10 extras](https://hyperledger-fabric.readthedocs.io/en/release-2.0/prereqs.html#windows-extras)
 - Git x64: [64-bit Git for Windows Setup](https://github.com/git-for-windows/git/releases/download/v2.25.1.windows.1/Git-2.25.1-64-bit.exe)
 - use the Windows PowerShell
