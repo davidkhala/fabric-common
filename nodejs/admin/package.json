@@ -1,6 +1,6 @@
 {
 	"name": "khala-fabric-admin",
-	"version": "2.1.1-beta.0",
+	"version": "2.1.1-beta.1",
 	"dependencies": {
 		"fabric-ca-client": "unstable",
 		"fabric-common": "unstable",
