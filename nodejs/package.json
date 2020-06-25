@@ -5,22 +5,21 @@
     "test": "mocha test"
   },
   "dependencies": {
-    "khala-dockerode": "^0.1.2",
+    "khala-dockerode": "latest",
     "khala-level": "^0.0.1",
     "khala-logger": "^0.2.0",
-    "khala-nodeutils": "^0.8.2",
+    "khala-nodeutils": "latest",
     "khala-axios": "^0.1.3",
     "khala-light-util": "^0.0.3",
-    "tmp": "^0.1.0",
-    "compressing": "^1.5.1",
-    "khala-fabric-formatter": "^2.1.0-0.1.1",
-    "khala-fabric-admin": "^2.1.1-beta.0"
+    "tmp": "latest",
+    "compressing": "latest",
+    "khala-fabric-formatter": "latest",
+    "khala-fabric-admin": "latest"
   },
   "devDependencies": {
-    "jsrsasign": "^7.2.2",
-    "lerna": "^3.20.2",
-    "mocha": "^7.2.0",
-    "chai": "^4.2.0"
+    "lerna": "latest",
+    "mocha": "latest",
+    "chai": "latest"
   },
   "keywords": [
     "fabric-sdk-node",

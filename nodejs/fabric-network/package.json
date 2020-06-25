@@ -2,7 +2,7 @@
   "name": "khala-fabric-network",
   "version": "2.1.1-beta.0",
   "dependencies": {
-    "fabric-network": "^2.1.1",
-    "khala-fabric-formatter": "^2.1.0-0.1.1"
+    "fabric-network": "unstable",
+    "khala-fabric-formatter": "latest"
   }
 }
