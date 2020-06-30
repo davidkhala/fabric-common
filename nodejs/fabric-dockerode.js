@@ -1,5 +1,6 @@
-const dockerUtil = require('khala-dockerode/dockerode-util');
-const {ContainerOptsBuilder} = dockerUtil;
+const DockerManager = require('khala-dockerode/docker');
+const dockerManager = new DockerManager();
+const ContainerOptsBuilder = require('khala-dockerode/containerOptsBuilder');
 const peerUtil = require('./peer');
 const caUtil = require('./ca');
 const ordererUtil = require('./orderer');
@@ -16,19 +17,19 @@ exports.fabricImagePull = async ({fabricTag, caTag = fabricTag, thirdPartyTag, c
 		const imageTag = fabricTag;
 		switch (chaincodeType) {
 			case 'java':
-				await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-javaenv:${imageTag}`);
+				await dockerManager.imageCreateIfNotExist(`hyperledger/fabric-javaenv:${imageTag}`);
 				break;
 			default:
-				await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-ccenv:${imageTag}`);
+				await dockerManager.imageCreateIfNotExist(`hyperledger/fabric-ccenv:${imageTag}`);
 		}
-		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-orderer:${imageTag}`);
-		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-peer:${imageTag}`);
+		await dockerManager.imageCreateIfNotExist(`hyperledger/fabric-orderer:${imageTag}`);
+		await dockerManager.imageCreateIfNotExist(`hyperledger/fabric-peer:${imageTag}`);
 	}
 	if (caTag) {
-		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-ca:${caTag}`);
+		await dockerManager.imageCreateIfNotExist(`hyperledger/fabric-ca:${caTag}`);
 	}
 	if (thirdPartyTag) {
-		await dockerUtil.imageCreateIfNotExist(`hyperledger/fabric-couchdb:${thirdPartyTag}`);
+		await dockerManager.imageCreateIfNotExist(`hyperledger/fabric-couchdb:${thirdPartyTag}`);
 	}
 };
 
@@ -84,7 +85,7 @@ exports.runCA = async ({container_name, port, network, imageTag, adminName, admi
 	builder.setPortBind(`${port}:7054`).setNetwork(network, [container_name]);
 	const createOptions = builder.build();
 
-	return await dockerUtil.containerStart(createOptions);
+	return await dockerManager.containerStart(createOptions);
 };
 
 /**
@@ -94,10 +95,11 @@ exports.runCA = async ({container_name, port, network, imageTag, adminName, admi
  */
 exports.uninstallChaincode = async (container_name, chaincodePackageId) => {
 	const Cmd = ['rm', `${peerUtil.container.state}/lifecycle/chaincodes/${chaincodePackageId.replace(':', '.')}.tar.gz`];
-	await dockerUtil.containerExec({container_name, Cmd});
+	await dockerManager.containerExec({container_name, Cmd});
+	await dockerManager.containerRestart(container_name);
 };
 exports.chaincodeImageList = async () => {
-	const images = await dockerUtil.imageList();
+	const images = await dockerManager.imageList();
 	return images.filter(image => {
 		// RepoTags can be null
 		if (!image.RepoTags) {
@@ -107,7 +109,7 @@ exports.chaincodeImageList = async () => {
 	});
 };
 exports.chaincodeContainerList = async () => {
-	const containers = await dockerUtil.containerList();
+	const containers = await dockerManager.containerList();
 	return containers.filter(container => container.Names.find(name => name.startsWith('/dev-')));
 };
 exports.chaincodeImageClear = async (filter) => {
@@ -116,7 +118,7 @@ exports.chaincodeImageClear = async (filter) => {
 		images = images.filter(filter);
 	}
 	for (const image of images) {
-		await dockerUtil.imageDelete(image.Id);
+		await dockerManager.imageDelete(image.Id);
 	}
 };
 /**
@@ -130,8 +132,8 @@ exports.chaincodeClear = async (filter) => {
 		containers = containers.filter(filter);
 	}
 	for (const container of containers) {
-		await dockerUtil.containerDelete(container.Id);
-		await dockerUtil.imageDelete(container.Image);
+		await dockerManager.containerDelete(container.Id);
+		await dockerManager.imageDelete(container.Image);
 	}
 };
 exports.runOrderer = async (opts, operations, metrics) => {
@@ -158,7 +160,7 @@ exports.runOrderer = async (opts, operations, metrics) => {
 		builder.setPortBind(`${operations.port}:8443`);
 	}
 	const createOptions = builder.build();
-	return await dockerUtil.containerStart(createOptions);
+	return await dockerManager.containerStart(createOptions);
 };
 
 exports.runPeer = async (opts, operations, metrics) => {
@@ -189,7 +191,7 @@ exports.runPeer = async (opts, operations, metrics) => {
 		builder.setVolume(stateVolume, peerUtil.container.state);
 	}
 	const createOptions = builder.build();
-	return await dockerUtil.containerStart(createOptions);
+	return await dockerManager.containerStart(createOptions);
 };
 
 exports.runCouchDB = async ({imageTag, container_name, port, network, user, password}) => {
@@ -203,5 +205,5 @@ exports.runCouchDB = async ({imageTag, container_name, port, network, user, pass
 		builder.setPortBind(`${port}:5984`);
 	}
 	const createOptions = builder.build();
-	return await dockerUtil.containerStart(createOptions);
+	return await dockerManager.containerStart(createOptions);
 };
