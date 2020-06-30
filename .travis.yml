@@ -11,9 +11,11 @@ matrix:
         - ./install.sh fabricInstall
         - npm install --global lerna
         - cd nodejs; npm install; cd -
+        - ./bash/test/shunit2.sh
       script:
         - cd nodejs;
         - npm test
+        - ./bash/test/softHSMTest.sh
 
 
 

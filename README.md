@@ -36,8 +36,6 @@ Current version 2.1.1
 - [java](./java)
 - [nodejs](./nodejs)
 
-## Design Notes
-- CICD: using travis
 ## Milestone
 - [2.0]
     - Use only raft for all CFT consensus scenario

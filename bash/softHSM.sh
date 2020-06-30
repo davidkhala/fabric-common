@@ -16,9 +16,15 @@ if [[ ! -f "$SOFTHSM2_CONF" ]]; then
 fi
 initToken() {
 	local label=$1
-	cmd="softhsm2-util --init-token --free --label $label"
+	local slot=$2
+	local cmd="softhsm2-util --init-token --label $label"
 	if [[ -n "$HSM_SO_PIN" ]]; then
 		cmd="$cmd --so-pin $HSM_SO_PIN"
+	fi
+	if [[ -n "$slot" ]]; then
+		cmd="$cmd --slot $slot"
+	else
+		cmd="$cmd --free "
 	fi
 	if [[ -n "$HSM_PIN" ]]; then
 		cmd="$cmd --pin $HSM_PIN"
@@ -30,7 +36,12 @@ deleteToken() {
 	softhsm2-util --delete-token --token $label
 }
 listToken() {
-	softhsm2-util --show-slots
+	local serialOnly=$1
+	if [[ -n "$serialOnly" ]]; then
+		softhsm2-util --show-slots | grep 'Serial number:[[:space:]]\{4\}[[:alnum:]]' | awk '{ print $3 }'
+	else
+		softhsm2-util --show-slots
+	fi
 }
 importPrivKey() {
 	local label=$1
