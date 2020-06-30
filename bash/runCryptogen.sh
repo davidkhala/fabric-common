@@ -11,7 +11,6 @@ for ((i = 1; i <= $#; i++)); do
 	remain_params="$remain_params $j"
 done
 
-isAPPEND=false
 while getopts "i:o:a" shortname $remain_params; do
 	case $shortname in
 	i)
@@ -22,10 +21,6 @@ while getopts "i:o:a" shortname $remain_params; do
 		echo "set crypto output directory (default: $CRYPTO_CONFIG_DIR)  --output $OPTARG"
 		CRYPTO_CONFIG_DIR="$OPTARG"
 		;;
-	a)
-		echo "append mode: not to clear CRYPTO_CONFIG_DIR"
-		isAPPEND=true
-		;;
 	?)
 		echo "unknown argument"
 		exit 1
@@ -33,7 +28,7 @@ while getopts "i:o:a" shortname $remain_params; do
 	esac
 done
 
-if [[ "$isAPPEND" == "false" ]]; then
+if [[ -z "$APPEND" ]]; then
 	echo "clear CRYPTO_CONFIG_DIR $CRYPTO_CONFIG_DIR"
 	sudo rm -rf ${CRYPTO_CONFIG_DIR}* # keep folder itself (for work as nfs server)
 	mkdir -p ${CRYPTO_CONFIG_DIR}

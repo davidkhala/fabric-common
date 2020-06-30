@@ -42,11 +42,4 @@ loadDB() {
 install() {
 	sudo npm install -g couchdb-dump
 }
-fcn=$1
-remain_params=""
-for ((i = 2; i <= ${#}; i++)); do
-	j=${!i}
-	remain_params="$remain_params $j"
-done
-
-$fcn $remain_params
+"$@"

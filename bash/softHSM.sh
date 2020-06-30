@@ -1,11 +1,6 @@
 #!/usr/bin/env bash
 set -e
-fcn=$1
-remain_params=""
-for ((i = 2; i <= ${#}; i++)); do
-	j=${!i}
-	remain_params="$remain_params $j"
-done
+
 if [[ -z "$SOFTHSM2_CONF" ]]; then
 	echo "[ERROR] environment SOFTHSM2_CONF not set"
 	exit 1
@@ -53,4 +48,4 @@ importPrivKey() {
 	local privKeyPem=$3
 	softhsm2-util --import $privKeyPem --token $label --label $label --id $id
 }
-$fcn $remain_params
+"$@"

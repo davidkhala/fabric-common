@@ -1,14 +1,6 @@
 #!/usr/bin/env bash
 set -e
 
-fcn=$1
-
-remain_params=""
-for ((i = 2; i <= ${#}; i++)); do
-	j=${!i}
-	remain_params="$remain_params $j"
-done
-
 golang() {
 	curl --silent --show-error https://raw.githubusercontent.com/davidkhala/goutils/master/scripts/install.sh | bash -s latest $1
 }
@@ -53,8 +45,8 @@ fabricInstall() {
 	#	If you want the latest production release, omit all version identifiers.
 	curl -sSL https://bit.ly/2ysbOFE | bash -s -- -s $1
 }
-if [[ -n "$fcn" ]]; then
-	$fcn $remain_params
+if [[ -n "$1" ]]; then
+	"$@"
 else
 	# install home brew
 	if [[ $(uname) == "Darwin" ]]; then
