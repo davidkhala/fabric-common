@@ -7,11 +7,12 @@ matrix:
       install:
         - export nodejsInstall="curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/install.sh"
         - $nodejsInstall | bash -s nodeGYPDependencies
-        - curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/scripts/npm.sh | bash -s packageLock false
+        - npm config set package-lock false
         - ./install.sh fabricInstall -d
         - npm install --global lerna
         - cd nodejs; npm install; cd -
-        - ./bash/test/shunit2.sh
+        - lerna bootstrap --no-ci
+        - ./bash/test/shunit2Install.sh
       script:
         - cd nodejs;
         - npm test
