@@ -45,62 +45,37 @@ Current version 2.1.1
     - chaincode fingerprint check is removed
     - [configtxgen] remove anchor peer file generator, user should update anchor peer vis config update transaction 
 ## Notes
-- [etcdraft](./RAFT.md)
 - [connectionProfile]A connection profile is normally created by an administrator who understands the network topology.
 - if random result is included in WriteSet, it corrupts the deterministic process.
-- instantiate/upgrade could be where data migration performed, if necessary
 - [keystore] For private keys existing in local file system, you should set the permissions to 0400 on *nix based OS.  
 - [gRPCs][docker network] **host name SHOULD not include upper-case character, otherwise gRpcs ping for discovery_client will not response back with docker network DNS** 
-- [query][blockEvent] blockHeight(got from queryChain) indexing from 1, blockNumber in blockEvent starting from 0. 
-    - The latter (above) is not the channel genesis block (available from `Channel.getGenesisBlock`), but the one after, which `block.header.number='1'`.
-- [reference]playback conference: https://wiki.hyperledger.org/display/fabric/Playbacks
 - individual properties may be overridden by setting environment variables, such as `CONFIGTX_ORDERER_ORDERERTYPE=etcdraft`.
 - [keyValue] Value size limit is now available at 4194304 bytes
     - `'Received message larger than max (<yourOverFlowValue> vs. 4194304)'`
 - [channel][system] peer could not join system channel
-- [channel]channel ID length < 250 :initializing configtx manager failed: bad channel ID: channel ID illegal, cannot be longer than 249
-- [disaster]backup recovery: at least 1 anchor peer for each organization should be resumed to recover transaction process
-- [configtxgen]configtx.yaml: Organization Name and Organization ID can include alphanumeric characters as well as dots and dashes.
+- [channel] channel ID length < 250 :initializing configtx manager failed: bad channel ID: channel ID illegal, cannot be longer than 249
+- [disaster] backup recovery: at least 1 anchor peer for each organization should be resumed to recover transaction process
+- [configtxgen] configtx.yaml: Organization Name and Organization ID can include alphanumeric characters as well as dots and dashes.
 - The default ApplicationPolicy is `{channel_config_policy_reference: '/Channel/Application/Endorsement'}` 
-- [configtxlator] The decoded ConfigUpdate structure
-    ```
-  { channel_id: 'allchannel',
-    isolated_data: {},
-    read_set:
-     { groups: { Application: [Object] },
-       mod_policy: '',
-       policies: {},
-       values: {},
-       version: '0' },
-    write_set:
-     { groups: { Application: [Object] },
-       mod_policy: '',
-       policies: {},
-       values: {},
-       version: '0' } }
-
-    ```
--  chaincode package identifier is the package label combined with a hash of the package      
+- [query][blockEvent] blockHeight (got from GetChainInfo) indexing from 1, blockNumber in blockEvent starting from 0.
+- QueryInstalledChaincode/s would not change even after removal source archive, we could refresh it by restarting peer 
+     
 ### Notes: Private Data 
 
-- [privateData]requirePeerCount <= peerCount - 1 (1 for peer itself)
-- [privateData]"2-of" collectionPolicy is not allowed
-- [privateData]private data work only after manually set anchor peers
-- [privateData]Note that collections cannot be deleted, 
-    as there may be prior private data hashes on the channel’s blockchain that cannot be removed.
-- [privateData]call `await stub.putPrivateData('any', "key", 'value');` without setup collection Config or in Init step:  
-Error: collection config not define for namespace [node]  
-See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f897a80898abf6a1e45
-- [privateData] collectionConfig.memberOnlyRead
-    -  expected symptom: `Error: GET_STATE failed: transaction ID: 35175d5ac4ccaa44ad77257a25caca5999c1a70fdee27174f0b7d9df1c39cfe5: tx creator does not have read access permission on privatedata in chaincodeName:diagnose collectionName: private`
+- [privateData] requirePeerCount <= peerCount - 1 (1 for peer itself)
+- [privateData] "2-of" collectionPolicy is not allowed
+- [privateData] private data work only after manually set anchor peers
+- [privateData] Note that collections cannot be deleted, 
+    - as prior private data hashes on the channel’s blockchain cannot be removed.
 - [privateData] private data will automatic sync on new peer(process last for seconds)
 - only `OR` is allowed in collection distribution policy(`member_orgs_policy`), see in [Architecture Reference: Private Data](https://hyperledger-fabric.readthedocs.io/en/master/private-data-arch.html)
-- the private data distribution policy must define a broader set of organizations than the chaincode endorsement policy
 - [collection-level-endorsement-policies](https://hyperledger-fabric.readthedocs.io/en/master/endorsement-policies.html#setting-collection-level-endorsement-policies)
     - Collection-level endorsement policy override chaincode-level endorsement policy for any data written to the collection
     - if collection-level endorsement policy is unset, instead of having default policy such as `channel_config_policy_reference = '/Channel/Application/Endorsement'`, no collection-level endorsement policy apply.
 
 ### [Notes: Chaincode](./CHAINCODE.md)
+
+### [Notes: etcdraft](./RAFT.md)
 
 ### Notes: Operations
 [reference](https://hyperledger-fabric.readthedocs.io/en/release-2.0/metrics_reference.html)
@@ -129,9 +104,6 @@ See also in https://github.com/hyperledger/fabric/commit/8a705b75070b7a7021ec6f8
 - NodeOUs enable and intermediate CA
 - make use of npm jsrsasign
 - make use of softHSM in node-sdk
-- replace some function in query.js with system chaincode
-- What is this:
-    - chaincode package: `It is not necessary for organizations to use the same package label.`
 
 ## Fabric weakness
 - fabric RSA key support: 
