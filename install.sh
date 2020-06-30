@@ -51,7 +51,7 @@ softHSM() {
 }
 fabricInstall() {
 	#	If you want the latest production release, omit all version identifiers.
-	curl -sSL https://bit.ly/2ysbOFE | bash -s -- -s
+	curl -sSL https://bit.ly/2ysbOFE | bash -s -- -s $1
 }
 if [[ -n "$fcn" ]]; then
 	$fcn $remain_params
