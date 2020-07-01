@@ -3,6 +3,7 @@ matrix:
     - language: bash
       install:
         - ./bash/test/shunit2Install.sh
+        - which shunit2
       script:
         - ./bash/test/softHSMTest.sh
     - language: node_js
