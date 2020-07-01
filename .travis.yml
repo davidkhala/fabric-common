@@ -1,16 +1,16 @@
+dist: bionic
+install:
+  - sudo apt-get install -y softhsm2
 matrix:
   include:
     - language: bash
       install:
-        - echo PATH == $PATH
         - ./bash/test/shunit2Install.sh
-        - which softhsm2-util
       script:
         - ./bash/test/softHSMTest.sh
     - language: node_js
       node_js:
         - "12"
-      dist: bionic
       install:
         - export nodejsInstall="curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/install.sh"
         - $nodejsInstall | bash -s nodeGYPDependencies
