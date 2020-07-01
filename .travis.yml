@@ -1,5 +1,10 @@
 matrix:
   include:
+    - language: bash
+      install:
+        - ./bash/test/shunit2Install.sh
+      script:
+        - ./bash/test/softHSMTest.sh
     - language: node_js
       node_js:
         - "12"
@@ -10,13 +15,9 @@ matrix:
         - npm config set package-lock false
         - ./install.sh fabricInstall -d
         - npm install --global lerna
-        - cd nodejs; npm install; cd -
-        - lerna bootstrap --no-ci
-        - ./bash/test/shunit2Install.sh
+        - cd nodejs; npm install;lerna bootstrap --no-ci; cd -
       script:
-        - cd nodejs;
-        - npm test
-        - ./bash/test/softHSMTest.sh
+        - cd nodejs; npm test; cd -
 
 
 
