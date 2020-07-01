@@ -4,14 +4,14 @@ export HSM_SO_PIN="fabric"
 export HSM_PIN="fabric"
 label="test"
 testOnNextFreeSlot() {
-	../softHSM.sh initToken $label
-	../softHSM.sh listToken
-	../softHSM.sh deleteToken $label
-	../softHSM.sh listToken
+	$CURRENT/../softHSM.sh initToken $label
+	$CURRENT/../softHSM.sh listToken
+	$CURRENT/../softHSM.sh deleteToken $label
+	$CURRENT/../softHSM.sh listToken
 }
 
 testListToken() {
-	../softHSM.sh listToken serialOnly
+	$CURRENT/../softHSM.sh listToken serialOnly
 }
 
 . shunit2
