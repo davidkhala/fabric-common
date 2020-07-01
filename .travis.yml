@@ -2,9 +2,8 @@ matrix:
   include:
     - language: bash
       install:
-        - ./bash/test/shunit2Install.sh
         - echo PATH == $PATH
-        - which shunit2
+        - ./bash/test/shunit2Install.sh
       script:
         - ./bash/test/softHSMTest.sh
     - language: node_js
