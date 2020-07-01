@@ -3,6 +3,7 @@ matrix:
     - language: bash
       install:
         - ./bash/test/shunit2Install.sh
+        - echo PATH == $PATH
         - which shunit2
       script:
         - ./bash/test/softHSMTest.sh
