@@ -4,6 +4,7 @@ matrix:
       install:
         - echo PATH == $PATH
         - ./bash/test/shunit2Install.sh
+        - which softhsm2-util
       script:
         - ./bash/test/softHSMTest.sh
     - language: node_js
