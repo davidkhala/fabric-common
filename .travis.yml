@@ -1,11 +1,10 @@
 dist: bionic
-install:
-  - sudo apt-get install -y softhsm2
 matrix:
   include:
     - language: bash
       install:
         - ./bash/test/shunit2Install.sh
+        - sudo apt-get install -y softhsm2
       script:
         - ./bash/test/softHSMTest.sh
     - language: node_js
@@ -13,6 +12,7 @@ matrix:
         - "12"
       install:
         - export nodejsInstall="curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/install.sh"
+        - sudo apt-get install -y softhsm2
         - $nodejsInstall | bash -s nodeGYPDependencies
         - npm config set package-lock false
         - ./install.sh fabricInstall -d
