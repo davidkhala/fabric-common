@@ -3,6 +3,6 @@
 
 
 command -v shunit2 || {
-	curl -sLo /usr/local/bin/shunit2 https://raw.githubusercontent.com/kward/shunit2/master/shunit2
+	sudo curl -sLo /usr/local/bin/shunit2 https://raw.githubusercontent.com/kward/shunit2/master/shunit2
 	chmod +x /usr/local/bin/shunit2
 }
