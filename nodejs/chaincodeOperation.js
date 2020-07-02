@@ -30,7 +30,7 @@ class ChaincodeOperation extends ChaincodeAction {
 	}
 
 	async install(chaincodePackagePath, useDynamicTimeout) {
-		const lifeCycleProposal = new LifecycleProposal(this.identityContext, emptyChannel(''), this.endorsers);
+		const lifeCycleProposal = new LifecycleProposal(this.identityContext, emptyChannel(''), this.endorsers, this.logger);
 
 		let requestTimeout;
 		if (useDynamicTimeout) {
@@ -109,7 +109,7 @@ class ChaincodeOperation extends ChaincodeAction {
 
 	async approve({name, sequence, PackageID, version}, orderer) {
 		version = version || ChaincodeOperation._defaultVersion(sequence);
-		const lifecycleProposal = new LifecycleProposal(this.identityContext, this.channel, this.endorsers);
+		const lifecycleProposal = new LifecycleProposal(this.identityContext, this.channel, this.endorsers, this.logger);
 		this.assign(lifecycleProposal);
 		const result = await lifecycleProposal.approveForMyOrg({
 			name,
@@ -130,7 +130,7 @@ class ChaincodeOperation extends ChaincodeAction {
 
 	async checkCommitReadiness({name, version, sequence}) {
 		version = version || ChaincodeOperation._defaultVersion(sequence);
-		const lifecycleProposal = new LifecycleProposal(this.identityContext, this.channel, this.endorsers);
+		const lifecycleProposal = new LifecycleProposal(this.identityContext, this.channel, this.endorsers, this.logger);
 		this.assign(lifecycleProposal);
 		const result = await lifecycleProposal.checkCommitReadiness({name, version, sequence});
 		return result.queryResults;
@@ -139,7 +139,7 @@ class ChaincodeOperation extends ChaincodeAction {
 
 	async commitChaincodeDefinition({name, version, sequence}, orderer) {
 		version = version || ChaincodeOperation._defaultVersion(sequence);
-		const lifecycleProposal = new LifecycleProposal(this.identityContext, this.channel, this.endorsers);
+		const lifecycleProposal = new LifecycleProposal(this.identityContext, this.channel, this.endorsers, this.logger);
 		this.assign(lifecycleProposal);
 		const result = await lifecycleProposal.commitChaincodeDefinition({name, version, sequence});
 		this.endorseResultInterceptor(result);
@@ -156,7 +156,7 @@ class ChaincodeOperation extends ChaincodeAction {
 	}
 
 	async queryChaincodeDefinition(name) {
-		const lifeCycleProposal = new LifecycleProposal(this.identityContext, this.channel, this.endorsers);
+		const lifeCycleProposal = new LifecycleProposal(this.identityContext, this.channel, this.endorsers, this.logger);
 		const result = await lifeCycleProposal.queryChaincodeDefinition(name);
 		return result.queryResults;
 	}
