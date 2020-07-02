@@ -36,8 +36,7 @@ exports.initAdmin = async (caService, adminCryptoPath, nodeType, mspId, TLS) => 
  * @param {NodeType} nodeType
  * @param {string} mspId
  * @param {boolean} TLS
- * @param {string} affiliationRoot
- * @returns {Promise<*>}
+ * @param {string} [affiliationRoot]
  */
 exports.init = async (caService, adminCryptoPath, nodeType, mspId, TLS, {affiliationRoot} = {}) => {
 	logger.debug('init', {mspId, nodeType}, adminCryptoPath);

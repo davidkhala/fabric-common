@@ -1,4 +1,4 @@
-package model;
+package org.hyperledger.fabric.fabricCommon;
 
 import org.hyperledger.fabric.sdk.*;
 import org.hyperledger.fabric.sdk.exception.InvalidArgumentException;
@@ -31,10 +31,12 @@ public class ChannelUtil {
         }
     }
 
+
     /**
+     *
      * @param client
      * @param channelName
-     * @param ordererGRPCURL grpc://localhost:7250
+     * @param ordererGRPCURL
      * @param channelFile
      * @return
      * @throws InvalidArgumentException

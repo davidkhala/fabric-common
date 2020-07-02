@@ -1,4 +1,4 @@
-package model;
+package org.hyperledger.fabric.fabricCommon;
 
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -9,14 +9,12 @@ import org.hyperledger.fabric.sdk.Enrollment;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
-import java.security.spec.InvalidKeySpecException;
 
 public abstract class AbstractEnrollment implements Enrollment {
     PrivateKey privateKey;
     String cert;
+
     @Override
     public PrivateKey getKey() {
         return privateKey;
@@ -26,7 +24,8 @@ public abstract class AbstractEnrollment implements Enrollment {
     public String getCert() {
         return cert;
     }
-    static PrivateKey getPrivateKeyFromBytes(byte[] data) throws IOException, NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {
+
+    static PrivateKey getPrivateKeyFromBytes(byte[] data) throws IOException {
         final Reader pemReader = new StringReader(new String(data));
 
         final PrivateKeyInfo pemPair;

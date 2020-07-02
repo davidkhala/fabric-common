@@ -90,7 +90,9 @@ class CryptoPath {
 			msp: {
 				admincerts: this.resolve(mspDir, 'admincerts', `${this[`${nodeType}UserHostName`]}-cert.pem`),
 				cacerts: this.resolve(mspDir, 'cacerts', caCertBaseName),
-				tlscacerts: this.resolve(mspDir, 'tlscacerts', tlscaCertBaseName)
+				tlscacerts: this.resolve(mspDir, 'tlscacerts', tlscaCertBaseName),
+				IssuerPublicKey: this.resolve(mspDir, 'IssuerPublicKey'),
+				IssuerRevocationPublicKey: this.resolve(mspDir, 'IssuerRevocationPublicKey'),
 			},
 			peers: this.resolve(dir, 'peers'),
 			tlsca: this.resolve(dir, 'tlsca', tlscaCertBaseName),

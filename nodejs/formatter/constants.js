@@ -40,6 +40,13 @@ const MSPRoleType = [
 	'PEER', // Represents an MSP Peer
 	'ORDERER', // Represents an MSP Orderer
 ];
+/**
+ * TODO
+ * @enum {string}
+ */
+const MspType = {
+	idemix: 'idemix'
+};
 
 /**
  * @enum
@@ -178,5 +185,6 @@ module.exports = {
 	SystemChaincodeID,
 	ChannelGroupType,
 	DiscoveryResultType,
+	MspType,
 };
 

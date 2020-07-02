@@ -1,4 +1,4 @@
-package model;
+package org.hyperledger.fabric.fabricCommon;
 
 import org.hyperledger.fabric.sdk.*;
 import org.hyperledger.fabric.sdk.exception.InvalidArgumentException;

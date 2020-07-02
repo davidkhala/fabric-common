@@ -1,9 +1,35 @@
-apply plugin: 'java'
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'java'
+}
 
 repositories {
     mavenCentral()
 }
 
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/davidkhala/fabric-common")
+            credentials {
+                username = project.findProperty("gpr.user") ?: "davidkhala"
+                // configured as repository Secrets
+                password = project.findProperty("gpr.key") ?: System.getenv("GRADLE_PACKAGE_REGISTRY")
+            }
+        }
+    }
+    publications {
+        gpr(MavenPublication) {
+            groupId 'org.hyperledger.fabric'
+            artifactId 'fabric-common'
+            version '2.1.1-alpha.2'
+            from(components.java)
+        }
+    }
+}
+
 dependencies {
-    compile 'org.hyperledger.fabric-sdk-java:fabric-sdk-java:1.0.1'
+    api 'org.hyperledger.fabric-sdk-java:fabric-sdk-java:[2,)'
 }
