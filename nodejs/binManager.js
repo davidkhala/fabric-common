@@ -226,22 +226,6 @@ class BinManager {
 				const result = await exec(CMD);
 				execResponsePrint(result);
 			},
-			genAnchorPeers: async (outputFile, asOrg) => {
-
-				const configtxYamlCheck = () => {
-					const readResult = yaml.read(configtxYaml);
-					const orgs = readResult.Profiles[profile].Application.Organizations;
-					if (!Array.isArray(orgs)) {
-						throw Error('invalid configYaml:Organizations is not array');
-					}
-				};
-				configtxYamlCheck();
-
-				const CMD = `${this.binPath}/configtxgen -outputAnchorPeersUpdate ${outputFile} -profile ${profile} -channelID ${channelName} -asOrg ${asOrg} -configPath ${configPath}`;
-				this.logger.info('CMD', CMD);
-				const result = await exec(CMD);
-				execResponsePrint(result);
-			},
 			viewBlock: async (blockFile) => {
 				const CMD = `${this.binPath}/configtxgen -inspectBlock ${blockFile} -profile ${profile} -configPath ${configPath}`;
 				this.logger.info('CMD', CMD);

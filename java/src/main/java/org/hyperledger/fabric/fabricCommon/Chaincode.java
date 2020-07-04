@@ -60,7 +60,7 @@ public class Chaincode {
     }
 
     public static ProposalResultWrapper instantiate(Channel channel, Set<Peer> peers, ChaincodeID chaincodeMetaData, String[] args) throws ProposalException, InvalidArgumentException, NoSuchFieldException, IllegalAccessException {
-        HFClient client = ChannelUtil.getClient(channel);
+        HFClient client = ChannelManager.getClient(channel);
         InstantiateProposalRequest instantiateProposalRequest = client.newInstantiationProposalRequest();
         instantiateProposalRequest.setChaincodeID(chaincodeMetaData);
         instantiateProposalRequest.setFcn("init");
@@ -72,7 +72,7 @@ public class Chaincode {
     }
 
     public static ProposalResultWrapper invoke(Channel channel, Set<Peer> peers, ChaincodeID chaincodeMetaData, String[] args) throws InvalidArgumentException, NoSuchFieldException, IllegalAccessException, ProposalException {
-        HFClient client = ChannelUtil.getClient(channel);
+        HFClient client = ChannelManager.getClient(channel);
         TransactionProposalRequest txProposal = client.newTransactionProposalRequest();
         txProposal.setChaincodeID(chaincodeMetaData);
         txProposal.setFcn("invoke");

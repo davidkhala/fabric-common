@@ -22,16 +22,6 @@ genChannel() {
 	$CMD
 }
 
-genAnchorPeers() {
-	local outputFile=$1
-	local profile=$2
-	local channelName=$3
-	local asOrg=$4
-	local CMD="$BIN_PATH/configtxgen -outputAnchorPeersUpdate $outputFile -profile $profile -channelID $channelName -asOrg $asOrg"
-	echo CMD $CMD
-	$CMD
-}
-
 viewBlock() {
 	local blockFile=$1
 	local profile=$2

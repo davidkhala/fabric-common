@@ -92,7 +92,7 @@ class CryptoPath {
 				cacerts: this.resolve(mspDir, 'cacerts', caCertBaseName),
 				tlscacerts: this.resolve(mspDir, 'tlscacerts', tlscaCertBaseName),
 				IssuerPublicKey: this.resolve(mspDir, 'IssuerPublicKey'),
-				IssuerRevocationPublicKey: this.resolve(mspDir, 'IssuerRevocationPublicKey'),
+				IssuerRevocationPublicKey: this.resolve(mspDir, 'RevocationPublicKey'),
 			},
 			peers: this.resolve(dir, 'peers'),
 			tlsca: this.resolve(dir, 'tlsca', tlscaCertBaseName),
