@@ -27,7 +27,7 @@ exports.fabricImagePull = async ({fabricTag, caTag = fabricTag, chaincodeType = 
 	if (caTag) {
 		await dockerManager.imageCreateIfNotExist(`hyperledger/fabric-ca:${caTag}`);
 	}
-	await dockerManager.imageCreateIfNotExist('couchdb:3.1');
+	await dockerManager.imageCreateIfNotExist('hyperledger/fabric-couchdb:0.4.21');
 };
 
 /**
@@ -193,7 +193,7 @@ exports.runPeer = async (opts, operations, metrics) => {
 };
 
 exports.runCouchDB = async ({container_name, port, network, user = 'admin', password = 'adminpw'}) => {
-	const Image = 'couchdb:3.1';
+	const Image = 'hyperledger/fabric-couchdb:0.4.21';
 	const Env = couchdbUtil.envBuilder(user, password);
 	const builder = new ContainerOptsBuilder(Image);
 	builder.setName(container_name).setEnv(Env);
