@@ -90,7 +90,7 @@ exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchD
 			'CORE_LEDGER_STATE_STATEDATABASE=CouchDB',
 			`CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=${container_name}:5984`,
 			`CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=${user}`,
-			`CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=${password}`
+			`CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=${password}`,
 		]);
 	}
 	if (operationsOpts) {

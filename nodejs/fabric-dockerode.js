@@ -193,7 +193,7 @@ exports.runPeer = async (opts, operations, metrics) => {
 };
 
 exports.runCouchDB = async ({container_name, port, network, user = 'admin', password = 'adminpw'}) => {
-	const Image = 'hyperledger/couchdb:3.1';
+	const Image = 'couchdb:3.1';
 	const Env = couchdbUtil.envBuilder(user, password);
 	const builder = new ContainerOptsBuilder(Image);
 	builder.setName(container_name).setEnv(Env);
