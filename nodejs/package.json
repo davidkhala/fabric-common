@@ -6,11 +6,11 @@
   },
   "dependencies": {
     "khala-dockerode": "latest",
-    "khala-level": "^0.0.1",
-    "khala-logger": "^0.2.0",
+    "khala-level": "latest",
+    "khala-logger": "latest",
     "khala-nodeutils": "latest",
-    "khala-axios": "^0.1.3",
-    "khala-light-util": "^0.0.3",
+    "khala-axios": "latest",
+    "khala-light-util": "latest",
     "compressing": "latest",
     "khala-fabric-formatter": "latest",
     "khala-fabric-admin": "latest"
