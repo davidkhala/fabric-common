@@ -9,10 +9,9 @@ const {adminName: defaultAdminName, adminPwd: defaultAdminPwd} = require('khala-
 /**
  * @param [fabricTag]
  * @param [caTag]
- * @param [thirdPartyTag]
  * @param {ChaincodeType} [chaincodeType]
  */
-exports.fabricImagePull = async ({fabricTag, caTag = fabricTag, thirdPartyTag, chaincodeType = 'golang'}) => {
+exports.fabricImagePull = async ({fabricTag, caTag = fabricTag, chaincodeType = 'golang'}) => {
 	if (fabricTag) {
 		const imageTag = fabricTag;
 		switch (chaincodeType) {
@@ -28,9 +27,7 @@ exports.fabricImagePull = async ({fabricTag, caTag = fabricTag, thirdPartyTag, c
 	if (caTag) {
 		await dockerManager.imageCreateIfNotExist(`hyperledger/fabric-ca:${caTag}`);
 	}
-	if (thirdPartyTag) {
-		await dockerManager.imageCreateIfNotExist(`hyperledger/fabric-couchdb:${thirdPartyTag}`);
-	}
+	await dockerManager.imageCreateIfNotExist('couchdb:3.1');
 };
 
 /**
@@ -64,7 +61,8 @@ exports.runCA = async ({container_name, port, network, imageTag, adminName, admi
 	}
 
 	const {caKey, caCert} = caUtil.container;
-	const {CN, OU, O, ST, C, L} = issuer;
+	// eslint-disable-next-line no-unused-vars
+	const {CN, OU, O, ST, C, L} = issuer; // TODO make use of full Subject DN
 
 	const cmdIntermediateBuilder = (options) => {
 		if (!options) {
@@ -194,8 +192,8 @@ exports.runPeer = async (opts, operations, metrics) => {
 	return await dockerManager.containerStart(createOptions);
 };
 
-exports.runCouchDB = async ({imageTag, container_name, port, network, user, password}) => {
-	const Image = `hyperledger/fabric-couchdb:${imageTag}`;
+exports.runCouchDB = async ({container_name, port, network, user = 'admin', password = 'adminpw'}) => {
+	const Image = 'hyperledger/couchdb:3.1';
 	const Env = couchdbUtil.envBuilder(user, password);
 	const builder = new ContainerOptsBuilder(Image);
 	builder.setName(container_name).setEnv(Env);

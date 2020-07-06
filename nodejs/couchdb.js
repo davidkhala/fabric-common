@@ -1,8 +1,9 @@
 const path = require('path');
 const fsExtra = require('fs-extra');
-exports.envBuilder = (user = '', password = '', clusterOpt) => {
+exports.envBuilder = (user, password, clusterOpt) => {
 	let env = [`COUCHDB_USER=${user}`, `COUCHDB_PASSWORD=${password}`];
 	if (clusterOpt) {
+		// TODO couchdb cluster
 		const {nodeName, flag} = clusterOpt;
 		env = env.concat([
 			`NODENAME=${nodeName}`,
