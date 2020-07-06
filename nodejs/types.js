@@ -9,6 +9,31 @@
  */
 
 /**
+ * @typedef {Object} FabricCAResponse
+ * @property {FabricCAResponseResult} result
+ * @property {[]} errors
+ * @property {[]} messages
+ * @property {boolean} success
+ */
+/**
+ * @typedef {Object} FabricCAResponseResult
+ * @property {string} Credential
+ * @property Attrs
+ * @property {string} CRI
+ * @property {string} Nonce Base64 format
+ * @property {CAInfo} CAInfo
+ */
+
+/**
+ * @typedef {Object} CAInfo
+ * @property {string} CAName
+ * @property {string} CAChain Base64 format
+ * @property {string} IssuerPublicKey Base64 format
+ * @property {string} IssuerRevocationPublicKey Base64 format
+ * @property {string} Version
+ */
+
+/**
  * An object of a fully decoded protobuf message "Block".
  * A Block may contain the configuration of the channel or endorsing transactions on the channel.
  * @typedef {Object} Block
