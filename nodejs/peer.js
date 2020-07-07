@@ -1,18 +1,9 @@
 const {LoggingLevel} = require('khala-fabric-formatter/remote');
 const {MetricsProvider} = require('./constants');
 
-exports.getName = (peer) => {
-	const originName = peer.toString();
-	if (originName.includes('://localhost') && peer._options['grpc.ssl_target_name_override']) {
-		return peer._options['grpc.ssl_target_name_override'];
-	} else {
-		return originName;
-	}
-};
-
 exports.container = {
 	MSPROOT: '/etc/hyperledger/crypto-config',
-	dockerSock: '/host/var/run/docker.sock',
+	dockerSock: '/var/run/docker.sock',
 	state: '/var/hyperledger/production',
 	config: '/etc/hyperledger/'
 };
@@ -42,12 +33,12 @@ exports.statePath = {
  * @param configPath
  * @param id
  * @param peerHostName
- * @param tls
- * @param couchDB
- * @param chaincodeConfig
+ * @param [tls]
+ * @param [couchDB]
  * @param {LoggingLevel} [loggingLevel]
- * @param operationsOpts
- * @param metricsOpts
+ * @param [operationsOpts]
+ * @param [metricsOpts]
+ * @param [chaincodeOpts]
  * @returns {string[]}
  */
 exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchDB}, loggingLevel, operationsOpts, metricsOpts, chaincodeOpts) => {
@@ -63,7 +54,6 @@ exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchD
 			`CORE_PEER_TLS_ENABLED=${!!tls}`,
 			`CORE_PEER_ID=${peerHostName}`,
 			`CORE_PEER_ADDRESS=${peerHostName}:7051`,
-			'CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052', // for swarm/k8s mode
 			'GODEBUG=netdns=go' // NOTE aliyun only
 		];
 	if (chaincodeOpts) {
@@ -137,22 +127,4 @@ exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchD
 		}
 	}
 	return environment;
-};
-
-/**
- * basic health check by discoveryClient
- * @param {Client.Peer} peer
- * @return {Promise<boolean>} false if connect trial failed
- */
-exports.ping = async (peer) => {
-	try {
-		await peer.waitForReady(peer._discoveryClient);
-		return true;
-	} catch (err) {
-		if (err.message.includes('Failed to connect before the deadline')) {
-			return false;
-		} else {
-			throw err;
-		}
-	}
 };
