@@ -1,13 +1,12 @@
 const {LoggingLevel} = require('khala-fabric-formatter/remote');
 const {MetricsProvider} = require('khala-fabric-formatter/constants');
 
-exports.container =
-	{
-		MSPROOT: '/etc/hyperledger/crypto-config',
-		dockerSock: '/host/var/run/docker.sock',
-		state: '/var/hyperledger/production',
-		config: '/etc/hyperledger/'
-	};
+exports.container = {
+	MSPROOT: '/etc/hyperledger/crypto-config',
+	dockerSock: '/var/run/docker.sock',
+	state: '/var/hyperledger/production',
+	config: '/etc/hyperledger/'
+};
 exports.host = {
 	dockerSock: '/var/run/docker.sock' // mac system, only  /var/run/docker.sock exist.
 };
@@ -34,18 +33,17 @@ exports.statePath = {
  * @param configPath
  * @param id
  * @param peerHostName
- * @param tls
- * @param couchDB
- * @param chaincodeConfig
+ * @param [tls]
+ * @param [couchDB]
  * @param {LoggingLevel} [loggingLevel]
- * @param operationsOpts
- * @param metricsOpts
+ * @param [operationsOpts]
+ * @param [metricsOpts]
+ * @param [chaincodeOpts]
  * @returns {string[]}
  */
-exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchDB, chaincodeConfig}, loggingLevel, operationsOpts, metricsOpts) => {
+exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchDB}, loggingLevel, operationsOpts, metricsOpts, chaincodeOpts) => {
 	let environment =
 		[
-			`CORE_VM_ENDPOINT=unix://${exports.container.dockerSock}`,
 			`CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${network}`,
 			'CORE_LEDGER_HISTORY_ENABLEHISTORYDATABASE=true',
 			'CORE_PEER_GOSSIP_USELEADERELECTION=true',
@@ -59,8 +57,22 @@ exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchD
 			'CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052', // for swarm/k8s mode
 			'GODEBUG=netdns=go' // NOTE aliyun only
 		];
-	if (chaincodeConfig) {
-		const {attachLog} = chaincodeConfig;
+	if (chaincodeOpts) {
+		// eslint-disable-next-line no-shadow
+		const {attachLog, endpoint, tls} = chaincodeOpts;
+		if (endpoint) {
+			environment.push(`CORE_VM_ENDPOINT=${endpoint}`);
+		}
+		if (tls) {
+			const {ca, cert, key} = tls;
+			environment = environment.concat([
+				`CORE_VM_DOCKER_TLS_ENABLED=${endpoint}`,
+				`CORE_VM_DOCKER_TLS_CA_FILE=${ca}`,
+				`CORE_VM_DOCKER_TLS_CERT_FILE=${cert}`,
+				`CORE_VM_DOCKER_TLS_KEY_FILE=${key}`,
+			]);
+
+		}
 		environment.push(`CORE_VM_DOCKER_ATTACHSTDOUT=${!!attachLog}`); // Enables/disables the standard out/err from chaincode containers for debugging purposes
 	}
 	if (loggingLevel) {
