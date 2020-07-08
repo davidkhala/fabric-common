@@ -4,5 +4,6 @@
   "dependencies": {
     "fabric-network": "unstable",
     "khala-fabric-formatter": "latest"
-  }
+  },
+  "license": "Apache-2.0"
 }

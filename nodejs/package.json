@@ -15,6 +15,7 @@
     "khala-fabric-formatter": "latest",
     "khala-fabric-admin": "latest"
   },
+  "license": "Apache-2.0",
   "devDependencies": {
     "lerna": "latest",
     "mocha": "latest",
