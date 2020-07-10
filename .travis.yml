@@ -2,12 +2,11 @@ dist: bionic
 os:
   - osx
   - linux
-before_install:
-  - ./install.sh softHSM
 jobs:
   include:
     - language: bash
       install:
+        - ./install.sh softHSM
         - ./bash/test/shunit2Install.sh
       script:
         - ./bash/test/softHSMTest.sh
@@ -15,6 +14,7 @@ jobs:
       node_js:
         - "12"
       install:
+        - ./install.sh softHSM
         - export nodejsInstall="curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/install.sh"
         - $nodejsInstall | bash -s nodeGYPDependencies
         - npm config set package-lock false
