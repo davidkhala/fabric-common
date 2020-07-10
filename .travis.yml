@@ -1,6 +1,7 @@
+dist: bionic
 os:
-  - osx
   - linux
+  - osx
 jobs:
   include:
     - language: bash
