@@ -1,7 +1,4 @@
 dist: bionic
-os:
-  - linux
-  - osx
 jobs:
   include:
     - language: minimal
@@ -16,7 +13,7 @@ jobs:
         - "12"
       install:
         - ./install.sh softHSM
-        - if [ "$TRAVIS_OS_NAME" != "osx" ]; then curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/install.sh | bash -s nodeGYPDependencies ; fi
+        - curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/install.sh | bash -s nodeGYPDependencies
         - npm config set package-lock false
         - ./install.sh fabricInstall -d
         - npm install --global lerna
