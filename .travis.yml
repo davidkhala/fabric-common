@@ -1,10 +1,10 @@
 dist: bionic
+os:
+  - osx
+  - linux
 jobs:
   include:
     - language: bash
-      os:
-        - osx
-        - linux
       install:
         - ./bash/test/shunit2Install.sh
         - ./install.sh softHSM
@@ -13,8 +13,6 @@ jobs:
     - language: node_js
       node_js:
         - "12"
-      os:
-        - linux
       install:
         - ./install.sh softHSM
         - export nodejsInstall="curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/install.sh"
