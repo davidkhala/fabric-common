@@ -2,27 +2,21 @@ dist: bionic
 os:
   - linux
   - osx
-jobs:
-  include:
-    - language: bash
-      install:
-        - ./install.sh softHSM
-        - ./bash/test/shunit2Install.sh
-      script:
-        - ./bash/test/softHSMTest.sh
-    - language: node_js
-      node_js:
-        - "12"
-      install:
-        - ./install.sh softHSM
-        - export nodejsInstall="curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/install.sh"
-        - $nodejsInstall | bash -s nodeGYPDependencies
-        - npm config set package-lock false
-        - ./install.sh fabricInstall -d
-        - npm install --global lerna
-        - cd nodejs; npm install; lerna bootstrap --no-ci; cd -
-      script:
-        - cd nodejs; npm test; cd -
+language: node_js
+node_js:
+  - "12"
+install:
+  - ./install.sh softHSM
+  - ./bash/test/shunit2Install.sh
+  - export nodejsInstall="curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/install.sh"
+  - $nodejsInstall | bash -s nodeGYPDependencies
+  - npm config set package-lock false
+  - ./install.sh fabricInstall -d
+  - npm install --global lerna
+  - cd nodejs; npm install; lerna bootstrap --no-ci; cd -
+script:
+  - ./bash/test/softHSMTest.sh
+  - cd nodejs; npm test; cd -
 
 
 
