@@ -45,16 +45,17 @@ fabricInstall() {
 	#	If you want the latest production release, omit all version identifiers.
 	curl -sSL https://bit.ly/2ysbOFE | bash -s -- -s $1
 }
-if [[ -n "$1" ]]; then
-	"$@"
-else
+brew(){
 	# install home brew
 	if [[ $(uname) == "Darwin" ]]; then
 		if ! brew config >/dev/null; then
 			/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 		fi
 	fi
-
+}
+if [[ -n "$1" ]]; then
+	"$@"
+else
 	dockerInstall="curl --silent --show-error https://raw.githubusercontent.com/davidkhala/docker-manager/master/install.sh"
 	$dockerInstall | bash -s installDocker
 	nodejsInstall="curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/install.sh"
