@@ -3,9 +3,8 @@ os:
   - osx
   - linux
 before_install:
-  - ./install.sh brew
   - ./install.sh softHSM
-matrix:
+jobs:
   include:
     - language: bash
       install:
