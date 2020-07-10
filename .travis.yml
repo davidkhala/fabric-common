@@ -4,7 +4,8 @@ os:
   - osx
 jobs:
   include:
-    - language: bash
+    - language: minimal
+      name: Bash test
       install:
         - ./bash/test/shunit2Install.sh
         - ./install.sh softHSM
