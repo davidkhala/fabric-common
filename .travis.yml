@@ -1,4 +1,3 @@
-dist: bionic
 os:
   - osx
   - linux
@@ -15,8 +14,7 @@ jobs:
         - "12"
       install:
         - ./install.sh softHSM
-        - export nodejsInstall="curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/install.sh"
-        - $nodejsInstall | bash -s nodeGYPDependencies
+        - if [ "$TRAVIS_OS_NAME" != "osx" ]; then curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/install.sh | bash -s nodeGYPDependencies ; fi
         - npm config set package-lock false
         - ./install.sh fabricInstall -d
         - npm install --global lerna
