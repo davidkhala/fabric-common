@@ -45,7 +45,7 @@ fabricInstall() {
 	#	If you want the latest production release, omit all version identifiers.
 	curl -sSL https://bit.ly/2ysbOFE | bash -s -- -s $1
 }
-brew(){
+brew() {
 	# install home brew
 	if [[ $(uname) == "Darwin" ]]; then
 		if ! brew config >/dev/null; then
