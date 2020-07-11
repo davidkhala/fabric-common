@@ -1,7 +1,7 @@
 # fabric-common
 [![Build Status](https://travis-ci.com/davidkhala/fabric-common.svg?branch=master)](https://travis-ci.com/davidkhala/fabric-common)
 
-Current version 2.1.1
+Current version 2.2.0
 ## Prerequisite
 - docker: 18.03 +
 ### Prerequisite: For development
