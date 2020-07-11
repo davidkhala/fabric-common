@@ -19,6 +19,8 @@ Code as document at current stage. Raise issue when you get confused.
 
 ## Notes
 - channel.getChannelConfig(peer) will not be rebuilt, please use event service to get block from peer; or get it from orderer
+- `gatePolicy.js`: translator for GateDSL <=> N out of
+    - reference: `common/policydsl/policyparser.go`
 
 ## Entry Points
 - `peer.js` work as [endorser] and [eventer]

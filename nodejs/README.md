@@ -31,38 +31,12 @@ Component module list
       ```
         const binManager = new BinManager();
         await binManager.configtxlatorRESTServer('down|start');
-      ```    
-## TODO
-- translator for OR('Org1MSP.member', 'Org2MSP.member') <=> N out of
-    - reference: `common/policydsl/policyparser.go`
-        - `func FromString(policy string) (*cb.SignaturePolicyEnvelope, error)`
-- tranlastor for 
-```
-    // collections_config.json
-    
-    [
-      {
-           "name": "collectionMarbles",
-           "policy": "OR('Org1MSP.member', 'Org2MSP.member')",
-           "requiredPeerCount": 0,
-           "maxPeerCount": 3,
-           "blockToLive":1000000,
-           "memberOnlyRead": true
-      },
-    
-      {
-           "name": "collectionMarblePrivateDetails",
-           "policy": "OR('Org1MSP.member')",
-           "requiredPeerCount": 0,
-           "maxPeerCount": 3,
-           "blockToLive":3,
-           "memberOnlyRead": true
-      }
-    ]
+      ```
 - [collection-level-endorsement-policies](https://hyperledger-fabric.readthedocs.io/en/master/endorsement-policies.html#setting-collection-level-endorsement-policies)
     - If a collection-level endorsement policy is set, transactions that write to a private data collection key will require that the specified organization peers have endorsed the transaction.
-    - The collection-level endorsement policy may be less restrictive or more restrictive than the chaincode-level endorsement policy and the collection’s private data distribution policy. 
-```
+    - The collection-level endorsement policy may be less restrictive or more restrictive than the chaincode-level endorsement policy and the collection’s private data distribution policy.      
+## TODO
+- idemix for sdk-node: https://lists.hyperledger.org/g/fabric/message/6625
 
 ## Fabric weakness
 - Does not support multiple stream managed in single EventService even with multiple targets configured

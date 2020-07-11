@@ -15,7 +15,7 @@ const gatePolicy = new GatePolicy(fabprotos);
  * @param {boolean} [member_only_read] whether only collection member clients can read the private data
  * @param {boolean} [member_only_write] whether only collection member clients can write the private data
  * @param {MspId[]} member_orgs
- * @return {protos.CollectionConfig}
+ * @return {CollectionConfig}
  */
 // eslint-disable-next-line max-len
 const buildCollectionConfig = ({name, required_peer_count, maximum_peer_count, endorsement_policy, block_to_live, member_only_read, member_only_write, member_orgs}) => {
@@ -76,7 +76,50 @@ const buildCollectionConfig = ({name, required_peer_count, maximum_peer_count, e
 	collectionConfig.static_collection_config = staticCollectionConfig;
 	return collectionConfig;
 };
+/**
+ * translator for "collections_config.json"
+    [
+      {
+           "name": "collectionMarbles",
+           "policy": "OR('Org1MSP.member', 'Org2MSP.member')",
+           "requiredPeerCount": 0,
+           "maxPeerCount": 3,
+           "blockToLive":1000000,
+           "memberOnlyRead": true
+      },
 
+      {
+           "name": "collectionMarblePrivateDetails",
+           "policy": "OR('Org1MSP.member')",
+           "requiredPeerCount": 0,
+           "maxPeerCount": 3,
+           "blockToLive":3,
+           "memberOnlyRead": true
+      }
+    ]
+ *
+ * @param {[]|string} json
+ * @return {CollectionConfig[]}
+ */
+const FromStandard = (json) => {
+	const object = typeof json === 'string' ? JSON.parse(json) : json;
+	return object.map(item => {
+		const {name, policy: gatePolicyEntry, requiredPeerCount, maxPeerCount, blockToLive, memberOnlyRead, memberOnlyWrite} = item;
+		return buildCollectionConfig({
+			name,
+			maximum_peer_count: maxPeerCount,
+			block_to_live: blockToLive,
+			member_only_read: memberOnlyRead,
+			member_only_write: memberOnlyWrite,
+			required_peer_count: requiredPeerCount,
+			member_orgs: gatePolicy.FromString(gatePolicyEntry).identities.map(({principal}) => {
+				const {msp_identifier} = commonProtos.MSPRole.decode(principal);
+				return msp_identifier;
+			})
+		});
+	});
+};
 module.exports = {
-	buildCollectionConfig
+	buildCollectionConfig,
+	FromStandard
 };
