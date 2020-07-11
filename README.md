@@ -104,6 +104,7 @@ Current version 2.2.0
 - NodeOUs enable and intermediate CA
 - make use of npm jsrsasign
 - make use of softHSM in node-sdk
+- [2.2] what is the lifecycle function for `peer lifecycle chaincode queryapproved`
 
 ## Fabric weakness
 - fabric RSA key support: 
