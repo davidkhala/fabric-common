@@ -38,6 +38,7 @@ softHSMInstall() {
 		#  export LDFLAGS="-L/usr/local/opt/openssl/lib"
 		#  export CPPFLAGS="-I/usr/local/opt/openssl/include"
 	else
+	  sudo apt update
 		sudo apt-get install -y softhsm2
 	fi
 }
