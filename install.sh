@@ -13,27 +13,26 @@ install_libtool() {
 }
 
 java() {
-	echo "[WARNING] This is to install OpenJDK, Oracle requires fee to use Java in production."
-	sudo apt update
-	sudo apt install -y default-jdk
-}
-softHSMInstall() {
-#	 FIXME: for macOS
-	  sudo apt update
-		sudo apt-get install -y softhsm2
+	if [[ $(uname) == "Darwin" ]]; then
+		echo "XCode should embed OpenJDK already"
+		java --version
+	else
+		echo "[WARNING] This is to install OpenJDK, Oracle requires fee to use Java in production."
+		sudo apt install -y default-jdk
+	fi
 
 }
+softHSMInstall() {
+	if [[ $(uname) == "Darwin" ]]; then
+		brew install softhsm
+	else
+		sudo apt-get install -y softhsm2
+	fi
+}
+
 fabricInstall() {
 	#	If you want the latest production release, omit all version identifiers.
 	curl -sSL https://bit.ly/2ysbOFE | bash -s -- -s $1
-}
-brew() {
-	# install home brew
-	if [[ $(uname) == "Darwin" ]]; then
-		if ! brew config >/dev/null; then
-			/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-		fi
-	fi
 }
 if [[ -n "$1" ]]; then
 	"$@"
