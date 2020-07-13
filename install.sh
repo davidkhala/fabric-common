@@ -24,7 +24,7 @@ java() {
 }
 softHSMInstall() {
 	if [[ $(uname) == "Darwin" ]]; then
-		brew install softhsm
+		HOMEBREW_NO_AUTO_UPDATE=1 brew install softhsm
 	else
 		sudo apt-get install -y softhsm2
 	fi
