@@ -42,5 +42,6 @@ else
 	nodejsInstall="curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/install.sh"
 	$nodejsInstall | bash -s nodeGYPDependencies
 	$nodejsInstall | bash -s install12
-	curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/scripts/npm.sh | bash -s packageLock false
+	npm config set package-lock false
+	sudo npm install --global mocha
 fi

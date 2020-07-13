@@ -37,7 +37,7 @@ Component module list
     - The collection-level endorsement policy may be less restrictive or more restrictive than the chaincode-level endorsement policy and the collection’s private data distribution policy.      
 ## TODO
 - idemix for sdk-node: https://lists.hyperledger.org/g/fabric/message/6625
-
+- [leveldown problem](https://travis-ci.com/github/davidkhala/fabric-common/jobs/360392845) 
 ## Fabric weakness
 - Does not support multiple stream managed in single EventService even with multiple targets configured
     - Only single `eventService._current_eventer` take effect
