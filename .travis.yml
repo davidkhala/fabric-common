@@ -24,12 +24,20 @@ _bash_job: &_bash_job
 jobs:
   include:
     - os: osx
+      before_install:
+        - brew update
       <<: *_bash_job
     - os: linux
+      before_install:
+        - sudo apt update
       <<: *_bash_job
     - os: osx
+      before_install:
+        - brew update
       <<: *_node_job
     - os: linux
+      before_install:
+        - sudo apt update
       <<: *_node_job
 
 
