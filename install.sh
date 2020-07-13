@@ -37,13 +37,13 @@ fabricInstall() {
 if [[ -n "$1" ]]; then
 	"$@"
 else
-	dockerInstall="curl --silent --show-error https://raw.githubusercontent.com/davidkhala/docker-manager/master/install.sh"
-	$dockerInstall | bash -s installDocker
-	nodejsInstall="curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/install.sh"
-	$nodejsInstall | bash -s nodeGYPDependencies
-	$nodejsInstall | bash -s install12
 	npm config set package-lock false
 	if [[ -z "$CI" ]]; then
+		dockerInstall="curl --silent --show-error https://raw.githubusercontent.com/davidkhala/docker-manager/master/install.sh"
+		$dockerInstall | bash -s installDocker
+		nodejsInstall="curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/install.sh"
+		$nodejsInstall | bash -s nodeGYPDependencies
+		$nodejsInstall | bash -s install12
 		sudo npm install --global mocha
 	else
 		npm install --global mocha
