@@ -1,25 +1,35 @@
 dist: bionic
+osx_image: xcode11.5
+_node_job: &_node_job
+  language: node_js
+  node_js:
+    - "12"
+  install:
+    - ./install.sh softHSMInstall
+    - curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/install.sh | bash -s nodeGYPDependencies
+    - npm config set package-lock false
+    - ./install.sh fabricInstall -d
+    - npm install --global lerna
+    - cd nodejs; npm install; lerna bootstrap --no-ci; cd -
+  script:
+    - cd nodejs; npm test; cd -
+
+_bash_job: &_bash_job
+  language: bash
+  install:
+    - ./bash/test/shunit2Install.sh
+    - ./install.sh softHSMInstall
+  script:
+    - ./bash/test/softHSMTest.sh
 jobs:
   include:
-    - language: minimal
-      name: Bash test
-      install:
-        - ./bash/test/shunit2Install.sh
-        - ./install.sh softHSMInstall
-      script:
-        - ./bash/test/softHSMTest.sh
-    - language: node_js
-      node_js:
-        - "12"
-      install:
-        - ./install.sh softHSM
-        - curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/install.sh | bash -s nodeGYPDependencies
-        - npm config set package-lock false
-        - ./install.sh fabricInstall -d
-        - npm install --global lerna
-        - cd nodejs; npm install; lerna bootstrap --no-ci; cd -
-      script:
-        - cd nodejs; npm test; cd -
-
+    - os: osx
+      <<: *_bash_job
+    - os: linux
+      <<: *_bash_job
+    - os: osx
+      <<: *_node_job
+    - os: linux
+      <<: *_node_job
 
 
