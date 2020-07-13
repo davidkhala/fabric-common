@@ -43,5 +43,9 @@ else
 	$nodejsInstall | bash -s nodeGYPDependencies
 	$nodejsInstall | bash -s install12
 	npm config set package-lock false
-	sudo npm install --global mocha
+	if [[ -z "$CI" ]]; then
+		sudo npm install --global mocha
+	else
+		npm install --global mocha
+	fi
 fi
