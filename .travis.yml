@@ -5,7 +5,7 @@ jobs:
       name: Bash test
       install:
         - ./bash/test/shunit2Install.sh
-        - ./install.sh softHSM
+        - ./install.sh softHSMInstall
       script:
         - ./bash/test/softHSMTest.sh
     - language: node_js

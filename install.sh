@@ -17,7 +17,7 @@ java() {
 	sudo apt update
 	sudo apt install -y default-jdk
 }
-softHSM() {
+softHSMInstall() {
 	if [[ $(uname) == "Darwin" ]]; then
 		brew install softhsm
 		#        A CA file has been bootstrapped using certificates from the SystemRoots
