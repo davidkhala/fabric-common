@@ -6,7 +6,7 @@ _node_job: &_node_job
     - "12"
   install:
     - ./install.sh softHSMInstall
-    - curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/install.sh | bash -s nodeGYPDependencies
+    # Do we need this  TODO curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/install.sh | bash -s nodeGYPDependencies
     - npm config set package-lock false
     - ./install.sh fabricInstall -d
     - npm install --global lerna
