@@ -22,7 +22,7 @@ Component module list
 ## Notes
 - node-gyp rebuild require `make` and `g++` 
 - Block data emitted in block event has a structure documented in [types.js](./formatter/types.js)
-- Now User and Client is separated. Client is less usefull for most action
+- Now User and Client is separated. Client is less useful for most actions.
 - `configtxlator` handler (for both CLI or server based) in `binManager.js`
 - [gPRC] waitForReady will response back positive response with non-TLS protocol
     - With grpcs://domain.org setup, we could get pong response from grpc://domain.org
@@ -37,7 +37,6 @@ Component module list
     - The collection-level endorsement policy may be less restrictive or more restrictive than the chaincode-level endorsement policy and the collection’s private data distribution policy.      
 ## TODO
 - idemix for sdk-node: https://lists.hyperledger.org/g/fabric/message/6625
-- [leveldown problem](https://travis-ci.com/github/davidkhala/fabric-common/jobs/360392845) 
 ## Fabric weakness
 - Does not support multiple stream managed in single EventService even with multiple targets configured
     - Only single `eventService._current_eventer` take effect

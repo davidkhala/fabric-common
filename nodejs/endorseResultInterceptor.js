@@ -1,5 +1,5 @@
 /**
- * @type {EndorseResultHandler}
+ * TODO link jsDoc typedef
  */
 const EndorseALL = (result) => {
 	const {errors, responses} = result;
