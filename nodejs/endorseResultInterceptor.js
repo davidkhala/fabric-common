@@ -1,6 +1,3 @@
-/**
- * TODO link jsDoc typedef
- */
 const EndorseALL = (result) => {
 	const {errors, responses} = result;
 	if (errors.length > 0) {

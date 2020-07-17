@@ -4,9 +4,7 @@ const {waitForTx} = require('./eventHub');
 const {transientMapTransform} = require('khala-fabric-formatter/txProposal');
 
 /**
- * @typedef {function} EndorseResultHandler
- * @param {ProposalResponse} result
- * @return ProposalResponse
+ * @typedef {function(result:ProposalResponse):ProposalResponse} EndorseResultHandler
  */
 
 /**
