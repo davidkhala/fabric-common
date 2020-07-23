@@ -1,4 +1,4 @@
-exports.envBuilder = (user = '', password = '', clusterOpt) => {
+exports.envBuilder = (user, password, clusterOpt) => {
 	let env = [`COUCHDB_USER=${user}`, `COUCHDB_PASSWORD=${password}`];
 	if (clusterOpt) {
 		const {nodeName, flag} = clusterOpt;

@@ -89,7 +89,7 @@ exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchD
 			`CORE_PEER_TLS_ROOTCERT_FILE=${tls.caCert}`]);
 	}
 	if (couchDB) {
-		const {container_name, user = '', password = ''} = couchDB;
+		const {container_name, user = 'admin', password = 'adminpw'} = couchDB;
 		environment = environment.concat([
 			'CORE_LEDGER_STATE_STATEDATABASE=CouchDB',
 			`CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=${container_name}:5984`,

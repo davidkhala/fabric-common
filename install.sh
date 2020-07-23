@@ -37,16 +37,11 @@ golang() {
 		fi
 	fi
 }
-golang11() {
-	sudo add-apt-repository ppa:gophers/archive
-	sudo apt-get update
-	sudo apt-get install golang-1.11-go
-}
-golang12() {
+golang13() {
 	sudo add-apt-repository -y ppa:longsleep/golang-backports
 	sudo apt-get update
-	sudo apt install golang-1.12
-	sudo ln -sf /usr/lib/go-1.12/bin/go /usr/bin/go
+	sudo apt install golang-1.13
+	sudo ln -sf /usr/lib/go-1.13/bin/go /usr/bin/go
 }
 install_libtool() {
 	if [[ $(uname) == "Darwin" ]]; then
@@ -108,9 +103,10 @@ softHSM() {
 }
 fabricInstall() {
 	curl -sSL http://bit.ly/2ysbOFE | bash -s -- 1.4.8 1.4.7 0.4.21 -s
+	docker pull couchdb:2.3.1
 }
 if [[ -n "$fcn" ]]; then
-	$fcn $remain_params
+	"$@"
 else
 	homebrewUtil="curl --silent --show-error https://raw.githubusercontent.com/davidkhala/mac-utils/master/brew.sh"
 	# install home brew

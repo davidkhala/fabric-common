@@ -1,14 +1,13 @@
 {
   "name": "khala-fabric-sdk-node",
-  "version": "1.4.6-0.0.2",
+  "version": "1.4.8-0.0.0",
   "dependencies": {
     "khala-axios": "^0.1.3",
-    "khala-dockerode": "^0.1.2",
+    "khala-dockerode": "^1.0.1",
     "khala-fabric-sdk-node-builder": "^0.2.4",
-    "khala-level": "^0.0.1",
+    "khala-level": "^0.0.3",
     "khala-logger": "^0.2.0",
-    "khala-nodeutils": "^0.8.2",
-    "tmp": "^0.1.0"
+    "khala-nodeutils": "^0.8.3"
   },
   "license": "Apache-2.0",
   "devDependencies": {

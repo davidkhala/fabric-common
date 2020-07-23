@@ -18,6 +18,7 @@ Component module list
 - [sdk]node-gyp rebuild require `make` and `g++` 
 - [sdk]FABN-1130: Stop using "init" as default function name
 - Block data emitted in block event has a structure documented in [types.js](./formatter/types.js)
+- [chaincode] chaincode upgrade could not replace instantiate for fabric-sdk-node: ` Error: could not find chaincode with name 'diagnose'`
 
  
 ## TODO
