@@ -107,7 +107,7 @@ softHSM() {
 	fi
 }
 fabricInstall() {
-	curl -sSL http://bit.ly/2ysbOFE | bash -s -- 1.4.7 1.4.7 0.4.20 -s
+	curl -sSL http://bit.ly/2ysbOFE | bash -s -- 1.4.8 1.4.7 0.4.21 -s
 }
 if [[ -n "$fcn" ]]; then
 	$fcn $remain_params
