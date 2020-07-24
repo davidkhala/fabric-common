@@ -16,8 +16,6 @@ Current version 1.4.8
 - [golang](./golang)
 - [java](./java)
 - [nodejs](./nodejs)
-## Design Notes
-- CICD: using travis
 ## Milestone
 - [1.2]
     - [privateData]
