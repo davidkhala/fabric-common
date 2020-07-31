@@ -59,7 +59,7 @@ const create = async (channelName, user, orderer, channelConfigFile, signingIden
  * @param {Orderer} orderer
  * @param verbose
  * @param [blockTime] wait x ms if block is still UNAVAILABLE, then retry
- * @return {Promise<Object|Buffer>} if !!verbose, it return an decoded block object
+ * @return {Promise<Object|Buffer>} if !!verbose, it returns a decoded block object
  */
 const getGenesisBlock = async (channel, user, orderer, verbose, blockTime = 1000) => {
 

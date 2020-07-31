@@ -54,7 +54,7 @@ class IdentityServiceBuilder {
 	}
 
 	/**
-	 * update password is supported
+	 * support update password
 	 * @param {Client.User} admin
 	 * @param enrollmentID
 	 * @param role
