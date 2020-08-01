@@ -35,7 +35,7 @@ exports.findLatest = findLatest;
  * @param {ChaincodeType} [chaincodeType]
  * @param {string} [metadataPath]
  * @param {Client} client
- * @param {string} incrementLevel incrementLevel major|minor|patch
+ * @param {IncrementLevel} [incrementLevel] incrementLevel
  */
 exports.incrementInstall = async (peers, {chaincodeId, chaincodePath, chaincodeType, metadataPath}, client, incrementLevel) => {
 	const logger = Logger.consoleLogger(`install version ${incrementLevel}`);
