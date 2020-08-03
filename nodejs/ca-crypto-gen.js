@@ -10,13 +10,10 @@ const {getCertificate} = require('khala-fabric-formatter/signingIdentity');
  * @param {FabricCAServices} caService
  * @param {CryptoPath} adminCryptoPath should use host root path
  * @param {string} nodeType
- * @param {string} mspId
- * @param {boolean} TLS
  */
-exports.initAdmin = async (caService, adminCryptoPath, nodeType, mspId, TLS) => {
+exports.initAdmin = async (caService, adminCryptoPath, nodeType) => {
 	const enrollmentID = adminCryptoPath.userName;
 	const enrollmentSecret = adminCryptoPath.password;
-
 
 	const type = `${nodeType}User`;
 
@@ -24,21 +21,20 @@ exports.initAdmin = async (caService, adminCryptoPath, nodeType, mspId, TLS) => 
 	adminCryptoPath.toMSP(result, type);
 	adminCryptoPath.toOrgAdmin(result, nodeType);
 	adminCryptoPath.toAdminCerts(result, type);// required for 'peer channel signconfigtx'
-	if (TLS) {
-		const tlsResult = await caService.enroll({enrollmentID, enrollmentSecret, profile: 'tls'});
-		adminCryptoPath.toTLS(tlsResult, type);
-		adminCryptoPath.toOrgTLS(tlsResult, nodeType);
-	}
+
+	// etcdraft always need TLSCA files in orderer
+	const tlsResult = await caService.enroll({enrollmentID, enrollmentSecret, profile: 'tls'});
+	adminCryptoPath.toTLS(tlsResult, type);
+	adminCryptoPath.toOrgTLS(tlsResult, nodeType);
 };
 /**
  * @param {FabricCAServices} caService
  * @param {CryptoPath} adminCryptoPath should be host path
  * @param {NodeType} nodeType
  * @param {string} mspId
- * @param {boolean} TLS
  * @param {string} [affiliationRoot]
  */
-exports.init = async (caService, adminCryptoPath, nodeType, mspId, TLS, {affiliationRoot} = {}) => {
+exports.init = async (caService, adminCryptoPath, nodeType, mspId, {affiliationRoot} = {}) => {
 	logger.debug('init', {mspId, nodeType}, adminCryptoPath);
 	const {[`${nodeType}OrgName`]: domain} = adminCryptoPath;
 	if (!affiliationRoot) {
@@ -50,7 +46,7 @@ exports.init = async (caService, adminCryptoPath, nodeType, mspId, TLS, {affilia
 	if (!adminUser) {
 		const initAdminRetry = async () => {
 			try {
-				await exports.initAdmin(caService, adminCryptoPath, nodeType, mspId, TLS);
+				await exports.initAdmin(caService, adminCryptoPath, nodeType);
 			} catch (e) {
 				if (e.toString().includes('Calling enrollment endpoint failed with error')) {
 					const ms = 1000;
@@ -83,11 +79,9 @@ exports.init = async (caService, adminCryptoPath, nodeType, mspId, TLS, {affilia
  * @param {FabricCAServices} caService
  * @param {CryptoPath} cryptoPath
  * @param {User} admin
- * @param TLS
  * @param {string} [affiliationRoot]
- * @returns {Promise<*>}
  */
-exports.genOrderer = async (caService, cryptoPath, admin, {TLS, affiliationRoot} = {}) => {
+exports.genOrderer = async (caService, cryptoPath, admin, {affiliationRoot} = {}) => {
 
 	const type = 'orderer';
 	const {ordererHostName, ordererOrgName: domain} = cryptoPath;
@@ -116,11 +110,11 @@ exports.genOrderer = async (caService, cryptoPath, admin, {TLS, affiliationRoot}
 
 	const result = await caService.enroll({enrollmentID, enrollmentSecret});
 	cryptoPath.toMSP(result, type);
-	if (TLS) {
-		const tlsResult = await caService.enroll({enrollmentID, enrollmentSecret, profile: 'tls'});
-		cryptoPath.toTLS(tlsResult, type);
-		// assume cryptoPath.toOrgTLS is done in `initAdmin`
-	}
+	// etcdraft always need TLS material
+
+	const tlsResult = await caService.enroll({enrollmentID, enrollmentSecret, profile: 'tls'});
+	cryptoPath.toTLS(tlsResult, type);
+	// assume cryptoPath.toOrgTLS is done in `initAdmin`
 	return admin;
 
 };

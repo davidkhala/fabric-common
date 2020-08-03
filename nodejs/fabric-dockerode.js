@@ -135,14 +135,15 @@ exports.chaincodeClear = async (filter) => {
 	}
 };
 exports.runOrderer = async (opts, operations, metrics) => {
-	const {container_name, imageTag, port, network, BLOCK_FILE, CONFIGTXVolume, msp, ordererType, tls, stateVolume} = opts;
+	const {container_name, imageTag, port, network, BLOCK_FILE, CONFIGTXVolume, msp, ordererType, tls, stateVolume, raft_tls} = opts;
 	const {id, configPath, volumeName} = msp;
 	const Image = `hyperledger/fabric-orderer:${imageTag}`;
 	const Cmd = ['orderer'];
+	raft_tls.host = container_name;
 	const Env = ordererUtil.envBuilder({
 		BLOCK_FILE, msp: {
 			configPath, id
-		}, ordererType, tls
+		}, ordererType, tls, raft_tls,
 	}, undefined, operations, metrics);
 
 	const builder = new ContainerOptsBuilder(Image, Cmd);

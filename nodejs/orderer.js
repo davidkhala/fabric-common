@@ -49,21 +49,18 @@ exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, tls, ordererType, raft
 			`ORDERER_GENERAL_TLS_CERTIFICATE=${tls.cert}`,
 			`ORDERER_GENERAL_TLS_ROOTCAS=[${rootCAsStringBuild(tls)}]`]);
 	}
-	if (!ordererType) {
-		ordererType = OrdererType.etcdraft;
-	}
 	switch (ordererType) {
 		case OrdererType.etcdraft:
-			env = env.concat([
-				'ORDERER_GENERAL_CLUSTER_SENDBUFFERSIZE=10'  // maximum number of messages in the egress buffer.Consensus messages are dropped if the buffer is full, and transaction messages are waiting for space to be freed.
-			]);
 			if (!raft_tls) {
 				throw Error('etcdraft orderer must have mutual TLS configurations');
 			}
 			env = env.concat([
 				`ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=${raft_tls.cert}`,
 				`ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=${raft_tls.key}`,
-				`ORDERER_GENERAL_CLUSTER_ROOTCAS=[${rootCAsStringBuild(raft_tls)}]`
+				`ORDERER_GENERAL_CLUSTER_LISTENPORT=${raft_tls.port}`,
+				`ORDERER_GENERAL_CLUSTER_LISTENADDRESS=${raft_tls.host}`,
+				`ORDERER_GENERAL_CLUSTER_SERVERCERTIFICATE=${raft_tls.cert}`,
+				`ORDERER_GENERAL_CLUSTER_SERVERPRIVATEKEY=${raft_tls.key}`
 			]);
 			break;
 	}
