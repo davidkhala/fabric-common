@@ -1,4 +1,7 @@
 {
   "name": "khala-fabric-protos",
-  "version": "1.4.0"
+  "version": "1.4.0-0.0.0",
+  "publishConfig": {
+    "tag": "latest-1.4"
+  }
 }

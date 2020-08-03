@@ -4,10 +4,13 @@
   "dependencies": {
     "khala-axios": "^0.1.3",
     "khala-dockerode": "^1.0.1",
-    "khala-fabric-sdk-node-builder": "^0.2.4",
+    "khala-fabric-sdk-node-builder": "latest-1.4",
     "khala-level": "^0.0.3",
     "khala-logger": "^0.2.0",
     "khala-nodeutils": "^0.8.3"
+  },
+  "publishConfig": {
+    "tag": "latest-1.4"
   },
   "license": "Apache-2.0",
   "devDependencies": {

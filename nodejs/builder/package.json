@@ -1,10 +1,13 @@
 {
   "name": "khala-fabric-sdk-node-builder",
-  "version": "0.2.4",
+  "version": "0.2.6",
   "dependencies": {
-    "fabric-ca-client": "^1.4.8",
-    "fabric-client": "^1.4.8",
-    "khala-fabric-formatter": "^1.4.6-0.0.2",
-    "khala-fabric-protos": "^1.4.0"
+    "fabric-ca-client": "latest-1.4",
+    "fabric-client": "latest-1.4",
+    "khala-fabric-formatter": "latest-1.4",
+    "khala-fabric-protos": "latest-1.4"
+  },
+  "publishConfig": {
+    "tag": "latest-1.4"
   }
 }
