@@ -22,7 +22,7 @@ exports.container = containerDefaultPaths;
  * @param metricsOpts
  * @returns {string[]}
  */
-exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, tls, ordererType, raft_tls = tls}, loggingLevel, operationsOpts, metricsOpts) => {
+exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, tls, ordererType, raft_tls}, loggingLevel, operationsOpts, metricsOpts) => {
 	let env = [
 		'ORDERER_GENERAL_LISTENADDRESS=0.0.0.0', // used to self identify
 		`ORDERER_GENERAL_TLS_ENABLED=${!!tls}`,
@@ -51,17 +51,18 @@ exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, tls, ordererType, raft
 	}
 	switch (ordererType) {
 		case OrdererType.etcdraft:
-			if (!raft_tls) {
-				throw Error('etcdraft orderer must have mutual TLS configurations');
-			}
 			env = env.concat([
 				`ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=${raft_tls.cert}`,
 				`ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=${raft_tls.key}`,
-				`ORDERER_GENERAL_CLUSTER_LISTENPORT=${raft_tls.port}`,
-				`ORDERER_GENERAL_CLUSTER_LISTENADDRESS=${raft_tls.host}`,
-				`ORDERER_GENERAL_CLUSTER_SERVERCERTIFICATE=${raft_tls.cert}`,
-				`ORDERER_GENERAL_CLUSTER_SERVERPRIVATEKEY=${raft_tls.key}`
 			]);
+			if (!tls) {
+				env = env.concat([
+					`ORDERER_GENERAL_CLUSTER_LISTENPORT=${raft_tls.port || 7050}`,
+					`ORDERER_GENERAL_CLUSTER_LISTENADDRESS=${raft_tls.host || '0.0.0.0'}`,
+					`ORDERER_GENERAL_CLUSTER_SERVERCERTIFICATE=${raft_tls.cert}`,
+					`ORDERER_GENERAL_CLUSTER_SERVERPRIVATEKEY=${raft_tls.key}`
+				]);
+			}
 			break;
 	}
 	if (operationsOpts) {
