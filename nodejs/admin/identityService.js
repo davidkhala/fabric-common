@@ -12,13 +12,14 @@ class IdentityServiceBuilder {
 	/**
 	 *
 	 * @param {FabricCAService} caService
+	 * @param {User} adminUser
 	 */
-	constructor(caService) {
+	constructor(caService, adminUser) {
 		this.identityService = new IdentityService(caService._fabricCAClient);
+		this.registrar = adminUser;
 	}
 
 	/**
-	 * @param {User} admin
 	 * @param {string} enrollmentID
 	 * @param {string} [enrollmentSecret]
 	 * @param {string} affiliation
@@ -28,7 +29,7 @@ class IdentityServiceBuilder {
 	 * @param [maxEnrollments]
 	 * @return {Promise<string>} The enrollment secret.  If not provided as parameter, a random secret is generated.
 	 */
-	async create({enrollmentID, enrollmentSecret, affiliation, role, attrs, caname, maxEnrollments}, admin) {
+	async create({enrollmentID, enrollmentSecret, affiliation, role, attrs, caname, maxEnrollments}) {
 		if (!maxEnrollments) {
 			maxEnrollments = -1;
 		}
@@ -50,7 +51,7 @@ class IdentityServiceBuilder {
 			caname,
 		};
 
-		return this.identityService.create(req, admin);
+		return this.identityService.create(req, this.registrar);
 	}
 
 	/**
@@ -65,7 +66,7 @@ class IdentityServiceBuilder {
 	 * @param [caname]
 	 * @returns {Promise<*>} TODO return data type
 	 */
-	async update(admin, {enrollmentID, role, affiliation, maxEnrollments, attrs, enrollmentSecret, caname}) {
+	async update({enrollmentID, role, affiliation, maxEnrollments, attrs, enrollmentSecret, caname}) {
 		const allowedType = Object.values(IdentityService.HFCAIdentityType);
 		if (!allowedType.includes(role)) {
 			throw Error(`invalid role:${role},should be one of ${allowedType}`);
@@ -77,16 +78,15 @@ class IdentityServiceBuilder {
 			enrollmentSecret,
 			caname,
 		};
-		return await this.identityService.update(enrollmentID, req, admin);
+		return await this.identityService.update(enrollmentID, req, this.registrar);
 	}
 
 	/**
 	 * no password in return
-	 * @param admin
 	 * @returns {Promise<Identity[]>}
 	 */
-	async getAll(admin) {
-		const {result, errors, messages, success} = await this.identityService.getAll(admin);
+	async getAll() {
+		const {result, errors, messages, success} = await this.identityService.getAll(this.registrar);
 		if (!success) {
 			const err = Error('identityService:getAll');
 			err.result = result;

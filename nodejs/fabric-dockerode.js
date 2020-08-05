@@ -75,7 +75,8 @@ exports.runCA = async ({container_name, port, network, imageTag, adminName, admi
 
 
 	const cmdAppend = `-d -b ${adminName}:${adminPassword} ${TLS ? '--tls.enabled' : ''} --csr.cn=${CN} --cors.enabled${cmdIntermediateBuilder(intermediate)}`;
-	const Cmd = ['sh', '-c', `rm ${caKey}; rm ${caCert};fabric-ca-server start ${cmdAppend}`];
+	const allowDelete = '--cfg.affiliations.allowremove --cfg.identities.allowremove';
+	const Cmd = ['sh', '-c', `rm ${caKey}; rm ${caCert};fabric-ca-server start ${cmdAppend} ${allowDelete}`];
 
 
 	const builder = new ContainerOptsBuilder(`hyperledger/fabric-ca:${imageTag}`, Cmd);

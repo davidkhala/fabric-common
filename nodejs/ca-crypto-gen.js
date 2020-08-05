@@ -64,13 +64,13 @@ exports.init = async (caService, adminCryptoPath, nodeType, mspId, {affiliationR
 		logger.info(`${adminCryptoPath.userName} of mspId[${mspId}] exists in local file system`);
 	}
 
-	const affiliationService = new AffiliationServiceBuilder(caService);
+	const affiliationService = new AffiliationServiceBuilder(caService, adminUser);
 
 	const force = true;// true to create recursively
-	await affiliationService.createIfNotExist({name: `${affiliationRoot}.client`, force}, adminUser);
-	await affiliationService.createIfNotExist({name: `${affiliationRoot}.user`, force}, adminUser);
-	await affiliationService.createIfNotExist({name: `${affiliationRoot}.peer`, force}, adminUser);
-	await affiliationService.createIfNotExist({name: `${affiliationRoot}.orderer`, force}, adminUser);
+	await affiliationService.createIfNotExist(`${affiliationRoot}.client`, force);
+	await affiliationService.createIfNotExist(`${affiliationRoot}.user`, force);
+	await affiliationService.createIfNotExist(`${affiliationRoot}.peer`, force);
+	await affiliationService.createIfNotExist(`${affiliationRoot}.orderer`, force);
 
 	return adminUser;
 
