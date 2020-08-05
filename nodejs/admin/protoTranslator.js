@@ -80,6 +80,7 @@ const buildHeader = ({Creator, Nonce, ChannelHeader}) => {
  *
  * @param {commonProto.Header} Header
  * @param {Buffer} Data
+ * @param {boolean} [asBuffer]
  * @return {commonProto.Payload}
  */
 const buildPayload = ({Header, Data}, asBuffer) => {

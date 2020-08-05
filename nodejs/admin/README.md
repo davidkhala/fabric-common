@@ -22,16 +22,12 @@ Code as document at current stage. Raise issue when you get confused.
 - `gatePolicy.js`: translator for GateDSL <=> N out of
     - reference: `common/policydsl/policyparser.go`
 
-## Entry Points
+## Components Mapping
 - `peer.js` work as [endorser] and [eventer]
-- `orderer.js` work as [committer] and [eventer];
+- `orderer.js` work as [committer] and [eventer]
 		
 ### Channel create
-
 Channel create is same as channel update action
-- See in `channelUpdate.js`, you could use a single envelop or config along with signatures
-    as channel configuration content. 
-
 
 ### Channel join
 peer joining to a channel in nature is sending a system chaincode proposal to peers
@@ -39,19 +35,22 @@ peer joining to a channel in nature is sending a system chaincode proposal to pe
 - Or you could use method `getSpecificBlock` in `signingIdentity.js` to get genesis block from orderer
 
 ### Channel Update
-Tutorial WIP
+See in `channelUpdate.js`, Align with fabric-common design, you could either on below as channel configuration content 
+- `useEnvelope(envelope)` for cases if you have already a signed configUpdate envelop from CLI `peer channel signconfigtx ...` 
+- `useSignatures(config, signatures)` for cases if you have in-memory config object, signingIdentity and signatures done by fabric-sdk-node. `All within nodejs` fashion   
 
 ### Chaincode Package
-There is multiple way we could make archive. My sample use `chaincodePackage.js` in `npm khala-fabric-sdk-node`     
+There are multiples way we could make archive. A sample use `chaincodePackage.js` in `npm khala-fabric-sdk-node`     
 
 ### Chaincode Install
-- See in `lifeCycleProposal.installChaincode`
+See in `lifeCycleProposal.installChaincode`
 
 ### Chaincode Approve
-- See in `lifeCycleProposal.approveForMyOrg`
+See in `lifeCycleProposal.approveForMyOrg`
 
 ### Chaincode Commit
-- See in `lifeCycleProposal.commitChaincodeDefinition`
+See in `lifeCycleProposal.commitChaincodeDefinition`
 
 ### Discovery service
-- SlimDiscoveryService in `discovery.js` 
+SlimDiscoveryService in `discovery.js` 
+- It returns the raw representation of discovery result. No further object rebuild inside.

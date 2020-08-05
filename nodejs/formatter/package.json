@@ -1,6 +1,6 @@
 {
   "name": "khala-fabric-formatter",
   "version": "2.1.0-0.1.1",
-  "description": "headless formatter for Hyperledger Fabric nodejs development",
+  "description": "formatter for Hyperledger Fabric nodejs development",
   "license": "Apache-2.0"
 }
