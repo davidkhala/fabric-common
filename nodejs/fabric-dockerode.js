@@ -61,8 +61,7 @@ exports.runCA = async ({container_name, port, network, imageTag, adminName, admi
 	}
 
 	const {caKey, caCert} = caUtil.container;
-	// eslint-disable-next-line no-unused-vars
-	const {CN, OU, O, ST, C, L} = issuer; // TODO make use of full Subject DN
+	const {CN} = issuer; // only --csr.cn is supported in command options
 
 	const cmdIntermediateBuilder = (options) => {
 		if (!options) {
@@ -74,7 +73,7 @@ exports.runCA = async ({container_name, port, network, imageTag, adminName, admi
 	};
 
 
-	const cmdAppend = `-d -b ${adminName}:${adminPassword} ${TLS ? '--tls.enabled' : ''} --csr.cn=${CN} --cors.enabled${cmdIntermediateBuilder(intermediate)}`;
+	const cmdAppend = `-d -b ${adminName}:${adminPassword} ${TLS ? '--tls.enabled' : ''} --csr.cn=${CN} --cors.enabled ${cmdIntermediateBuilder(intermediate)}`;
 	const allowDelete = '--cfg.affiliations.allowremove --cfg.identities.allowremove';
 	const Cmd = ['sh', '-c', `rm ${caKey}; rm ${caCert};fabric-ca-server start ${cmdAppend} ${allowDelete}`];
 
@@ -88,7 +87,7 @@ exports.runCA = async ({container_name, port, network, imageTag, adminName, admi
 };
 
 /**
- * TODO queryInstalled would not change even after removal
+ * queryInstalled would not change after removal r file, restart to update
  * @param {string} container_name peer container name
  * @param {string} chaincodePackageId
  */
