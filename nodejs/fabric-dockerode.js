@@ -40,7 +40,7 @@ exports.runCA = async ({container_name, port, network, imageTag, adminName, admi
 	}
 
 	const {caKey, caCert} = caUtil.container;
-	const {CN, OU, O, ST, C, L} = issuer;
+	const {CN} = issuer;
 
 	const cmdIntermediateBuilder = (options) => {
 		if (!options) {
