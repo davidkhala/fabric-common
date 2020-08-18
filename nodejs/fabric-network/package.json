@@ -1,11 +1,11 @@
 {
   "name": "khala-fabric-network",
-  "version": "1.4.6-0.0.4",
+  "version": "1.4.0-0.0.0",
   "dependencies": {
     "fabric-network": "latest-1.4",
-    "khala-fabric-formatter": "latest-1.4"
+    "khala-fabric-formatter": "latest-1.4.0"
   },
   "publishConfig": {
-    "tag": "latest-1.4"
+    "tag": "latest-1.4.0"
   }
 }

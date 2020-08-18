@@ -1,11 +1,11 @@
 # fabric-common
-[![Build Status](https://travis-ci.com/davidkhala/fabric-common.svg?branch=release-1.4)](https://travis-ci.com/davidkhala/fabric-common)
+[![Build Status](https://travis-ci.com/davidkhala/fabric-common.svg?branch=1.4.0)](https://travis-ci.com/davidkhala/fabric-common)
 
-Current version 1.4.8
+Current version 1.4.0
 ## Prerequisite
 - docker: 17.06.2-ce +
 - docker-compose: 1.14.0 +
-- golang: 1.13.x
+- golang: 1.11.x
 - fabric-node-sdk:
     - nodejs: 10.x
     - npm: 6 + 
@@ -21,8 +21,6 @@ Current version 1.4.8
     - [privateData]
 - [1.4]
     - [Operations][healthz][metrics][logLevel]
-    - [raft]
-    - [1.4.3][orderer][FAB-7559] apply new ordering service endpoints config structure
 ## Notes
 - [connectionProfile]A connection profile is normally created by an administrator who understands the network topology.
 - if random result is included in WriteSet, it corrupts the deterministic process.

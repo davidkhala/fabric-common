@@ -196,34 +196,6 @@ peer:
             reconcileSleepInterval: 1m
             # reconciliationEnabled is a flag that indicates whether private data reconciliation is enable or not.
             reconciliationEnabled: true
-            # skipPullingInvalidTransactionsDuringCommit is a flag that indicates whether pulling of invalid
-            # transaction's private data from other peers need to be skipped during the commit time and pulled
-            # only through reconciler.
-            skipPullingInvalidTransactionsDuringCommit: false
-
-        # Gossip state transfer related configuration
-        state:
-            # indicates whenever state transfer is enabled or not
-            # default value is true, i.e. state transfer is active
-            # and takes care to sync up missing blocks allowing
-            # lagging peer to catch up to speed with rest network
-            enabled: true
-            # checkInterval interval to check whether peer is lagging behind enough to
-            # request blocks via state transfer from another peer.
-            checkInterval: 10s
-            # responseTimeout amount of time to wait for state transfer response from
-            # other peers
-            responseTimeout: 3s
-            # batchSize the number of blocks to request via state transfer from another peer
-            batchSize: 10
-            # blockBufferSize reflect the maximum distance between lowest and
-            # highest block sequence number state buffer to avoid holes.
-            # In order to ensure absence of the holes actual buffer size
-            # is twice of this distance
-            blockBufferSize: 100
-            # maxRetries maximum number of re-tries to ask
-            # for single state transfer request
-            maxRetries: 3
 
     # TLS Settings
     # Note that peer-chaincode connections through chaincodeListenAddress is
@@ -317,26 +289,15 @@ peer:
 
     # Delivery service related config
     deliveryclient:
-        # The total time to spend retrying connections to ordering nodes
-        # before giving up and returning an error.
+        # It sets the total time the delivery service may spend in reconnection
+        # attempts until its retry logic gives up and returns an error
         reconnectTotalTimeThreshold: 3600s
 
-        # The connection timeout when connecting to ordering service nodes.
+        # It sets the delivery service <-> ordering service node connection timeout
         connTimeout: 3s
 
-        # The maximum delay between consecutive connection retry attempts to
-        # ordering nodes.
+        # It sets the delivery service maximal delay between consecutive retries
         reConnectBackoffThreshold: 3600s
-
-        # A list of orderer endpoint addresses which should be overridden
-        # when found in channel configurations.
-        addressOverrides:
-        #  - from:
-        #    to:
-        #    caCertsFile:
-        #  - from:
-        #    to:
-        #    caCertsFile:
 
     # Type for the local MSP - by default it's of type bccsp
     localMspType: bccsp
@@ -496,7 +457,7 @@ chaincode:
         name:
 
     # Generic builder environment, suitable for most chaincode types
-    builder: $(DOCKER_NS)/fabric-ccenv:$(TWO_DIGIT_VERSION)
+    builder: $(DOCKER_NS)/fabric-ccenv:latest
 
     # Enables/disables force pulling of the base docker images (listed below)
     # during user chaincode instantiation.
@@ -520,7 +481,7 @@ chaincode:
         # tools added for java shim layer packaging.
         # This image is packed with shim layer libraries that are necessary
         # for Java chaincode runtime.
-        runtime: $(DOCKER_NS)/fabric-javaenv:$(TWO_DIGIT_VERSION)
+        runtime: $(DOCKER_NS)/fabric-javaenv:$(ARCH)-$(PROJECT_VERSION)
 
     node:
         # need node.js engine at runtime, currently available in baseimage
@@ -610,7 +571,7 @@ ledger:
        # This username must have read and write authority on CouchDB
        username:
        # The password is recommended to pass as an environment variable
-       # during start up (eg CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD).
+       # during start up (eg LEDGER_COUCHDBCONFIG_PASSWORD).
        # If it is stored here, the file must be access control protected
        # to prevent unintended users from discovering the password.
        password:
@@ -669,9 +630,7 @@ operations:
         key:
             file:
 
-        # most operations service endpoints require client authentication when TLS
-        # is enabled. clientAuthRequired requires client certificate authentication
-        # at the TLS layer to access all resources.
+        # require client certificate authentication to access all resources
         clientAuthRequired: false
 
         # paths to PEM encoded ca certificates to trust for client authentication

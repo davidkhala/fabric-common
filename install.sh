@@ -102,7 +102,7 @@ softHSM() {
 	fi
 }
 fabricInstall() {
-	curl -sSL http://bit.ly/2ysbOFE | bash -s -- 1.4.8 1.4.7 0.4.21 -s
+	curl -sSL http://bit.ly/2ysbOFE | bash -s -- 1.4.0 1.4.0 0.4.14 -s
 	docker pull couchdb:2.3.1
 }
 if [[ -n "$fcn" ]]; then
@@ -111,7 +111,6 @@ else
 	homebrewUtil="curl --silent --show-error https://raw.githubusercontent.com/davidkhala/mac-utils/master/brew.sh"
 	# install home brew
 	$homebrewUtil | bash -s install
-
 
 	dockerInstall="curl --silent --show-error https://raw.githubusercontent.com/davidkhala/docker-manager/master/install.sh"
 	$dockerInstall | bash -s installDocker
