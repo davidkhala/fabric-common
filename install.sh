@@ -103,7 +103,7 @@ softHSM() {
 }
 fabricInstall() {
 	curl -sSL http://bit.ly/2ysbOFE | bash -s -- 1.4.0 1.4.0 0.4.14 -s
-	docker pull couchdb:2.3.1
+	docker pull hyperledger/fabric-couchdb:0.4.14
 }
 if [[ -n "$fcn" ]]; then
 	"$@"

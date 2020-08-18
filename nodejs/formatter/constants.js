@@ -32,7 +32,6 @@ const MSPRoleType = {
 const OrdererType = {
 	solo: 'solo',
 	kafka: 'kafka',
-	etcdraft: 'etcdraft'
 };
 /**
  *

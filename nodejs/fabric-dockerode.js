@@ -177,7 +177,7 @@ exports.runPeer = async ({container_name, port, network, imageTag, msp, peerHost
 };
 
 exports.runCouchDB = async ({container_name, port, network, user = 'admin', password = 'adminpw'}) => {
-	const Image = 'couchdb:2.3.1';
+	const Image = 'hyperledger/fabric-couchdb:0.4.14';
 	const Env = couchdbUtil.envBuilder(user, password);
 	const builder = new ContainerOptsBuilder(Image);
 	builder.setName(container_name).setEnv(Env);
