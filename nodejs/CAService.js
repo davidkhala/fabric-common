@@ -1,6 +1,6 @@
 const FabricCAServices = require('fabric-ca-client/lib/FabricCAServices');
 
-const {emptySuite} = require('./cryptoSuite');
+const {emptySuite} = require('khala-fabric-admin/cryptoSuite');
 
 class CAService {
 	/**

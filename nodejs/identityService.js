@@ -8,7 +8,7 @@
 const IdentityService = require('fabric-ca-client/lib/IdentityService');
 
 
-class IdentityServiceBuilder {
+class IdentityServiceWrapper {
 	/**
 	 *
 	 * @param {FabricCAService} caService
@@ -99,5 +99,5 @@ class IdentityServiceBuilder {
 	}
 }
 
-module.exports = IdentityServiceBuilder;
+module.exports = IdentityServiceWrapper;
 

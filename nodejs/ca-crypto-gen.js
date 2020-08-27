@@ -2,7 +2,7 @@ const caUtil = require('./ca');
 const {toString: caStringify} = require('khala-fabric-formatter/ca');
 const userUtil = require('./user');
 const logger = require('khala-logger/log4js').consoleLogger('ca-crypto-gen');
-const AffiliationServiceBuilder = require('khala-fabric-admin/affiliationService');
+const AffiliationServiceBuilder = require('./affiliationService');
 const {sleep} = require('khala-light-util');
 const {getCertificate} = require('khala-fabric-formatter/signingIdentity');
 /**
