@@ -1,6 +1,6 @@
 {
   "name": "khala-fabric-sdk-node",
-  "version": "2.2.0-alpha.0",
+  "version": "2.2.0-alpha.1",
   "scripts": {
     "test": "mocha test"
   },
@@ -28,6 +28,6 @@
   "description": "fabric-sdk-node integrated utils",
   "repository": {
     "type": "git",
-    "url": "github.com/davidkhala/fabric-common"
+    "url": "https://github.com/davidkhala/fabric-common"
   }
 }

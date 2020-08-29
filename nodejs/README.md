@@ -5,18 +5,10 @@ fabric-sdk-node integrated utils
 
 Component module list
 ---
-- [admin](./admin)
-- [fabric-network](./fabric-network)
-- [formatter](./formatter)
+- [khala-fabric-admin](./admin)
+- [khala-fabric-network](./fabric-network)
+- [khala-fabric-formatter](./formatter)
 
-## Design Notes
-- Concept map:
-    - Orderer => Committer | Eventer*
-    - Peer => Discoverer | Endorser | Eventer
-    - EventHub => EventService
-    - Client._userContext => IdentityContext
-    - sideDB, policy => deprecated
-    
 ## Test
     - intergration test and e2e test locates in [delphi-fabric](https://github.com/davidkhala/delphi-fabric)
 ## Notes

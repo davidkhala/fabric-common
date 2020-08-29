@@ -15,7 +15,6 @@ Code as document at current stage. Raise issue when you get confused.
 ## TODO
 - `configDecoder.js`: work as javascript version of configtxlator
 - make good use of `fabric-common/lib/ServiceHandler.js`
-- service discovery
 
 ## Notes
 - channel.getChannelConfig(peer) will not be rebuilt, please use event service to get block from peer; or get it from orderer
@@ -24,7 +23,7 @@ Code as document at current stage. Raise issue when you get confused.
 
 ## Components Mapping
 - `peer.js` work as [endorser] and [eventer]
-- `orderer.js` work as [committer] and [eventer]
+- `orderer.js` work as [committer], [eventer] and [discoverer]
 		
 ### Channel create
 Channel create is same as channel update action

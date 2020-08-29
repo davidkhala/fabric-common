@@ -1,9 +1,13 @@
 {
   "name": "khala-fabric-network",
-  "version": "2.2.0-alpha.0",
+  "version": "2.2.0-alpha.1",
   "dependencies": {
-    "fabric-network": "unstable",
+    "fabric-network": "latest",
     "khala-fabric-formatter": "latest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/davidkhala/fabric-common"
   },
   "license": "Apache-2.0"
 }
