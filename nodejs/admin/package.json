@@ -1,10 +1,14 @@
 {
   "name": "khala-fabric-admin",
-  "version": "2.2.0-alpha.3",
+  "version": "2.2.0-alpha.4",
   "dependencies": {
     "fabric-ca-client": "latest",
     "fabric-common": "latest",
     "khala-fabric-formatter": "latest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "github.com/davidkhala/fabric-common"
   },
   "license": "Apache-2.0"
 }
