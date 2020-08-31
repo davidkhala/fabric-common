@@ -2,11 +2,7 @@
 CURRENT=$(cd $(dirname ${BASH_SOURCE}) && pwd)
 
 BIN_PATH="$(dirname $CURRENT)/bin"
-remain_params=""
-for ((i = 2; i <= ${#}; i++)); do
-	j=${!i}
-	remain_params="$remain_params $j"
-done
+
 up() {
 	if netstat -pant | grep '7059' | grep 'LISTEN'; then
 		echo 7059 occupied, skip
@@ -41,4 +37,4 @@ encode() {
 	$CMD
 
 }
-$1 $remain_params
+"$@"

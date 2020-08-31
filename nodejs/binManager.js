@@ -170,15 +170,12 @@ class BinManager {
 			 * @param chaincodePath
 			 * @param [chaincodeType]
 			 * @param chaincodeVersion
-			 * @param [metadataPath]
 			 * @param localMspId
 			 * @param mspConfigPath
 			 * @param outputFile
 			 * @param [instantiatePolicy]
-			 * @return {Promise<*>}
 			 */
-			package: async ({chaincodeId, chaincodePath, chaincodeType, chaincodeVersion, metadataPath},
-			                {localMspId, mspConfigPath}, outputFile, instantiatePolicy) => {
+			package: async ({chaincodeId, chaincodePath, chaincodeType, chaincodeVersion}, {localMspId, mspConfigPath}, outputFile, instantiatePolicy) => {
 				const [FABRIC_CFG_PATH, t1] = createTmpDir();
 				fs.writeFileSync(path.resolve(FABRIC_CFG_PATH, 'core.yml'), '');
 				process.env.FABRIC_CFG_PATH = FABRIC_CFG_PATH;

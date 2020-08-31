@@ -1,10 +1,4 @@
 #!/usr/bin/env bash
-fcn=$1
-remain_params=""
-for ((i = 2; i <= ${#}; i++)); do
-	j=${!i}
-	remain_params="$remain_params $j"
-done
 rmContainers() {
 	local FILTER=${1:-dev}
 	CONTAINER_IDS=$(docker ps -a | grep "$FILTER" | awk '{ print $1 }')
@@ -35,4 +29,4 @@ couchDBIndex() {
 	cd ${parent}
 	echo "{\"index\":{\"fields\":[${fields}]},\"type\":\"json\"}" >${parent}$fileName
 }
-$fcn $remain_params
+"$@"

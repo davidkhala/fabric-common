@@ -6,13 +6,6 @@ if [[ -z "$FABRIC_CFG_PATH" ]]; then
 	export FABRIC_CFG_PATH=$CURRENT
 fi
 
-fcn=$1
-remain_params=""
-for ((i = 2; i <= ${#}; i++)); do
-	j=${!i}
-	remain_params="$remain_params $j"
-done
-
 genBlock() {
 	local outputFile=$1
 	local profile=$2
@@ -69,4 +62,4 @@ viewChannel() {
 	fi
 }
 
-$fcn $remain_params
+"$@"

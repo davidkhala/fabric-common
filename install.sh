@@ -4,11 +4,6 @@ set -e
 fcn=$1
 
 bashProfile="$HOME/.bashrc"
-remain_params=""
-for ((i = 2; i <= ${#}; i++)); do
-	j=${!i}
-	remain_params="$remain_params $j"
-done
 
 golang() {
 	if [[ "$1" == "remove" ]]; then

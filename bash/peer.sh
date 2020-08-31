@@ -1,11 +1,5 @@
 #!/usr/bin/env bash
 set -e
-fcn=$1
-remain_params=""
-for ((i = 2; i <= ${#}; i++)); do
-	j=${!i}
-	remain_params="$remain_params $j"
-done
 
 CORE_PEER_TLS_KEY_FILE=$CORE_PEER_TLS_KEY_FILE
 CORE_PEER_TLS_CERT_FILE=$CORE_PEER_TLS_CERT_FILE
@@ -58,4 +52,4 @@ package() {
 	echo $cmd
 	$cmd
 }
-$fcn $remain_params
+"$@"

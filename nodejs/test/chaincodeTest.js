@@ -1,9 +1,14 @@
 const {getActionSet} = require('../systemChaincode');
-const task = async (systemChaincode) => {
-	const actionsSet = getActionSet(systemChaincode);
-	console.log(`${systemChaincode} action set`, actionsSet);
-};
-task('lscc');
+const logger = require('khala-logger/log4js').consoleLogger('test:chaincode');
+describe('system chaincode', () => {
+	it('getActionSet', () => {
+		const systemChaincode = 'lscc';
+		const actionsSet = getActionSet(systemChaincode);
+		logger.info(`${systemChaincode} action set`, actionsSet);
+	});
+
+});
+
 
 
 

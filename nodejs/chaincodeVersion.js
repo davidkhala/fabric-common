@@ -1,7 +1,7 @@
 const {newerVersion, nextVersion} = require('khala-nodeutils/version');
 const {instantiateOrUpgrade} = require('./chaincodeHelper');
 const {install} = require('./chaincode');
-const Logger = require('khala-logger/log4js')
+const Logger = require('khala-logger/log4js');
 const {chaincodesInstalled, chaincodesInstantiated} = require('./query');
 const {chaincodeClear} = require('./fabric-dockerode');
 const {isArrayEven} = require('khala-nodeutils/helper');
@@ -28,7 +28,7 @@ const findLatest = (chaincodes, chaincodeId, comparator = newerVersion) => {
 
 exports.findLatest = findLatest;
 /**
- *
+ * TODO support install via chaincode package
  * @param {Client.Peer[]} peers
  * @param {string} chaincodeId
  * @param {string} [chaincodePath] if undefined, will use `path` of latest installed chaincode (in result of [queryInstalledChaincodes]).
@@ -37,7 +37,7 @@ exports.findLatest = findLatest;
  * @param {Client} client
  * @param {IncrementLevel} [incrementLevel] incrementLevel
  */
-exports.incrementInstall = async (peers, {chaincodeId, chaincodePath, chaincodeType, metadataPath}, client, incrementLevel) => {
+exports.incrementInstall = async (peers, {chaincodeId, chaincodePath, chaincodeType, metadataPath}, client, packageOpts, incrementLevel) => {
 	const logger = Logger.consoleLogger(`install version ${incrementLevel}`);
 	const versions = [];
 	for (const peer of peers) {
