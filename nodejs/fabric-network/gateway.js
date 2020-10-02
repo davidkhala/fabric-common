@@ -12,8 +12,8 @@ class GatewayManager {
 	 * @param {string} channelName
 	 * @param {Client.Peer[]} [peers] not required if use discovery
 	 * @param {Orderer} [orderer] not required for evaluate
-	 * @param [discoveryOptions] TODO TO test
-	 * @param {TxEventHandlerFactory|boolean} strategy
+	 * @param [discoveryOptions]
+	 * @param {TxEventHandlerFactory|boolean} [strategy]
 	 *  - true to use default strategy
 	 *  - `null` to skip event handling process
 	 * @return {Promise<Network>}
