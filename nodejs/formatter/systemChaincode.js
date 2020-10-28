@@ -1,5 +1,4 @@
 const SystemChaincodeFunctions = {
-	// LSCC is now read-only as legacy for 1.x
 	qscc: {
 		GetBlockByNumber: 'GetBlockByNumber',
 		GetChainInfo: 'GetChainInfo',
@@ -47,7 +46,6 @@ const SystemChaincodeFunctions = {
  * @enum {string}
  */
 const SystemChaincodeID = {
-	LSCC: 'lscc',
 	QSCC: 'qscc',
 	CSCC: 'cscc',
 	LifeCycle: '_lifecycle'
