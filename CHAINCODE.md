@@ -23,3 +23,5 @@
 
 ## TODO
 - [nodejs][FAB-9287] devDependencies and offline chaincode instantiate is not supported yet
+-  Currently, the chaincode as an external service model is supported by Go chaincode shim and Node.js chaincode shim. 
+    - See in [FAB-18041](https://github.com/hyperledger/fabric/commit/ba9eaff56adbceb609db153577f46e3d10f6c74b)

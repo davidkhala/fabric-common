@@ -50,8 +50,6 @@ const SystemChaincodeID = {
 	LSCC: 'lscc',
 	QSCC: 'qscc',
 	CSCC: 'cscc',
-	ESCC: 'escc',
-	VSCC: 'vscc',
 	LifeCycle: '_lifecycle'
 };
 
