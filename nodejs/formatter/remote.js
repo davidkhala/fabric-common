@@ -65,4 +65,13 @@ const LoggingLevel = {
 	debug: 'DEBUG', DEBUG: 'DEBUG',
 	undefined: 'INFO', null: 'INFO'
 };
+const rootCAsStringBuilder = ({caCert, rootCAs}) => {
+	let result = [caCert];
+	if (Array.isArray(rootCAs)) {
+		result = result.concat(rootCAs);
+	}
+	return result.join(',');
+};
+
+exports.rootCAsStringBuilder = rootCAsStringBuilder;
 exports.LoggingLevel = LoggingLevel;
