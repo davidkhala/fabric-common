@@ -153,10 +153,10 @@ Application: &ApplicationDefaults
         _lifecycle/CommitChaincodeDefinition: /Channel/Application/Writers
 
         # ACL policy for _lifecycle's "QueryChaincodeDefinition" function
-        _lifecycle/QueryChaincodeDefinition: /Channel/Application/Readers
+        _lifecycle/QueryChaincodeDefinition: /Channel/Application/Writers
 
         # ACL policy for _lifecycle's "QueryChaincodeDefinitions" function
-        _lifecycle/QueryChaincodeDefinitions: /Channel/Application/Readers
+        _lifecycle/QueryChaincodeDefinitions: /Channel/Application/Writers
 
         #---Lifecycle System Chaincode (lscc) function to policy mapping for access control---#
 
@@ -194,11 +194,8 @@ Application: &ApplicationDefaults
         # ACL policy for cscc's "GetConfigBlock" function
         cscc/GetConfigBlock: /Channel/Application/Readers
 
-        # ACL policy for cscc's "GetConfigTree" function
-        cscc/GetConfigTree: /Channel/Application/Readers
-
-        # ACL policy for cscc's "SimulateConfigTreeUpdate" function
-        cscc/SimulateConfigTreeUpdate: /Channel/Application/Readers
+        # ACL policy for cscc's "GetChannelConfig" function
+        cscc/GetChannelConfig: /Channel/Application/Readers
 
         #---Miscellaneous peer function to policy mapping for access control---#
 
@@ -206,7 +203,7 @@ Application: &ApplicationDefaults
         peer/Propose: /Channel/Application/Writers
 
         # ACL policy for chaincode to chaincode invocation
-        peer/ChaincodeToChaincode: /Channel/Application/Readers
+        peer/ChaincodeToChaincode: /Channel/Application/Writers
 
         #---Events resource to policy mapping for access control###---#
 
@@ -604,3 +601,36 @@ Profiles:
                           Admins:
                               Type: Signature
                               Rule: "OR('SampleOrg.member')"
+
+    # SampleAppChannelInsecureSolo defines an application channel configuration
+    # which uses the Solo orderer and contains no MSP definitions. 
+    SampleAppChannelInsecureSolo:
+        <<: *ChannelDefaults
+        Orderer:
+            <<: *OrdererDefaults
+        Application: 
+            <<: *ApplicationDefaults
+
+    # SampleAppChannelEtcdRaft defines an application channel configuration 
+    # that uses the etcd/raft-based orderer.
+    SampleAppChannelEtcdRaft:
+        <<: *ChannelDefaults
+        Orderer:
+            <<: *OrdererDefaults
+            OrdererType: etcdraft
+            Organizations:
+                - <<: *SampleOrg
+                  Policies:
+                      <<: *SampleOrgPolicies
+                      Admins:
+                          Type: Signature
+                          Rule: "OR('SampleOrg.member')"
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - <<: *SampleOrg
+                  Policies:
+                      <<: *SampleOrgPolicies
+                      Admins:
+                          Type: Signature
+                          Rule: "OR('SampleOrg.member')"

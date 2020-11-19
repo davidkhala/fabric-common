@@ -1,7 +1,7 @@
 # fabric-common
 [![Build Status](https://travis-ci.com/davidkhala/fabric-common.svg?branch=master)](https://travis-ci.com/davidkhala/fabric-common)
 
-Current version 2.2.1
+Current version 2.3.0
 ## Prerequisite
 - docker: 18.03 +
 ### Prerequisite: For development
@@ -105,7 +105,9 @@ Current version 2.2.1
 - make use of npm jsrsasign
 - make use of softHSM in node-sdk
 - [2.2] what is the lifecycle function for `peer lifecycle chaincode queryapproved`
-
+- [2.3] Hyperledger Fabric v2.3 introduces two new features for improved orderer and peer operations:
+        - Orderer channel management without a system channel
+        - Ledger snapshot
 ## Fabric weakness
 - fabric RSA key support: 
     - not supported as peer|orderer keystore
