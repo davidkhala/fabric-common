@@ -1,4 +1,4 @@
-const {LoggingLevel} = require('khala-fabric-formatter/remote');
+const {LoggingLevel, rootCAsStringBuilder} = require('khala-fabric-formatter/remote');
 const {OrdererType, MetricsProvider} = require('khala-fabric-formatter/constants');
 const containerDefaultPaths = {
 	CONFIGTX: '/etc/hyperledger/configtx',
@@ -14,37 +14,49 @@ exports.container = containerDefaultPaths;
  * @param id
  * @param {OrdererType} ordererType
  * @param raft_tls
+ * @param [admin_tls] default to tls
  * @param loggingLevel
  * @param operationsOpts
  * @param metricsOpts
  * @returns {string[]}
  */
-exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, tls, ordererType, raft_tls}, loggingLevel, operationsOpts, metricsOpts) => {
+exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, tls, ordererType, raft_tls, admin_tls = tls}, loggingLevel, operationsOpts, metricsOpts) => {
 	let env = [
 		'ORDERER_GENERAL_LISTENADDRESS=0.0.0.0', // used to self identify
 		`ORDERER_GENERAL_TLS_ENABLED=${!!tls}`,
 		`ORDERER_GENERAL_BOOTSTRAPMETHOD=${BLOCK_FILE ? 'file' : 'none'}`,
-		`ORDERER_GENERAL_BOOTSTRAPFILE=${containerDefaultPaths.CONFIGTX}/${BLOCK_FILE}`,
 		`ORDERER_GENERAL_LOCALMSPID=${id}`,
 		`ORDERER_GENERAL_LOCALMSPDIR=${configPath}`,
 		'GODEBUG=netdns=go' // aliyun only
 	];
+	if (BLOCK_FILE) {
+		env.push(`ORDERER_GENERAL_BOOTSTRAPFILE=${containerDefaultPaths.CONFIGTX}/${BLOCK_FILE}`);
+	} else {
+		env = env.concat([
+			'ORDERER_ADMIN_LISTENADDRESS=0.0.0.0:9443',
+			'ORDERER_CHANNELPARTICIPATION_ENABLED=true',
+			`ORDERER_ADMIN_TLS_ENABLED=${!!tls}`,
+		]);
+		if (admin_tls) {
+			env = env.concat([
+				`ORDERER_ADMIN_TLS_PRIVATEKEY=${admin_tls.key}`,
+				`ORDERER_ADMIN_TLS_CERTIFICATE=${admin_tls.cert}`,
+				`ORDERER_ADMIN_TLS_ROOTCAS=[${rootCAsStringBuilder(admin_tls)}]`,
+				`ORDERER_ADMIN_TLS_CLIENTROOTCAS=[${rootCAsStringBuilder(admin_tls)}]`,
+			]);
+		}
 
+	}
 	if (loggingLevel) {
 		env.push(`FABRIC_LOGGING_SPEC=${LoggingLevel[loggingLevel]}`);
 	}
-	const rootCAsStringBuild = ({caCert, rootCAs}) => {
-		let result = [caCert];
-		if (Array.isArray(rootCAs)) {
-			result = result.concat(rootCAs);
-		}
-		return result.join(',');
-	};
+
 	if (tls) {
 		env = env.concat([
 			`ORDERER_GENERAL_TLS_PRIVATEKEY=${tls.key}`,
 			`ORDERER_GENERAL_TLS_CERTIFICATE=${tls.cert}`,
-			`ORDERER_GENERAL_TLS_ROOTCAS=[${rootCAsStringBuild(tls)}]`]);
+			`ORDERER_GENERAL_TLS_ROOTCAS=[${rootCAsStringBuilder(tls)}]`
+		]);
 	}
 	switch (ordererType) {
 		case OrdererType.etcdraft:
@@ -75,7 +87,7 @@ exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, tls, ordererType, raft
 				`ORDERER_OPERATIONS_TLS_CERTIFICATE=${operationsTLS.cert}`,
 				`ORDERER_OPERATIONS_TLS_PRIVATEKEY=${operationsTLS.key}`,
 				'ORDERER_OPERATIONS_TLS_CLIENTAUTHREQUIRED=false', // see in README.md
-				`ORDERER_OPERATIONS_TLS_CLIENTROOTCAS=[${rootCAsStringBuild(operationsTLS)}]`
+				`ORDERER_OPERATIONS_TLS_CLIENTROOTCAS=[${rootCAsStringBuilder(operationsTLS)}]`
 			]);
 		}
 	}
