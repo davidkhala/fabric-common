@@ -7,11 +7,8 @@ const containerDefaultPaths = {
 };
 exports.container = containerDefaultPaths;
 /**
- * if no blockFile:
- * panic: Unable to bootstrap orderer. Error reading genesis block file: open /etc/hyperledger/fabric/genesisblock: no such file or directory
- * when ORDERER_GENERAL_GENESISMETHOD=provisional  ORDERER_GENERAL_GENESISPROFILE=SampleNoConsortium
- *  -> panic: No system chain found.  If bootstrapping, does your system channel contain a consortiums group definition
- * @param BLOCK_FILE
+ * [release-2.3] No system chain is allowed
+ * @param {string} [BLOCK_FILE] - block file relative path, if unset, adopt no-genesis orderer mode
  * @param tls
  * @param configPath
  * @param id
@@ -26,8 +23,8 @@ exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, tls, ordererType, raft
 	let env = [
 		'ORDERER_GENERAL_LISTENADDRESS=0.0.0.0', // used to self identify
 		`ORDERER_GENERAL_TLS_ENABLED=${!!tls}`,
-		'ORDERER_GENERAL_GENESISMETHOD=file',
-		`ORDERER_GENERAL_GENESISFILE=${containerDefaultPaths.CONFIGTX}/${BLOCK_FILE}`,
+		`ORDERER_GENERAL_BOOTSTRAPMETHOD=${BLOCK_FILE ? 'file' : 'none'}`,
+		`ORDERER_GENERAL_BOOTSTRAPFILE=${containerDefaultPaths.CONFIGTX}/${BLOCK_FILE}`,
 		`ORDERER_GENERAL_LOCALMSPID=${id}`,
 		`ORDERER_GENERAL_LOCALMSPDIR=${configPath}`,
 		'GODEBUG=netdns=go' // aliyun only
