@@ -12,8 +12,6 @@
         ```shell script
         I do not belong to channel testchainid or am forbidden pulling it (not in the channel), skipping chain retrieval
         ```
-- Each channel has its own RAFT orderer cluster, but system channel should have a super set of all orderer cluster  -- Jay Guo
 - [solo][FAB-15754] Deploy a single-node Raft-based ordering service instead of using solo consensus type
 - [channel creation] `'will not enqueue, consenter for this channel hasn\'t started yet'` will never appear as response `info` in etcdraft
     - it is a kafka legacy
-     

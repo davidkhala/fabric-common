@@ -1,14 +1,9 @@
 const Channel = require('fabric-common/lib/Channel');
-const {genesis} = require('khala-fabric-formatter/channel');
 
 class ChannelManager {
 
-	constructor({channelName}, channel, logger = console) {
+	constructor({channelName}, channel) {
 		if (!channel) {
-			if (!channelName) {
-				logger.warn('default to using system channel', genesis);
-				channelName = genesis;
-			}
 			channel = ChannelManager.emptyChannel(channelName);
 		}
 		this.channel = channel;

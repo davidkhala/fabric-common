@@ -1,12 +1,4 @@
 /**
- * channel type, "system|application"
- * @enum {string}
- */
-const ChannelType = {
-	system: 'system',
-	application: 'application'
-};
-/**
  * fabric node type "orderer|peer"
  * @enum {string}
  */
@@ -15,15 +7,15 @@ const NodeType = {
 	peer: 'peer'
 };
 /**
- *
  * @enum {string}
  */
-const MSPType = Object.assign({
+const MSPType = {
 	peerUser: 'peerUser',
-	ordererUser: 'ordererUser'
-}, NodeType);
+	ordererUser: 'ordererUser',
+	orderer: 'orderer',
+	peer: 'peer'
+};
 module.exports = {
-	ChannelType,
 	NodeType,
 	MSPType
 };

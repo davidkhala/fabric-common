@@ -1,13 +1,11 @@
 const {exec, execResponsePrint, execDetach, killProcess, findProcess} = require('khala-nodeutils/devOps');
-const yaml = require('khala-nodeutils/yaml');
 const path = require('path');
 const fs = require('fs');
 const {createTmpFile, createTmpDir} = require('khala-nodeutils/tmp');
-const {genesis} = require('khala-fabric-formatter/channel');
 
 class BinManager {
-	_buildCMD(executable, args) {
-		return `${path.resolve(this.binPath, executable)} ${args}`;
+	_buildCMD(executable, ...args) {
+		return `${path.resolve(this.binPath, executable)} ${args.join(' ')}`;
 	}
 
 	/**
@@ -141,6 +139,28 @@ class BinManager {
 		}
 	}
 
+	ordererAdmin(ordererAdminAddress, {tlsCaCert, clientKey, clientCert}) {
+		return {
+			join: async (channelID, blockFile) => {
+				const CMD = this._buildCMD('osnadmin', 'channel join', `--orderer-address=${ordererAdminAddress}`,
+					`--ca-file=${tlsCaCert} --client-cert=${clientCert} --client-key=${clientKey}`,
+					`--channel-id=${channelID}`,
+					`--config-block=${blockFile}`,
+				);
+				this.logger.info('CMD', CMD);
+				const result = await exec(CMD);
+				execResponsePrint(result);
+			},
+			list: async () => {
+				// TODO osnadmin channel list
+			},
+			remove: async () => {
+				// TODO osnadmin channel remove
+			},
+		};
+
+	}
+
 	peer() {
 
 
@@ -176,7 +196,6 @@ class BinManager {
 			 * @param mspConfigPath
 			 * @param outputFile
 			 * @param [instantiatePolicy]
-			 * @return {Promise<*>}
 			 */
 			package: async ({chaincodeId, chaincodePath, chaincodeType, chaincodeVersion, metadataPath}, {localMspId, mspConfigPath}, outputFile, instantiatePolicy) => {
 				const [FABRIC_CFG_PATH, t1] = createTmpDir();
@@ -212,9 +231,6 @@ class BinManager {
 		return {
 
 			genBlock: async (outputFile) => {
-				if (!channelName) {
-					channelName = genesis;
-				}
 				const CMD = `${this.binPath}/configtxgen -outputBlock ${outputFile} -profile ${profile} -channelID ${channelName} -configPath ${configPath}`;
 				this.logger.info('CMD', CMD);
 				const result = await exec(CMD);

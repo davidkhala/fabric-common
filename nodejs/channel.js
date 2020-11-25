@@ -13,7 +13,7 @@ const {fromEvent} = require('khala-fabric-admin/blockEncoder');
 const {BlockNumberFilterType: {NEWEST}} = require('khala-fabric-formatter/eventHub');
 /**
  * different from `peer channel create`, this will not response back with genesisBlock for this channel.
- *
+ * @deprecated system channel deprecate
  * @param {string} channelName
  * @param {Client.User} user
  * @param {Orderer} orderer

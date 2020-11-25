@@ -1,4 +1,3 @@
-exports.genesis = 'testchainid';
 /**
  * @param {string} channelName
  * @param {boolean} [toThrow]

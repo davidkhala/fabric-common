@@ -52,7 +52,6 @@ Current version 2.3.0
 - individual properties may be overridden by setting environment variables, such as `CONFIGTX_ORDERER_ORDERERTYPE=etcdraft`.
 - [keyValue] Value size limit is now available at 4194304 bytes
     - `'Received message larger than max (<yourOverFlowValue> vs. 4194304)'`
-- [channel][system] peer could not join system channel
 - [channel] channel ID length < 250 :initializing configtx manager failed: bad channel ID: channel ID illegal, cannot be longer than 249
 - [disaster] backup recovery: at least 1 anchor peer for each organization should be resumed to recover transaction process
 - [configtxgen] configtx.yaml: Organization Name and Organization ID can include alphanumeric characters as well as dots and dashes.
@@ -105,8 +104,9 @@ Current version 2.3.0
 - make use of npm jsrsasign
 - make use of softHSM in node-sdk
 - [2.2] what is the lifecycle function for `peer lifecycle chaincode queryapproved`
-- [2.3] Hyperledger Fabric v2.3 introduces two new features for improved orderer and peer operations:
-        - Orderer channel management without a system channel
+- [2.3] Hyperledger Fabric v2.3 introduces two new features for improved orderer and peer operations
+        - [Channel Participation]:  Orderer channel management without a system channel
+            - translate `osadmin` into part of `khala-fabric-admin`
         - Ledger snapshot
 ## Fabric weakness
 - fabric RSA key support: 

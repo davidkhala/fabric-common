@@ -8,24 +8,26 @@ const Eventer = require('fabric-common/lib/Eventer');
 class Orderer {
 	/**
 	 * @param {intString|integer} ordererPort
-	 * @param {string} [cert] TLS CA certificate file path
+	 * @param {string} [tlsCaCert] TLS CA certificate file path
 	 * @param {CertificatePem} [pem] TLS CA certificate
 	 * @param {SSLTargetNameOverride} [ordererHostName]
 	 * @param {string} [host]
 	 * @param {ClientKey} [clientKey]
 	 * @param {ClientCert} [clientCert]
-	 * @param {Committer} committer
+	 * @param {Committer} [committer]
 	 * @param logger
 	 */
-	constructor({ordererPort, cert, pem, ordererHostName, host, clientKey, clientCert} = {}, committer, logger = console) {
+	constructor({ordererPort, tlsCaCert, pem, ordererHostName, host, clientKey, clientCert} = {}, committer, logger = console) {
 		if (!committer) {
 			if (!pem) {
-				if (fs.existsSync(cert)) {
-					pem = fs.readFileSync(cert).toString();
+				if (fs.existsSync(tlsCaCert)) {
+					pem = fs.readFileSync(tlsCaCert).toString();
+					this.tlsCaCert = tlsCaCert;
 				}
 			}
 
 			this.host = host ? host : (ordererHostName ? ordererHostName : 'localhost');
+			this.adminAddress = `${this.host}:9443`; // default
 			let ordererUrl;
 			if (pem) {
 				// tls enabled
@@ -186,6 +188,31 @@ class Orderer {
 
 	toString() {
 		return JSON.stringify({Orderer: this.committer.endpoint.url});
+	}
+
+	// TODO test
+	static async join(adminTLS, baseURL, channelName, blockFile, httpClient) {
+		const FormData = require('form-data');
+		const httpOpts = {};
+		if (adminTLS) {
+			const {clientKey, clientCert, tlsCaCert} = adminTLS;
+			httpOpts.key = clientKey; // client key path
+			httpOpts.cert = clientCert; // client cert path
+			httpOpts.ca = tlsCaCert; // rootCa cert path
+		}
+
+
+		const formData = new FormData();
+		formData.append('config-block', fs.createReadStream(blockFile), `${channelName}.block`);
+
+		const url = `${adminTLS ? 'https://' : 'http://'}${baseURL}/participation/v1/channels`;
+		return await httpClient({
+			url,
+			formData,
+			method: 'POST'
+		}, httpOpts);
+
+
 	}
 }
 
