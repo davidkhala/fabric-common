@@ -163,7 +163,6 @@ class BinManager {
 
 	peer() {
 
-
 		return {
 			/**
 			 * Signs the supplied configtx update file in place on the filesystem.
@@ -236,7 +235,7 @@ class BinManager {
 				const result = await exec(CMD);
 				execResponsePrint(result);
 			},
-			genChannel: async (outputFile) => {
+			genTx: async (outputFile) => {
 				const CMD = `${this.binPath}/configtxgen -outputCreateChannelTx ${outputFile} -profile ${profile} -channelID ${channelName} -configPath ${configPath}`;
 				this.logger.info('CMD', CMD);
 				const result = await exec(CMD);

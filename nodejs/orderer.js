@@ -7,8 +7,8 @@ const containerDefaultPaths = {
 };
 exports.container = containerDefaultPaths;
 /**
- * [release-2.3] No system chain is allowed
- * @param {string} [BLOCK_FILE] - block file relative path, if unset, adopt no-genesis orderer mode
+ * [release-2.3] system chain removal
+ * @param {string} [bootStrapFile] - block file relative path, if unset, adopt no-genesis orderer mode
  * @param tls
  * @param configPath
  * @param id
@@ -20,22 +20,25 @@ exports.container = containerDefaultPaths;
  * @param metricsOpts
  * @returns {string[]}
  */
-exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, tls, ordererType, raft_tls, admin_tls = tls}, loggingLevel, operationsOpts, metricsOpts) => {
+exports.envBuilder = ({bootStrapFile, msp: {configPath, id}, tls, ordererType, raft_tls, admin_tls = tls}, loggingLevel, operationsOpts, metricsOpts) => {
 	let env = [
 		'ORDERER_GENERAL_LISTENADDRESS=0.0.0.0', // used to self identify
 		`ORDERER_GENERAL_TLS_ENABLED=${!!tls}`,
-		`ORDERER_GENERAL_BOOTSTRAPMETHOD=${BLOCK_FILE ? 'file' : 'none'}`,
 		`ORDERER_GENERAL_LOCALMSPID=${id}`,
 		`ORDERER_GENERAL_LOCALMSPDIR=${configPath}`,
 		'GODEBUG=netdns=go' // aliyun only
 	];
-	if (BLOCK_FILE) {
-		env.push(`ORDERER_GENERAL_BOOTSTRAPFILE=${containerDefaultPaths.CONFIGTX}/${BLOCK_FILE}`);
+	if (bootStrapFile) {
+		env = env.concat([
+			'ORDERER_GENERAL_BOOTSTRAPMETHOD=file',
+			`ORDERER_GENERAL_BOOTSTRAPFILE=${containerDefaultPaths.CONFIGTX}/${bootStrapFile}`,
+		]);
 	} else {
 		env = env.concat([
-			'ORDERER_ADMIN_LISTENADDRESS=0.0.0.0:9443',
+			'ORDERER_GENERAL_BOOTSTRAPMETHOD=none',
 			'ORDERER_CHANNELPARTICIPATION_ENABLED=true',
-			`ORDERER_ADMIN_TLS_ENABLED=${!!tls}`,
+			'ORDERER_ADMIN_LISTENADDRESS=0.0.0.0:9443',
+			`ORDERER_ADMIN_TLS_ENABLED=${!!admin_tls}`,
 		]);
 		if (admin_tls) {
 			env = env.concat([
@@ -45,8 +48,8 @@ exports.envBuilder = ({BLOCK_FILE, msp: {configPath, id}, tls, ordererType, raft
 				`ORDERER_ADMIN_TLS_CLIENTROOTCAS=[${rootCAsStringBuilder(admin_tls)}]`,
 			]);
 		}
-
 	}
+
 	if (loggingLevel) {
 		env.push(`FABRIC_LOGGING_SPEC=${LoggingLevel[loggingLevel]}`);
 	}

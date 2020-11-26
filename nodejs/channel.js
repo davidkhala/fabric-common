@@ -109,20 +109,23 @@ const getChannelConfigFromOrderer = async (channelName, user, orderer) => {
 /**
  * @param {Client.Channel} channel
  * @param {Peer[]} peers
- * @param user
- * @param {Object} [block] genesis block
- * @param {Orderer} [orderer] required if block is not provided
+ * @param {Client.User} user
+ * @param {string} [blockFile] genesis block file
+ * @param {Orderer} [orderer] required if blockFile is not provided
  * @returns {Promise<ProposalResponse>}
  */
-const join = async (channel, peers, user, block, orderer) => {
+const join = async (channel, peers, user, blockFile, orderer) => {
 	logger.debug('join-channel', {
 		channelName: channel.name,
 		user: user.toString(),
 		peers: peers.map((peer) => peer.toString())
 	});
 
-	if (!block) {
+	let block;
+	if (!blockFile) {
 		block = await getGenesisBlock(channel, user, orderer);
+	} else {
+		block = fs.readFileSync(blockFile);
 	}
 	for (const peer of peers) {
 		await peer.endorser.connect();
@@ -136,9 +139,11 @@ const join = async (channel, peers, user, block, orderer) => {
 	responses.forEach(({response}, index) => {
 		const {status, message} = response;
 		if (status === 500 && message === 'cannot create ledger from genesis block: LedgerID already exists') {
-			logger.warn(`peer [${peers[index].toString()}] has joined channel [${channel.name}] already`);
+			logger.warn(`${peers[index].toString()} has joined channel [${channel.name}] already`);
 		} else if (status === 200 && message === '') {
-			logger.info(`peer [${peers[index].toString()}] join channel [${channel.name}] success`);
+			logger.info(`${peers[index].toString()} join channel [${channel.name}] success`);
+		} else {
+			logger.error(`${peers[index].toString()}`, response);
 		}
 	});
 

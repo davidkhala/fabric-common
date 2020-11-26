@@ -23,7 +23,7 @@ const viewBlockTest = async (blockProfile) => {
 };
 const genChannelTest = async (channelProfile, channelName = channelProfile) => {
 	const channelFile = path.resolve(__dirname, `artifacts/${channelProfile}.tx`);
-	await binManager.configtxgen(channelProfile, configtxYaml, channelName).genChannel(channelFile);
+	await binManager.configtxgen(channelProfile, configtxYaml, channelName).genTx(channelFile);
 	logger.info(`genChannel[${channelProfile}]`);
 };
 const viewChannelTest = async (channelProfile, channelName = channelProfile) => {

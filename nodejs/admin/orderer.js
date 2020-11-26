@@ -27,7 +27,6 @@ class Orderer {
 			}
 
 			this.host = host ? host : (ordererHostName ? ordererHostName : 'localhost');
-			this.adminAddress = `${this.host}:9443`; // default
 			let ordererUrl;
 			if (pem) {
 				// tls enabled
@@ -190,8 +189,7 @@ class Orderer {
 		return JSON.stringify({Orderer: this.committer.endpoint.url});
 	}
 
-	// TODO test
-	static async join(adminTLS, baseURL, channelName, blockFile, httpClient) {
+	static async join(baseURL, channelName, blockFile, httpClient, adminTLS) {
 		const FormData = require('form-data');
 		const httpOpts = {};
 		if (adminTLS) {
