@@ -213,15 +213,7 @@ class LifecycleProposal extends ProposalManager {
 		const result = await this.send(buildProposalRequest2);
 
 		const {queryResults} = result;
-		const decodedQueryResults = queryResults.map(payload => {
-			const {approvals} = CheckCommitReadinessResult.decode(payload);
-			const returned = {};
-			approvals.forEach((value, key) => {
-				returned[key] = value;
-			});
-			return returned;
-		});
-		result.queryResults = decodedQueryResults;
+		result.queryResults = queryResults.map(payload => CheckCommitReadinessResult.decode(payload).approvals);
 		return result;
 
 	}
@@ -268,11 +260,6 @@ class LifecycleProposal extends ProposalManager {
 
 		const {queryResults} = result;
 		const singleChaincodeDefinitionAmend = (chaincodeDefinition) => {
-			const approvals = {};
-			chaincodeDefinition.approvals.forEach((value, key) => {
-				approvals[key] = value;
-			});
-			chaincodeDefinition.approvals = approvals;
 			chaincodeDefinition.validation_parameter = ApplicationPolicy.decode(chaincodeDefinition.validation_parameter);
 			return chaincodeDefinition;
 		};
