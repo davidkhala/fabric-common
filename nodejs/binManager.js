@@ -162,7 +162,15 @@ class BinManager {
 	}
 
 	peer() {
-
+		const createTmpCoreYml = () => {
+			const [FABRIC_CFG_PATH, t1] = createTmpDir();
+			fs.writeFileSync(path.resolve(FABRIC_CFG_PATH, 'core.yml'), '');
+			process.env.FABRIC_CFG_PATH = FABRIC_CFG_PATH;
+			return () => {
+				t1();
+				delete process.env.FABRIC_CFG_PATH;
+			};
+		};
 		return {
 			/**
 			 * Signs the supplied configtx update file in place on the filesystem.
@@ -172,9 +180,7 @@ class BinManager {
 			 * @param {string} mspConfigPath
 			 */
 			signconfigtx: async (configtxUpdateFile, localMspId, mspConfigPath) => {
-				const [FABRIC_CFG_PATH, t1] = createTmpDir();
-				fs.writeFileSync(path.resolve(FABRIC_CFG_PATH, 'core.yml'), '');
-				process.env.FABRIC_CFG_PATH = FABRIC_CFG_PATH;
+				const t1 = createTmpCoreYml();
 				process.env.CORE_PEER_LOCALMSPID = localMspId;
 				process.env.CORE_PEER_MSPCONFIGPATH = mspConfigPath;
 				const CMD = this._buildCMD('peer', `channel signconfigtx --file ${configtxUpdateFile}`);
@@ -197,9 +203,7 @@ class BinManager {
 			 * @param [instantiatePolicy]
 			 */
 			package: async ({chaincodeId, chaincodePath, chaincodeType, chaincodeVersion, metadataPath}, {localMspId, mspConfigPath}, outputFile, instantiatePolicy) => {
-				const [FABRIC_CFG_PATH, t1] = createTmpDir();
-				fs.writeFileSync(path.resolve(FABRIC_CFG_PATH, 'core.yml'), '');
-				process.env.FABRIC_CFG_PATH = FABRIC_CFG_PATH;
+				const t1 = createTmpCoreYml();
 				process.env.CORE_PEER_LOCALMSPID = localMspId;
 				process.env.CORE_PEER_MSPCONFIGPATH = mspConfigPath;
 				let optionTokens = `--name ${chaincodeId} --path ${chaincodePath} --version ${chaincodeVersion}`;
@@ -214,10 +218,29 @@ class BinManager {
 				const result = await exec(CMD);
 				execResponsePrint(result);
 				t1();
-				delete process.env.FABRIC_CFG_PATH;
+
 				delete process.env.CORE_PEER_LOCALMSPID;
 				delete process.env.CORE_PEER_MSPCONFIGPATH;
 				return outputFile;
+			},
+			lifecycle: {
+				/**
+				 *
+				 * @param {ChaincodeType} [Type]
+				 * @param {string} Label ChaincodeId
+				 * @param {string} Path ChaincodePath
+				 * @param {string} outputFile
+				 */
+				package: async ({Type = 'golang', Label, Path}, outputFile) => {
+					const t1 = createTmpCoreYml();
+					const optionTokens = `--label=${Label} --lang=${Type} --path=${Path}`;
+					const CMD = this._buildCMD('peer', 'lifecycle chaincode package', optionTokens, outputFile);
+					this.logger.info('CMD', CMD);
+					const result = await exec(CMD);
+					execResponsePrint(result);
+					t1();
+					return outputFile;
+				}
 			}
 		};
 	}

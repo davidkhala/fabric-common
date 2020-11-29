@@ -32,10 +32,28 @@ class QueryHub {
 		});
 	}
 
-	async chaincodesInstalled(packageId) {
+	/**
+	 *
+	 * @param {string} [label] label name filter
+	 * @param {string} [packageId] exact name search
+	 */
+	async chaincodesInstalled(label, packageId) {
 		const lifecycleProposal = new LifecycleProposal(this.identityContext, emptyChannel(''), this.targets);
 		const result = await lifecycleProposal.queryInstalledChaincodes(packageId);
-		return result.queryResults;
+		if (!label || !!packageId) {
+			return result.queryResults;
+		} else {
+			return result.queryResults.map((entry) => {
+				const returned = {};
+				for (const _packageId in entry) {
+					if (_packageId.startsWith(label)) {
+						returned[_packageId] = entry[_packageId];
+					}
+				}
+				return returned;
+			});
+		}
+
 	}
 
 	async chaincodesInstantiated(peers, identityContext, channelName) {

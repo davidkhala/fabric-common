@@ -56,3 +56,15 @@ describe('configtxgen', () => {
 		}
 	});
 });
+describe('lifeCycle', () => {
+	const {homeResolve} = require('khala-light-util');
+	it('package', async () => {
+		const chaincodeId = 'nodeDiagnose';
+		const outputFile = chaincodeId + '.ccPackage.tar.gz';
+		await binManager.peer().lifecycle.package({
+			chaincodeType: 'node',
+			chaincodePath: homeResolve('Documents/chaincode/nodejs/diagnose'),
+			chaincodeId,
+		}, outputFile);
+	});
+});
