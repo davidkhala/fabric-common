@@ -61,17 +61,17 @@ Current version 2.3.0
      
 ### Notes: Private Data 
 
-- [privateData] requirePeerCount <= peerCount - 1 (1 for peer itself)
-- [privateData] "2-of" collectionPolicy is not allowed
-- [privateData] private data work only after manually set anchor peers
-- [privateData] Note that collections cannot be deleted, 
+- requirePeerCount <= peerCount - 1 (1 for peer itself)
+- "2-of" collectionPolicy is not allowed
+- private data work only after manually set anchor peers
+- Note that collections cannot be deleted, 
     - as prior private data hashes on the channel’s blockchain cannot be removed.
-- [privateData] private data will automatic sync on new peer(process last for seconds)
+- private data will automatic sync on new peer(process last for seconds)
 - only `OR` is allowed in collection distribution policy(`member_orgs_policy`), see in [Architecture Reference: Private Data](https://hyperledger-fabric.readthedocs.io/en/master/private-data-arch.html)
 - [collection-level-endorsement-policies](https://hyperledger-fabric.readthedocs.io/en/master/endorsement-policies.html#setting-collection-level-endorsement-policies)
     - Collection-level endorsement policy override chaincode-level endorsement policy for any data written to the collection
     - if collection-level endorsement policy is unset, instead of having default policy such as `channel_config_policy_reference = '/Channel/Application/Endorsement'`, no collection-level endorsement policy apply.
-
+- implicit collections always use blockToLive=0
 ### [Notes: Chaincode](./CHAINCODE.md)
 
 ### [Notes: etcdraft](./RAFT.md)
