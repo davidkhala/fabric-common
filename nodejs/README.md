@@ -9,6 +9,13 @@ Component module list
 - [khala-fabric-network](./fabric-network)
 - [khala-fabric-formatter](./formatter)
 
+## Windows Extra prerequisite
+- global setup:  **require admin shell**
+    - `npm install --global windows-build-tools`
+        if you see Error "Could+not+install+Visual+Studio+Build+Tools"  
+        try to run installer in `C:\Users\<username>\.windows-build-tools\vs_BuildTools` and follow the wizard
+    - `npm install --global grpc`
+
 ## Test
     - intergration test and e2e test locates in [delphi-fabric](https://github.com/davidkhala/delphi-fabric)
 ## Notes
