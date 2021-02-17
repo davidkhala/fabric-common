@@ -23,9 +23,7 @@ Current version 2.3.0
     - `git config --global core.longpaths true`
 - [option] For nodejs developer
     - global setup:  **require admin shell**
-        - npm install --global windows-build-tools  
-            if you see Error "Could+not+install+Visual+Studio+Build+Tools"  
-            try to run installer in `C:\Users\<username>\.windows-build-tools\vs_BuildTools` and follow the wizard
+        - `npm install --global windows-build-tools` and [More Details](https://github.com/davidkhala/fabric-common/wiki/npm-windows-build-tools)
         - npm install --global grpc
 
 ## Mono repository components
