@@ -17,9 +17,7 @@ Current version 2.3.0
 - Git x64: [64-bit Git for Windows Setup](https://github.com/git-for-windows/git/releases/download/v2.25.1.windows.1/Git-2.25.1-64-bit.exe)
 - use the Windows PowerShell
 - [Docker Desktop Installer for Windows](https://download.docker.com/win/stable/Docker%20Desktop%20Installer.exe)
-    - REQUIRE:  
-        Windows 10 64-bit: Pro, Enterprise, or Education (Build 15063 or later).  
-        Hyper-V and Containers Windows features must be enabled.
+    - REQUIRE:  Hyper-V and Containers Windows features must be enabled.
 - Before `git clone`, run the following:
     - `git config --global core.autocrlf false`
     - `git config --global core.longpaths true`
