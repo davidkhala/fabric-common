@@ -4,11 +4,6 @@ set -e
 fcn=$1
 
 bashProfile="$HOME/.bashrc"
-remain_params=""
-for ((i = 2; i <= ${#}; i++)); do
-	j=${!i}
-	remain_params="$remain_params $j"
-done
 
 golang() {
 	if [[ "$1" == "remove" ]]; then
@@ -102,7 +97,7 @@ softHSM() {
 	fi
 }
 fabricInstall() {
-  curl -sSL http://bit.ly/2ysbOFE | bash -s -- -s
+	curl -sSL http://bit.ly/2ysbOFE | bash -s -- 1.4.11 1.4.9 0.4.22 -s
 	docker pull couchdb:2.3.1
 }
 if [[ -n "$fcn" ]]; then
@@ -112,7 +107,6 @@ else
 	# install home brew
 	$homebrewUtil | bash -s install
 
-
 	dockerInstall="curl --silent --show-error https://raw.githubusercontent.com/davidkhala/docker-manager/master/install.sh"
 	$dockerInstall | bash -s installDocker
 	$dockerInstall | bash -s installjq
@@ -120,5 +114,5 @@ else
 	$nodejsInstall | bash -s nodeGYPDependencies
 	$nodejsInstall | bash -s install10
 
-	curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/scripts/npm.sh | bash -s packageLock false
+	npm config set packageLock false
 fi
