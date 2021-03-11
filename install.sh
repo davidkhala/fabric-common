@@ -43,8 +43,5 @@ else
 		nodejsInstall="curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/install.sh"
 		$nodejsInstall | bash -s nodeGYPDependencies
 		$nodejsInstall | bash -s install12
-		sudo npm install --global mocha
-	else
-		npm install --global mocha
 	fi
 fi
