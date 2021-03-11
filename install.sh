@@ -97,7 +97,7 @@ softHSM() {
 	fi
 }
 fabricInstall() {
-	curl -sSL http://bit.ly/2ysbOFE | bash -s -- 1.4.11 1.4.9 0.4.22 -s
+	curl -sSL http://bit.ly/2ysbOFE | bash -s -- 1.4.11 1.5.0 0.4.22 -s
 	docker pull couchdb:2.3.1
 }
 if [[ -n "$fcn" ]]; then
