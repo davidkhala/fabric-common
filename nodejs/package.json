@@ -2,8 +2,8 @@
   "name": "khala-fabric-sdk-node",
   "version": "1.4.9-0.0.0",
   "dependencies": {
-    "khala-axios": "^0.1.3",
-    "khala-dockerode": "^1.0.1",
+    "khala-axios": "^1.0.0",
+    "khala-dockerode": "^1.0.2",
     "khala-fabric-sdk-node-builder": "latest-1.4",
     "khala-level": "^0.0.3",
     "khala-logger": "^0.2.0",
