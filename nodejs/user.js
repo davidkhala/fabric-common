@@ -1,4 +1,6 @@
 const fs = require('fs');
+const path = require('path');
+const {findKeyFiles, findCertFiles} = require('khala-fabric-formatter/path');
 const UserBuilder = require('khala-fabric-sdk-node-builder/user');
 
 /**
@@ -24,6 +26,25 @@ exports.loadFromLocal = (cryptoPath, nodeType, mspId, toThrow) => {
 	return builder.build({
 		key: fs.readFileSync(keystore),
 		certificate: fs.readFileSync(signcerts),
+		mspId
+	});
+};
+/**
+ *
+ * @param MSPConfigPath
+ * @param name
+ * @param mspId
+ * @returns {User}
+ */
+exports.loadFrom = (MSPConfigPath, name, mspId) => {
+
+	const builder = new UserBuilder({name});
+
+	const keystore = findKeyFiles(path.resolve(MSPConfigPath, 'keystore'))[0];
+	const signcert = findCertFiles(path.resolve(MSPConfigPath, 'signcerts'))[0];
+	return builder.build({
+		key: fs.readFileSync(keystore),
+		certificate: fs.readFileSync(signcert),
 		mspId
 	});
 };
