@@ -95,7 +95,7 @@ exports.unsignedTransaction = (proposalResponses, proposal) => {
  * @param {string} fcn
  * @param {string[]} args
  * @param {Client.TransientMap} [transientMap]
- * @param {number} proposalTimeout
+ * @param {number} [proposalTimeout]
  * @return {Promise<Client.TransactionRequest>}
  */
 exports.transactionProposal = async (client, targets, channelName, {
