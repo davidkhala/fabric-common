@@ -1,6 +1,6 @@
 {
   "name": "khala-fabric-sdk-node",
-  "version": "1.4.9-0.0.0",
+  "version": "1.4.9-0.0.1",
   "dependencies": {
     "khala-axios": "^1.0.0",
     "khala-dockerode": "^1.0.2",
