@@ -410,6 +410,9 @@ class ConfigFactory {
 exports.getChannelConfigReadable = async (channel, {peer, orderer}, viaServer) => {
 	let configEnvelope;
 	if (peer) {
+		if (peer && orderer) {
+			logger.warn(`getChannelConfigReadable: both peer and orderer is provided, reduce to use ${peer.getName()}`);
+		}
 		configEnvelope = await channel.getChannelConfig(peer);
 	} else {
 		channel._orderers = new Map();

@@ -78,7 +78,7 @@ class BinManager {
 				fs.writeFileSync(tmpFile, original_config_proto);
 
 				await this.configtxlatorCMD.decodeFile(type, {inputFile: tmpFile, outputFile: tmpJSONFile});
-				const returned = JSON.stringify(require(tmpJSONFile));
+				const returned = JSON.stringify(require(tmpJSONFile), null, 2);
 
 				t1();
 				t2();
@@ -178,7 +178,7 @@ class BinManager {
 			 * @return {Promise<*>}
 			 */
 			package: async ({chaincodeId, chaincodePath, chaincodeType, chaincodeVersion, metadataPath},
-			                {localMspId, mspConfigPath}, outputFile, instantiatePolicy) => {
+				{localMspId, mspConfigPath}, outputFile, instantiatePolicy) => {
 				const [FABRIC_CFG_PATH, t1] = createTmpDir();
 				fs.writeFileSync(path.resolve(FABRIC_CFG_PATH, 'core.yml'), '');
 				process.env.FABRIC_CFG_PATH = FABRIC_CFG_PATH;
