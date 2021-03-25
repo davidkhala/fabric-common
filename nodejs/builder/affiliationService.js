@@ -24,6 +24,24 @@ class AffiliationServiceBuilder {
 			}
 		}
 	}
+
+	/**
+	 *
+	 * @param {Client.User} adminUser
+	 */
+	async getAll(adminUser) {
+		const {result, errors, messages, success} = await this.affiliationService.getAll(adminUser);
+		if (!success) {
+			const err = Error('affiliation:getAll');
+			err.result = result;
+			err.errors = errors;
+			err.messages = messages;
+			throw err;
+		}
+		const {affiliations} = result;
+
+		return affiliations;
+	}
 }
 
 module.exports = AffiliationServiceBuilder;
