@@ -28,7 +28,7 @@ class UserBuilder {
 	 * @param {module:api.Key} key the private key object
 	 * @param {CertificatePem} certificate
 	 * @param {MspId} mspId - This is required when Client#signChannelConfig
-	 * @return {User}
+	 * @return {Client.User}
 	 */
 	build({key, certificate, mspId}) {
 		const {_cryptoSuite} = this.user;
