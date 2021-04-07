@@ -16,10 +16,12 @@ class ClientManager {
 
 	setChannel(channelName, channel) {
 		this.client._channels.set(channelName, channel);
+		return this;
 	}
 
 	deleteChannel(channelName) {
 		this.client._channels.delete(channelName);
+		return this;
 	}
 
 	static setUser(client, user) {
@@ -32,6 +34,7 @@ class ClientManager {
 
 	setUser(user) {
 		ClientManager.setUser(this.client, user);
+		return this;
 	}
 
 	getUser() {
