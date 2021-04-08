@@ -1,11 +1,12 @@
 {
   "name": "khala-fabric-sdk-node-builder",
-  "version": "1.4.4-0.0.1",
+  "version": "1.4.5-0.0.0",
   "dependencies": {
     "fabric-ca-client": "latest-1.4",
     "fabric-client": "latest-1.4",
     "khala-fabric-formatter": "latest-1.4",
-    "khala-fabric-protos": "latest-1.4"
+    "khala-fabric-protos": "latest-1.4",
+    "@ampretia/x509": "latest"
   },
   "publishConfig": {
     "tag": "latest-1.4"

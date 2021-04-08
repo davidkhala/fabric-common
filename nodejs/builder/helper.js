@@ -11,4 +11,3 @@ exports.FabricConfig = {
 	}
 
 };
-exports.normalizeX509 = FabricUtils.normalizeX509;

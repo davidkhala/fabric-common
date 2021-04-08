@@ -7,6 +7,7 @@
  */
 const IdentityService = require('fabric-ca-client/lib/IdentityService');
 
+const assert = require('assert');
 
 class IdentityServiceBuilder {
 	/**
@@ -14,7 +15,7 @@ class IdentityServiceBuilder {
 	 * @param {FabricCAService} caService
 	 */
 	constructor(caService) {
-		this.identityService = new IdentityService(caService._fabricCAClient);
+		this.identityService = caService.newIdentityService();
 	}
 
 	/**
@@ -92,6 +93,19 @@ class IdentityServiceBuilder {
 		}
 		const {identities} = result;
 		return identities;
+	}
+
+	async revokeIdentity(enrollmentID, caAdmin, reason) {
+		const {
+			result,
+			success,
+			messages,
+			errors
+		} = await this.identityService.client.revoke(enrollmentID, undefined, undefined, reason, caAdmin.getSigningIdentity());
+		assert.ok(success);
+		assert.ok(Array.isArray(messages));
+		assert.ok(Array.isArray(errors));
+		return result;
 	}
 }
 
