@@ -60,28 +60,14 @@ class CertificateServiceBuilder {
 	}
 
 	static inspect(pem) {
-		const X509 = require('@ampretia/x509');
-		const {normalizeX509} = require('khala-fabric-formatter/path');
-		const cert = X509.parseCert(normalizeX509(pem));
+		const {X509} = require('jsrsasign');
 
+		const x509 = new X509();
+		x509.readCertPEM(pem);
 
-		if (!cert.extensions || !cert.extensions.authorityKeyIdentifier) {
-			const error = Error('Parsed certificate does not contain Authority Key Identifier');
-			error.certificate = cert;
-			throw error;
-		}
+		const aki = x509.getExtAuthorityKeyIdentifier().kid;
 
-		// convert the raw AKI string in the form of 'keyid:HX:HX....' (HX represents a hex-encoded byte) to a hex string
-		const akiString = cert.extensions.authorityKeyIdentifier;
-		const arr = akiString.split(':');
-		if (arr[0] !== 'keyid') {
-			throw Error(`Found an Authority Key Identifier we do not understand: first segment is not "keyid" but: ${akiString}`);
-		}
-
-		arr.shift(); // remove the 'keyid'
-		const aki = arr.join('');
-		const serial = cert.serial;
-
+		const serial = x509.getSerialNumberHex();
 		return {aki, serial};
 	}
 }

@@ -14,9 +14,9 @@
   },
   "license": "Apache-2.0",
   "devDependencies": {
-    "jsrsasign": "^8.0.20",
     "lerna": "^3.20.2",
-    "khala-light-util": "^0.0.3"
+    "khala-light-util": "^0.0.3",
+    "mocha": "latest-6"
   },
   "keywords": [
     "fabric-sdk-node",
