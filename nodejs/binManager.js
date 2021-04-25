@@ -1,4 +1,4 @@
-const {execSync, execResponsePrint, execDetach, killProcess, findProcess} = require('khala-nodeutils/devOps');
+const {execSync, execDetach, killProcess, findProcess} = require('khala-nodeutils/devOps');
 const path = require('path');
 const fs = require('fs');
 const {createTmpFile, createTmpDir} = require('khala-nodeutils/tmp');
@@ -149,7 +149,7 @@ class BinManager {
 				);
 				this.logger.info('CMD', CMD);
 				const result = execSync(CMD);
-				execResponsePrint(result);
+				this.logger.info(result);
 			},
 			list: async () => {
 				// TODO osnadmin channel list
@@ -186,7 +186,7 @@ class BinManager {
 				const CMD = this._buildCMD('peer', `channel signconfigtx --file ${configtxUpdateFile}`);
 				this.logger.info('CMD', CMD);
 				const result = execSync(CMD);
-				execResponsePrint(result);
+				this.logger.info(result);
 				t1();
 			},
 
@@ -202,7 +202,10 @@ class BinManager {
 			 * @param outputFile
 			 * @param [instantiatePolicy]
 			 */
-			package: async ({chaincodeId, chaincodePath, chaincodeType, chaincodeVersion, metadataPath}, {localMspId, mspConfigPath}, outputFile, instantiatePolicy) => {
+			package: async ({chaincodeId, chaincodePath, chaincodeType, chaincodeVersion, metadataPath}, {
+				localMspId,
+				mspConfigPath
+			}, outputFile, instantiatePolicy) => {
 				const t1 = createTmpCoreYml();
 				process.env.CORE_PEER_LOCALMSPID = localMspId;
 				process.env.CORE_PEER_MSPCONFIGPATH = mspConfigPath;
@@ -216,7 +219,7 @@ class BinManager {
 				const CMD = this._buildCMD('peer', `chaincode package ${optionTokens} ${outputFile}`);
 				this.logger.info('CMD', CMD);
 				const result = execSync(CMD);
-				execResponsePrint(result);
+				this.logger.info(result);
 				t1();
 
 				delete process.env.CORE_PEER_LOCALMSPID;
@@ -237,7 +240,7 @@ class BinManager {
 					const CMD = this._buildCMD('peer', 'lifecycle chaincode package', optionTokens, outputFile);
 					this.logger.info('CMD', CMD);
 					const result = execSync(CMD);
-					execResponsePrint(result);
+					this.logger.info(result);
 					t1();
 					return outputFile;
 				}
@@ -256,13 +259,13 @@ class BinManager {
 				const CMD = `${this.binPath}/configtxgen -outputBlock ${outputFile} -profile ${profile} -channelID ${channelName} -configPath ${configPath}`;
 				this.logger.info('CMD', CMD);
 				const result = execSync(CMD);
-				execResponsePrint(result);
+				this.logger.info(result);
 			},
 			genTx: async (outputFile) => {
 				const CMD = `${this.binPath}/configtxgen -outputCreateChannelTx ${outputFile} -profile ${profile} -channelID ${channelName} -configPath ${configPath}`;
 				this.logger.info('CMD', CMD);
 				const result = execSync(CMD);
-				execResponsePrint(result);
+				this.logger.info(result);
 			},
 			viewBlock: async (blockFile) => {
 				const CMD = `${this.binPath}/configtxgen -inspectBlock ${blockFile} -profile ${profile} -configPath ${configPath}`;
