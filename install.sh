@@ -33,6 +33,7 @@ softHSMInstall() {
 fabricInstall() {
 	#	If you want the latest production release, omit all version identifiers.
 	curl -sSL https://bit.ly/2ysbOFE | bash -s -- -s $1
+	docker pull couchdb:3.1
 }
 if [[ -n "$1" ]]; then
 	"$@"
