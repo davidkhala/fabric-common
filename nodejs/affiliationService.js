@@ -23,17 +23,30 @@ class AffiliationServiceBuilder {
 	 * @return {Promise<FabricCAServices.IServiceResponse>}
 	 */
 	async createIfNotExist(name, force) {
-		try {
-			const resp = await this.affiliationService.getOne(name, this.registrar);
-			this.logger.info('affiliationService exists', resp.result.name);
+		const resp = await this.getOne(name, this.registrar);
+		if (resp) {
+			this.logger.info('affiliationService exists', resp.name);
 			return resp;
-		} catch (err) {
-			if (err.toString().includes('Failed to get affiliation')) {
-				return await this.affiliationService.create({name, force: !!force}, this.registrar);
-			} else {
-				throw err;
-			}
+		} else {
+			return await this.affiliationService.create({name, force: !!force}, this.registrar);
 		}
+	}
+
+	async getOne(name) {
+		try {
+			const {result} = await this.affiliationService.getOne(name, this.registrar);
+			return result;
+		} catch (e) {
+			const {errors} = e;
+			if (errors && Array.isArray(errors)) {
+				const {code, message} = errors[0];
+				if (code === 63 && message === 'Failed to get affiliation: sql: no rows in result set') {
+					return undefined;
+				}
+			}
+			throw e;
+		}
+
 	}
 
 	async getAll() {
