@@ -1,0 +1,25 @@
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: base setup
+
+on:
+  push:
+    
+  pull_request:
+    
+jobs:
+  
+  base:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v2
+    - run: ./install.sh softHSMInstall
+    - run: ./install.sh fabricInstall -d
+    - run: ./install.sh
+    - run: ./bash/test/shunit2Install.sh
+      name: setup bash
+    - run: ./bash/test/softHSMTest.sh
