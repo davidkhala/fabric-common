@@ -28,7 +28,7 @@ class AffiliationServiceBuilder {
 			this.logger.info('affiliationService exists', resp.result.name);
 			return resp;
 		} catch (err) {
-			if (err.toString().includes('Failed to get Affiliation')) {
+			if (err.toString().includes('Failed to get affiliation')) {
 				return await this.affiliationService.create({name, force: !!force}, this.registrar);
 			} else {
 				throw err;
