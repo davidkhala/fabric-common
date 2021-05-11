@@ -5,17 +5,19 @@ name: base setup
 
 on:
   push:
-    
+
   pull_request:
-    
+
 jobs:
-  
+
   base:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
+    - uses: docker-practice/actions-setup-docker@master
+      if: ${{ matrix.os == 'macos-latest' }}
     - uses: actions/checkout@v2
     - run: ./install.sh softHSMInstall
     - run: ./install.sh fabricInstall -d
