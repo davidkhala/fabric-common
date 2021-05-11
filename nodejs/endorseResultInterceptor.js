@@ -16,7 +16,11 @@ const EndorseALL = (result) => {
 	}
 	if (endorsementErrors.length > 0) {
 		const err = Error('ENDORSE_ERROR');
-		err.errors = endorsementErrors;
+		err.errors = endorsementErrors.reduce((sum, {response, connection}) => {
+			delete response.payload;
+			sum[connection.url] = response;
+			return sum;
+		}, {});
 		throw err;
 	}
 	return result;
