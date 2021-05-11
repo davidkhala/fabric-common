@@ -2,7 +2,8 @@
   "name": "khala-fabric-sdk-node",
   "version": "2.3.0-alpha",
   "scripts": {
-    "test": "mocha test"
+    "test": "mocha test",
+    "lerna": "lerna bootstrap --no-ci"
   },
   "dependencies": {
     "khala-dockerode": "latest",
