@@ -34,8 +34,14 @@ const resultParser = ({results}) => {
 				break;
 			case DiscoveryResultType.members: {
 				const {peers_by_org} = members;
+				const parsePeer = ({state_info, membership_info, identity}) => {
+					// TODO WIP need proto decode
+					return {state_info, membership_info, identity};
+				};
 				for (const [mspid, {peers}] of Object.entries(peers_by_org)) {
-					peers_by_org[mspid] = peers;
+
+					peers_by_org[mspid] = peers.map(parsePeer);
+
 				}
 				returned.members = peers_by_org;
 			}

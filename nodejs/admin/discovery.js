@@ -21,6 +21,17 @@ class SlimDiscoveryService extends DiscoveryService {
 		this.currentTarget = discoverer;
 	}
 
+	/**
+	 * @typedef {Object} DiscoveryResult
+	 * @property {[]} results
+	 * @property {Discoverer} connection
+	 * @property {string} peer
+	 */
+	/**
+	 *
+	 * @param request
+	 * @return {Promise<DiscoveryResult>}
+	 */
 	async send(request = {}) {
 		const {requestTimeout = this.requestTimeout, target = this.currentTarget} = request;
 
