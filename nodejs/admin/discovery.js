@@ -69,12 +69,7 @@ class SlimDiscoveryService extends DiscoveryService {
 		if (state_info) {
 			const message_s = fabprotos.gossip.GossipMessage.decode(state_info.payload);
 			peer.ledger_height = message_s.state_info.properties.ledger_height.toInt();
-			peer.chaincodes = message_s.state_info.properties.chaincodes.map((q_chaincode) => (
-				{
-					name: q_chaincode.getName(),
-					version: q_chaincode.getVersion(),
-				}
-			));
+			peer.chaincodes = message_s.state_info.properties.chaincodes.map(({name, version}) => ({name, version}));
 		}
 		return peer;
 	}
