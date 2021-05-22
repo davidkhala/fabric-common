@@ -26,9 +26,9 @@ const {ApplicationPolicy, CollectionConfigPackage} = protosProtos;
 class LifecycleProposal extends ProposalManager {
 	/**
 	 *
-	 * @param {Client.IdentityContext} identityContext
-	 * @param {Client.Channel} channel
-	 * @param {Client.Endorser[]} endorsers
+	 * @param {IdentityContext} identityContext
+	 * @param {Channel} channel
+	 * @param {Endorser[]} endorsers
 	 * @param [logger]
 	 */
 	constructor(identityContext, channel, endorsers, logger = console) {
@@ -282,6 +282,7 @@ class LifecycleProposal extends ProposalManager {
 	}
 
 	/**
+	 * FIXME
 	 * MAGIC CODE for [Illegal value for versionvalue element of type int32: object (not an integer)]
 	 */
 	static getFabprotos() {

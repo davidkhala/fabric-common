@@ -6,6 +6,9 @@
   "dependencies": {
     "fabric-protos": "latest"
   },
+  "devDependencies": {
+    "mocha": "latest"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/davidkhala/fabric-common"

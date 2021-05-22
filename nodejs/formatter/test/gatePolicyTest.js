@@ -1,4 +1,3 @@
-/* eslint-disable quotes */
 const Policy = require('../gatePolicy');
 const {FromStandard} = require('../SideDB');
 const fabprotos = require('fabric-protos');

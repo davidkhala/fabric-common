@@ -93,9 +93,7 @@ class QueryHub {
 		const qsccProposal = new QSCCProposal(this.identityContext, emptyChannel(channelName), this.targets);
 		const result = await qsccProposal.queryTransaction(txId);
 		const {queryResults} = result;
-		return queryResults.map((payload) => {
-			return BlockDecoder.decodeTransaction(payload);
-		});
+		return queryResults.map(BlockDecoder.decodeTransaction);
 	}
 }
 

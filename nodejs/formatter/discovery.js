@@ -1,6 +1,44 @@
 const {DiscoveryResultType} = require('./constants');
+const fabprotos = require('fabric-protos');
+const assert = require('assert');
+const ParsePeerResult = ({identity, membership_info, state_info}) => {
+	const peer = {};
+	// IDENTITY
+	{
+		const {mspid, id_bytes} = fabprotos.msp.SerializedIdentity.decode(identity);
+		peer.identity = {
+			mspid,
+			id_bytes: id_bytes.toString()
+		};
+	}
 
-const resultParser = ({results}) => {
+	// MEMBERSHIP - Peer.membership_info
+	// gossip.Envelope.payload
+	{
+		const {payload, signature, secret_envelope} = membership_info;
+		assert.strictEqual(secret_envelope, null);
+		const {tag, alive_msg} = fabprotos.gossip.GossipMessage.decode(payload);
+		assert.strictEqual(tag, 1);
+		const {membership: {endpoint, pki_id}, timestamp: {inc_num, seq_num}} = alive_msg;
+		// TODO WIP what is the content of pki_id and readable format
+		// TODO What is the gossip inc_num, seq_num
+		// TODO What is this inc_num: Long { low: -664492743, high: 377579470, unsigned: true },
+		peer.membership_info = {endpoint};
+	}
+
+	// STATE
+	if (state_info) {
+		const {payload, signature, secret_envelope} = state_info;
+		assert.strictEqual(secret_envelope, null);
+		const {tag, state_info: {timestamp, pki_id, channel_MAC, properties}} = fabprotos.gossip.GossipMessage.decode(payload);
+		assert.strictEqual(tag, 5);
+		const {chaincodes, ledger_height} = properties;
+		peer.ledger_height = ledger_height.toInt();
+		peer.chaincodes = chaincodes.map(({name, version}) => ({name, version}));
+	}
+	return peer;
+};
+const ParseResult = ({results}) => {
 	const returned = {};
 
 	for (const {result, error, config_result, cc_query_res, members} of results) {
@@ -49,5 +87,6 @@ const resultParser = ({results}) => {
 	return returned;
 };
 module.exports = {
-	resultParser
+	ParseResult,
+	ParsePeerResult,
 };

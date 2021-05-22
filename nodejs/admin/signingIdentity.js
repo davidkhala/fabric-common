@@ -1,7 +1,7 @@
 const Utils = require('fabric-common/lib/Utils');
 const fabprotos = require('fabric-protos');
 const commonProto = fabprotos.common;
-const {buildSignatureHeader, buildChannelHeader, buildHeader, buildPayload, buildSeekPayload} = require('./protoTranslator');
+const {buildSignatureHeader, buildChannelHeader, buildHeader, buildPayload, buildSeekPayload} = require('../formatter/protoTranslator');
 const {DeliverResponseStatus: {SERVICE_UNAVAILABLE}, DeliverResponseType: {STATUS}} = require('khala-fabric-formatter/eventHub');
 const sleep = (ms) => {
 	return new Promise(resolve => setTimeout(resolve, ms));
@@ -46,12 +46,12 @@ class SigningIdentityUtil {
 	 * Channel configuration updates can be sent to the orderers to be processed.
 	 * The orderer ensures channel updates will be made only when enough signatures are discovered in the request.
 	 * Channel creation policy can be customized when the consortium is defined.
-	 * @param {Client.IdentityContext|{transactionId, nonce}} identityContext
+	 * @param {IdentityContext|{transactionId, nonce}} identityContext
 	 * @param [config]
 	 * @param {Buffer[]} [signatures]
 	 * @param [envelope]
 	 * @param name
-	 * @param {Client.Committer} committer
+	 * @param {Committer} committer
 	 * @param [commitTimeout]
 	 */
 	async updateChannel(identityContext, {config, signatures, envelope, name, committer}, commitTimeout) {
@@ -65,7 +65,7 @@ class SigningIdentityUtil {
 		} else {
 			const configUpdateEnvelope = new commonProto.ConfigUpdateEnvelope();
 			configUpdateEnvelope.config_update = config;
-			const signaturesDecoded = signatures.map(_signature => commonProto.ConfigSignature.decode(_signature));
+			const signaturesDecoded = signatures.map(commonProto.ConfigSignature.decode);
 			configUpdateEnvelope.signatures = signaturesDecoded;
 
 			const channelHeader = buildChannelHeader({

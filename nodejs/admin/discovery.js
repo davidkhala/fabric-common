@@ -54,25 +54,6 @@ class SlimDiscoveryService extends DiscoveryService {
 		return result;
 	}
 
-	static ParsePeerResult({identity, membership_info, state_info}) {
-		const peer = {};
-		// IDENTITY
-		const q_identity = fabprotos.msp.SerializedIdentity.decode(identity);
-		peer.mspid = q_identity.mspid;
-
-		// MEMBERSHIP - Peer.membership_info
-		// gossip.Envelope.payload
-		const q_membership_message = fabprotos.gossip.GossipMessage.decode(membership_info.payload);
-		peer.endpoint = q_membership_message.alive_msg.membership.endpoint;
-
-		// STATE
-		if (state_info) {
-			const message_s = fabprotos.gossip.GossipMessage.decode(state_info.payload);
-			peer.ledger_height = message_s.state_info.properties.ledger_height.toInt();
-			peer.chaincodes = message_s.state_info.properties.chaincodes.map(({name, version}) => ({name, version}));
-		}
-		return peer;
-	}
 }
 
 module.exports = SlimDiscoveryService;

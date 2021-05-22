@@ -17,7 +17,6 @@ const gatePolicy = new GatePolicy(fabprotos);
  * @param {MspId[]} member_orgs
  * @return {CollectionConfig}
  */
-// eslint-disable-next-line max-len
 const buildCollectionConfig = ({name, required_peer_count, maximum_peer_count, endorsement_policy, block_to_live, member_only_read, member_only_write, member_orgs}) => {
 	if (!maximum_peer_count) {
 		maximum_peer_count = required_peer_count;

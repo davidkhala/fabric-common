@@ -58,7 +58,6 @@ exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchD
 			'GODEBUG=netdns=go' // NOTE aliyun only
 		];
 	if (chaincodeOpts) {
-		// eslint-disable-next-line no-shadow
 		const {attachLog, endpoint, tls} = chaincodeOpts;
 		if (endpoint) {
 			environment.push(`CORE_VM_ENDPOINT=${endpoint}`);

@@ -2,7 +2,7 @@ const LifecycleProposal = require('khala-fabric-admin/lifecycleProposal');
 const {waitForTx} = require('./eventHub');
 const ChaincodeAction = require('./chaincodeAction');
 const {emptyChannel} = require('khala-fabric-admin/channel');
-const Policy = require('./policy');
+const Policy = require('./formatter/policy');
 const GatePolicy = require('khala-fabric-admin/gatePolicy');
 
 const {buildCollectionConfig} = require('khala-fabric-admin/SideDB');
