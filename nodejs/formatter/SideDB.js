@@ -3,8 +3,6 @@ const protosProtos = fabprotos.protos;
 const commonProtos = fabprotos.common;
 const GatePolicy = require('./gatePolicy');
 
-const gatePolicy = new GatePolicy(fabprotos);
-
 /**
  *
  * @param name
@@ -34,15 +32,15 @@ const buildCollectionConfig = ({name, required_peer_count, maximum_peer_count, e
 	const signaturePolicyEnvelope = new commonProtos.SignaturePolicyEnvelope();
 
 	const identities = member_orgs.map(mspid => {
-		return gatePolicy.buildMSPPrincipal(0, mspid);
+		return GatePolicy.buildMSPPrincipal(0, mspid);
 	});
 
 
 	const rules = member_orgs.map((mspid, index) => {
-		return gatePolicy.buildSignaturePolicy({signed_by: index});
+		return GatePolicy.buildSignaturePolicy({signed_by: index});
 	});
-	const nOutOf = gatePolicy.buildNOutOf({n: 1, rules});
-	const rule = gatePolicy.buildSignaturePolicy({n_out_of: nOutOf});
+	const nOutOf = GatePolicy.buildNOutOf({n: 1, rules});
+	const rule = GatePolicy.buildSignaturePolicy({n_out_of: nOutOf});
 	signaturePolicyEnvelope.rule = rule;
 	signaturePolicyEnvelope.identities = identities;
 
@@ -111,7 +109,7 @@ const FromStandard = (json) => {
 			member_only_read: memberOnlyRead,
 			member_only_write: memberOnlyWrite,
 			required_peer_count: requiredPeerCount,
-			member_orgs: gatePolicy.FromString(gatePolicyEntry).identities.map(({principal}) => {
+			member_orgs: GatePolicy.FromString(gatePolicyEntry).identities.map(({principal}) => {
 				const {msp_identifier} = commonProtos.MSPRole.decode(principal);
 				return msp_identifier;
 			})

@@ -1,10 +1,13 @@
 {
   "name": "khala-fabric-formatter",
-  "version": "2.3.0-alpha",
+  "version": "2.2.0-alpha",
   "description": "formatter for Hyperledger Fabric nodejs development",
   "license": "Apache-2.0",
   "dependencies": {
     "fabric-protos": "latest"
+  },
+  "publishConfig": {
+    "tag": "latest"
   },
   "devDependencies": {
     "mocha": "latest"

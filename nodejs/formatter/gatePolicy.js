@@ -7,20 +7,15 @@ const MSPRoleTypeInverse = {
 };
 const GateClausePattern = /^(AND|OR)\(([\w,.\s()']+)\)$/;
 const RoleClausePattern = /^'([0-9A-Za-z.-]+)(\.)(admin|member|client|peer|orderer)'$/;
+const commonProtos = require('fabric-protos').common;
 
+/**
+ *  Reference: `common/policydsl/policyparser.go`
+ *      `func FromString(policy string) (*cb.SignaturePolicyEnvelope, error)`
+ */
 class GatePolicy {
-	/**
-	 *  Reference: `common/policydsl/policyparser.go`
-	 *      `func FromString(policy string) (*cb.SignaturePolicyEnvelope, error)`
-	 * MAGIC CODE
-	 * @param fabprotos
-	 */
-	constructor(fabprotos) {
-		this.commonProtos = fabprotos.common;
-	}
 
-	buildMSPPrincipal(MSPRoleType, mspid) {
-		const {commonProtos} = this;
+	static buildMSPPrincipal(MSPRoleType, mspid) {
 		const newPrincipal = new commonProtos.MSPPrincipal();
 		newPrincipal.principal_classification = commonProtos.MSPPrincipal.Classification.ROLE;
 		const newRole = new commonProtos.MSPRole();
@@ -30,8 +25,7 @@ class GatePolicy {
 		return newPrincipal;
 	}
 
-	buildNOutOf({n, rules: SignaturePolicyArray}) {
-		const {commonProtos} = this;
+	static buildNOutOf({n, rules: SignaturePolicyArray}) {
 		const n_out_of = new commonProtos.SignaturePolicy.NOutOf();
 		n_out_of.n = n;
 		n_out_of.rules = SignaturePolicyArray;
@@ -39,8 +33,7 @@ class GatePolicy {
 	}
 
 
-	buildSignaturePolicy({n_out_of, signed_by}) {
-		const {commonProtos} = this;
+	static buildSignaturePolicy({n_out_of, signed_by}) {
 		const signaturePolicy = new commonProtos.SignaturePolicy();
 		if (n_out_of) {
 			signaturePolicy.Type = 'n_out_of';
@@ -53,8 +46,7 @@ class GatePolicy {
 	}
 
 
-	FromString(policyString) {
-		const {commonProtos} = this;
+	static FromString(policyString) {
 		const identitiesIndexMap = {};
 		const identities = [];
 		const parseRoleClause = (mspid, role) => {
@@ -64,10 +56,10 @@ class GatePolicy {
 				const index = identities.length;
 
 				identitiesIndexMap[key] = index;
-				identities[index] = this.buildMSPPrincipal(MSPRoleTypeInverse[role.toUpperCase()], mspid);
+				identities[index] = GatePolicy.buildMSPPrincipal(MSPRoleTypeInverse[role.toUpperCase()], mspid);
 
 			}
-			return this.buildSignaturePolicy({signed_by: identitiesIndexMap[key]});
+			return GatePolicy.buildSignaturePolicy({signed_by: identitiesIndexMap[key]});
 		};
 
 		const parseGateClause = (clause, gate, subClause) => {
@@ -97,12 +89,12 @@ class GatePolicy {
 
 			}
 			if (gate === 'OR') {
-				n_out_of = this.buildNOutOf({n: 1, rules});
+				n_out_of = GatePolicy.buildNOutOf({n: 1, rules});
 			} else if (gate === 'AND') {
-				n_out_of = this.buildNOutOf({n: rules.length, rules});
+				n_out_of = GatePolicy.buildNOutOf({n: rules.length, rules});
 			}
 
-			return this.buildSignaturePolicy({n_out_of});
+			return GatePolicy.buildSignaturePolicy({n_out_of});
 		};
 
 		const rule = parseGateClause(policyString);

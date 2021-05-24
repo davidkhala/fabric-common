@@ -25,28 +25,18 @@
  * @property {PolicyElement[]} [n-of]
  * @property {integer|MSPRoleType} [signedBy]
  */
-
+const commonProto = require('fabric-protos').common;
 
 class Policy {
-	/**
-	 * FIXME
-	 * MAGIC CODE for [Illegal value for versionvalue element of type int32: object (not an integer)]
-	 * Note Please use same dependency object with protos.ApplicationPolicy
-	 * Otherwise grpc message wire will crash magically
-	 * @param fabprotos = require('fabric-protos')
-	 */
-	constructor(fabprotos) {
-		this.commonProto = fabprotos.common;
-	}
 
 	/**
 	 *
 	 * @param {Policy} policy
 	 */
-	buildSignaturePolicyEnvelope(policy) {
-		const envelope = new this.commonProto.SignaturePolicyEnvelope();
+	static buildSignaturePolicyEnvelope(policy) {
+		const envelope = new commonProto.SignaturePolicyEnvelope();
 		const principals = policy.identities.map((identity) => this.buildPrincipal(identity));
-		const thePolicy = this.parsePolicy(policy.policy);
+		const thePolicy = Policy.parsePolicy(policy.policy);
 
 		envelope.version = 0;
 		envelope.rule = thePolicy;
@@ -55,8 +45,7 @@ class Policy {
 		return envelope;
 	}
 
-	buildPrincipal(identity) {
-		const {commonProto} = this;
+	static buildPrincipal(identity) {
 		const {type, mspid} = identity.role;
 
 		const newPrincipal = new commonProto.MSPPrincipal();
@@ -67,8 +56,8 @@ class Policy {
 		return newPrincipal;
 	}
 
-	parsePolicy(spec) {
-		const {commonProto} = this;
+	static parsePolicy(spec) {
+
 		const signedByConfig = spec.signedBy;
 		const signaturePolicy = new commonProto.SignaturePolicy();
 		if (signedByConfig || signedByConfig === 0) {
