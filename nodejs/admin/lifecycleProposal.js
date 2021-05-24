@@ -281,13 +281,6 @@ class LifecycleProposal extends ProposalManager {
 		return result;
 	}
 
-	/**
-	 * FIXME
-	 * MAGIC CODE for [Illegal value for versionvalue element of type int32: object (not an integer)]
-	 */
-	static getFabprotos() {
-		return fabprotos;
-	}
 }
 
 module.exports = LifecycleProposal;

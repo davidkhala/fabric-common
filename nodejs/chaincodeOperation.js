@@ -2,8 +2,8 @@ const LifecycleProposal = require('khala-fabric-admin/lifecycleProposal');
 const {waitForTx} = require('./eventHub');
 const ChaincodeAction = require('./chaincodeAction');
 const {emptyChannel} = require('khala-fabric-admin/channel');
-const Policy = require('./formatter/policy');
-const GatePolicy = require('khala-fabric-admin/gatePolicy');
+const Policy = require('khala-fabric-formatter/policy');
+const GatePolicy = require('khala-fabric-formatter/gatePolicy');
 
 const {buildCollectionConfig} = require('khala-fabric-admin/SideDB');
 
@@ -74,11 +74,9 @@ class ChaincodeOperation extends ChaincodeAction {
 		const {json, gate, reference} = _endorsementPolicy;
 		let signature_policy = null;
 		if (json) {
-			const policy = new Policy(LifecycleProposal.getFabprotos());
-			signature_policy = policy.buildSignaturePolicyEnvelope(json);
+			signature_policy = Policy.buildSignaturePolicyEnvelope(json);
 		} else if (gate) {
-			const policy = new GatePolicy(LifecycleProposal.getFabprotos());
-			signature_policy = policy.FromString(gate);
+			signature_policy = GatePolicy.FromString(gate);
 		}
 		// TODO allow undefined/ null
 		return {

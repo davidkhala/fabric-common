@@ -1,7 +1,5 @@
 const DiscoveryService = require('fabric-common/lib/DiscoveryService');
 const {emptyChannel} = require('./channel');
-const fabprotos = require('fabric-protos');
-
 
 class SlimDiscoveryService extends DiscoveryService {
 
