@@ -1,6 +1,4 @@
 const Package = require('../chaincodePackage');
-const fs = require('fs');
-const logger = require('khala-logger/log4js').consoleLogger('test:package');
 describe('package', () => {
 	const {homeResolve} = require('khala-light-util');
 	it('pack golang', async () => {
