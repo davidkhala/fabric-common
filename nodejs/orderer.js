@@ -8,19 +8,29 @@ const containerDefaultPaths = {
 exports.container = containerDefaultPaths;
 /**
  * [release-2.3] system chain removal
- * @param {string} [bootStrapFile] - block file relative path, if unset, adopt no-genesis orderer mode
- * @param tls
- * @param configPath
- * @param id
- * @param {OrdererType} ordererType
- * @param raft_tls
- * @param [admin_tls] default to tls
+
+ * @param opts
  * @param loggingLevel
  * @param operationsOpts
  * @param metricsOpts
  * @returns {string[]}
  */
-exports.envBuilder = ({bootStrapFile, msp: {configPath, id}, tls, ordererType, raft_tls, admin_tls = tls}, loggingLevel, operationsOpts, metricsOpts) => {
+exports.envBuilder = (opts, loggingLevel, operationsOpts, metricsOpts) => {
+
+	const {
+		bootStrapFile, // block file relative path, if unset, adopt no-genesis orderer mode
+		msp: {configPath, id},
+		tls,
+		/**
+		 * @type {OrdererType}
+		 */
+		ordererType,
+		raft_tls,
+		/**
+		 * default to tls
+		 */
+		admin_tls = tls
+	} = opts;
 	let env = [
 		'ORDERER_GENERAL_LISTENADDRESS=0.0.0.0', // used to self identify
 		`ORDERER_GENERAL_TLS_ENABLED=${!!tls}`,
@@ -66,6 +76,7 @@ exports.envBuilder = ({bootStrapFile, msp: {configPath, id}, tls, ordererType, r
 			env = env.concat([
 				`ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=${raft_tls.cert}`,
 				`ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=${raft_tls.key}`,
+				`ORDERER_GENERAL_CLUSTER_ROOTCAS=[${rootCAsStringBuilder(raft_tls)}]`,
 			]);
 			if (!tls) {
 				env = env.concat([
