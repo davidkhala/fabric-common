@@ -1,12 +1,11 @@
 # fabric-common
-[![Build Status](https://travis-ci.com/davidkhala/fabric-common.svg?branch=master)](https://travis-ci.com/davidkhala/fabric-common)
 
-Current version 2.3.0
+Current version 2.3.2
 ## Prerequisite
 - docker: 18.03 +
 ### Prerequisite: For development
 - docker-compose: 1.14.0 +
-- golang: 1.14.x
+- golang: 1.15.x
 - fabric-sdk-node
     - nodejs: 12.x
     - npm: 6 + 
@@ -27,10 +26,10 @@ Current version 2.3.0
         - npm install --global grpc
 
 ## Mono repository components
-- [bash](./bash)
-- [golang](./golang)
-- [java](./java)
-- [nodejs](./nodejs)
+- [bash](bash)
+- [golang](golang)
+- [java](java)
+- [nodejs](nodejs)
 
 ## Milestone
 - [2.0]
@@ -68,9 +67,9 @@ Current version 2.3.0
     - Collection-level endorsement policy override chaincode-level endorsement policy for any data written to the collection
     - if collection-level endorsement policy is unset, instead of having default policy such as `channel_config_policy_reference = '/Channel/Application/Endorsement'`, no collection-level endorsement policy apply.
 - implicit collections always use blockToLive=0
-### [Notes: Chaincode](./CHAINCODE.md)
+### [Notes: Chaincode](CHAINCODE.md)
 
-### [Notes: etcdraft](./RAFT.md)
+### [Notes: etcdraft](RAFT.md)
 
 ### Notes: Operations
 [reference](https://hyperledger-fabric.readthedocs.io/en/release-2.0/metrics_reference.html)
