@@ -1,3 +1,4 @@
+const {CommonResponseStatus} = require('./constants');
 /**
  *
  * @enum {string}
@@ -21,11 +22,7 @@ const DeliverResponseType = {
  * response.status
  * @enum {string}
  */
-const DeliverResponseStatus = {
-	SUCCESS: 'SUCCESS',
-	NOT_FOUND: 'NOT_FOUND',
-	SERVICE_UNAVAILABLE: 'SERVICE_UNAVAILABLE'
-};
+const DeliverResponseStatus = CommonResponseStatus;
 /**
  *
  * @enum {string}

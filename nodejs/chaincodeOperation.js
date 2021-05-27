@@ -1,9 +1,12 @@
 const LifecycleProposal = require('khala-fabric-admin/lifecycleProposal');
 const {waitForTx} = require('./eventHub');
+const {sleep} = require('khala-light-util');
+const assert = require('assert');
 const ChaincodeAction = require('./chaincodeAction');
 const {emptyChannel} = require('khala-fabric-admin/channel');
 const Policy = require('khala-fabric-formatter/policy');
 const GatePolicy = require('khala-fabric-formatter/gatePolicy');
+const {CommonResponseStatus: {SERVICE_UNAVAILABLE}} = require('khala-fabric-formatter/constants');
 
 const {buildCollectionConfig} = require('khala-fabric-admin/SideDB');
 
@@ -105,7 +108,17 @@ class ChaincodeOperation extends ChaincodeAction {
 
 	}
 
-	async approve({name, sequence, PackageID, version}, orderer) {
+	/**
+	 *
+	 * @param name
+	 * @param sequence
+	 * @param PackageID
+	 * @param version
+	 * @param orderer
+	 * @param {number} [waitForConsensus] millisecond to sleep between retry and get raft leader elected
+	 * @return {Promise<*>}
+	 */
+	async approve({name, sequence, PackageID, version}, orderer, waitForConsensus) {
 		version = version || ChaincodeOperation._defaultVersion(sequence);
 		const lifecycleProposal = new LifecycleProposal(this.identityContext, this.channel, this.endorsers, this.logger);
 		this.assign(lifecycleProposal);
@@ -115,8 +128,29 @@ class ChaincodeOperation extends ChaincodeAction {
 			sequence,
 		}, PackageID);
 		this.endorseResultInterceptor(result);
-		const commitResult = await lifecycleProposal.commit([orderer.committer]);
-		this.logger.info('approve:commit', commitResult);
+		const _commit = async () => {
+			const commitResult = await lifecycleProposal.commit([orderer.committer]);
+
+			this.logger.info('approve:commit', commitResult);
+			const {status, info} = commitResult;
+			if (status === SERVICE_UNAVAILABLE && info === 'no Raft leader') {
+				if (waitForConsensus) {
+					await sleep(waitForConsensus, this.logger);
+					return await _commit();
+				} else {
+					const err = Error(info);
+					Object.assign(err, {status});
+					throw err;
+				}
+			}
+			assert.strictEqual(status, 'SUCCESS');
+			assert.strictEqual(info, '');
+			return commitResult;
+		};
+
+		await _commit();
+
+
 		const eventHub = this.newEventHub();
 		try {
 			await waitForTx(eventHub, this.identityContext);

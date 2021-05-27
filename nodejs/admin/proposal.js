@@ -67,6 +67,7 @@ class ProposalManager extends Proposal {
 	 *
 	 * @param {Committer[]} targets
 	 * @param [requestTimeout]
+	 * @return Promise<CommitResponse|?>
 	 */
 	async commit(targets, {requestTimeout} = {}) {
 		const commit = new Commit(this.chaincodeId, this.channel, this);

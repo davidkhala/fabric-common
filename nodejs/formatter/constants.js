@@ -164,8 +164,17 @@ const Status = {
  *
  * @enum {string}
  */
-const BroadcastResponseStatus = {
+const CommonResponseStatus = {
 	SUCCESS: 'SUCCESS',
+	SERVICE_UNAVAILABLE: 'SERVICE_UNAVAILABLE',
+	NOT_FOUND: 'NOT_FOUND'
+};
+/**
+ *
+ * @enum {string}
+ */
+const BroadcastResponseStatus = {
+	SUCCESS: CommonResponseStatus.SUCCESS,
 	BAD_REQUEST: 'BAD_REQUEST'
 };
 module.exports = {
@@ -186,5 +195,6 @@ module.exports = {
 	ChannelGroupType,
 	DiscoveryResultType,
 	MspType,
+	CommonResponseStatus,
 };
 

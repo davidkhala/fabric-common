@@ -1,4 +1,9 @@
 /**
+ * @typedef {Object} CommitResponse
+ * @property {CommonResponseStatus} status
+ * @property {string} info
+ */
+/**
  * @typedef {string} OrgName organization name (MSPName), mapping to MSP ID
  */
 /**
