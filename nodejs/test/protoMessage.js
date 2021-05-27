@@ -32,8 +32,7 @@ describe('ApplicationPolicy', () => {
 				'1-of': [{signedBy: 0}, {signedBy: 1}]
 			}
 		};
-		const policy = new Policy();
-		const signature_policy = policy.buildSignaturePolicyEnvelope(endorsementPolicy);
+		const signature_policy = Policy.buildSignaturePolicyEnvelope(endorsementPolicy);
 	});
 
 });

@@ -20,7 +20,7 @@ jobs:
       if: ${{ matrix.os == 'macos-latest' }}
     - uses: actions/checkout@v2
     - run: ./install.sh softHSMInstall
-    - run: ./install.sh fabricInstall -d
+    - run: ./install.sh fabricInstall -d -s
     - run: ./install.sh
     - run: ./bash/test/shunit2Install.sh
       name: setup bash

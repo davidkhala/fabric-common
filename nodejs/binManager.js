@@ -271,15 +271,13 @@ class BinManager {
 				const CMD = `${this.binPath}/configtxgen -inspectBlock ${blockFile} -profile ${profile} -configPath ${configPath}`;
 				this.logger.info('CMD', CMD);
 				const result = execSync(CMD);
-				this.logger.error('stderr[start]\n', result.stderr, '[end]stderr');
-				return JSON.parse(result.stdout);
+				return JSON.parse(result);
 			},
 			viewChannel: async (channelFile) => {
 				const CMD = `${this.binPath}/configtxgen -inspectChannelCreateTx ${channelFile} -profile ${profile} -channelID ${channelName} -configPath ${configPath}`;
 				this.logger.info('CMD', CMD);
 				const result = execSync(CMD);
-				this.logger.error('stderr[start]\n', result.stderr, '[end]stderr');
-				return JSON.parse(result.stdout);
+				return JSON.parse(result);
 			}
 		};
 	}
