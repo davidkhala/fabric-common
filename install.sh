@@ -42,7 +42,12 @@ else
 	if [[ -z "$CI" ]]; then
 		curl --silent --show-error https://raw.githubusercontent.com/davidkhala/docker-manager/master/install.sh | bash -s installDocker
 		nodejsInstall="curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/install.sh"
-		$nodejsInstall | bash -s nodeGYPDependencies
-		$nodejsInstall | bash -s install12
+		if [[ $(uname) == "Darwin" ]]; then
+			# TODO build-essential
+			brew install python && true
+		else	
+			$nodejsInstall | bash -s nodeGYPDependencies
+		fi
+		$nodejsInstall | bash -s LTS
 	fi
 fi
