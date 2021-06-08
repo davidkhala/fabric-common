@@ -6,7 +6,7 @@
     "fabric-client": "latest-1.4",
     "khala-fabric-formatter": "latest-1.4",
     "khala-fabric-protos": "latest-1.4",
-    "khala-nodeutils": "^0.8.5"
+    "khala-nodeutils": "latest"
   },
   "publishConfig": {
     "tag": "latest-1.4"

@@ -510,8 +510,8 @@ exports.channelUpdate = async (channel, orderer, configChangeCallback, signature
 				const BinManager = require('./binManager');
 				const binManager = new BinManager();
 
-				const updatedProto = await binManager.configtxlatorCMD.encode('common.Config', updateConfigJSON);
-				modified_config_proto = await binManager.configtxlatorCMD.computeUpdate(channelName, configProto, updatedProto);
+				const updatedProto = binManager.configtxlatorCMD.encode('common.Config', updateConfigJSON);
+				modified_config_proto = binManager.configtxlatorCMD.computeUpdate(channelName, configProto, updatedProto);
 			}
 			config = Buffer.from(modified_config_proto, 'binary');
 		}

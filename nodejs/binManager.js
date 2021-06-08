@@ -1,5 +1,4 @@
-const {exec, execResponsePrint, execDetach, killProcess, findProcess} = require('khala-nodeutils/devOps');
-const yaml = require('khala-nodeutils/yaml');
+const {execSync, execDetach, killProcess, findProcess} = require('khala-nodeutils/devOps');
 const path = require('path');
 const fs = require('fs');
 const {createTmpFile, createTmpDir} = require('khala-nodeutils/tmp');
@@ -28,12 +27,12 @@ class BinManager {
 			 * @param {string} inputFile A file containing the JSON document.
 			 * @param {string} outputFile A file to write the output to.
 			 */
-			encodeFile: async (type, {inputFile, outputFile}) => {
+			encodeFile: (type, {inputFile, outputFile}) => {
 				if (!['common.Config', 'common.ConfigUpdate'].includes(type)) {
 					throw Error(`Unsupported encode type: ${type}`);
 				}
 				const CMD = this._buildCMD('configtxlator', `proto_encode --type=${type} --input=${inputFile} --output=${outputFile}`);
-				await exec(CMD);
+				execSync(CMD);
 			},
 			/**
 			 *
@@ -41,12 +40,12 @@ class BinManager {
 			 * @param {json} updateConfigJSON
 			 * @return {Buffer}
 			 */
-			encode: async (type, updateConfigJSON) => {
+			encode: (type, updateConfigJSON) => {
 
 				const [tmpJSONFile, t1] = createTmpFile({postfix: '.json'});
 				const [tmpFile, t2] = createTmpFile();
 				fs.writeFileSync(tmpJSONFile, updateConfigJSON);
-				await this.configtxlatorCMD.encodeFile(type, {inputFile: tmpJSONFile, outputFile: tmpFile});
+				this.configtxlatorCMD.encodeFile(type, {inputFile: tmpJSONFile, outputFile: tmpFile});
 				const returned = fs.readFileSync(tmpFile);
 				t1();
 				t2();
@@ -59,25 +58,25 @@ class BinManager {
 			 * @param {string} outputFile A file to write the JSON document to.
 			 * @return {json} original_config
 			 */
-			decodeFile: async (type, {inputFile, outputFile}) => {
+			decodeFile: (type, {inputFile, outputFile}) => {
 				if (!['common.Config'].includes(type)) {
 					throw Error(`Unsupported encode type: ${type}`);
 				}
 				const CMD = this._buildCMD('configtxlator', `proto_decode --type=${type} --input=${inputFile} ${outputFile ? `--output=${outputFile}` : ''}`);
-				await exec(CMD);
+				execSync(CMD);
 			},
 			/**
 			 *
 			 * @param type
 			 * @param original_config_proto
-			 * @return {Promise<json|string>} original_config
+			 * @return {json|string} original_config
 			 */
-			decode: async (type, original_config_proto) => {
+			decode: (type, original_config_proto) => {
 				const [tmpFile, t1] = createTmpFile();
 				const [tmpJSONFile, t2] = createTmpFile({postfix: '.json'});
 				fs.writeFileSync(tmpFile, original_config_proto);
 
-				await this.configtxlatorCMD.decodeFile(type, {inputFile: tmpFile, outputFile: tmpJSONFile});
+				this.configtxlatorCMD.decodeFile(type, {inputFile: tmpFile, outputFile: tmpJSONFile});
 				const returned = JSON.stringify(require(tmpJSONFile), null, 2);
 
 				t1();
@@ -91,24 +90,24 @@ class BinManager {
 			 * @param {string} updated The updated config message.(file path)
 			 * @param {string} outputFile A file to write the config update message to. //TODO fabric document "A file to write the JSON document to."
 			 */
-			computeUpdateFile: async (channelID, original, updated, outputFile) => {
+			computeUpdateFile: (channelID, original, updated, outputFile) => {
 				const CMD = this._buildCMD('configtxlator', `compute_update --channel_id=${channelID} --original=${original} --updated=${updated}  --output=${outputFile}`);
-				await exec(CMD);
+				return execSync(CMD);
 			},
 			/**
 			 *
 			 * @param channelID
 			 * @param {Buffer} original_config_proto The original config message
 			 * @param {Buffer} updated_config_proto The updated config message
-			 * @return {Promise<Buffer>} modified_config_proto
+			 * @return {Buffer} modified_config_proto
 			 */
-			computeUpdate: async (channelID, original_config_proto, updated_config_proto) => {
+			computeUpdate: (channelID, original_config_proto, updated_config_proto) => {
 				const [tmpFileOriginal, t1] = createTmpFile();
 				const [tmpFileUpdated, t2] = createTmpFile();
 				const [tmpFileOutput, t3] = createTmpFile();
 				fs.writeFileSync(tmpFileOriginal, original_config_proto);
 				fs.writeFileSync(tmpFileUpdated, updated_config_proto);
-				await this.configtxlatorCMD.computeUpdateFile(channelID, tmpFileOriginal, tmpFileUpdated, tmpFileOutput);
+				this.configtxlatorCMD.computeUpdateFile(channelID, tmpFileOriginal, tmpFileUpdated, tmpFileOutput);
 				const returned = fs.readFileSync(tmpFileOutput);
 				t1();
 				t2();
@@ -151,7 +150,7 @@ class BinManager {
 			 * @param {string} localMspId
 			 * @param {string} mspConfigPath
 			 */
-			signconfigtx: async (configtxUpdateFile, localMspId, mspConfigPath) => {
+			signconfigtx: (configtxUpdateFile, localMspId, mspConfigPath) => {
 				const [FABRIC_CFG_PATH, t1] = createTmpDir();
 				fs.writeFileSync(path.resolve(FABRIC_CFG_PATH, 'core.yml'), '');
 				process.env.FABRIC_CFG_PATH = FABRIC_CFG_PATH;
@@ -159,9 +158,9 @@ class BinManager {
 				process.env.CORE_PEER_MSPCONFIGPATH = mspConfigPath;
 				const CMD = this._buildCMD('peer', `channel signconfigtx --file ${configtxUpdateFile}`);
 				this.logger.info('CMD', CMD);
-				const result = await exec(CMD);
-				execResponsePrint(result);
+				const result = execSync(CMD);
 				t1();
+				return result;
 			},
 
 			/**
@@ -175,9 +174,9 @@ class BinManager {
 			 * @param mspConfigPath
 			 * @param outputFile
 			 * @param [instantiatePolicy]
-			 * @return {Promise<*>}
+			 * @return outputFile
 			 */
-			package: async ({chaincodeId, chaincodePath, chaincodeType, chaincodeVersion, metadataPath},
+			package: ({chaincodeId, chaincodePath, chaincodeType, chaincodeVersion, metadataPath},
 				{localMspId, mspConfigPath}, outputFile, instantiatePolicy) => {
 				const [FABRIC_CFG_PATH, t1] = createTmpDir();
 				fs.writeFileSync(path.resolve(FABRIC_CFG_PATH, 'core.yml'), '');
@@ -193,8 +192,7 @@ class BinManager {
 				}
 				const CMD = this._buildCMD('peer', `chaincode package ${optionTokens} ${outputFile}`);
 				this.logger.info('CMD', CMD);
-				const result = await exec(CMD);
-				execResponsePrint(result);
+				execSync(CMD);
 				t1();
 				delete process.env.FABRIC_CFG_PATH;
 				delete process.env.CORE_PEER_LOCALMSPID;
@@ -211,50 +209,29 @@ class BinManager {
 
 		return {
 
-			genBlock: async (outputFile) => {
+			genBlock: (outputFile) => {
 				if (!channelName) {
 					channelName = 'testchainid';
 				}
 				const CMD = `${this.binPath}/configtxgen -outputBlock ${outputFile} -profile ${profile} -channelID ${channelName} -configPath ${configPath}`;
 				this.logger.info('CMD', CMD);
-				const result = await exec(CMD);
-				execResponsePrint(result);
+				return execSync(CMD);
 			},
-			genChannel: async (outputFile) => {
+			genChannel: (outputFile) => {
 				const CMD = `${this.binPath}/configtxgen -outputCreateChannelTx ${outputFile} -profile ${profile} -channelID ${channelName} -configPath ${configPath}`;
 				this.logger.info('CMD', CMD);
-				const result = await exec(CMD);
-				execResponsePrint(result);
+				return execSync(CMD);
 			},
-			genAnchorPeers: async (outputFile, asOrg) => {
 
-				const configtxYamlCheck = () => {
-					const readResult = yaml.read(configtxYaml);
-					const orgs = readResult.Profiles[profile].Application.Organizations;
-					if (!Array.isArray(orgs)) {
-						throw Error('invalid configYaml:Organizations is not array');
-					}
-				};
-				configtxYamlCheck();
-
-				const CMD = `${this.binPath}/configtxgen -outputAnchorPeersUpdate ${outputFile} -profile ${profile} -channelID ${channelName} -asOrg ${asOrg} -configPath ${configPath}`;
-				this.logger.info('CMD', CMD);
-				const result = await exec(CMD);
-				execResponsePrint(result);
-			},
-			viewBlock: async (blockFile) => {
+			viewBlock: (blockFile) => {
 				const CMD = `${this.binPath}/configtxgen -inspectBlock ${blockFile} -profile ${profile} -configPath ${configPath}`;
 				this.logger.info('CMD', CMD);
-				const result = await exec(CMD);
-				this.logger.error('stderr[start]\n', result.stderr, '[end]stderr');
-				return JSON.parse(result.stdout);
+				return JSON.parse(execSync(CMD));
 			},
-			viewChannel: async (channelFile) => {
+			viewChannel: (channelFile) => {
 				const CMD = `${this.binPath}/configtxgen -inspectChannelCreateTx ${channelFile} -profile ${profile} -channelID ${channelName} -configPath ${configPath}`;
 				this.logger.info('CMD', CMD);
-				const result = await exec(CMD);
-				this.logger.error('stderr[start]\n', result.stderr, '[end]stderr');
-				return JSON.parse(result.stdout);
+				return JSON.parse(execSync(CMD));
 			}
 		};
 	}

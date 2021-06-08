@@ -6,12 +6,12 @@
     "lerna": "lerna bootstrap --no-ci"
   },
   "dependencies": {
-    "khala-axios": "^1.0.0",
-    "khala-dockerode": "^1.0.2",
+    "khala-axios": "latest",
+    "khala-dockerode": "latest",
     "khala-fabric-sdk-node-builder": "latest-1.4",
-    "khala-level": "^0.0.3",
-    "khala-logger": "^0.2.0",
-    "khala-nodeutils": "^0.8.3"
+    "khala-level": "latest",
+    "khala-logger": "latest",
+    "khala-nodeutils": "latest"
   },
   "publishConfig": {
     "tag": "latest-1.4"
