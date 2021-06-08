@@ -46,27 +46,6 @@ install_libtool() {
 	fi
 }
 
-golang_dep() {
-	echo "install dep..."
-	if [[ $(uname) == "Darwin" ]]; then
-		brew install dep
-	else
-		if [[ -z "$GOBIN" ]]; then
-			if [[ -z "$GOPATH" ]]; then
-				echo install dep failed: GOPATH not found
-				exit 1
-			fi
-			export GOBIN=$GOPATH/bin/
-		fi
-		mkdir -p $GOBIN
-		curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-		if ! echo $PATH | grep "$GOBIN"; then
-			export PATH=$PATH:$GOBIN # ephemeral
-		fi
-	fi
-	dep version
-}
-
 java() {
 	echo "[WARNING] This is to install OpenJDK, Oracle requires fee to use Java in production."
 	sudo apt update
@@ -97,7 +76,7 @@ softHSM() {
 	fi
 }
 fabricInstall() {
-	curl -sSL http://bit.ly/2ysbOFE | bash -s -- 1.4.11 1.5.0 0.4.22 -s
+	curl -sSL http://bit.ly/2ysbOFE | bash -s -- 1.4.12 1.4.9 0.4.22 -s
 	docker pull couchdb:2.3.1
 }
 if [[ -n "$fcn" ]]; then

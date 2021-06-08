@@ -1,6 +1,10 @@
 {
   "name": "khala-fabric-sdk-node",
   "version": "1.4.9-0.0.3",
+  "scripts": {
+    "test": "mocha test",
+    "lerna": "lerna bootstrap --no-ci"
+  },
   "dependencies": {
     "khala-axios": "^1.0.0",
     "khala-dockerode": "^1.0.2",

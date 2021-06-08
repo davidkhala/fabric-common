@@ -1,13 +1,12 @@
 # fabric-common
-[![Build Status](https://travis-ci.com/davidkhala/fabric-common.svg?branch=release-1.4)](https://travis-ci.com/davidkhala/fabric-common)
 
-Current version 1.4.8
+Current version 1.4.12
 ## Prerequisite
 - docker: 17.06.2-ce +
 - docker-compose: 1.14.0 +
-- golang: 1.13.x
+- golang: 1.14.x
 - fabric-node-sdk:
-    - nodejs: 10.x
+    - nodejs: 10.x, 8.x
     - npm: 6 + 
     - Python: 2.7
 ## Mono repository division
