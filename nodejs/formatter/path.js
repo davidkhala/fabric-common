@@ -4,7 +4,13 @@ const findKeyFiles = (dir) => {
 	const files = fs.readdirSync(dir);
 	return files.filter((fileName) => fileName.endsWith('_sk')).map((fileName) => path.resolve(dir, fileName));
 };
-
+const getOneKeystore = (dir) => {
+	const files = fs.readdirSync(dir);
+	const filename = files.find((fileName) => fileName.endsWith('_sk'));
+	if (filename) {
+		return fs.readFileSync(path.resolve(dir, filename)).toString();
+	}
+};
 /*
  * Make sure there's a start line with '-----BEGIN CERTIFICATE-----'
  * and end line with '-----END CERTIFICATE-----', so as to be compliant
@@ -48,4 +54,5 @@ module.exports = {
 	findKeyFiles,
 	findCertFiles,
 	normalizeX509,
+	getOneKeystore,
 };
