@@ -1,12 +1,16 @@
 const {execSync} = require('child_process');
 /**
  * make sure at least 4G RAM, otherwise "Error: spawn ENOMEM"
- * @returns {Promise<string>} stdout:GOPATH
+ * @returns {string} GOPATH
  */
-exports.getGOPATH = () => {
-	return execSync('go env GOPATH', {encoding: 'utf-8'});
+const getGOPATH = () => {
+	return execSync('go env GOPATH', {encoding: 'utf-8'}).trim();
 };
-exports.setGOPATH = async () => {
-	process.env.GOPATH = await exports.getGOPATH();
+const setGOPATH = () => {
+	process.env.GOPATH = getGOPATH();
+};
+module.exports = {
+	getGOPATH,
+	setGOPATH,
 };
 

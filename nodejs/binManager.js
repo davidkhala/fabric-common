@@ -169,7 +169,7 @@ class BinManager {
 			 * @param chaincodePath
 			 * @param [chaincodeType]
 			 * @param chaincodeVersion
-			 * @param [metadataPath]
+			 * @param [metadataPath] TODO WIP
 			 * @param localMspId
 			 * @param mspConfigPath
 			 * @param outputFile
