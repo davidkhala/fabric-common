@@ -49,6 +49,11 @@ exports.install = async (peers,
 	}
 
 	const [proposalResponses, proposal] = await client.installChaincode(request);
+	if (proposalResponses.find(proposalResponse => proposalResponse instanceof Error)) {
+		const err = Error('Error: installChaincode');
+		Object.assign(err, {errors: proposalResponses});
+		throw err;
+	}
 	return proposalResponses;
 
 };

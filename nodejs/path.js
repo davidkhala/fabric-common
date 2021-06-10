@@ -245,4 +245,7 @@ class CryptoPath {
 
 }
 
-exports.CryptoPath = CryptoPath;
+module.exports = {
+	CryptoPath,
+};
+
