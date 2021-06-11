@@ -39,10 +39,11 @@ const fsExtra = require('fs-extra');
 /**
  * overwrite couchdb index file
  * @param {string} metaINFPath file path
- * @param {string} fileName should ends with ".json" default: index.json
- * @param {string} fields sorting fields
+ * @param {string} [collection] work as a private data collection if specified, otherwise as common state data
+ * @param {string} [fileName] should ends with ".json" default: index.json
+ * @param {string} [fields] sorting fields
  */
-exports.couchDBIndex = (metaINFPath, fileName, ...fields) => {
+exports.couchDBIndex = (metaINFPath, collection, fileName, ...fields) => {
 	if (!fileName) {
 		fileName = 'index.json';
 	} else {
@@ -54,7 +55,13 @@ exports.couchDBIndex = (metaINFPath, fileName, ...fields) => {
 			throw err;
 		}
 	}
-	const target = path.resolve(metaINFPath, 'statedb', 'couchdb', 'indexes', fileName);
+	let target;
+	if (collection) {
+		target = path.resolve(metaINFPath, 'statedb', 'couchdb', 'collections', collection, 'indexes', fileName);
+	} else {
+		target = path.resolve(metaINFPath, 'statedb', 'couchdb', 'indexes', fileName);
+	}
+
 	const object = {
 		index: {
 			fields
