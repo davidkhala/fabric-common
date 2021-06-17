@@ -2,6 +2,7 @@ const {execSync, execDetach, killProcess, findProcess} = require('khala-nodeutil
 const path = require('path');
 const fs = require('fs');
 const {createTmpFile, createTmpDir} = require('khala-nodeutils/tmp');
+const expectedBinaries = ['configtxgen', 'configtxlator', 'cryptogen', 'discover', 'fabric-ca-client', 'fabric-ca-server', 'idemixgen', 'orderer', 'osnadmin', 'peer'];
 
 class BinManager {
 	_buildCMD(executable, ...args) {
@@ -20,6 +21,14 @@ class BinManager {
 		if (!fs.lstatSync(binPath).isDirectory()) {
 			throw Error('BinManager: environment <binPath> is not a directory');
 		}
+		const files = fs.readdirSync(binPath);
+
+		expectedBinaries.every(value => {
+			if (!files.includes(value)) {
+				throw Error(`binary ${value} not found in binPath ${binPath}`);
+			}
+		});
+
 		this.logger = logger;
 		this.binPath = binPath;
 		// TODO how to use streaming buffer to exec
@@ -196,13 +205,12 @@ class BinManager {
 			 * @param chaincodePath
 			 * @param [chaincodeType]
 			 * @param chaincodeVersion
-			 * @param [metadataPath]
 			 * @param localMspId
 			 * @param mspConfigPath
 			 * @param outputFile
 			 * @param [instantiatePolicy]
 			 */
-			package: async ({chaincodeId, chaincodePath, chaincodeType, chaincodeVersion, metadataPath}, {
+			package: async ({chaincodeId, chaincodePath, chaincodeType, chaincodeVersion}, {
 				localMspId,
 				mspConfigPath
 			}, outputFile, instantiatePolicy) => {

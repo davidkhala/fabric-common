@@ -10,7 +10,7 @@
     "tag": "latest"
   },
   "devDependencies": {
-    "mocha": "latest"
+    "mocha": "latest-6"
   },
   "repository": {
     "type": "git",

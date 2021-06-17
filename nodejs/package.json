@@ -19,7 +19,7 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "lerna": "latest",
-    "mocha": "latest"
+    "mocha": "latest-6"
   },
   "keywords": [
     "fabric-sdk-node",
