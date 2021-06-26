@@ -31,7 +31,7 @@ const defaultGRPCOptions = {
  * @param {Object} opts
  * @param [logger]
  */
-const RemoteOptsTransform = (opts = defaultGRPCOptions, logger = console) => {
+const RemoteOptsTransform = (opts = {}, logger = console) => {
 	const {sslTargetNameOverride, host, waitForReadyTimeout, requestTimeout} = opts;
 
 	if (host && host.toLowerCase() !== host) {
@@ -55,11 +55,9 @@ const RemoteOptsTransform = (opts = defaultGRPCOptions, logger = console) => {
 			delete opts[key];
 		}
 	}
-	return opts;
+	return Object.assign({}, defaultGRPCOptions, opts);
 };
 
-
-exports.RemoteOptsTransform = RemoteOptsTransform;
 
 /**
  * Valid logging levels are case-insensitive string
@@ -82,5 +80,6 @@ const rootCAsStringBuilder = ({caCert, rootCAs}) => {
 	return result.join(',');
 };
 
-exports.rootCAsStringBuilder = rootCAsStringBuilder;
-exports.LoggingLevel = LoggingLevel;
+module.exports = {
+	rootCAsStringBuilder, defaultGRPCOptions, LoggingLevel, RemoteOptsTransform
+};
