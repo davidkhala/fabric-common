@@ -21,6 +21,7 @@ const SystemChaincodeID = {
 	CSCC: 'cscc',
 	VSCC: 'vscc',
 	ESCC: 'escc',
+	LifeCycle: '_lifecycle',
 };
 /**
  * @enum {string}
