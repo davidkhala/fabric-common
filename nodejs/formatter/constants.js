@@ -18,7 +18,9 @@ const ChannelGroupType = {
 const SystemChaincodeID = {
 	LSCC: 'lscc',
 	QSCC: 'qscc',
-	CSCC: 'cscc'
+	CSCC: 'cscc',
+	VSCC: 'vscc',
+	ESCC: 'escc',
 };
 /**
  * @enum {string}

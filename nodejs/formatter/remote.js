@@ -16,13 +16,22 @@
  *  the application can work around the client TLS verify failure by setting this property to the value of the server certificate's hostname
  */
 
+const defaultGRPCOptions = {
+	'grpc.max_receive_message_length': -1,
+	'grpc.max_send_message_length': -1,
+	'grpc.keepalive_time_ms': 120000,
+	'grpc.http2.min_time_between_pings_ms': 120000,
+	'grpc.keepalive_timeout_ms': 20000,
+	'grpc.http2.max_pings_without_data': 0,
+	'grpc.keepalive_permit_without_calls': 1,
+};
 
 /**
  *
  * @param {Object} opts
  * @param [logger]
  */
-const RemoteOptsTransform = (opts = {}, logger = console) => {
+const RemoteOptsTransform = (opts = defaultGRPCOptions, logger = console) => {
 	const {sslTargetNameOverride, host, waitForReadyTimeout, requestTimeout} = opts;
 
 	if (host && host.toLowerCase() !== host) {

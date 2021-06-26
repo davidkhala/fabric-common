@@ -41,19 +41,8 @@ const SystemChaincodeFunctions = {
 	}
 };
 
-/**
- *
- * @enum {string}
- */
-const SystemChaincodeID = {
-	QSCC: 'qscc',
-	CSCC: 'cscc',
-	LifeCycle: '_lifecycle'
-};
-
 module.exports = {
-	SystemChaincodeFunctions,
-	SystemChaincodeID,
+	SystemChaincodeFunctions
 };
 
 
