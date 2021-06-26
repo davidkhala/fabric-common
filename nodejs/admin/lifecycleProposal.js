@@ -1,6 +1,5 @@
 const ProposalManager = require('./proposal');
 const {
-	SystemChaincodeID: {LifeCycle},
 	SystemChaincodeFunctions: {
 		_lifecycle: {
 			InstallChaincode, QueryInstalledChaincodes, QueryInstalledChaincode, ApproveChaincodeDefinitionForMyOrg,
@@ -8,6 +7,7 @@ const {
 		}
 	}
 } = require('khala-fabric-formatter/systemChaincode');
+const {SystemChaincodeID: {LifeCycle}} = require('khala-fabric-formatter/constants');
 const fabprotos = require('fabric-protos');
 const protosProtos = fabprotos.protos;
 const lifeCycleProtos = fabprotos.lifecycle;

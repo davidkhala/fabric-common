@@ -1,7 +1,7 @@
 const Utils = require('fabric-common/lib/Utils');
 const fabprotos = require('fabric-protos');
 const commonProto = fabprotos.common;
-const {buildSignatureHeader, buildChannelHeader, buildHeader, buildPayload, buildSeekPayload} = require('../formatter/protoTranslator');
+const {buildSignatureHeader, buildChannelHeader, buildHeader, buildPayload, buildSeekPayload} = require('khala-fabric-formatter/protoTranslator');
 const {DeliverResponseStatus: {SERVICE_UNAVAILABLE}, DeliverResponseType: {STATUS}} = require('khala-fabric-formatter/eventHub');
 const sleep = (ms) => {
 	return new Promise(resolve => setTimeout(resolve, ms));

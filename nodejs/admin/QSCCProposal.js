@@ -1,10 +1,10 @@
 const ProposalManager = require('./proposal');
 const {
-	SystemChaincodeID: {QSCC},
 	SystemChaincodeFunctions: {
 		qscc: {GetBlockByNumber, GetChainInfo, GetBlockByHash, GetTransactionByID}
 	}
 } = require('khala-fabric-formatter/systemChaincode');
+const {SystemChaincodeID: {QSCC}} = require('khala-fabric-formatter/constants');
 
 class QSCCProposal extends ProposalManager {
 	constructor(identityContext, channel, endorsers) {

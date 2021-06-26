@@ -4,12 +4,12 @@ const fs = require('fs');
 
 const ChannelUpdate = require('khala-fabric-admin/channelUpdate');
 const SigningIdentityUtil = require('khala-fabric-admin/signingIdentity');
-const {extractConfigUpdate, extractLastConfigIndex, assertConfigBlock, extractConfigEnvelopeFromBlockData} = require('khala-fabric-admin/protoTranslator');
+const {extractConfigUpdate, extractLastConfigIndex, assertConfigBlock, extractConfigEnvelopeFromBlockData} = require('khala-fabric-formatter/protoTranslator');
 const IdentityContext = require('fabric-common/lib/IdentityContext');
 const EventHub = require('khala-fabric-admin/eventHub');
 const {getSingleBlock} = require('./eventHub');
 const CSCCProposal = require('khala-fabric-admin/CSCCProposal');
-const {fromEvent} = require('khala-fabric-admin/blockEncoder');
+const {fromEvent} = require('khala-fabric-formatter/blockEncoder');
 const {BlockNumberFilterType: {NEWEST}} = require('khala-fabric-formatter/eventHub');
 /**
  * different from `peer channel create`, this will not response back with genesisBlock for this channel.

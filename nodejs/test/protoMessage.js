@@ -1,7 +1,6 @@
 const fabprotos = require('fabric-protos');
 const protosProtos = fabprotos.protos;
 const commonProtos = fabprotos.common;
-const LifecycleProposal = require('../admin/lifecycleProposal');
 const Policy = require('../formatter/policy');
 describe('ApplicationPolicy', () => {
 	it('empty SignaturePolicyEnvelope', () => {

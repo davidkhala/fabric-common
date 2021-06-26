@@ -8,7 +8,7 @@ const Policy = require('khala-fabric-formatter/policy');
 const GatePolicy = require('khala-fabric-formatter/gatePolicy');
 const {CommonResponseStatus: {SERVICE_UNAVAILABLE}} = require('khala-fabric-formatter/constants');
 
-const {buildCollectionConfig} = require('khala-fabric-admin/SideDB');
+const {buildCollectionConfig} = require('khala-fabric-formatter/SideDB');
 
 class ChaincodeOperation extends ChaincodeAction {
 	/**
