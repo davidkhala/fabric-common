@@ -32,6 +32,12 @@ class ChaincodeOperation extends ChaincodeAction {
 		return sequence.toString();
 	}
 
+	/**
+	 * Install phase does not require `init_required` flag
+	 * @param chaincodePackagePath
+	 * @param useDynamicTimeout
+	 * @return {Promise<*>}
+	 */
 	async install(chaincodePackagePath, useDynamicTimeout) {
 		const lifeCycleProposal = new LifecycleProposal(this.identityContext, emptyChannel(''), this.endorsers, this.logger);
 
