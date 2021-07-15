@@ -5,7 +5,7 @@ const Commit = require('fabric-common/lib/Commit');
  * @typedef {Object} BuildProposalRequest
  * @property {string} [fcn] - Optional. The function name. May be used by
  * the chaincode to control the flow within the chaincode. Default 'invoke'
- * @property {string[]} [args] - Optional. The arguments needed by the
+ * @property {string[]|Buffer[]} [args] - Optional. The arguments needed by the
  * chaincode execution. These should be strings or byte buffers.
  * These will be converted into byte buffers before building the protobuf
  * object to be sent to the fabric peer for endorsement.

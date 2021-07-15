@@ -1,8 +1,6 @@
-const toBufferCompatibleApply = (protobufMessage) => {
-	protobufMessage.toBuffer = () => {
-		return protobufMessage.prototype.encode(protobufMessage).finish();
-	};
-};
+const BufferFrom = (protobufMessage, asType = protobufMessage.constructor) => asType.encode(protobufMessage).finish();
+
 module.exports = {
-	toBufferCompatibleApply
+	BufferFrom,
+	ProtoFrom: (object, asType) => asType.fromObject(object)
 };

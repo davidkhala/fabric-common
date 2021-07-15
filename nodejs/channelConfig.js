@@ -6,6 +6,7 @@ const {getChannelConfigFromOrderer} = require('./channel');
 const BinManager = require('./binManager');
 const {ConfigtxlatorType} = require('khala-fabric-formatter/configtxlator');
 const ConfigFactory = require('khala-fabric-formatter/configFactory');
+const {BufferFrom} = require('khala-fabric-formatter/protobuf');
 const ChannelUpdate = require('khala-fabric-admin/channelUpdate');
 const SigningIdentityUtil = require('khala-fabric-admin/signingIdentity');
 const fabprotos = require('fabric-protos');
@@ -23,7 +24,7 @@ const commonProto = fabprotos.common;
 const getChannelConfigReadable = async (channelName, user, orderer, viaServer) => {
 
 	const configEnvelope = await getChannelConfigFromOrderer(channelName, user, orderer);
-	const protoBytes = commonProto.Config.encode(configEnvelope.config).finish() ;
+	const protoBytes = BufferFrom(configEnvelope.config, commonProto.Config);
 
 	let json;
 	if (viaServer) {

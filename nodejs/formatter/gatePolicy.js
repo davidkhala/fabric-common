@@ -8,6 +8,7 @@ const MSPRoleTypeInverse = {
 const GateClausePattern = /^(AND|OR)\(([\w,.\s()']+)\)$/;
 const RoleClausePattern = /^'([0-9A-Za-z.-]+)(\.)(admin|member|client|peer|orderer)'$/;
 const commonProtos = require('fabric-protos').common;
+const {BufferFrom, ProtoFrom} = require('khala-fabric-formatter/protobuf');
 
 /**
  *  Reference: `common/policydsl/policyparser.go`
@@ -18,18 +19,13 @@ class GatePolicy {
 	static buildMSPPrincipal(MSPRoleType, mspid) {
 		const newPrincipal = new commonProtos.MSPPrincipal();
 		newPrincipal.principal_classification = commonProtos.MSPPrincipal.Classification.ROLE;
-		const newRole = new commonProtos.MSPRole();
-		newRole.role = MSPRoleType;
-		newRole.msp_identifier = mspid;
-		newPrincipal.principal = commonProtos.MSPRole.encode(newRole).finish();
+		const newRole = {role: MSPRoleType, msp_identifier: mspid};
+		newPrincipal.principal = BufferFrom(newRole, commonProtos.MSPRole);
 		return newPrincipal;
 	}
 
 	static buildNOutOf({n, rules: SignaturePolicyArray}) {
-		const n_out_of = new commonProtos.SignaturePolicy.NOutOf();
-		n_out_of.n = n;
-		n_out_of.rules = SignaturePolicyArray;
-		return n_out_of;
+		return ProtoFrom({n, rules: SignaturePolicyArray}, commonProtos.SignaturePolicy.NOutOf);
 	}
 
 

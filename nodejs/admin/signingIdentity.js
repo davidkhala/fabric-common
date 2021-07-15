@@ -3,6 +3,7 @@ const fabprotos = require('fabric-protos');
 const commonProto = fabprotos.common;
 const {buildSignatureHeader, buildChannelHeader, buildHeader, buildPayload, buildSeekPayload} = require('khala-fabric-formatter/protoTranslator');
 const {DeliverResponseStatus: {SERVICE_UNAVAILABLE}, DeliverResponseType: {STATUS}} = require('khala-fabric-formatter/eventHub');
+const {BufferFrom, ProtoFrom} = require('khala-fabric-formatter/protobuf');
 const sleep = (ms) => {
 	return new Promise(resolve => setTimeout(resolve, ms));
 };
@@ -23,19 +24,17 @@ class SigningIdentityUtil {
 		}
 		const {signingIdentity} = this;
 
-		const signature_header_bytes = buildSignatureHeader({Creator: signingIdentity.serialize(), Nonce: nonce}, true);
+		const signature_header = buildSignatureHeader({Creator: signingIdentity.serialize(), Nonce: nonce}, true);
 
 		// get all the bytes to be signed together, then sign
-		const signing_bytes = Buffer.concat([signature_header_bytes, config]);
+		const signing_bytes = Buffer.concat([signature_header, config]);
 		const signature = Buffer.from(signingIdentity.sign(signing_bytes));
 
 		// build the return object
-		const proto_config_signature = new commonProto.ConfigSignature();
-		proto_config_signature.signature_header = signature_header_bytes;
-		proto_config_signature.signature = signature;
+		const proto_config_signature = ProtoFrom({signature_header, signature}, commonProto.ConfigSignature);
 
 		if (asBuffer) {
-			return commonProto.ConfigSignature.encode(proto_config_signature).finish();
+			return BufferFrom(proto_config_signature);
 		}
 		return proto_config_signature;
 	}
@@ -63,11 +62,9 @@ class SigningIdentityUtil {
 			signature = envelopeDecoded.signature;
 			payload = envelopeDecoded.payload;
 		} else {
-			const configUpdateEnvelope = new commonProto.ConfigUpdateEnvelope();
-			configUpdateEnvelope.config_update = config;
 			const signaturesDecoded = signatures.map(commonProto.ConfigSignature.decode);
-			configUpdateEnvelope.signatures = signaturesDecoded;
 
+			const configUpdateEnvelope = ProtoFrom({config_update: config, signatures: signaturesDecoded}, commonProto.ConfigUpdateEnvelope);
 			const channelHeader = buildChannelHeader({
 				Type: commonProto.HeaderType.CONFIG_UPDATE,
 				ChannelId: name,
@@ -81,7 +78,7 @@ class SigningIdentityUtil {
 			});
 			payload = buildPayload({
 				Header: header,
-				Data: commonProto.ConfigUpdateEnvelope.encode(configUpdateEnvelope).finish()
+				Data: BufferFrom(configUpdateEnvelope),
 			}, true);
 			signature = Buffer.from(signingIdentity.sign(payload));
 		}

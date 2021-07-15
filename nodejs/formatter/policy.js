@@ -26,6 +26,7 @@
  * @property {integer|MSPRoleType} [signedBy]
  */
 const commonProto = require('fabric-protos').common;
+const {BufferFrom} = require('khala-fabric-formatter/protobuf');
 
 class Policy {
 
@@ -50,8 +51,7 @@ class Policy {
 
 		const newPrincipal = new commonProto.MSPPrincipal();
 		newPrincipal.principal_classification = commonProto.MSPPrincipal.Classification.ROLE;
-
-		newPrincipal.principal = commonProto.MSPRole.encode({role: type, msp_identifier: mspid}).finish();
+		newPrincipal.principal = BufferFrom({role: type, msp_identifier: mspid}, commonProto.MSPRole);
 
 		return newPrincipal;
 	}

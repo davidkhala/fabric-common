@@ -1,5 +1,6 @@
 const fabprotos = require('fabric-protos');
 const {BlockNumberFilterType: {NEWEST, OLDEST}} = require('khala-fabric-formatter/eventHub');
+const {BufferFrom, ProtoFrom} = require('khala-fabric-formatter/protobuf');
 const commonProto = fabprotos.common;
 const ordererProto = fabprotos.orderer;
 const protosProto = fabprotos.protos;
@@ -38,7 +39,7 @@ const buildChannelHeader = ({Type, Version = 1, ChannelId, TxId, ChaincodeID, TL
 		headerExt.chaincode_id = chaincodeID;
 	}
 
-	channelHeader.extension = protosProto.ChaincodeHeaderExtension.encode(headerExt).finish();
+	channelHeader.extension = BufferFrom(headerExt);
 	channelHeader.timestamp = Timestamp || buildCurrentTimestamp(); // google.protobuf.Timestamp
 	if (TLSCertHash) {
 		channelHeader.tls_cert_hash = TLSCertHash;
@@ -48,16 +49,14 @@ const buildChannelHeader = ({Type, Version = 1, ChannelId, TxId, ChaincodeID, TL
 };
 
 /**
- *
+ * TODO No need anymore
  * @param Creator from Identity.js#serialize
  * @param Nonce from 'fabric-common/lib/Util.js#getNonce'
  */
 const buildSignatureHeader = ({Creator, Nonce}, asBuffer) => {
-	const signatureHeader = new commonProto.SignatureHeader();
-	signatureHeader.creator = Creator;
-	signatureHeader.nonce = Nonce;
+	const signatureHeader = ProtoFrom({creator: Creator, nonce: Nonce}, commonProto.SignatureHeader);
 	if (asBuffer) {
-		return commonProto.SignatureHeader.encode(signatureHeader).finish();
+		return BufferFrom(signatureHeader);
 	}
 	return signatureHeader;
 };
@@ -72,23 +71,22 @@ const buildHeader = ({Creator, Nonce, ChannelHeader}) => {
 
 	const header = new commonProto.Header();
 	header.signature_header = signatureHeaderBytes;
-	header.channel_header = commonProto.ChannelHeader.encode(ChannelHeader).finish();
+	header.channel_header = BufferFrom(ChannelHeader, commonProto.ChannelHeader);
 
 	return header;
 };
 /**
- *
+ * TODO not need anymore
  * @param {commonProto.Header} Header
  * @param {Buffer} Data
  * @param {boolean} [asBuffer]
  * @return {commonProto.Payload}
  */
 const buildPayload = ({Header, Data}, asBuffer) => {
-	const payload = new commonProto.Payload();
-	payload.header = Header;
-	payload.data = Data;
+	const payload = ProtoFrom({header: Header, data: Data}, commonProto.Payload);
+
 	if (asBuffer) {
-		return commonProto.Payload.encode(payload).finish();
+		return BufferFrom(payload);
 	}
 	return payload;
 };
@@ -136,15 +134,13 @@ const SeekBehavior = {
  * @param {SeekBehavior|string} [behavior]
  */
 const buildSeekInfo = (startSeekPosition, stopSeekPosition, behavior, asBuffer) => {
-	const seekInfo = new ordererProto.SeekInfo();
-	seekInfo.start = startSeekPosition;
-	seekInfo.stop = stopSeekPosition;
+	const seekInfo = ProtoFrom({start: startSeekPosition, stop: stopSeekPosition}, ordererProto.SeekInfo);
 	if (behavior) {
 		seekInfo.behavior = ordererProto.SeekInfo.SeekBehavior[behavior];
 	}
 	seekInfo.error_response = ordererProto.SeekInfo.SeekErrorResponse.STRICT;
 	if (asBuffer) {
-		return ordererProto.SeekInfo.encode(seekInfo).finish();
+		return BufferFrom(seekInfo);
 	}
 	return seekInfo;
 };

@@ -8,6 +8,7 @@ const {
 	}
 } = require('khala-fabric-formatter/systemChaincode');
 const {SystemChaincodeID: {LifeCycle}} = require('khala-fabric-formatter/constants');
+const {BufferFrom} = require('khala-fabric-formatter/protobuf');
 const fabprotos = require('fabric-protos');
 const protosProtos = fabprotos.protos;
 const lifeCycleProtos = fabprotos.lifecycle;
@@ -15,7 +16,7 @@ const {
 	CheckCommitReadinessArgs, InstallChaincodeResult, QueryInstalledChaincodeResult, QueryInstalledChaincodesResult,
 	CheckCommitReadinessResult, QueryChaincodeDefinitionResult, QueryChaincodeDefinitionsResult, ChaincodeSource,
 	ApproveChaincodeDefinitionForMyOrgArgs, CommitChaincodeDefinitionArgs, InstallChaincodeArgs,
-	QueryChaincodeDefinitionArgs, QueryChaincodeDefinitionsArgs,
+	QueryChaincodeDefinitionArgs,
 } = lifeCycleProtos;
 const fs = require('fs');
 const {getResponses} = require('khala-fabric-formatter/proposalResponse');
@@ -50,7 +51,7 @@ class LifecycleProposal extends ProposalManager {
 		 */
 		const buildProposalRequest = {
 			fcn: InstallChaincode,
-			args: [InstallChaincodeArgs.encode({chaincode_install_package: fileContent}).finish()],
+			args: [BufferFrom({chaincode_install_package: fileContent}, InstallChaincodeArgs)],
 		};
 		const result = await this.send(buildProposalRequest, {requestTimeout});
 		getResponses(result).forEach((response) => {
@@ -113,11 +114,11 @@ class LifecycleProposal extends ProposalManager {
 	 */
 	async queryInstalledChaincodes(packageId) {
 		let args;
-		const {QueryInstalledChaincodeArgs, QueryInstalledChaincodesArgs} = lifeCycleProtos;
+		const {QueryInstalledChaincodeArgs} = lifeCycleProtos;
 		if (packageId) {
-			args = [QueryInstalledChaincodeArgs.encode({package_id: packageId}).finish()];
+			args = [BufferFrom({package_id: packageId}, QueryInstalledChaincodeArgs)];
 		} else {
-			args = [QueryInstalledChaincodesArgs.encode({}).finish()];
+			args = [Buffer.from('')]; // lifeCycleProtos.QueryInstalledChaincodesArgs.encode({}).finish()
 		}
 		/**
 		 * @type {BuildProposalRequest}
@@ -153,7 +154,7 @@ class LifecycleProposal extends ProposalManager {
 	}
 
 	setValidationParameter(applicationPolicy) {
-		this.validation_parameter = ApplicationPolicy.encode(applicationPolicy).finish();
+		this.validation_parameter = BufferFrom(applicationPolicy, ApplicationPolicy);
 	}
 
 	/**
@@ -189,7 +190,7 @@ class LifecycleProposal extends ProposalManager {
 		 */
 		const buildProposalRequest = {
 			fcn: ApproveChaincodeDefinitionForMyOrg,
-			args: [ApproveChaincodeDefinitionForMyOrgArgs.encode(approveChaincodeDefinitionForMyOrgArgs).finish()],
+			args: [BufferFrom(approveChaincodeDefinitionForMyOrgArgs, ApproveChaincodeDefinitionForMyOrgArgs)],
 		};
 		return await this.send(buildProposalRequest);
 	}
@@ -206,11 +207,11 @@ class LifecycleProposal extends ProposalManager {
 		/**
 		 * @type {BuildProposalRequest}
 		 */
-		const buildProposalRequest2 = {
+		const buildProposalRequest = {
 			fcn: CheckCommitReadiness,
-			args: [CheckCommitReadinessArgs.encode(checkCommitReadinessArgs).finish()]
+			args: [BufferFrom(checkCommitReadinessArgs, CheckCommitReadinessArgs)]
 		};
-		const result = await this.send(buildProposalRequest2);
+		const result = await this.send(buildProposalRequest);
 
 		const {queryResults} = result;
 		result.queryResults = queryResults.map(payload => CheckCommitReadinessResult.decode(payload).approvals);
@@ -235,7 +236,7 @@ class LifecycleProposal extends ProposalManager {
 		 */
 		const buildProposalRequest = {
 			fcn: CommitChaincodeDefinition,
-			args: [CommitChaincodeDefinitionArgs.encode(commitChaincodeDefinitionArgs).finish()],
+			args: [BufferFrom(commitChaincodeDefinitionArgs, CommitChaincodeDefinitionArgs)],
 		};
 		return await this.send(buildProposalRequest);
 	}
@@ -246,10 +247,10 @@ class LifecycleProposal extends ProposalManager {
 		this.asQuery();
 		if (name) {
 			fcn = QueryChaincodeDefinition;
-			args = [QueryChaincodeDefinitionArgs.encode({name}).finish()];
+			args = [BufferFrom({name}, QueryChaincodeDefinitionArgs)];
 		} else {
 			fcn = QueryChaincodeDefinitions;
-			args = [QueryChaincodeDefinitionsArgs.encode({}).finish()];
+			args = [Buffer.from('')]; // lifeCycleProtos.QueryChaincodeDefinitionsArgs
 		}
 
 		/**

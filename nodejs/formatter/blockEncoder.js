@@ -1,4 +1,5 @@
 const fabprotos = require('fabric-protos');
+const {ProtoFrom, BufferFrom} = require('khala-fabric-formatter/protobuf');
 const commonProto = fabprotos.common;
 
 
@@ -12,12 +13,9 @@ const fromEvent = ({block}, asBuffer) => {
 	const blockMetadata = new commonProto.BlockMetadata();
 	blockMetadata.metadata = block.metadata.metadata;
 
-	const blockEncoded = new commonProto.Block();
-	blockEncoded.header = blockHeader;
-	blockEncoded.data = blockData;
-	blockEncoded.metadata = blockMetadata;
+	const blockEncoded = ProtoFrom({header: blockHeader, data: blockData, metadata: blockMetadata}, commonProto.Block);
 	if (asBuffer) {
-		return commonProto.Block.encode(blockEncoded).finish();
+		return BufferFrom(blockEncoded, commonProto.Block);
 	}
 	return blockEncoded;
 };
