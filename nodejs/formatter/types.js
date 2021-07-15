@@ -83,7 +83,7 @@
 
 /**
  * @typedef {Object} ChannelHeader
- * @property {integer} type
+ * @property {HeaderType} type
  * @property {integer} version
  * @property {string} timestamp
  * @property {string} channel_id
@@ -103,7 +103,7 @@
 /**
  * An object that is part of all signatures in Hyperledger Fabric.
  * @typedef {Object} SignatureHeader
- * @property {TransactionCreator}} creator
+ * @property {TransactionCreator} creator
  * @property {Buffer} nonce - a unique value to guard against replay attacks.
  */
 

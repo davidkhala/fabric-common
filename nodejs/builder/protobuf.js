@@ -5,8 +5,8 @@ const fs = require('fs');
 class Protobuf {
 	/**
 	 *
-	 * @param [node_modules]
-	 * @param [protoRoot]
+	 * @param {string} [node_modules] directory path of node_modules. required if protoRoot unspecified
+	 * @param {string} [protoRoot] root directory of proto files
 	 */
 	constructor(node_modules, protoRoot) {
 		const root = protoRoot ? path.resolve(protoRoot) : path.resolve(node_modules, 'fabric-client', 'lib', 'protos');

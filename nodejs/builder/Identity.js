@@ -18,8 +18,7 @@ class IdentityProto {
 		const publicKey = cryptoSuite.importKey(cert, {algorithm: 'X509Certificate', ephemeral: true});
 		const digest = Buffer.concat([proposal_response.payload, endorsement.endorser]);
 
-		const verifyResult = cryptoSuite.verify(publicKey, endorsement.signature, digest);
-		return verifyResult;
+		return cryptoSuite.verify(publicKey, endorsement.signature, digest);
 	}
 }
 

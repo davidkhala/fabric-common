@@ -15,7 +15,7 @@ const ChannelConfig = require('./channelConfig');
  *  - if false, it means assuming signature in channelConfigFile is empty and require signer's signatures
  * @returns {Promise<Client.BroadcastResponse>}
  */
-exports.create = async (channel, orderer, channelConfigFile, signers = [channel._clientContext], asEnvelop) => {
+const create = async (channel, orderer, channelConfigFile, signers = [channel._clientContext], asEnvelop) => {
 	const logger = Logger.consoleLogger('create-channel');
 	logger.debug({channelName: channel.getName(), channelConfigFile, orderer: orderer.toString()});
 
@@ -39,7 +39,7 @@ exports.create = async (channel, orderer, channelConfigFile, signers = [channel.
 			// TODO [fabric weakness] let healthz return whether it is ready
 			logger.warn('loop retry..', status);
 			await sleep(1000);
-			return await exports.create(channel, orderer, channelConfigFile, signers, asEnvelop);
+			return await create(channel, orderer, channelConfigFile, signers, asEnvelop);
 		} else if (status === 'BAD_REQUEST' && info === 'error authorizing update: error validating ReadSet: readset expected key [Group]  /Channel/Application at version 0, but got version 1') {
 			logger.warn('exist swallow', status);
 			return {status, info};
@@ -64,7 +64,7 @@ const getGenesisBlock = async (channel, orderer, waitTime = 1000) => {
 		}
 	}
 };
-exports.getGenesisBlock = getGenesisBlock;
+
 
 /**
  * different from `peer channel join`, since we do not have genesisBlock as output of `peer channel create`, we have to prepared one before.
@@ -77,7 +77,7 @@ exports.getGenesisBlock = getGenesisBlock;
  * @returns {Promise<*>}
  */
 const join = async (channel, peer, block, orderer, waitTime = 1000) => {
-	const logger = Logger.consoleLogger('join-channel', true);
+	const logger = Logger.consoleLogger('join-channel');
 	logger.debug({channelName: channel.getName(), peer: peer.getName()});
 
 	const channelClient = channel._clientContext;
@@ -122,15 +122,18 @@ const join = async (channel, peer, block, orderer, waitTime = 1000) => {
 
 };
 
-exports.join = join;
-
-exports.pretty = (channel) => {
-	return {
-		client: channel._clientContext,
-		name: channel._name,
-		peers: channel._channel_peers,
-		anchorPeers: channel._anchor_peers,
-		orderers: channel._orderers,
-		kafkas: channel._kafka_brokers
-	};
+module.exports = {
+	getGenesisBlock,
+	join,
+	pretty: (channel) => {
+		return {
+			client: channel._clientContext,
+			name: channel._name,
+			peers: channel._channel_peers,
+			anchorPeers: channel._anchor_peers,
+			orderers: channel._orderers,
+			kafkas: channel._kafka_brokers
+		};
+	},
+	create,
 };

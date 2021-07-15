@@ -81,6 +81,20 @@ const IdentityType = {
 	OrganizationUnit: 'organization-unit',
 	Identity: 'identity'
 };
+
+/**
+ * @enum
+ */
+const HeaderType = {
+	MESSAGE: 0,
+	CONFIG: 1,
+	CONFIG_UPDATE: 2,
+	ENDORSER_TRANSACTION: 3,
+	ORDERER_TRANSACTION: 4,
+	DELIVER_SEEK_INFO: 5,
+	CHAINCODE_PACKAGE: 6,
+};
+
 module.exports = {
 	ChaincodeProposalCommand,
 	IdentityType,
@@ -91,6 +105,7 @@ module.exports = {
 	ImplicitMetaPolicyRule,
 	MetricsProvider,
 	OrdererType,
-	PolicyName
+	PolicyName,
+	HeaderType,
 };
 
