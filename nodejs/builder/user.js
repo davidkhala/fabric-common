@@ -46,6 +46,7 @@ class UserBuilder {
 	 * @param {User} user
 	 * @param {Buffer} [nonce] use external nonce if specified, instead of randomly creating one
 	 * @param {boolean} [isAdmin] - Indicates whether this instance will be used for administrative transactions.
+	 * @return {TransactionID}
 	 */
 	static newTransactionID(user, nonce, isAdmin) {
 		const txid = new TransactionID(user._signingIdentity, isAdmin);
