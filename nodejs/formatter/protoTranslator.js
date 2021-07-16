@@ -189,7 +189,7 @@ const buildSeekPayload = ({Creator, Nonce, ChannelId, TxId}, startHeight, stopHe
 
 };
 const extractLastConfigIndex = (block) => {
-	const metadata = commonProto.Metadata.decode(block.metadata.metadata[commonProto.BlockMetadataIndex.LAST_CONFIG]);
+	const metadata = commonProto.Metadata.decode(block.metadata.metadata[commonProto.BlockMetadataIndex.LAST_CONFIG]); // TODO it shows as deprecated in hyperledger/fabric-protos
 	const lastConfig = commonProto.LastConfig.decode(metadata.value);
 	return parseInt(lastConfig.index);
 };

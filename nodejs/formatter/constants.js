@@ -180,6 +180,24 @@ const BroadcastResponseStatus = {
 	SUCCESS: CommonResponseStatus.SUCCESS,
 	BAD_REQUEST: 'BAD_REQUEST'
 };
+
+/**
+ * @enum
+ */
+const BlockMetadataIndex = {
+	SIGNATURES: 0,
+	/**
+	 * @deprecated Do not use
+	 */
+	LAST_CONFIG: 1,
+	TRANSACTIONS_FILTER: 2,
+	/**
+	 * @deprecated Do not use
+	 */
+	ORDERER: 3,
+	COMMIT_HASH: 4
+};
+
 module.exports = {
 	ChaincodeProposalCommand,
 	IdentityType,
@@ -199,5 +217,6 @@ module.exports = {
 	DiscoveryResultType,
 	MspType,
 	CommonResponseStatus,
+	BlockMetadataIndex,
 };
 
