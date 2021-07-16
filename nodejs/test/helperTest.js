@@ -1,4 +1,4 @@
-const helper = require('../admin/helper');
+const helper = require('../formatter/helper');
 const logger = require('khala-logger/log4js').consoleLogger('test:helper');
 describe('helper', () => {
 	it('hash', () => {
