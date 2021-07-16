@@ -8,8 +8,7 @@ const calculateTransactionId = (signature_header) => {
 	const {creator: {mspid, id_bytes}, nonce} = signature_header;
 	const creator_bytes = BufferFrom({mspid, id_bytes}, fabproto6.msp.SerializedIdentity);
 	const trans_bytes = Buffer.concat([nonce, creator_bytes]);
-	const trans_hash = sha2_256(trans_bytes);
-	return Buffer.from(trans_hash).toString();
+	return sha2_256(trans_bytes);
 };
 module.exports = {
 	sha2_256, calculateTransactionId
