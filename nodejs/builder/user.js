@@ -3,6 +3,7 @@ const {SigningIdentity, Signer} = require('fabric-client/lib/msp/identity.js');
 const {emptySuite} = require('./cryptoSuite');
 const TransactionID = require('fabric-client/lib/TransactionID');
 const {getCertificate, getMSPID, getPrivateKey, getPublicKey, sign} = require('khala-fabric-formatter/signingIdentity.js');
+const {sha2_256} = require('./helper');
 
 class UserBuilder {
 
@@ -43,10 +44,18 @@ class UserBuilder {
 	/**
 	 * Builds a new transactionID based on a user's certificate and a nonce value.
 	 * @param {User} user
+	 * @param {Buffer} [nonce] use external nonce if specified, instead of randomly creating one
 	 * @param {boolean} [isAdmin] - Indicates whether this instance will be used for administrative transactions.
 	 */
-	static newTransactionID(user, isAdmin) {
-		return new TransactionID(user._signingIdentity, isAdmin);
+	static newTransactionID(user, nonce, isAdmin) {
+		const txid = new TransactionID(user._signingIdentity, isAdmin);
+		if (nonce) {
+			txid._nonce = nonce;
+			const creator_bytes = user._signingIdentity.serialize();// same as signatureHeader.Creator
+			const trans_bytes = Buffer.concat([nonce, creator_bytes]);
+			txid._transaction_id = sha2_256(trans_bytes);
+		}
+		return txid;
 	}
 
 
