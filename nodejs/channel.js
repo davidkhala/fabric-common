@@ -1,6 +1,7 @@
 const Logger = require('khala-logger/log4js');
 const logger = Logger.consoleLogger('channel');
 const fs = require('fs');
+const {getNonce} = require('khala-fabric-formatter/helper');
 
 const ChannelUpdate = require('khala-fabric-admin/channelUpdate');
 const SigningIdentityUtil = require('khala-fabric-admin/signingIdentity');
@@ -39,7 +40,7 @@ const create = async (channelName, user, orderer, channelConfigFile, signingIden
 		}
 		for (const signingIdentity of signingIdentities) {
 			const extraSigningIdentityUtil = new SigningIdentityUtil(signingIdentity);
-			signatures.push(extraSigningIdentityUtil.signChannelConfig(config, undefined, true));
+			signatures.push(extraSigningIdentityUtil.signChannelConfig(config, getNonce(), true));
 		}
 		channelUpdate.useSignatures(config, signatures);
 	}

@@ -8,7 +8,7 @@ class ChannelUpdate {
 	 *
 	 * @param {string} channelName
 	 * @param {Client.User} user
-	 * @param {Client.Committer} committer
+	 * @param {Committer} committer
 	 * @param [logger]
 	 */
 	constructor(channelName, user, committer, logger = console) {
@@ -16,7 +16,8 @@ class ChannelUpdate {
 		this.signingIdentityUtil = new SigningIdentityUtil(user.getSigningIdentity());
 		this.identityContext = new IdentityContext(user, null);
 		this.logger = logger;
-		this.content = {committer, name: channelName};
+		this.committer = committer;
+		this.content = {name: channelName, config: undefined, signatures: undefined, envelope: undefined};
 	}
 
 	/**
@@ -39,10 +40,14 @@ class ChannelUpdate {
 		delete this.content.envelope;
 	}
 
-	async submit() {
-		const {identityContext, signingIdentityUtil, content} = this;
-		identityContext.calculateTransactionId();
-		const {status, info} = await signingIdentityUtil.updateChannel(identityContext, content);
+	async submit({transactionId, nonce} = {}) {
+		const {identityContext, signingIdentityUtil, content, committer} = this;
+		if (!nonce) {
+			identityContext.calculateTransactionId();
+			transactionId = identityContext.transactionId;
+			nonce = identityContext.nonce;
+		}
+		const {status, info} = await signingIdentityUtil.updateChannel({transactionId, nonce}, content, committer);
 		if (status !== BroadcastResponseStatus.SUCCESS) {
 			this.logger.error(`[${this.name}] channel update: status=[${status}], info=[${info}]`);
 		}

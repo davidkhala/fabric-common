@@ -49,25 +49,13 @@ const buildChannelHeader = ({Type, Version = 1, ChannelId, TxId, ChaincodeID, TL
 };
 
 /**
- * TODO No need anymore
- * @param Creator from Identity.js#serialize
- * @param Nonce from 'fabric-common/lib/Util.js#getNonce'
- */
-const buildSignatureHeader = ({Creator, Nonce}, asBuffer) => {
-	const signatureHeader = ProtoFrom({creator: Creator, nonce: Nonce}, commonProto.SignatureHeader);
-	if (asBuffer) {
-		return BufferFrom(signatureHeader);
-	}
-	return signatureHeader;
-};
-/**
  *
- * @param Creator
+ * @param Creator from Identity.js#serialize
  * @param Nonce
  * @param ChannelHeader
  */
 const buildHeader = ({Creator, Nonce, ChannelHeader}) => {
-	const signatureHeaderBytes = buildSignatureHeader({Creator, Nonce}, true);
+	const signatureHeaderBytes = BufferFrom({creator: Creator, nonce: Nonce}, commonProto.SignatureHeader);
 
 	const header = new commonProto.Header();
 	header.signature_header = signatureHeaderBytes;
@@ -231,7 +219,6 @@ module.exports = {
 	buildChannelHeader,
 	buildCurrentTimestamp,
 	buildHeader,
-	buildSignatureHeader,
 	buildPayload,
 	buildSeekPosition,
 	buildSeekInfo,

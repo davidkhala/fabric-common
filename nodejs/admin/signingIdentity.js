@@ -1,4 +1,3 @@
-const Utils = require('fabric-common/lib/Utils');
 const fabprotos = require('fabric-protos');
 const commonProto = fabprotos.common;
 const {buildSignatureHeader, buildChannelHeader, buildHeader, buildPayload, buildSeekPayload} = require('khala-fabric-formatter/protoTranslator');
@@ -17,11 +16,15 @@ class SigningIdentityUtil {
 		this.signingIdentity = signingIdentity;
 	}
 
+	/**
+	 *
+	 * @param config
+	 * @param {Buffer} nonce 24 bits random bytes
+	 * @param [asBuffer]
+	 * @return {*}
+	 */
 	signChannelConfig(config, nonce, asBuffer) {
 
-		if (!nonce) {
-			nonce = Utils.getNonce();
-		}
 		const {signingIdentity} = this;
 
 		const signature_header = buildSignatureHeader({Creator: signingIdentity.serialize(), Nonce: nonce}, true);
@@ -33,11 +36,16 @@ class SigningIdentityUtil {
 		// build the return object
 		const proto_config_signature = ProtoFrom({signature_header, signature}, commonProto.ConfigSignature);
 
-		if (asBuffer) {
-			return BufferFrom(proto_config_signature);
-		}
-		return proto_config_signature;
+		return asBuffer ? BufferFrom(proto_config_signature) : proto_config_signature;
 	}
+
+	/**
+	 * @typedef {Object} ChannelConfigurationUpdateContent
+	 * @property {Buffer} [config] config_update of commonProto.ConfigUpdateEnvelope
+	 * @property {Buffer[]} [signatures]
+	 * @property {Buffer<commonProto.Envelope>} [envelope]
+	 * @property [name] ChannelId
+	 */
 
 
 	/**
@@ -45,17 +53,16 @@ class SigningIdentityUtil {
 	 * Channel configuration updates can be sent to the orderers to be processed.
 	 * The orderer ensures channel updates will be made only when enough signatures are discovered in the request.
 	 * Channel creation policy can be customized when the consortium is defined.
-	 * @param {IdentityContext|{transactionId, nonce}} identityContext
+	 * @param transactionId
+	 * @param nonce
 	 * @param [config]
-	 * @param {Buffer[]} [signatures]
-	 * @param [envelope]
-	 * @param name
+	 * @param {ChannelConfigurationUpdateContent} channelConfigurationUpdateContent
 	 * @param {Committer} committer
 	 * @param [commitTimeout]
 	 */
-	async updateChannel(identityContext, {config, signatures, envelope, name, committer}, commitTimeout) {
+	async updateChannel({transactionId, nonce}, channelConfigurationUpdateContent, committer, commitTimeout) {
 		const {signingIdentity} = this;
-		const {transactionId, nonce} = identityContext;
+		const {config, signatures, envelope, name} = channelConfigurationUpdateContent;
 		let signature, payload;
 		if (envelope) {
 			const envelopeDecoded = commonProto.Envelope.decode(envelope);
@@ -83,17 +90,15 @@ class SigningIdentityUtil {
 			signature = Buffer.from(signingIdentity.sign(payload));
 		}
 
-		const result = await committer.sendBroadcast({
+		return await committer.sendBroadcast({
 			signature,
 			payload
 		}, commitTimeout);
-		return result;
 
 	}
 
-	async getSpecificBlock(identityContext, ChannelId, orderer, blockHeight, opts = {}) {
+	async getSpecificBlock({transactionId, nonce}, ChannelId, orderer, blockHeight, opts = {}) {
 		const {signingIdentity} = this;
-		const {transactionId, nonce} = identityContext;
 		const payload = buildSeekPayload({
 			Creator: signingIdentity.serialize(),
 			Nonce: nonce,

@@ -1,7 +1,8 @@
 const {BufferFrom} = require('./protobuf');
 const fabproto6 = require('fabric-protos');
+const assert = require('assert');
+const crypto = require('crypto');
 const sha2_256 = (data, encoding = 'hex') => {
-	const crypto = require('crypto');
 	return crypto.createHash('sha256').update(data).digest(encoding);
 };
 const calculateTransactionId = (signature_header) => {
@@ -10,6 +11,12 @@ const calculateTransactionId = (signature_header) => {
 	const trans_bytes = Buffer.concat([nonce, creator_bytes]);
 	return sha2_256(trans_bytes);
 };
+// utility function to create a random number of
+// the specified length.
+const getNonce = (length = 24) => {
+	assert.ok(Number.isInteger(length), 'Parameter must be an integer');
+	return crypto.randomBytes(length);
+};
 module.exports = {
-	sha2_256, calculateTransactionId
+	sha2_256, calculateTransactionId, getNonce
 };

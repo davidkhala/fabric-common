@@ -9,6 +9,7 @@ const ConfigFactory = require('khala-fabric-formatter/configFactory');
 const {BufferFrom} = require('khala-fabric-formatter/protobuf');
 const ChannelUpdate = require('khala-fabric-admin/channelUpdate');
 const SigningIdentityUtil = require('khala-fabric-admin/signingIdentity');
+const {getNonce} = require('khala-fabric-formatter/helper');
 const fabprotos = require('fabric-protos');
 const commonProto = fabprotos.common;
 
@@ -69,7 +70,7 @@ const setAnchorPeers = async (channelName, orderer, user, signingIdentities = []
 	const signatures = [];
 	for (const signingIdentity of signingIdentities) {
 		const extraSigningIdentityUtil = new SigningIdentityUtil(signingIdentity);
-		signatures.push(extraSigningIdentityUtil.signChannelConfig(config, undefined, true));
+		signatures.push(extraSigningIdentityUtil.signChannelConfig(config, getNonce(), true));
 	}
 	channelUpdate.useSignatures(config, signatures);
 	return await channelUpdate.submit();
