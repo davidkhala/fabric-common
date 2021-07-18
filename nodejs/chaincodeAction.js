@@ -1,5 +1,9 @@
 const IdentityContext = require('fabric-common/lib/IdentityContext');
 const EventHub = require('khala-fabric-admin/eventHub');
+const {EndorseALL} = require('./endorseResultInterceptor');
+const DefaultEventHubSelector = (hubs) => {
+	return hubs[0];
+};
 
 class ChaincodeAction {
 	constructor(peers, user, channel) {
@@ -7,20 +11,40 @@ class ChaincodeAction {
 		this.identityContext = new IdentityContext(user, null);
 		this.endorsers = peers.map(({endorser}) => endorser);
 		this.eventers = peers.map(({eventer}) => eventer);
+		this.eventSelector = DefaultEventHubSelector;
+		this.endorseResultInterceptor = EndorseALL;
 	}
 
-	newEventHubs(options) {
-		return this.eventers.map(eventer => (new EventHub(this.channel, eventer, undefined, options)));
+	/**
+	 * @param {EndorseResultHandler} interceptor
+	 */
+	setEndorseResultInterceptor(interceptor) {
+		this.endorseResultInterceptor = interceptor;
 	}
 
-	newEventHub(options, selector) {
-		const eventHubs = this.newEventHubs(options);
-		if (typeof selector !== 'function') {
-			selector = (hubs) => {
-				return hubs[0];
-			};
-		}
-		return selector(eventHubs);
+	setProposalOptions(options) {
+		this.proposalOptions = options;
+	}
+
+	setCommitOptions(options) {
+		this.commitOptions = options;
+	}
+
+	setEventOptions(options) {
+		this.eventOptions = options;
+	}
+
+	setEventSelector(selector) {
+		this.eventSelector = selector;
+	}
+
+	newEventHubs() {
+		return this.eventers.map(eventer => (new EventHub(this.channel, eventer, undefined, this.eventOptions)));
+	}
+
+	newEventHub() {
+		const eventHubs = this.newEventHubs();
+		return this.eventSelector(eventHubs);
 	}
 }
 

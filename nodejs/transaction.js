@@ -11,45 +11,13 @@ const {transientMapTransform} = require('khala-fabric-formatter/txProposal');
  *
  */
 class Transaction extends ChaincodeAction {
-	constructor(peers, user, channel, logger) {
+	constructor(peers, user, channel,chaincodeId, logger) {
 		super(peers, user, channel);
 		if (!logger) {
 			logger = require('khala-logger/log4js').consoleLogger('Transaction');
 		}
 		this.logger = logger;
-	}
-
-	setProposalOptions(options) {
-		this.proposalOptions = options;
-	}
-
-	setCommitOptions(options) {
-		this.commitOptions = options;
-	}
-
-	setEventOptions(options) {
-		this.eventOptions = options;
-	}
-
-	/**
-	 *
-	 * @param chaincodeId
-	 * @param {EndorseResultHandler} endorseResultHandler
-	 */
-	build(chaincodeId, endorseResultHandler) {
 		this.proposal = new ProposalManager(this.identityContext, this.channel, chaincodeId, this.endorsers);
-		if (typeof endorseResultHandler === 'function') {
-			this.endorseResultInterceptor = endorseResultHandler;
-		}
-	}
-
-	_endorseResultIntercept(result) {
-		const {endorseResultInterceptor} = this;
-		if (typeof endorseResultInterceptor === 'function') {
-			return endorseResultInterceptor(result);
-		} else {
-			return result;
-		}
 	}
 
 	async evaluate({fcn, args = [], transientMap}) {
@@ -59,7 +27,7 @@ class Transaction extends ChaincodeAction {
 			args,
 			transientMap: transientMapTransform(transientMap)
 		}, this.proposalOptions);
-		return this._endorseResultIntercept(result);
+		return this.endorseResultInterceptor(result);
 	}
 
 	async submit({fcn, args = [], transientMap, init}, orderer) {
@@ -73,10 +41,10 @@ class Transaction extends ChaincodeAction {
 			transientMap: transientMapTransform(transientMap),
 			init
 		}, this.proposalOptions);
-		this._endorseResultIntercept(result);
+		this.endorseResultInterceptor(result);
 		const commitResult = await this.proposal.commit([orderer.committer], this.commitOptions);
 		this.logger.debug(commitResult);
-		const eventHub = this.newEventHub(this.eventOptions);
+		const eventHub = this.newEventHub();
 		try {
 			await waitForTx(eventHub, this.proposal.identityContext);
 		} finally {

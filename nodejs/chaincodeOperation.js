@@ -10,22 +10,20 @@ const {CommonResponseStatus: {SERVICE_UNAVAILABLE}} = require('khala-fabric-form
 
 const {buildCollectionConfig} = require('khala-fabric-formatter/SideDB');
 
-class ChaincodeOperation extends ChaincodeAction {
+class ChaincodeLifecycleOperation extends ChaincodeAction {
 	/**
 	 *
 	 * @param peers
 	 * @param user
 	 * @param channel
-	 * @param {EndorseResultHandler} endorseResultInterceptor
 	 * @param logger
 	 */
-	constructor(peers, user, channel, endorseResultInterceptor, logger) {
+	constructor(peers, user, channel, logger) {
 		super(peers, user, channel);
 		if (!logger) {
 			logger = require('khala-logger/log4js').consoleLogger('Chaincode Operation');
 		}
 		this.logger = logger;
-		this.endorseResultInterceptor = endorseResultInterceptor;
 	}
 
 	static _defaultVersion(sequence) {
@@ -97,14 +95,14 @@ class ChaincodeOperation extends ChaincodeAction {
 	assign(lifecycleProposal) {
 		const {endorsementPolicy, collectionsConfig, init_required} = this;
 		if (endorsementPolicy) {
-			const applicationPolicy = ChaincodeOperation.applicationPolicyBuilder(endorsementPolicy);
+			const applicationPolicy = ChaincodeLifecycleOperation.applicationPolicyBuilder(endorsementPolicy);
 			lifecycleProposal.setValidationParameter(applicationPolicy); // if empty buffer is set. Apply default
 		}
 		if (collectionsConfig) {
 			const collectionConfigPackage = Object.entries(collectionsConfig).map(([name, config]) => {
 				const collectionEndorsementPolicy = config.endorsementPolicy;
 				if (collectionEndorsementPolicy) {
-					config.endorsement_policy = ChaincodeOperation.applicationPolicyBuilder(collectionEndorsementPolicy);
+					config.endorsement_policy = ChaincodeLifecycleOperation.applicationPolicyBuilder(collectionEndorsementPolicy);
 				}
 				return this.buildCollectionConfig(name, config);
 			});
@@ -125,7 +123,7 @@ class ChaincodeOperation extends ChaincodeAction {
 	 * @return {Promise<*>}
 	 */
 	async approve({name, sequence, PackageID, version}, orderer, waitForConsensus) {
-		version = version || ChaincodeOperation._defaultVersion(sequence);
+		version = version || ChaincodeLifecycleOperation._defaultVersion(sequence);
 		const lifecycleProposal = new LifecycleProposal(this.identityContext, this.channel, this.endorsers, this.logger);
 		this.assign(lifecycleProposal);
 		const result = await lifecycleProposal.approveForMyOrg({
@@ -167,7 +165,7 @@ class ChaincodeOperation extends ChaincodeAction {
 	}
 
 	async checkCommitReadiness({name, version, sequence}) {
-		version = version || ChaincodeOperation._defaultVersion(sequence);
+		version = version || ChaincodeLifecycleOperation._defaultVersion(sequence);
 		const lifecycleProposal = new LifecycleProposal(this.identityContext, this.channel, this.endorsers, this.logger);
 		this.assign(lifecycleProposal);
 		const result = await lifecycleProposal.checkCommitReadiness({name, version, sequence});
@@ -176,7 +174,7 @@ class ChaincodeOperation extends ChaincodeAction {
 	}
 
 	async commitChaincodeDefinition({name, version, sequence}, orderer) {
-		version = version || ChaincodeOperation._defaultVersion(sequence);
+		version = version || ChaincodeLifecycleOperation._defaultVersion(sequence);
 		const lifecycleProposal = new LifecycleProposal(this.identityContext, this.channel, this.endorsers, this.logger);
 		this.assign(lifecycleProposal);
 		const result = await lifecycleProposal.commitChaincodeDefinition({name, version, sequence});
@@ -200,7 +198,7 @@ class ChaincodeOperation extends ChaincodeAction {
 	}
 }
 
-module.exports = ChaincodeOperation;
+module.exports = ChaincodeLifecycleOperation;
 
 
 
