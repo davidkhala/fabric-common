@@ -70,12 +70,12 @@ class Orderer {
 	async connect() {
 		const {logger} = this;
 		if (this.committer.connected || this.committer.service) {
-			logger.info(`${this.committer.name} connection exist already`);
+			logger.info(`Orderer as committer [${this.committer.name}] connection exist already`);
 		} else {
 			await this.committer.connect();
 		}
 		if (this.eventer.connected || this.eventer.service) {
-			logger.info(`${this.eventer.name} connection exist already`);
+			logger.info(`Orderer as eventer [${this.eventer.name}] connection exist already`);
 		} else {
 			await this.eventer.connect();
 		}

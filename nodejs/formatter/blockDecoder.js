@@ -21,6 +21,7 @@ class blockDecoder {
 	}
 
 	data() {
+		const txs = [];
 		const {data: {data: datas}} = this.block;
 		for (const entry of datas) {
 			const {channel_header, signature_header} = entry.payload.header;
@@ -30,29 +31,33 @@ class blockDecoder {
 			if (config) {
 				this.logger.info('a config transaction');
 			} else if (actions) {
-				this.logger.info(`${actions.length} chaincode invocation transactions`);
+				assert.strictEqual(actions.length, 1);
 
-				for (const {payload, header} of actions) {
-
-					const {chaincode_proposal_payload, action} = payload;
-					const {proposal_response_payload, endorsements} = action;
-					const {proposal_hash, extension} = proposal_response_payload;
-
-					const {chaincode_spec} = chaincode_proposal_payload.input;
-					const {chaincode_id: {name}} = chaincode_spec;
-					if (name === '_lifecycle') {
-						this.logger.info('a chaincode lifecycle transaction');
-
-					} else {
-						this.logger.info(`a application transaction on [${name}]`);
-					}
+				const {payload, header} = actions[0];
+				const {creator: {mspid, id_bytes}, nonce} = header;
+				const {chaincode_proposal_payload, action} = payload;
+				const {proposal_response_payload, endorsements} = action;
+				for (const {endorser, signature} of endorsements) {
+					const {mspid, id_bytes} = endorser;
 				}
+				const {proposal_hash, extension} = proposal_response_payload;
+				const {results, events, response, chaincode_id} = extension;
+				const {chaincode_spec} = chaincode_proposal_payload.input;
+				const {chaincode_id: {name}, type, typeString, input: {args, decorations, is_init}} = chaincode_spec;
+				if (name === '_lifecycle') {
+					this.logger.info('a chaincode lifecycle transaction');
+				} else {
+					this.logger.info(`a application transaction on [${name}]`);
+				}
+				txs.push(Object.assign({
+					tx_id: channel_header.tx_id, args, is_init, chaincode_id: name
+				}, signature_header));
 
 			} else {
 				assert.fail('unknown transaction type found');
 			}
 		}
-		return datas;
+		return [datas, txs];
 	}
 
 	metadata() {

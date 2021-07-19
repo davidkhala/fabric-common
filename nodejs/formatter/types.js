@@ -14,6 +14,31 @@
  */
 
 /**
+ * @typedef {Object} FabricCAResponse
+ * @property {FabricCAResponseResult} result
+ * @property {[]} errors
+ * @property {[]} messages
+ * @property {boolean} success
+ */
+
+/**
+ * @typedef {Object} FabricCAResponseResult
+ * @property {string} Credential
+ * @property Attrs
+ * @property {string} CRI
+ * @property {string} Nonce Base64 format
+ * @property {CAInfo} CAInfo
+ */
+
+/**
+ * @typedef {Object} CAInfo
+ * @property {string} CAName
+ * @property {string} CAChain Base64 format
+ * @property {string} IssuerPublicKey Base64 format
+ * @property {string} IssuerRevocationPublicKey Base64 format
+ * @property {string} Version
+ */
+/**
  * @typedef {Object} Metadata
  * @property {Object} _internal_repr
  * @property {integer} flags
@@ -31,8 +56,8 @@
 /**
  * @typedef {Object} BlockHeader
  * @property {intString|Long} number
- * @property {hexString} previous_hash
- * @property {hexString} data_hash
+ * @property {Buffer|hexString} previous_hash
+ * @property {Buffer|hexString} data_hash
  */
 
 /**
@@ -100,7 +125,7 @@
 /**
  * An object that is part of all signatures in Hyperledger Fabric.
  * @typedef {Object} SignatureHeader
- * @property {TransactionCreator}} creator
+ * @property {TransactionCreator} creator
  * @property {Buffer} nonce - a unique value to guard against replay attacks.
  */
 
@@ -181,7 +206,7 @@
  * 1 satisfied is sufficient, ALL would require 4 signatures, and MAJORITY would require 3 signatures.
  * @typedef {Object} ImplicitMetaPolicy
  * @property {PolicyType} type 'IMPLICIT_META'
- * @property {{sub_policy:PolicyName,rule:ImplicitMetaPolicyRule}} value
+ * @property {{sub_policy:PolicyName|string,rule:ImplicitMetaPolicyRule}} value
  */
 
 /**

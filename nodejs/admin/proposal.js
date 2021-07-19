@@ -1,5 +1,20 @@
 const Proposal = require('fabric-common/lib/Proposal');
 const Commit = require('fabric-common/lib/Commit');
+const {calculateTransactionId} = require('./user');
+/**
+ * @typedef {Object} ProposalResponseBundle
+ * @property {ServiceError[]} errors
+ * @property {EndorsementResponse[]} responses
+ * @property {Buffer[]} queryResults
+ */
+
+/**
+ * @typedef {function(result:ProposalResponseBundle):ProposalResponseBundle} ProposalResultHandler
+ */
+
+/**
+ * @typedef {function(result:ProposalResponseBundle)|ProposalResultHandler} ProposalResultAssert
+ */
 
 /**
  * @typedef {Object} BuildProposalRequest
@@ -14,6 +29,8 @@ const Commit = require('fabric-common/lib/Commit');
  * @property {boolean} [init] - Optional. If this proposal should be an
  * chaincode initialization request. This will set the init setting in the
  * protobuf object sent to the peer.
+ * @property {boolean} [generateTransactionId] set false to avoid "idContext.calculateTransactionId()"
+ * @property {Buffer} [nonce] if specify, random generated nonce will be overridden by this nonce
  */
 class ProposalManager extends Proposal {
 
@@ -22,14 +39,20 @@ class ProposalManager extends Proposal {
 	 * @param {IdentityContext} identityContext
 	 * @param {Channel} channel
 	 * @param [chaincodeId]
-	 * @param {Endorser[]} [endorsers] We could specify targets during {@link send}
+	 * @param {Endorser[]} endorsers
 	 */
 	constructor(identityContext, channel, chaincodeId, endorsers) {
 		super(chaincodeId || null, channel);
-		this.identityContext = identityContext;
-		if (Array.isArray(endorsers)) {
-			this.targets = endorsers;
-		}
+		Object.assign(this, {identityContext, endorsers});
+
+	}
+
+	/**
+	 *
+	 * @param {ProposalResultAssert} assertFunction
+	 */
+	setProposalResultsAssert(assertFunction) {
+		this.assertProposalResults = assertFunction;
 	}
 
 	asQuery() {
@@ -43,39 +66,47 @@ class ProposalManager extends Proposal {
 	/**
 	 *
 	 * @param {BuildProposalRequest} buildProposalRequest
-	 * @param {{requestTimeout:number,targets:Endorser[]}} extraOptions
-	 * @return {*}
+	 * @param {{[requestTimeout]:number, [handler]:function}} [connectOptions]
+	 * @return Promise<ProposalResponseBundle>
 	 */
-	async send(buildProposalRequest, extraOptions = {}) {
-		const requestTimeout = extraOptions.requestTimeout || this.requestTimeout;
-		const targets = extraOptions.targets || this.targets;
+	async send(buildProposalRequest, connectOptions = {}) {
+		const {requestTimeout, handler} = connectOptions;
 
 		const {identityContext} = this;
+		const {nonce} = buildProposalRequest;
+		if (nonce) {
+			buildProposalRequest.generateTransactionId = false;
+			identityContext.nonce = nonce;
+			identityContext.transactionId = calculateTransactionId(identityContext, nonce);
+		}
 		this.build(identityContext, buildProposalRequest);
 		this.sign(identityContext); // TODO take care of offline signing
 		/**
 		 * @type {SendProposalRequest}
 		 */
 		const sendProposalRequest = {
-			targets,
-			requestTimeout
+			targets: this.endorsers,
+			requestTimeout,
+			handler, // TODO investigate
 		};
-		return super.send(sendProposalRequest);
+		const results = await super.send(sendProposalRequest);
+		this.assertProposalResults(results);
+		return results;
 	}
 
 	/**
 	 *
-	 * @param {Committer[]} targets
+	 * @param {Committer[]} committers
 	 * @param [requestTimeout]
-	 * @return Promise<CommitResponse|?>
+	 * @return Promise<CommitResponse|*>
 	 */
-	async commit(targets, {requestTimeout} = {}) {
+	async commit(committers, {requestTimeout} = {}) {
 		const commit = new Commit(this.chaincodeId, this.channel, this);
 
 		commit.build(this.identityContext);
 		commit.sign(this.identityContext);
 
-		return await commit.send({targets, requestTimeout});
+		return await commit.send({targets: committers, requestTimeout});
 	}
 
 }

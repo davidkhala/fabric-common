@@ -43,9 +43,7 @@ class ChaincodeLifecycleOperation extends ChaincodeAction {
 		if (useDynamicTimeout) {
 			requestTimeout = 30000 * this.endorsers.length;
 		}
-		const result = await lifeCycleProposal.installChaincode(chaincodePackagePath, requestTimeout);
-		this.endorseResultInterceptor(result);
-		return result;
+		return await lifeCycleProposal.installChaincode(chaincodePackagePath, requestTimeout);
 	}
 
 	setEndorsementPolicy(endorsementPolicy) {
@@ -131,7 +129,6 @@ class ChaincodeLifecycleOperation extends ChaincodeAction {
 			version,
 			sequence,
 		}, PackageID);
-		this.endorseResultInterceptor(result);
 		const _commit = async () => {
 			const commitResult = await lifecycleProposal.commit([orderer.committer]);
 
@@ -170,7 +167,6 @@ class ChaincodeLifecycleOperation extends ChaincodeAction {
 		this.assign(lifecycleProposal);
 		const result = await lifecycleProposal.checkCommitReadiness({name, version, sequence});
 		return result.queryResults;
-
 	}
 
 	async commitChaincodeDefinition({name, version, sequence}, orderer) {
@@ -178,7 +174,6 @@ class ChaincodeLifecycleOperation extends ChaincodeAction {
 		const lifecycleProposal = new LifecycleProposal(this.identityContext, this.channel, this.endorsers, this.logger);
 		this.assign(lifecycleProposal);
 		const result = await lifecycleProposal.commitChaincodeDefinition({name, version, sequence});
-		this.endorseResultInterceptor(result);
 		const commitResult = await lifecycleProposal.commit([orderer.committer]);
 		this.logger.debug('commitChaincodeDefinition:commit', commitResult);
 		const eventHub = this.newEventHub();

@@ -1,6 +1,5 @@
 const IdentityContext = require('fabric-common/lib/IdentityContext');
 const EventHub = require('khala-fabric-admin/eventHub');
-const {EndorseALL} = require('./endorseResultInterceptor');
 const DefaultEventHubSelector = (hubs) => {
 	return hubs[0];
 };
@@ -12,14 +11,6 @@ class ChaincodeAction {
 		this.endorsers = peers.map(({endorser}) => endorser);
 		this.eventers = peers.map(({eventer}) => eventer);
 		this.eventSelector = DefaultEventHubSelector;
-		this.endorseResultInterceptor = EndorseALL;
-	}
-
-	/**
-	 * @param {EndorseResultHandler} interceptor
-	 */
-	setEndorseResultInterceptor(interceptor) {
-		this.endorseResultInterceptor = interceptor;
 	}
 
 	setProposalOptions(options) {

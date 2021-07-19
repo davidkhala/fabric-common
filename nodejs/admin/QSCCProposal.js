@@ -5,11 +5,13 @@ const {
 	}
 } = require('khala-fabric-formatter/systemChaincode');
 const {SystemChaincodeID: {QSCC}} = require('khala-fabric-formatter/constants');
+const {EndorseALL} = require('./resultInterceptors');
 
 class QSCCProposal extends ProposalManager {
 	constructor(identityContext, channel, endorsers) {
 		super(identityContext, channel, QSCC, endorsers);
 		this.asQuery();
+		this.setProposalResultsAssert(EndorseALL);
 	}
 
 	/**

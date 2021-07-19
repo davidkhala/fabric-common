@@ -8,18 +8,18 @@ const {emptyChannel} = require('khala-fabric-admin/channel');
 const BlockDecoder = require('fabric-common/lib/BlockDecoder');
 const IdentityContext = require('fabric-common/lib/IdentityContext');
 const {getResponses} = require('khala-fabric-formatter/proposalResponse');
+const ChaincodeAction = require('./chaincodeAction');
 
-class QueryHub {
+class QueryHub extends ChaincodeAction {
 	constructor(peers, user) {
-		this.targets = peers.map(({endorser}) => endorser);
+		super(peers, user, undefined);
 		this.identityContext = new IdentityContext(user, null);
 	}
 
 	async chain(channelName) {
 		const channel = emptyChannel(channelName);
-		const proposal = new QSCCProposal(this.identityContext, channel, this.targets);
+		const proposal = new QSCCProposal(this.identityContext, channel, this.endorsers);
 		const result = await proposal.queryInfo();
-
 		const {queryResults} = result;
 
 		return queryResults.map((payload) => {
@@ -38,7 +38,7 @@ class QueryHub {
 	 * @param {string} [packageId] exact name search
 	 */
 	async chaincodesInstalled(label, packageId) {
-		const lifecycleProposal = new LifecycleProposal(this.identityContext, emptyChannel(''), this.targets);
+		const lifecycleProposal = new LifecycleProposal(this.identityContext, emptyChannel(''), this.endorsers);
 		const result = await lifecycleProposal.queryInstalledChaincodes(packageId);
 		if (!label || !!packageId) {
 			return result.queryResults;
@@ -56,29 +56,29 @@ class QueryHub {
 
 	}
 
-	async chaincodesInstantiated(peers, identityContext, channelName) {
-		const lifecycleProposal = new LifecycleProposal(this.identityContext, emptyChannel(channelName), this.targets);
+	async chaincodesInstantiated(channelName) {
+		const lifecycleProposal = new LifecycleProposal(this.identityContext, emptyChannel(channelName), this.endorsers);
 		const result = await lifecycleProposal.queryChaincodeDefinition();
 		return result.queryResults;
 	}
 
 	async blockFromHash(channelName, hashHex) {
 		const blockHash = Buffer.from(hashHex, 'hex');
-		const qsccProposal = new QSCCProposal(this.identityContext, emptyChannel(channelName), this.targets);
+		const qsccProposal = new QSCCProposal(this.identityContext, emptyChannel(channelName), this.endorsers);
 		const result = await qsccProposal.queryBlockByHash(blockHash);
 		const {queryResults} = result;
 		return queryResults.map(payload => BlockDecoder.decode(payload));
 	}
 
 	async blockFromHeight(channelName, blockNumber) {
-		const proposal = new QSCCProposal(this.identityContext, emptyChannel(channelName), this.targets);
+		const proposal = new QSCCProposal(this.identityContext, emptyChannel(channelName), this.endorsers);
 		const result = await proposal.queryBlock(blockNumber);
 		const {queryResults} = result;
 		return queryResults.map(payload => BlockDecoder.decode(payload));
 	}
 
 	async channelJoined() {
-		const csccProposal = new CSCCProposal(this.identityContext, this.targets);
+		const csccProposal = new CSCCProposal(this.identityContext, this.endorsers);
 
 		const result = await csccProposal.queryChannels();
 
@@ -90,7 +90,7 @@ class QueryHub {
 	}
 
 	async tx(channelName, txId) {
-		const qsccProposal = new QSCCProposal(this.identityContext, emptyChannel(channelName), this.targets);
+		const qsccProposal = new QSCCProposal(this.identityContext, emptyChannel(channelName), this.endorsers);
 		const result = await qsccProposal.queryTransaction(txId);
 		const {queryResults} = result;
 		return queryResults.map(BlockDecoder.decodeTransaction);

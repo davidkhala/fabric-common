@@ -1,6 +1,7 @@
 const fabprotos = require('fabric-protos');
 const commonProto = fabprotos.common;
-const {buildSignatureHeader, buildChannelHeader, buildHeader, buildPayload, buildSeekPayload} = require('khala-fabric-formatter/protoTranslator');
+const {buildChannelHeader, buildHeader, buildPayload, buildSeekPayload} = require('khala-fabric-formatter/protoTranslator');
+
 const {DeliverResponseStatus: {SERVICE_UNAVAILABLE}, DeliverResponseType: {STATUS}} = require('khala-fabric-formatter/eventHub');
 const {BufferFrom, ProtoFrom} = require('khala-fabric-formatter/protobuf');
 const sleep = (ms) => {
@@ -27,7 +28,7 @@ class SigningIdentityUtil {
 
 		const {signingIdentity} = this;
 
-		const signature_header = buildSignatureHeader({Creator: signingIdentity.serialize(), Nonce: nonce}, true);
+		const signature_header = BufferFrom({creator: signingIdentity.serialize(), nonce}, commonProto.SignatureHeader);
 
 		// get all the bytes to be signed together, then sign
 		const signing_bytes = Buffer.concat([signature_header, config]);

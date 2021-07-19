@@ -3,6 +3,7 @@ const SigningIdentity = require('fabric-common/lib/SigningIdentity');
 const Signer = require('fabric-common/lib/Signer');
 const User = require('fabric-common/lib/User');
 const {emptySuite} = require('./cryptoSuite');
+const {calculateTransactionId} = require('khala-fabric-formatter/helper');
 
 class UserBuilder {
 
@@ -66,6 +67,20 @@ class UserBuilder {
 		identityContext.calculateTransactionId();
 		const {nonce, transactionId} = identityContext;
 		return {nonce, transactionId};
+	}
+
+	/**
+	 * Create a new transaction ID value. The new transaction ID will be set both on this object and on the return
+	 * value, which is a copy of this identity context. Calls to this function will not affect the transaction ID value
+	 * on copies returned from previous calls.
+	 * @param {IdentityContext}	identityContext
+	 * @param {Buffer} nonce
+	 */
+	static calculateTransactionId(identityContext, nonce) {
+
+		const {mspid, user} = identityContext;
+		const id_bytes = Buffer.from(user.getIdentity()._certificate);
+		return calculateTransactionId({creator: {mspid, id_bytes}, nonce});
 	}
 
 }
