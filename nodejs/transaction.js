@@ -19,16 +19,17 @@ class Transaction extends ChaincodeAction {
 		Object.assign(this, {logger, proposal});
 	}
 
-	async evaluate({fcn, args = [], transientMap}) {
+	async evaluate({fcn, args = [], transientMap, nonce}) {
 		this.proposal.asQuery();
 		return await this.proposal.send({
 			fcn,
 			args,
+			nonce,
 			transientMap: transientMapTransform(transientMap)
 		}, this.proposalOptions);
 	}
 
-	async submit({fcn, args = [], transientMap, init}, orderer, finalityRequired = true) {
+	async submit({fcn, args = [], transientMap, init, nonce}, orderer, finalityRequired = true) {
 		if (init) {
 			fcn = 'init';
 		}
@@ -37,7 +38,8 @@ class Transaction extends ChaincodeAction {
 			fcn,
 			args,
 			transientMap: transientMapTransform(transientMap),
-			init
+			init,
+			nonce
 		}, this.proposalOptions);
 		const commitResult = await this.proposal.commit([orderer.committer], this.commitOptions);
 		this.logger.debug(commitResult);

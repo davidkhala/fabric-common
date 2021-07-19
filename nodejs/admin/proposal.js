@@ -24,7 +24,7 @@ const {calculateTransactionId} = require('./user');
  * chaincode execution. These should be strings or byte buffers.
  * These will be converted into byte buffers before building the protobuf
  * object to be sent to the fabric peer for endorsement.
- * @property {Map} [transientMap] - Optional. A map with the key value pairs
+ * @property {Map|Client.TransientMap} [transientMap] - Optional. A map with the key value pairs
  * of the transient data.
  * @property {boolean} [init] - Optional. If this proposal should be an
  * chaincode initialization request. This will set the init setting in the
@@ -90,7 +90,7 @@ class ProposalManager extends Proposal {
 			handler, // TODO investigate
 		};
 		const results = await super.send(sendProposalRequest);
-		this.assertProposalResults(results);
+		typeof this.assertProposalResults === 'function' && this.assertProposalResults(results);
 		return results;
 	}
 
