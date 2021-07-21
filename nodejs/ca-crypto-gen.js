@@ -31,17 +31,17 @@ exports.initAdmin = async (caService, adminCryptoPath, nodeType) => {
  * @param {FabricCAServices} caService
  * @param {CryptoPath} adminCryptoPath should be host path
  * @param {NodeType} nodeType
- * @param {string} mspId
+ * @param {string} mspid
  * @param {string} [affiliationRoot]
  */
-exports.init = async (caService, adminCryptoPath, nodeType, mspId, {affiliationRoot} = {}) => {
-	logger.debug('init', {mspId, nodeType}, adminCryptoPath);
+exports.init = async (caService, adminCryptoPath, nodeType, mspid, {affiliationRoot} = {}) => {
+	logger.debug('init', {mspid, nodeType}, adminCryptoPath);
 	const {[`${nodeType}OrgName`]: domain} = adminCryptoPath;
 	if (!affiliationRoot) {
 		affiliationRoot = domain;
 	}
 
-	let adminUser = userUtil.loadFromLocal(adminCryptoPath, nodeType, mspId, false);
+	let adminUser = userUtil.loadFromLocal(adminCryptoPath, nodeType, mspid, false);
 
 	if (!adminUser) {
 		const initAdminRetry = async () => {
@@ -59,9 +59,9 @@ exports.init = async (caService, adminCryptoPath, nodeType, mspId, {affiliationR
 		};
 
 		await initAdminRetry();
-		adminUser = userUtil.loadFromLocal(adminCryptoPath, nodeType, mspId, true);
+		adminUser = userUtil.loadFromLocal(adminCryptoPath, nodeType, mspid, true);
 	} else {
-		logger.info(`${adminCryptoPath.userName} of mspId[${mspId}] exists in local file system`);
+		logger.info(`${adminCryptoPath.userName} of mspId[${mspid}] exists in local file system`);
 	}
 
 	const affiliationService = new AffiliationServiceBuilder(caService, adminUser);
@@ -177,8 +177,8 @@ exports.genUser = async (caService, cryptoPath, nodeType, admin, {TLS, affiliati
 		affiliationRoot = cryptoPath[`${nodeType}OrgName`];
 	}
 
-	const mspId = admin.getSigningIdentity()._mspId;
-	let user = userUtil.loadFromLocal(cryptoPath, nodeType, mspId);
+	const mspid = admin.getSigningIdentity()._mspId;
+	let user = userUtil.loadFromLocal(cryptoPath, nodeType, mspid);
 	if (user) {
 		logger.info('user exist', {name: user.getName()});
 		return user;
@@ -199,7 +199,7 @@ exports.genUser = async (caService, cryptoPath, nodeType, admin, {TLS, affiliati
 		const tlsResult = await caService.enroll({enrollmentID, enrollmentSecret, profile: 'tls'});
 		cryptoPath.toTLS(tlsResult, type);
 	}
-	user = userUtil.loadFromLocal(cryptoPath, nodeType, mspId, undefined);
+	user = userUtil.loadFromLocal(cryptoPath, nodeType, mspid, undefined);
 	return user;
 };
 exports.genClientKeyPair = async (caService, {enrollmentID, enrollmentSecret}, admin, affiliationRoot) => {

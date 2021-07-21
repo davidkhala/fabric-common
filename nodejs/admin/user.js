@@ -4,6 +4,7 @@ const Signer = require('fabric-common/lib/Signer');
 const User = require('fabric-common/lib/User');
 const {emptySuite} = require('./cryptoSuite');
 const {calculateTransactionId} = require('khala-fabric-formatter/helper');
+const fs = require('fs');
 
 class UserBuilder {
 
@@ -26,17 +27,26 @@ class UserBuilder {
 	 * We use ephemeral key manage fashion
 	 *  - ensure no local wallet in server
 	 *  - cryptoSuite.importKey return a non-promise object
-	 * @param {module:api.Key|string} key The private key object or the file path of pem format key
-	 * @param {CertificatePem} certificate
-	 * @param {MspId} mspId - This is required when Client#signChannelConfig
+	 * @param {module:api.Key|string} [key] The private key object or PEM
+	 * @param {string} [keystore] private key file, used when key PEM unspecified
+	 * @param {CertificatePem} [certificate] signing certificate raw content
+	 * @param {string} [cert] signing certificate file path, used when certificate raw content unspecified
+	 * @param {MspId} mspid - This is required when Client#signChannelConfig
 	 * @return {Client.User}
 	 */
-	build({key, certificate, mspId}) {
+	build({key, keystore, certificate, cert, mspid}) {
 		const {_cryptoSuite} = this.user;
+		if (!key) {
+			key = fs.readFileSync(keystore);
+		}
 		const privateKey = (key.constructor.name === 'ECDSA_KEY') ? key : _cryptoSuite.createKeyFromRaw(key);
 
+		if (!certificate) {
+			certificate = fs.readFileSync(cert);
+		}
+
 		const pubKey = _cryptoSuite.createKeyFromRaw(certificate);
-		this.user._signingIdentity = new SigningIdentity(certificate, pubKey, mspId, _cryptoSuite, new Signer(_cryptoSuite, privateKey));
+		this.user._signingIdentity = new SigningIdentity(certificate, pubKey, mspid, _cryptoSuite, new Signer(_cryptoSuite, privateKey));
 		this.user.getIdentity = () => {
 			return this.user._signingIdentity;
 		};

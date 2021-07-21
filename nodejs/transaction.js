@@ -8,6 +8,14 @@ const {EndorseALL, CommitSuccess} = require('khala-fabric-admin/resultIntercepto
  *
  */
 class Transaction extends ChaincodeAction {
+	/**
+	 *
+	 * @param peers
+	 * @param user
+	 * @param channel
+	 * @param chaincodeId
+	 * @param logger
+	 */
 	constructor(peers, user, channel, chaincodeId, logger) {
 		super(peers, user, channel);
 		if (!logger) {
@@ -15,7 +23,7 @@ class Transaction extends ChaincodeAction {
 		}
 
 		const proposal = new ProposalManager(this.identityContext, this.channel, chaincodeId, this.endorsers);
-		proposal.setProposalResultsAssert(EndorseALL);
+		proposal.setProposalResultAssert(EndorseALL);
 		proposal.setCommitResultAssert(CommitSuccess);
 		Object.assign(this, {logger, proposal});
 	}

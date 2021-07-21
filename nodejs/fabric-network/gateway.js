@@ -40,6 +40,7 @@ class GatewayManager {
 			// const {mspId, networkConfig, getPeersCallback} = discoveryOptions;
 			// client._clientConfigMspid = mspId;
 			// client._network_config = new NetworkConfig(networkConfig, getPeersCallback);
+			// TODO WIP
 			throw Error('WIP');
 		}
 

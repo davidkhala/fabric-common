@@ -20,8 +20,12 @@ exports.configGroupMatcher = (configGroupName, toThrow) => {
 	return result;
 };
 
-exports.mspIdMatcher = (mspId) => {
+/**
+ *
+ * @param {MspId} mspid
+ * @return {boolean}
+ */
+exports.mspIdMatcher = (mspid) => {
 	const namePattern = /^[a-zA-Z0-9.-]+$/;
-	return mspId.match(namePattern);
-
+	return !!mspid.match(namePattern);
 };

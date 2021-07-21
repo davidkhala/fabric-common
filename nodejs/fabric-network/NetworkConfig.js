@@ -37,9 +37,9 @@ class NetworkConfig {
 		this.getPeersCallback = getPeersCallback;
 	}
 
-	getOrganizationByMspId(mspId) {
+	getOrganizationByMspId(mspid) {
 		for (const [orgName, organization_config] of Object.entries(this.organizationConfigs)) {
-			if (organization_config.mspid === mspId) {
+			if (organization_config.mspid === mspid) {
 				return new Organization(orgName, this.getPeersCallback);
 			}
 		}

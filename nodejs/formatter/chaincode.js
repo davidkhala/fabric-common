@@ -38,7 +38,7 @@ const ChaincodeType = {
 module.exports = {
 	ChaincodeType,
 	ChaincodeSpecType,
-	implicitCollection: (mspId) => `_implicit_org_${mspId}`,
+	implicitCollection: (mspid) => `_implicit_org_${mspid}`,
 	nameMatcher, collectionMatcher, versionMatcher, packageFileMatcher
 };
 

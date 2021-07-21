@@ -108,7 +108,7 @@ class ProposalManager extends Proposal {
 		commit.sign(this.identityContext);
 
 		const result = await commit.send({targets: committers, requestTimeout});
-		typeof this.this.assertCommitResult === 'function' && this.assertCommitResult(result);
+		typeof this.assertCommitResult === 'function' && this.assertCommitResult(result);
 		return result;
 	}
 
