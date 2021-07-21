@@ -11,7 +11,7 @@ class QSCCProposal extends ProposalManager {
 	constructor(identityContext, channel, endorsers) {
 		super(identityContext, channel, QSCC, endorsers);
 		this.asQuery();
-		this.setProposalResultsAssert(EndorseALL);
+		this.setProposalResultAssert(EndorseALL);
 	}
 
 	/**

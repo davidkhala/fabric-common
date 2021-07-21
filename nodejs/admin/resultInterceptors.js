@@ -1,3 +1,11 @@
+const {CommonResponseStatus: {SUCCESS}} = require('khala-fabric-formatter/constants');
+/**
+ * @typedef {function(result:ProposalResponseBundle):ProposalResponseBundle} ProposalResultHandler
+ */
+/**
+ * @typedef {function(result:CommitResponse):CommitResponse} CommitResultHandler
+ */
+
 /**
  *
  * @type ProposalResultHandler
@@ -29,6 +37,23 @@ const EndorseALL = (result) => {
 	}
 	return result;
 };
+
+/**
+ *
+ * @param {CommitResponse} result
+ *
+ */
+const CommitSuccess = (result) => {
+	const {status, info} = result;
+	if (status === SUCCESS && info === '') {
+		return result;
+	}
+
+	const err = Error('COMMIT_ERROR');
+	Object.assign(err, {status, info});
+	throw err;
+};
 module.exports = {
-	EndorseALL
+	EndorseALL,
+	CommitSuccess,
 };

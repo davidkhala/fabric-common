@@ -7,7 +7,7 @@ const {EndorseALL} = require('./resultInterceptors');
 class CSCCProposal extends ProposalManager {
 	constructor(identityContext, endorsers) {
 		super(identityContext, emptyChannel(''), CSCC, endorsers);
-		this.setProposalResultsAssert(EndorseALL);
+		this.setProposalResultAssert(EndorseALL);
 	}
 
 	/**

@@ -2,7 +2,7 @@ const ChaincodeAction = require('./chaincodeAction');
 const ProposalManager = require('khala-fabric-admin/proposal');
 const {waitForTx} = require('./eventHub');
 const {transientMapTransform} = require('khala-fabric-formatter/txProposal');
-const {EndorseALL} = require('khala-fabric-admin/resultInterceptors')
+const {EndorseALL, CommitSuccess} = require('khala-fabric-admin/resultInterceptors');
 
 /**
  *
@@ -16,6 +16,7 @@ class Transaction extends ChaincodeAction {
 
 		const proposal = new ProposalManager(this.identityContext, this.channel, chaincodeId, this.endorsers);
 		proposal.setProposalResultsAssert(EndorseALL);
+		proposal.setCommitResultAssert(CommitSuccess);
 		Object.assign(this, {logger, proposal});
 	}
 
@@ -41,8 +42,8 @@ class Transaction extends ChaincodeAction {
 			init,
 			nonce
 		}, this.proposalOptions);
-		const commitResult = await this.proposal.commit([orderer.committer], this.commitOptions);
-		this.logger.debug(commitResult);
+		await this.proposal.commit([orderer.committer], this.commitOptions);
+
 		if (finalityRequired) {
 			const eventHub = this.newEventHub();
 			try {

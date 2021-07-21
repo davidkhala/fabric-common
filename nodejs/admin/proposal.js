@@ -1,6 +1,7 @@
 const Proposal = require('fabric-common/lib/Proposal');
 const Commit = require('fabric-common/lib/Commit');
 const {calculateTransactionId} = require('./user');
+
 /**
  * @typedef {Object} ProposalResponseBundle
  * @property {ServiceError[]} errors
@@ -8,13 +9,6 @@ const {calculateTransactionId} = require('./user');
  * @property {Buffer[]} queryResults
  */
 
-/**
- * @typedef {function(result:ProposalResponseBundle):ProposalResponseBundle} ProposalResultHandler
- */
-
-/**
- * @typedef {function(result:ProposalResponseBundle)|ProposalResultHandler} ProposalResultAssert
- */
 
 /**
  * @typedef {Object} BuildProposalRequest
@@ -49,10 +43,17 @@ class ProposalManager extends Proposal {
 
 	/**
 	 *
-	 * @param {ProposalResultAssert} assertFunction
+	 * @param {ProposalResultHandler} assertFunction
 	 */
-	setProposalResultsAssert(assertFunction) {
-		this.assertProposalResults = assertFunction;
+	setProposalResultAssert(assertFunction) {
+		this.assertProposalResult = assertFunction;
+	}
+
+	/**
+	 * @param {CommitResultHandler} assertFunction
+	 */
+	setCommitResultAssert(assertFunction) {
+		this.assertCommitResult = assertFunction;
 	}
 
 	asQuery() {
@@ -90,7 +91,7 @@ class ProposalManager extends Proposal {
 			handler, // TODO investigate
 		};
 		const results = await super.send(sendProposalRequest);
-		typeof this.assertProposalResults === 'function' && this.assertProposalResults(results);
+		typeof this.assertProposalResult === 'function' && this.assertProposalResult(results);
 		return results;
 	}
 
@@ -106,7 +107,9 @@ class ProposalManager extends Proposal {
 		commit.build(this.identityContext);
 		commit.sign(this.identityContext);
 
-		return await commit.send({targets: committers, requestTimeout});
+		const result = await commit.send({targets: committers, requestTimeout});
+		typeof this.this.assertCommitResult === 'function' && this.assertCommitResult(result);
+		return result;
 	}
 
 }
