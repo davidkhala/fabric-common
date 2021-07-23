@@ -20,7 +20,7 @@ const {
 } = lifeCycleProtos;
 const fs = require('fs');
 const {getResponses} = require('khala-fabric-formatter/proposalResponse');
-const {EndorseALL} = require('./resultInterceptors');
+const {EndorseALL, CommitSuccess} = require('./resultInterceptors');
 const {ApplicationPolicy, CollectionConfigPackage} = protosProtos;
 
 
@@ -37,6 +37,7 @@ class LifecycleProposal extends ProposalManager {
 		this.logger = logger;
 		this.init_required = true;
 		this.setProposalResultAssert(EndorseALL);
+		this.setCommitResultAssert(CommitSuccess);
 	}
 
 	/**

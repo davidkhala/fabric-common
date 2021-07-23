@@ -1,14 +1,13 @@
 const LifecycleProposal = require('khala-fabric-admin/lifecycleProposal');
 const {waitForTx} = require('./eventHub');
 const {sleep} = require('khala-light-util');
-const assert = require('assert');
 const ChaincodeAction = require('./chaincodeAction');
 const {emptyChannel} = require('khala-fabric-admin/channel');
 const Policy = require('khala-fabric-formatter/policy');
 const GatePolicy = require('khala-fabric-formatter/gatePolicy');
 const {CommonResponseStatus: {SERVICE_UNAVAILABLE}} = require('khala-fabric-formatter/constants');
-
 const {buildCollectionConfig} = require('khala-fabric-formatter/SideDB');
+const {CommitSuccess} = require('khala-fabric-admin/resultInterceptors');
 
 class ChaincodeLifecycleOperation extends ChaincodeAction {
 	/**
@@ -18,12 +17,14 @@ class ChaincodeLifecycleOperation extends ChaincodeAction {
 	 * @param channel
 	 * @param logger
 	 */
-	constructor(peers, user, channel, logger) {
+	constructor(peers, user, channel = emptyChannel(''), logger) {
 		super(peers, user, channel);
 		if (!logger) {
 			logger = require('khala-logger/log4js').consoleLogger('Chaincode Operation');
 		}
-		this.logger = logger;
+		const proposal = new LifecycleProposal(this.identityContext, channel, this.endorsers, logger);
+		Object.assign(this, {logger, proposal});
+
 	}
 
 	static _defaultVersion(sequence) {
@@ -31,19 +32,18 @@ class ChaincodeLifecycleOperation extends ChaincodeAction {
 	}
 
 	/**
-	 * Install phase does not require `init_required` flag
+	 * Install phase does not require `init_required` flag, neither this.channel as valid object
 	 * @param chaincodePackagePath
 	 * @param useDynamicTimeout
 	 * @return {Promise<*>}
 	 */
 	async install(chaincodePackagePath, useDynamicTimeout) {
-		const lifeCycleProposal = new LifecycleProposal(this.identityContext, emptyChannel(''), this.endorsers, this.logger);
-
+		const {proposal} = this;
 		let requestTimeout;
 		if (useDynamicTimeout) {
 			requestTimeout = 30000 * this.endorsers.length;
 		}
-		return await lifeCycleProposal.installChaincode(chaincodePackagePath, requestTimeout);
+		return await proposal.installChaincode(chaincodePackagePath, requestTimeout);
 	}
 
 	setEndorsementPolicy(endorsementPolicy) {
@@ -122,15 +122,16 @@ class ChaincodeLifecycleOperation extends ChaincodeAction {
 	 */
 	async approve({name, sequence, PackageID, version}, orderer, waitForConsensus) {
 		version = version || ChaincodeLifecycleOperation._defaultVersion(sequence);
-		const lifecycleProposal = new LifecycleProposal(this.identityContext, this.channel, this.endorsers, this.logger);
-		this.assign(lifecycleProposal);
-		const result = await lifecycleProposal.approveForMyOrg({
+		const {proposal} = this;
+		this.assign(proposal);
+		const result = await proposal.approveForMyOrg({
 			name,
 			version,
 			sequence,
 		}, PackageID);
+
 		const _commit = async () => {
-			const commitResult = await lifecycleProposal.commit([orderer.committer]);
+			const commitResult = await proposal.commit([orderer.committer]);
 
 			this.logger.info('approve:commit', commitResult);
 			const {status, info} = commitResult;
@@ -144,11 +145,12 @@ class ChaincodeLifecycleOperation extends ChaincodeAction {
 					throw err;
 				}
 			}
-			assert.strictEqual(status, 'SUCCESS');
-			assert.strictEqual(info, '');
+
+			CommitSuccess(commitResult);
 			return commitResult;
 		};
 
+		proposal.setCommitResultAssert(null);
 		await _commit();
 
 
@@ -161,20 +163,21 @@ class ChaincodeLifecycleOperation extends ChaincodeAction {
 		return result;
 	}
 
-	async checkCommitReadiness({name, version, sequence}) {
+	async checkCommitReadiness({name, sequence, version}) {
 		version = version || ChaincodeLifecycleOperation._defaultVersion(sequence);
-		const lifecycleProposal = new LifecycleProposal(this.identityContext, this.channel, this.endorsers, this.logger);
-		this.assign(lifecycleProposal);
-		const result = await lifecycleProposal.checkCommitReadiness({name, version, sequence});
+
+		const {proposal} = this;
+		this.assign(proposal);
+		const result = await proposal.checkCommitReadiness({name, version, sequence});
 		return result.queryResults;
 	}
 
-	async commitChaincodeDefinition({name, version, sequence}, orderer) {
-		version = version || ChaincodeLifecycleOperation._defaultVersion(sequence);
-		const lifecycleProposal = new LifecycleProposal(this.identityContext, this.channel, this.endorsers, this.logger);
-		this.assign(lifecycleProposal);
-		const result = await lifecycleProposal.commitChaincodeDefinition({name, version, sequence});
-		const commitResult = await lifecycleProposal.commit([orderer.committer]);
+	async commitChaincodeDefinition({name, sequence, version = ChaincodeLifecycleOperation._defaultVersion(sequence)}, orderer) {
+
+		const {proposal} = this;
+		this.assign(proposal);
+		const result = await proposal.commitChaincodeDefinition({name, version, sequence});
+		const commitResult = await proposal.commit([orderer.committer]);
 		this.logger.debug('commitChaincodeDefinition:commit', commitResult);
 		const eventHub = this.newEventHub();
 		try {
@@ -187,8 +190,8 @@ class ChaincodeLifecycleOperation extends ChaincodeAction {
 	}
 
 	async queryChaincodeDefinition(name) {
-		const lifeCycleProposal = new LifecycleProposal(this.identityContext, this.channel, this.endorsers, this.logger);
-		const result = await lifeCycleProposal.queryChaincodeDefinition(name);
+		const {proposal} = this;
+		const result = await proposal.queryChaincodeDefinition(name);
 		return result.queryResults;
 	}
 }
