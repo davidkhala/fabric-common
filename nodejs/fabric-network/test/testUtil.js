@@ -13,7 +13,7 @@ exports.getSampleUser = () => {
 	const mspid = 'icddMSP';
 	user._cryptoSuite = Utils.newCryptoSuite();
 	const privateKey = user._cryptoSuite.createKeyFromRaw(key);
-	////
+	//
 	const {_cryptoSuite} = user;
 
 

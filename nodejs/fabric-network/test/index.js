@@ -1,14 +1,19 @@
 const path = require('path');
 const {getSampleUser} = require('./testUtil');
-describe('smoke', async () => {
-	it('requireAll', () => {
-		const {CommonJSRequireSmoke} = require('khala-light-util/testUtil');
-		const libRoot = path.resolve(__dirname, '../');
-		CommonJSRequireSmoke(libRoot);
+const fsExtra = require('fs-extra');
+
+describe('copy from ', () => {
+	const from = path.resolve(__dirname, '../../../../config/ca-crypto-config/peerOrganizations/icdd/users/Admin@icdd/msp');
+	const to = path.resolve(__dirname, './artifacts/msp');
+	it('exec', () => {
+		fsExtra.removeSync(to);
+		fsExtra.copySync(from, to);
 	});
+
+
 });
-describe('unit', async () => {
-	describe('gateway:', () => {
+describe('gateway', () => {
+	it('smoke', () => {
 		const GatewayManager = require('../gateway');
 
 		let gatewayManager;
