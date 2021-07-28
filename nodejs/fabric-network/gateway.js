@@ -11,9 +11,7 @@ class GatewayManager {
 	}
 
 	setIdentity(user) {
-		const identity = new SigningIdentity(user._signingIdentity);
-
-		this.gateWay.identity = identity;
+		this.gateWay.identity = new SigningIdentity(user._signingIdentity);
 		this.gateWay.identityContext = new IdentityContext(user, this.client);
 	}
 
@@ -67,9 +65,7 @@ class GatewayManager {
 			wallet: {}, discovery: {enabled: !!discoveryOptions}, transaction: {strategy}, identity
 		});
 
-		const network = await this.gateWay.getNetwork(channelName);
-
-		return network;
+		return await this.gateWay.getNetwork(channelName);
 	}
 
 	disconnect() {

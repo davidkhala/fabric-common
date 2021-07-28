@@ -16,7 +16,7 @@ class QueryHub extends ChaincodeAction {
 		this.identityContext = new IdentityContext(user, null);
 	}
 
-	async chain(channelName) {
+	async getChainInfo(channelName) {
 		const channel = emptyChannel(channelName);
 		const proposal = new QSCCProposal(this.identityContext, channel, this.endorsers);
 		const result = await proposal.queryInfo();

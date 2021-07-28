@@ -13,17 +13,13 @@ describe('copy from ', () => {
 
 });
 describe('gateway', () => {
-	it('smoke', () => {
-		const GatewayManager = require('../gateway');
+	const GatewayManager = require('../gateway');
 
-		let gatewayManager;
-		it('constructor', async () => {
-			const user = getSampleUser();
+	it('constructor', async () => {
+		const user = getSampleUser();
 
-			gatewayManager = new GatewayManager(user);
-			await gatewayManager.connect('allchannel', undefined, undefined, undefined, undefined);
-		});
-
+		const gatewayManager = new GatewayManager(user);
+		await gatewayManager.connect('allchannel', undefined, undefined, undefined, undefined);
 	});
 });
 

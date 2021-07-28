@@ -4,12 +4,13 @@ const Signer = require('fabric-common/lib/Signer');
 const path = require('path');
 const fs = require('fs');
 const Utils = require('fabric-common/lib/Utils');
+const {getOneKeystore} = require('khala-fabric-formatter/path')
 exports.getSampleUser = () => {
 	const user = new User('Admin@icdd');
 	const certificatePath = path.resolve(__dirname, 'artifacts/msp/signcerts/Admin@icdd-cert.pem');
 	const certificate = fs.readFileSync(certificatePath).toString();
-	const privateKeyPath = path.resolve(__dirname, 'artifacts/msp/keystore/c0279b7aa51808dff94c6ea7d00204732e6570dd711bb110317eecbaa695c6be_sk');
-	const key = fs.readFileSync(privateKeyPath).toString();
+	const privateKeyPath = path.resolve(__dirname, 'artifacts/msp/keystore');
+	const key = getOneKeystore(privateKeyPath);
 	const mspid = 'icddMSP';
 	user._cryptoSuite = Utils.newCryptoSuite();
 	const privateKey = user._cryptoSuite.createKeyFromRaw(key);
