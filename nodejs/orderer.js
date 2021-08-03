@@ -36,7 +36,7 @@ exports.envBuilder = (opts, loggingLevel, operationsOpts, metricsOpts) => {
 		`ORDERER_GENERAL_TLS_ENABLED=${!!tls}`,
 		`ORDERER_GENERAL_LOCALMSPID=${id}`,
 		`ORDERER_GENERAL_LOCALMSPDIR=${configPath}`,
-		'GODEBUG=netdns=go' // aliyun only
+		'GODEBUG=x509ignoreCN=0', // TODO, ignore common name legacy
 	];
 	if (bootStrapFile) {
 		env = env.concat([

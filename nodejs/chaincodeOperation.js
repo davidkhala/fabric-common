@@ -1,5 +1,5 @@
 const LifecycleProposal = require('khala-fabric-admin/lifecycleProposal');
-const {waitForTx} = require('./eventHub');
+const {waitForTx, waitForBlock} = require('./eventHub');
 const {sleep} = require('khala-light-util');
 const ChaincodeAction = require('./chaincodeAction');
 const {emptyChannel} = require('khala-fabric-admin/channel');
@@ -147,7 +147,6 @@ class ChaincodeLifecycleOperation extends ChaincodeAction {
 			}
 
 			CommitSuccess(commitResult);
-			return commitResult;
 		};
 
 		proposal.setCommitResultAssert(null);
