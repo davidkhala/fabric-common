@@ -1,50 +1,24 @@
 const path = require('path');
+const fs = require('fs');
 
-/**
- * visualizer class for ECDSA_Key
- */
-class ECDSA_Key {
+class ECDSA_PrvKey {
 	/**
-	 * @param {ECDSA_KEY} key could be either private or public Key
-	 * @param {NodeModule} [fs]
+	 * @param key
 	 */
-	constructor(key, fs) {
-		if (key.constructor.name !== 'ECDSA_KEY') {
-			const err = Error('not ECDSA Key');
-			err.key = key;
-			throw err;
-		}
+	constructor(key) {
 		this._key = key;
-		this.fs = fs;
 	}
 
-	/**
-	 *
-	 * @return {PEM}
-	 */
 	pem() {
-		return this._key.toBytes().trim();
+		return this._key.toBytes();
 	}
 
-
-	save(filePath) {
-		const data = this.pem();
-		if (this.fs && typeof this.fs.outputFileSync === 'function') {
-			this.fs.outputFileSync(filePath, data);
-		} else {
-			const fs = require('fs');
-			fs.writeFileSync(filePath, data);
-		}
-	}
-}
-
-class ECDSA_PrvKey extends ECDSA_Key {
 	/**
 	 * fabric private key raw PEM filename
 	 * @return {string}
 	 */
 	filename() {
-		const {prvKeyHex} = this._key._key;
+		const {prvKeyHex} = this._key;
 		if (!prvKeyHex) {
 			throw Error('not private key');
 		}
@@ -54,11 +28,13 @@ class ECDSA_PrvKey extends ECDSA_Key {
 	toKeystore(dirName) {
 		const filename = this.filename();
 		const absolutePath = path.resolve(dirName, filename);
-		this.save(absolutePath);
+		const data = this.pem();
+		fs.mkdirSync(dirName, {recursive: true});
+		fs.writeFileSync(absolutePath, data);
+
 	}
 }
 
 module.exports = {
-	ECDSA_Key,
 	ECDSA_PrvKey
 };
