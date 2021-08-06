@@ -61,7 +61,10 @@ exports.runCA = async ({container_name, port, network, imageTag, adminName, admi
 	}
 
 	const {caKey, caCert} = caUtil.container;
-	const {CN} = issuer; // only --csr.cn is supported in command options
+	if (!issuer) {
+		issuer = {};
+	}
+	const {CN, hosts} = issuer;
 
 	const cmdIntermediateBuilder = (options) => {
 		if (!options) {
@@ -73,7 +76,13 @@ exports.runCA = async ({container_name, port, network, imageTag, adminName, admi
 	};
 
 
-	const cmdAppend = `-d -b ${adminName}:${adminPassword} ${TLS ? '--tls.enabled' : ''} --csr.cn=${CN} --cors.enabled ${cmdIntermediateBuilder(intermediate)}`;
+	let cmdAppend = `-d -b ${adminName}:${adminPassword} ${TLS ? '--tls.enabled' : ''} --cors.enabled ${cmdIntermediateBuilder(intermediate)}`;
+	if (CN) {
+		cmdAppend += ` --csr.cn=${CN}`;
+	}
+	if (hosts) {
+		cmdAppend += ` --csr.hosts=${hosts.toString()}`;
+	}
 	const allowDelete = '--cfg.affiliations.allowremove --cfg.identities.allowremove';
 	const Cmd = ['sh', '-c', `rm ${caKey}; rm ${caCert};fabric-ca-server start ${cmdAppend} ${allowDelete}`];
 

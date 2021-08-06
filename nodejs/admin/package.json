@@ -1,11 +1,12 @@
 {
   "name": "khala-fabric-admin",
-  "version": "2.3.0-alpha.11",
+  "version": "2.3.0-alpha.12",
   "dependencies": {
     "fabric-ca-client": "latest",
     "fabric-common": "latest",
     "khala-fabric-formatter": "latest",
-    "form-data": "latest"
+    "form-data": "latest",
+    "khala-crypto": "latest"
   },
   "devDependencies": {
     "khala-light-util": "latest"

@@ -55,7 +55,6 @@ exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchD
 			`CORE_PEER_TLS_ENABLED=${!!tls}`,
 			`CORE_PEER_ID=${peerHostName}`,
 			`CORE_PEER_ADDRESS=${peerHostName}:7051`,
-			'GODEBUG=netdns=go' // NOTE aliyun only
 		];
 	if (chaincodeOpts) {
 		const {attachLog, endpoint, tls} = chaincodeOpts;

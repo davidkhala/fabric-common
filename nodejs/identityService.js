@@ -13,10 +13,12 @@ class IdentityServiceWrapper {
 	 *
 	 * @param {FabricCAService} caService
 	 * @param {User} adminUser
+	 * @param logger
 	 */
-	constructor(caService, adminUser) {
+	constructor(caService, adminUser, logger = console) {
 		this.identityService = new IdentityService(caService._fabricCAClient);
 		this.registrar = adminUser;
+		this.logger = logger;
 	}
 
 	/**
@@ -34,7 +36,7 @@ class IdentityServiceWrapper {
 			maxEnrollments = -1;
 		}
 		const allowedType = Object.values(IdentityService.HFCAIdentityType);
-		if (!allowedType.includes(role)) {
+		if (role && !allowedType.includes(role)) {
 			throw Error(`invalid role:${role},should be one of ${allowedType}`);
 		}
 		/**
