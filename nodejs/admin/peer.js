@@ -66,8 +66,7 @@ class Peer {
 	}
 
 	getServiceEndpoints() {
-		const {endorser, eventer, discoverer} = this;
-		return [endorser, eventer, discoverer];
+		return [this.endorser, this.eventer, this.discoverer];
 	}
 
 	reset() {

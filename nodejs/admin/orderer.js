@@ -62,28 +62,33 @@ class Orderer {
 		this.logger = logger;
 	}
 
+	getServiceEndpoints() {
+		return [this.committer, this.eventer];
+	}
+
 	reset() {
-		this.eventer.connectAttempted = false;
-		this.committer.connectAttempted = false;
+		for (const endpoint of this.getServiceEndpoints()) {
+			endpoint.connectAttempted = false;
+		}
+
 	}
 
 	async connect() {
 		const {logger} = this;
-		if (this.committer.connected || this.committer.service) {
-			logger.info(`Orderer as committer [${this.committer.name}] connection exist already`);
-		} else {
-			await this.committer.connect();
+		for (const endpoint of this.getServiceEndpoints()) {
+			if (endpoint.connected || endpoint.service) {
+				logger.info(`Orderer as [${endpoint.name}] connection exist already`);
+			} else {
+				await endpoint.connect();
+			}
 		}
-		if (this.eventer.connected || this.eventer.service) {
-			logger.info(`Orderer as eventer [${this.eventer.name}] connection exist already`);
-		} else {
-			await this.eventer.connect();
-		}
+
 	}
 
 	disconnect() {
-		this.committer.disconnect();
-		this.eventer.disconnect();
+		for (const endpoint of this.getServiceEndpoints()) {
+			endpoint.disconnect();
+		}
 	}
 
 	/**

@@ -21,10 +21,9 @@ class SigningIdentityUtil {
 	 *
 	 * @param config
 	 * @param {Buffer} nonce 24 bits random bytes
-	 * @param [asBuffer]
-	 * @return {*}
+	 * @return {ConfigSignature}
 	 */
-	signChannelConfig(config, nonce, asBuffer) {
+	signChannelConfig(config, nonce) {
 
 		const {signingIdentity} = this;
 
@@ -35,9 +34,7 @@ class SigningIdentityUtil {
 		const signature = Buffer.from(signingIdentity.sign(signing_bytes));
 
 		// build the return object
-		const proto_config_signature = ProtoFrom({signature_header, signature}, commonProto.ConfigSignature);
-
-		return asBuffer ? BufferFrom(proto_config_signature) : proto_config_signature;
+		return ProtoFrom({signature_header, signature}, commonProto.ConfigSignature);
 	}
 
 	/**
@@ -70,9 +67,8 @@ class SigningIdentityUtil {
 			signature = envelopeDecoded.signature;
 			payload = envelopeDecoded.payload;
 		} else {
-			const signaturesDecoded = signatures.map(commonProto.ConfigSignature.decode);
 
-			const configUpdateEnvelope = ProtoFrom({config_update: config, signatures: signaturesDecoded}, commonProto.ConfigUpdateEnvelope);
+			const configUpdateEnvelope = ProtoFrom({config_update: config, signatures}, commonProto.ConfigUpdateEnvelope);
 			const channelHeader = buildChannelHeader({
 				Type: commonProto.HeaderType.CONFIG_UPDATE,
 				ChannelId: name,
