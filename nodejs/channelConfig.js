@@ -42,7 +42,7 @@ const getChannelConfigReadable = async (channelName, user, orderer, viaServer) =
 	};
 };
 
-const setAnchorPeers = async (channelName, orderer, user, signingIdentities = [], orgName, anchorPeers, viaServer) => {
+const setAnchorPeers = async (channelName, orderer, user, signingIdentities = [user.getSigningIdentity()], orgName, anchorPeers, viaServer) => {
 
 	const channelUpdate = new ChannelUpdate(channelName, user, orderer.committer, logger);
 	const {proto, json} = await getChannelConfigReadable(channelName, user, orderer, viaServer);
@@ -63,15 +63,11 @@ const setAnchorPeers = async (channelName, orderer, user, signingIdentities = []
 
 	}
 
-	const mainSigningIdentity = user.getSigningIdentity();
-	if (signingIdentities.length === 0) {
-		signingIdentities.push(mainSigningIdentity);
-	}
-	const signatures = [];
-	for (const signingIdentity of signingIdentities) {
+	const signatures = signingIdentities.map(signingIdentity => {
 		const extraSigningIdentityUtil = new SigningIdentityUtil(signingIdentity);
-		signatures.push(extraSigningIdentityUtil.signChannelConfig(config, getNonce(), true));
-	}
+		return extraSigningIdentityUtil.signChannelConfig(config, getNonce());
+	});
+
 	channelUpdate.useSignatures(config, signatures);
 	return await channelUpdate.submit();
 

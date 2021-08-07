@@ -1,57 +1,20 @@
 const Logger = require('khala-logger/log4js');
 const logger = Logger.consoleLogger('channel');
 const fs = require('fs');
-const {getNonce} = require('khala-fabric-formatter/helper');
 
-const ChannelUpdate = require('khala-fabric-admin/channelUpdate');
 const SigningIdentityUtil = require('khala-fabric-admin/signingIdentity');
-const {extractConfigUpdate, extractLastConfigIndex, assertConfigBlock, extractConfigEnvelopeFromBlockData} = require('khala-fabric-formatter/protoTranslator');
+const {
+	extractLastConfigIndex,
+	assertConfigBlock,
+	extractConfigEnvelopeFromBlockData
+} = require('khala-fabric-formatter/protoTranslator');
 const IdentityContext = require('fabric-common/lib/IdentityContext');
 const EventHub = require('khala-fabric-admin/eventHub');
 const {getSingleBlock} = require('./eventHub');
 const CSCCProposal = require('khala-fabric-admin/CSCCProposal');
 const {fromEvent} = require('khala-fabric-formatter/blockEncoder');
 const {BlockNumberFilterType: {NEWEST}} = require('khala-fabric-formatter/eventHub');
-/**
- * different from `peer channel create`, this will not response back with genesisBlock for this channel.
- * @deprecated system channel deprecate
- * @param {string} channelName
- * @param {Client.User} user
- * @param {Orderer} orderer
- * @param {string} channelConfigFile file path
- * @param {SigningIdentity[]} [signingIdentities]
- * @param {boolean} asEnvelop
- */
-const create = async (channelName, user, orderer, channelConfigFile, signingIdentities = [], asEnvelop) => {
-	logger.debug('create-channel', {channelName, channelConfigFile, orderer: orderer.toString()});
-
-	const channelConfig = fs.readFileSync(channelConfigFile);
-	const mainSigningIdentity = user.getSigningIdentity();
-	const channelUpdate = new ChannelUpdate(channelName, user, orderer.committer, logger);
-	if (asEnvelop) {
-		channelUpdate.useEnvelope(channelConfig);
-	} else {
-
-		// extract the channel config bytes from the envelope to be signed
-		const config = extractConfigUpdate(channelConfig);
-		const signatures = [];
-		if (signingIdentities.length === 0) {
-			signingIdentities.push(mainSigningIdentity);
-		}
-		for (const signingIdentity of signingIdentities) {
-			const extraSigningIdentityUtil = new SigningIdentityUtil(signingIdentity);
-			signatures.push(extraSigningIdentityUtil.signChannelConfig(config, getNonce(), true));
-		}
-		channelUpdate.useSignatures(config, signatures);
-	}
-
-	const {status, info} = await channelUpdate.submit();
-	const swallowPattern = `error applying config update to existing channel '${channelName}': error authorizing update: error validating ReadSet: proposed update requires that key [Group]  /Channel/Application be at version 0, but it is currently at version 1`;
-	if (status === 'BAD_REQUEST' && info === swallowPattern) {
-		logger.warn('create-channel', `[${status}] channel[${channelName}] exist already`);
-	}
-	return {status, info};
-};
+const assert = require('assert');
 
 /**
  *
@@ -68,10 +31,12 @@ const getGenesisBlock = async (channel, user, orderer, verbose, blockTime = 1000
 
 	let block;
 	if (verbose) {
-		const eventHub = new EventHub(channel, [orderer.eventer]);
+		// FIXME: this part is not covered in test
+		const eventHub = new EventHub(channel, orderer.eventer);
+		eventHub.build(identityContext, {startBlock: 0});
+		await eventHub.connect();
 		block = await getSingleBlock(eventHub, identityContext, 0);
 		await eventHub.disconnect();
-		orderer.reset();
 	} else {
 		const signingIdentityUtil = new SigningIdentityUtil(user.getSigningIdentity());
 		identityContext.calculateTransactionId();
@@ -136,7 +101,7 @@ const join = async (channel, peers, user, blockFile, orderer) => {
 	const result = await proposal.joinChannel(block);
 
 	const {errors, responses} = result;
-
+	assert.ok(errors.length === 0);
 	responses.forEach(({response}, index) => {
 		const {status, message} = response;
 		if (status === 500 && message === 'cannot create ledger from genesis block: LedgerID already exists') {
@@ -155,7 +120,6 @@ const join = async (channel, peers, user, blockFile, orderer) => {
 module.exports = {
 	getGenesisBlock,
 	getChannelConfigFromOrderer,
-	create,
 	join
 };
 
