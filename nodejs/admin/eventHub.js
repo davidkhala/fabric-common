@@ -1,5 +1,12 @@
 const EventService = require('fabric-common/lib/EventService');
-const {BlockEventFilterType: {FULL_BLOCK}, TxEventFilterType: {ALL}} = require('khala-fabric-formatter/eventHub.js');
+const {
+	BlockEventFilterType: {FULL_BLOCK},
+	TxEventFilterType: {ALL},
+	BlockNumberFilterType: {NEWEST, OLDEST}
+} = require('khala-fabric-formatter/eventHub.js');
+const fabproto6 = require('fabric-protos');
+const {BLOCK_UNTIL_READY, FAIL_IF_NOT_READY} = fabproto6.orderer.SeekInfo.SeekBehavior;
+const Long = require('long');
 
 class EventHub {
 	/**
@@ -17,6 +24,79 @@ class EventHub {
 		if (!eventService) {
 			eventService = new EventService('-', channel);
 
+			/**
+			 *
+			 * @param {IdentityContext} idContext - The transaction context to use for Identity, transaction ID, and nonce values
+			 * @param {BlockNumberFilterType|number} startBlock
+			 * @param {BlockNumberFilterType|number} endBlock
+			 * @param {BlockEventFilterType} blockType
+			 * @param {SeekInfo.SeekBehavior} behavior
+			 * @return {Uint8Array} The start request bytes that need to be signed.
+			 */
+			eventService.build = (idContext,
+				{startBlock, endBlock, blockType, behavior}) => {
+
+				// BLOCK_UNTIL_READY will mean hold the stream open and keep sending as
+				//    the blocks come in
+				// FAIL_IF_NOT_READY will mean if the block is not there throw an error
+
+				// build start proto
+				const seekStart = fabproto6.orderer.SeekPosition.create();
+				switch (startBlock) {
+					case OLDEST:
+						seekStart.oldest = fabproto6.orderer.SeekOldest.create();
+						break;
+					case NEWEST:
+						seekStart.newest = fabproto6.orderer.SeekNewest.create();
+						break;
+					default:
+						if (Number.isInteger(startBlock)) {
+							seekStart.specified = fabproto6.orderer.SeekSpecified.create({
+								number: startBlock
+							});
+						} else {
+							seekStart.newest = fabproto6.orderer.SeekNewest.create();
+						}
+				}
+
+				// build stop proto
+				const seekStop = fabproto6.orderer.SeekPosition.create();
+				switch (endBlock) {
+					case OLDEST:
+						seekStop.oldest = fabproto6.orderer.SeekOldest.create();
+						break;
+					case NEWEST:
+						seekStop.newest = fabproto6.orderer.SeekNewest.create();
+						break;
+					default:
+						seekStop.specified = fabproto6.orderer.SeekSpecified.create({
+							number: Number.isInteger(endBlock) ? endBlock : Long.MAX_VALUE
+						});
+				}
+
+
+				// seek info with all parts
+				const seekInfo = fabproto6.orderer.SeekInfo.create({
+					start: seekStart,
+					stop: seekStop,
+					behavior
+				});
+				const seekInfoBuf = fabproto6.orderer.SeekInfo.encode(seekInfo).finish();
+
+				// build the header for use with the seekInfo payload
+				const channelHeaderBuf = channel.buildChannelHeader(
+					fabproto6.common.HeaderType.DELIVER_SEEK_INFO,
+					'',
+					idContext.transactionId
+				);
+
+				const seekPayload = fabproto6.common.Payload.create({
+					header: eventService.buildHeader(idContext, channelHeaderBuf),
+					data: seekInfoBuf
+				});
+				return fabproto6.common.Payload.encode(seekPayload).finish();
+
+			};
 			eventService.setTargets([eventer]);
 		}
 
@@ -29,12 +109,16 @@ class EventHub {
 	 * @param {IdentityContext} identityContext
 	 * @param {BlockNumberFilterType|number} [startBlock]
 	 * @param {BlockNumberFilterType|number} [endBlock]
+	 * @param {boolean} [behavior] true to adopt FAIL_IF_NOT_READY, false to adopt BLOCK_UNTIL_READY
 	 */
-	build(identityContext, {startBlock, endBlock} = {}) {
+	build(identityContext, {startBlock, endBlock, behavior} = {}) {
 		const {eventService} = this;
-		eventService.build(identityContext, {
-			startBlock, endBlock, blockType: FULL_BLOCK
+
+		eventService._payload = eventService.build(identityContext, {
+			startBlock, endBlock, blockType: FULL_BLOCK,
+			behavior: behavior ? FAIL_IF_NOT_READY : BLOCK_UNTIL_READY
 		});
+
 		eventService.sign(identityContext);
 	}
 
@@ -70,7 +154,7 @@ class EventHub {
 	 * @param {string} chaincodeId
 	 * @param eventName
 	 * @param {EventCallback} callback
-	 * @param {EventRegistrationOptions} options
+	 * @param {EventRegistrationOptions} [options]
 	 * @return {EventListener}
 	 */
 	chaincodeEvent(chaincodeId, eventName, callback, options) {

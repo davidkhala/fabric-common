@@ -7,7 +7,7 @@ class ChannelUpdate {
 	/**
 	 *
 	 * @param {string} channelName
-	 * @param {Client.User} user
+	 * @param {User} user
 	 * @param {Committer} committer
 	 * @param [logger]
 	 */
@@ -32,7 +32,7 @@ class ChannelUpdate {
 
 	/**
 	 * @param {Buffer} config
-	 * @param {Buffer[]} signatures
+	 * @param {ConfigSignature[]} signatures
 	 */
 	useSignatures(config, signatures) {
 		this.content.config = config;
