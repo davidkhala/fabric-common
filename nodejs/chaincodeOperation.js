@@ -1,5 +1,5 @@
 const LifecycleProposal = require('khala-fabric-admin/lifecycleProposal');
-const {waitForTx, waitForBlock} = require('./eventHub');
+const EventHubQuery = require('./eventHub');
 const {sleep} = require('khala-light-util');
 const ChaincodeAction = require('./chaincodeAction');
 const {emptyChannel} = require('khala-fabric-admin/channel');
@@ -155,7 +155,8 @@ class ChaincodeLifecycleOperation extends ChaincodeAction {
 
 		const eventHub = this.newEventHub();
 		try {
-			await waitForTx(eventHub, this.identityContext);
+			const eventHubQuery = new EventHubQuery(eventHub, this.identityContext);
+			await eventHubQuery.waitForTx();
 		} finally {
 			eventHub.disconnect();
 		}
@@ -180,7 +181,8 @@ class ChaincodeLifecycleOperation extends ChaincodeAction {
 		this.logger.debug('commitChaincodeDefinition:commit', commitResult);
 		const eventHub = this.newEventHub();
 		try {
-			await waitForTx(eventHub, this.identityContext);
+			const eventHubQuery = new EventHubQuery(eventHub, this.identityContext);
+			await eventHubQuery.waitForTx();
 		} finally {
 			eventHub.disconnect();
 		}

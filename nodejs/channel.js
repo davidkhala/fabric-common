@@ -10,7 +10,7 @@ const {
 } = require('khala-fabric-formatter/protoTranslator');
 const IdentityContext = require('fabric-common/lib/IdentityContext');
 const EventHub = require('khala-fabric-admin/eventHub');
-const {getSingleBlock} = require('./eventHub');
+const EventHubQuery = require('./eventHub');
 const CSCCProposal = require('khala-fabric-admin/CSCCProposal');
 const {fromEvent} = require('khala-fabric-formatter/blockEncoder');
 const {BlockNumberFilterType: {NEWEST}} = require('khala-fabric-formatter/eventHub');
@@ -34,8 +34,9 @@ const getGenesisBlock = async (channel, user, orderer, verbose, blockTime = 1000
 		// FIXME: this part is not covered in test
 		const eventHub = new EventHub(channel, orderer.eventer);
 		eventHub.build(identityContext, {startBlock: 0});
+		const eventHubQuery = new EventHubQuery(eventHub, identityContext);
 		await eventHub.connect();
-		block = await getSingleBlock(eventHub, identityContext, 0);
+		block = await eventHubQuery.getSingleBlock(0);
 		await eventHub.disconnect();
 	} else {
 		const signingIdentityUtil = new SigningIdentityUtil(user.getSigningIdentity());

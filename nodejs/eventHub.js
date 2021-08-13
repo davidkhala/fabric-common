@@ -1,128 +1,144 @@
 const {BlockNumberFilterType: {NEWEST, OLDEST}, TxEventFilterType: {ALL}} = require('khala-fabric-formatter/eventHub');
 const {TxValidationCode} = require('khala-fabric-formatter/constants');
-/**
- *
- * @param eventHub
- * @param identityContext
- * @param {number} blockNumber Note: NEWEST or OLDEST is not supported so far
- * @return {Promise<Block>}
- */
-const getSingleBlock = async (eventHub, identityContext, blockNumber) => {
-	const startBlock = blockNumber;
-	const endBlock = blockNumber;
-	eventHub.build(identityContext, {startBlock, endBlock});
 
-	return await new Promise((resolve, reject) => {
-		const listener = (err, info) => {
-			if (info) {
-				if (parseInt(info.block.header.number) === blockNumber) {
-					resolve(info.block);
+class EventHubQuery {
+	/**
+	 *
+	 * @param eventHub
+	 * @param identityContext
+	 * @param [logger]
+	 */
+	constructor(eventHub, identityContext, logger = console) {
+
+		Object.assign(this, {eventHub, identityContext, logger});
+	}
+
+	/**
+	 *
+	 * @param {number} blockNumber Note: NEWEST or OLDEST is not supported so far
+	 * @return {Promise<Block>}
+	 */
+	async getSingleBlock(blockNumber) {
+
+		const {eventHub, identityContext} = this;
+		const startBlock = blockNumber;
+		const endBlock = blockNumber;
+		eventHub.build(identityContext, {startBlock, endBlock});
+
+		return await new Promise((resolve, reject) => {
+			const listener = (err, info) => {
+				if (info) {
+					if (parseInt(info.block.header.number) === blockNumber) {
+						resolve(info.block);
+					}
 				}
-			}
-		};
-		eventHub.blockEvent(listener, {unregister: true, startBlock, endBlock});
-		eventHub.connect();
-	});
-};
-/**
- * @param eventHub
- * @param identityContext
- * @return {Promise<unknown>}
- */
-const getLastBlock = async (eventHub, identityContext) => {
-	const startBlock = NEWEST;
-	eventHub.build(identityContext, {startBlock});
-	return await new Promise((resolve, reject) => {
-		const listener = (err, {block}) => {
-			if (err) {
-				reject(err);
-			} else {
-				resolve(block);
-			}
-		};
-		eventHub.blockEvent(listener, {unregister: true});
-		eventHub.connect();
-	});
-};
+			};
+			eventHub.blockEvent(listener, {unregister: true, startBlock, endBlock});
+			eventHub.connect();
+		});
+	}
 
-const waitForBlock = async (eventHub, identityContext, futureSteps = 1) => {
-	eventHub.build(identityContext, {startBlock: NEWEST});
-	return await new Promise((resolve, reject) => {
-		const futureBlocks = [];
-		const callback = (err, {block}) => {
-			if (err) {
-				reject(err);
-			} else {
-				if (futureBlocks.length < futureSteps) {
-					console.debug('currentBlock', block.header.number);
-					futureBlocks.push(block);
+	async getLastBlock() {
+		const {eventHub, identityContext} = this;
+		const startBlock = NEWEST;
+		eventHub.build(identityContext, {startBlock});
+		return await new Promise((resolve, reject) => {
+			const listener = (err, {block}) => {
+				if (err) {
+					reject(err);
 				} else {
-					console.debug('comingBlock', block.header.number);
-					listener.unregisterEventListener();
 					resolve(block);
 				}
+			};
+			eventHub.blockEvent(listener, {unregister: true});
+			eventHub.connect();
+		});
+	}
 
-			}
-
-		};
-		const listener = eventHub.blockEvent(callback, {unregister: false});
-		eventHub.connect();
-	});
-};
-const waitForTx = async (eventHub, identityContext) => {
-	const {transactionId} = identityContext;
-	// Note identityContext.transactionId will change after `eventHub.build`
-	eventHub.build(identityContext, {startBlock: NEWEST});
-	return await new Promise((resolve, reject) => {
-		const callback = (err, event) => {
-			if (err) {
-				reject(err);
-			} else {
-				const {blockNumber, transactionId, status} = event;
-				if (status !== TxValidationCode['0']) {
-					const error = Error(`Invalid transaction status [${status}]`);
-					Object.assign(error, event);
-					reject(error);
+	async waitForBlock(futureSteps = 1) {
+		const {eventHub, identityContext, logger} = this;
+		eventHub.build(identityContext, {startBlock: NEWEST});
+		return await new Promise((resolve, reject) => {
+			const futureBlocks = [];
+			const callback = (err, event) => {
+				if (err) {
+					reject(err);
 				} else {
-					resolve({blockNumber, transactionId, status});
-				}
-			}
+					const {block} = event;
+					if (futureBlocks.length < futureSteps) {
+						logger.debug('currentBlock', block.header.number);
+						futureBlocks.push(block);
+					} else {
+						logger.debug('comingBlock', block.header.number);
+						listener.unregisterEventListener();
+						resolve(block);
+					}
 
-		};
-		eventHub.txEvent(transactionId, callback, {unregister: true});
-		eventHub.connect();
-	});
-};
-const replayTx = async (eventHub, identityContext, endBlockHeight) => {
+				}
 
-	eventHub.build(identityContext, {startBlock: OLDEST, endBlock: endBlockHeight});
-	return await new Promise((resolve, reject) => {
-		const result = [];
-		const callback = (err, event) => {
-			if (err) {
-				listener.unregisterEventListener();
-				reject(err);
-			} else {
-				const {blockNumber, transactionId, status} = event;
-				result.push({blockNumber, transactionId, status});
-				if (parseInt(blockNumber) > endBlockHeight) {
-					listener.unregisterEventListener();
-					return reject(Error(`assertion error: blockNumber[${blockNumber}]>endBlockHeight[${endBlockHeight}]`));
+			};
+			const listener = eventHub.blockEvent(callback, {unregister: false, startBlock: 0, endBlock: 999});
+			eventHub.connect();
+		});
+	}
+
+	/**
+	 *
+	 * @return {Promise<{blockNumber, transactionId, status}>}
+	 */
+	async waitForTx() {
+		const {eventHub, identityContext, logger} = this;
+		const {transactionId} = identityContext;
+		logger.info(`waitForTx[${transactionId}]`);
+		// Note identityContext.transactionId will change after `eventHub.build`
+		eventHub.build(identityContext, {startBlock: NEWEST});
+		return await new Promise((resolve, reject) => {
+			const callback = (err, event) => {
+				if (err) {
+					reject(err);
+				} else {
+					const {blockNumber, transactionId:txid, status} = event;
+					if (status !== TxValidationCode['0']) {
+						const error = Error(`Invalid transaction status [${status}]`);
+						Object.assign(error, event);
+						reject(error);
+					} else {
+						resolve({blockNumber, transactionId:txid, status});
+					}
 				}
-				if (parseInt(blockNumber) === endBlockHeight) {
+
+			};
+			eventHub.txEvent(transactionId, callback, {unregister: true});
+			eventHub.connect();
+		});
+	}
+
+	async replayTx(MaxTxAmount, endBlock) {
+		const {eventHub, identityContext, logger} = this;
+		eventHub.build(identityContext, {startBlock: OLDEST, endBlock});
+		return await new Promise((resolve, reject) => {
+			const result = [];
+			const callback = (err, event) => {
+				logger.debug({err, event});
+				if (err) {
 					listener.unregisterEventListener();
-					resolve(result);
+					reject(err);
+				} else {
+					const {blockNumber, transactionId, status} = event;
+					result.push({blockNumber, transactionId, status});
+
+					if (result.length >= MaxTxAmount) {
+						listener.unregisterEventListener();
+						resolve(result);
+					}
 				}
-			}
-		};
-		const listener = eventHub.txEvent(ALL, callback, {unregister: false});
-		eventHub.connect();
-	});
-};
-module.exports = {
-	getSingleBlock,
-	getLastBlock,
-	waitForBlock,
-	waitForTx,
-	replayTx,
-};
+			};
+			const listener = eventHub.txEvent(ALL, callback, {unregister: false});
+			eventHub.connect();
+		});
+	}
+}
+
+
+module.exports = EventHubQuery;
+

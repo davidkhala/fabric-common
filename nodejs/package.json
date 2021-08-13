@@ -1,6 +1,6 @@
 {
   "name": "khala-fabric-sdk-node",
-  "version": "2.3.0-beta",
+  "version": "2.3.0-alpha.3",
   "scripts": {
     "test": "mocha test",
     "lerna": "lerna bootstrap --no-ci"

@@ -91,8 +91,54 @@ class QueryHub extends ChaincodeAction {
 
 	async tx(channelName, txId) {
 		const qsccProposal = new QSCCProposal(this.identityContext, emptyChannel(channelName), this.endorsers);
+
+		const TxNotFound = (result) => {
+			const {errors, responses} = result;
+			if (errors.length > 0) {
+				const err = Error('SYSTEM_ERROR');
+				err.errors = errors;
+				throw err;
+			}
+
+			const endorsementErrors = [];
+			for (const Response of responses) {
+				const {response, connection} = Response;
+				if (response.status !== 200) {
+					endorsementErrors.push({response, connection});
+				}
+
+			}
+			if (endorsementErrors.length > 0) {
+
+				const err = Error('ENDORSE_ERROR');
+				let notFoundCounter = 0;
+				const NotFoundSymptom = `Failed to get transaction with id ${txId}, error no such transaction ID [${txId}] in index`;
+				err.errors = endorsementErrors.reduce((sum, {response, connection}) => {
+					delete response.payload;
+					sum[connection.url] = response;
+
+					if (response.status === 500 &&
+						response.message === NotFoundSymptom) {
+						notFoundCounter++;
+					}
+					return sum;
+				}, {});
+				if (notFoundCounter === endorsementErrors.length) {
+					result.NotFound = true;
+					return result;
+				} else {
+					throw err;
+				}
+
+			}
+			return result;
+		};
+		qsccProposal.setProposalResultAssert(TxNotFound);
 		const result = await qsccProposal.queryTransaction(txId);
-		const {queryResults} = result;
+		const {queryResults, NotFound} = result;
+		if (NotFound) {
+			return [];
+		}
 		return queryResults.map(BlockDecoder.decodeTransaction);
 	}
 }

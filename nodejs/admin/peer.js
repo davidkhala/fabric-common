@@ -3,6 +3,7 @@ const Endorser = require('fabric-common/lib/Endorser');
 const Eventer = require('fabric-common/lib/Eventer');
 const Discoverer = require('fabric-common/lib/Discoverer');
 const {RemoteOptsTransform} = require('khala-fabric-formatter/remote');
+const {BlockEventFilterType: {FILTERED_BLOCK, FULL_BLOCK, PRIVATE_BLOCK}} = require('khala-fabric-formatter/eventHub');
 const fs = require('fs');
 
 class Peer {
@@ -69,22 +70,15 @@ class Peer {
 		return [this.endorser, this.eventer, this.discoverer];
 	}
 
-	reset() {
-		this.getServiceEndpoints().forEach((serviceEndpoint) => {
-			serviceEndpoint.connectAttempted = false;
-		});
-	}
-
 	async connect() {
 		const {logger} = this;
 		for (const serviceEndpoint of this.getServiceEndpoints()) {
 			if (serviceEndpoint.connected || serviceEndpoint.service) {
-				logger.info(`${serviceEndpoint.name} connection exist already`);
+				logger.info(`${serviceEndpoint.type} ${serviceEndpoint.name} connection exist already`);
 			} else {
 				await serviceEndpoint.connect();
 			}
 		}
-
 	}
 
 	disconnect() {
@@ -111,6 +105,62 @@ class Peer {
 				throw err;
 			}
 		}
+	}
+
+	/**
+	 * TODO WIP stream.resume();
+	 * check if the stream is ready.
+	 * The stream must be readable, writeable and reading to be 'ready' and not paused.
+	 */
+	isStreamReady() {
+		const {eventer: {stream}} = this;
+
+		return !!stream && !stream.isPaused() && stream.readable && stream.writable;
+
+	}
+
+	/**
+	 * get a new stream based on block type
+	 */
+	async connectStream(blockType) {
+		const {eventer} = this;
+
+		eventer.service = new eventer.serviceClass(eventer.endpoint.addr, eventer.endpoint.creds, eventer.options);
+		await eventer.waitForReady(eventer.service);
+
+		switch (blockType) {
+			case FILTERED_BLOCK:
+				eventer.stream = eventer.service.deliverFiltered();
+				break;
+			case FULL_BLOCK:
+				eventer.stream = eventer.service.deliver();
+				break;
+			case PRIVATE_BLOCK:
+				eventer.stream = eventer.service.deliverWithPrivateData();
+				break;
+			default:
+				eventer.stream = eventer.service.deliver();
+		}
+	}
+
+	async disconnectStream() {
+		const {eventer} = this;
+
+		return new Promise((resolve, reject) => {
+			eventer.stream.once('error', e => {
+				const {code, details} = e;
+				if (code === 1 && details === 'Cancelled on client') {
+					resolve(details);
+				} else {
+					reject(e);
+				}
+			});
+
+			eventer.stream.cancel();
+			eventer.stream.end();
+			delete eventer.stream;
+		});
+
 	}
 
 	toString() {

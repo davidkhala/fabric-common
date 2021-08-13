@@ -1,6 +1,6 @@
 const ChaincodeAction = require('./chaincodeAction');
 const ProposalManager = require('khala-fabric-admin/proposal');
-const {waitForTx} = require('./eventHub');
+const EventHubQuery = require('./eventHub');
 const {transientMapTransform} = require('khala-fabric-formatter/txProposal');
 const {EndorseALL, CommitSuccess} = require('khala-fabric-admin/resultInterceptors');
 
@@ -55,7 +55,8 @@ class Transaction extends ChaincodeAction {
 		if (finalityRequired) {
 			const eventHub = this.newEventHub();
 			try {
-				await waitForTx(eventHub, this.proposal.identityContext);
+				const eventHubQuery = new EventHubQuery(eventHub, this.proposal.identityContext);
+				await eventHubQuery.waitForTx();
 			} finally {
 				eventHub.disconnect();
 			}
