@@ -1,0 +1,7 @@
+{
+  "name": "@davidkhala/fabric-gateway",
+  "version": "0.0.0",
+  "dependencies": {
+    "fabric-gateway": "latest"
+  }
+}
