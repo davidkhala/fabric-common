@@ -39,7 +39,7 @@ const getGenesisBlock = async (channel, user, orderer, verbose, blockTime = 1000
 		block = await eventHubQuery.getSingleBlock(0);
 		await eventHub.disconnect();
 	} else {
-		const signingIdentityUtil = new SigningIdentityUtil(user.getSigningIdentity());
+		const signingIdentityUtil = new SigningIdentityUtil(user.signingIdentity);
 		identityContext.calculateTransactionId();
 		const eventBlock = await signingIdentityUtil.getSpecificBlock(identityContext, channel.name, orderer, 0, {waitIfUNAVAILABLE: blockTime});
 		block = fromEvent({block: eventBlock});
@@ -57,7 +57,7 @@ const getGenesisBlock = async (channel, user, orderer, verbose, blockTime = 1000
 const getChannelConfigFromOrderer = async (channelName, user, orderer) => {
 
 	const identityContext = new IdentityContext(user, null);
-	const signingIdentityUtil = new SigningIdentityUtil(user.getSigningIdentity());
+	const signingIdentityUtil = new SigningIdentityUtil(user.signingIdentity);
 	identityContext.calculateTransactionId();
 	const eventBlock = await signingIdentityUtil.getSpecificBlock(identityContext, channelName, orderer, NEWEST);
 

@@ -32,7 +32,7 @@ class UserBuilder {
 	 * @param {CertificatePem} [certificate] signing certificate raw content
 	 * @param {string} [cert] signing certificate file path, used when certificate raw content unspecified
 	 * @param {MspId} mspid - This is required when Client#signChannelConfig
-	 * @return {Client.User}
+	 * @return {User}
 	 */
 	build({key, keystore, certificate, cert, mspid}) {
 		const {_cryptoSuite} = this.user;
@@ -53,16 +53,48 @@ class UserBuilder {
 		return this.user;
 	}
 
-	getSigningIdentity() {
+	/**
+	 *
+	 * @return {MspId}
+	 */
+	get mspId() {
+		return this.signingIdentity._mspId;
+	}
+
+	/**
+	 *
+	 * @return {string} private key in PEM format
+	 */
+	get key() {
+		return this.signingIdentity._signer._key.toBytes();
+	}
+
+	/**
+	 *
+	 * @return {CertificatePem}
+	 */
+	get certificate() {
+		return this.signingIdentity._certificate;
+	}
+
+	/**
+	 *
+	 * @return {SigningIdentity}
+	 */
+	get signingIdentity() {
 		return this.user._signingIdentity;
 	}
 
-	getIdentityContext() {
+	/**
+	 *
+	 * @return {IdentityContext}
+	 */
+	get identityContext() {
 		return UserBuilder.getIdentityContext(this.user);
 	}
 
 	/**
-	 * @param {Client.User} user
+	 * @param {User} user
 	 */
 	static getIdentityContext(user) {
 		return new IdentityContext(user, null);
@@ -70,7 +102,7 @@ class UserBuilder {
 
 	/**
 	 * Builds a new transactionID based on a user's certificate and a nonce value.
-	 * @param {Client.User} user
+	 * @param {User} user
 	 */
 	static newTransactionID(user) {
 		const identityContext = UserBuilder.getIdentityContext(user);

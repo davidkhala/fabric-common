@@ -71,7 +71,7 @@ class ChannelConfig {
 	async setAnchorPeers(signingIdentities = [], orgName, anchorPeers, finalityRequired) {
 		const {channelName, user, orderer, viaServer} = this;
 		if (signingIdentities.length === 0) {
-			signingIdentities = [user.getSigningIdentity()];
+			signingIdentities = [user.signingIdentity];
 		}
 		const channelUpdate = new ChannelUpdate(channelName, user, orderer.committer, logger);
 		const {proto, json} = await this.getChannelConfigReadable();

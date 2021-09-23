@@ -1,6 +1,6 @@
 const {connect, Gateway, Identity, Signer, signers} = require('fabric-gateway');
 const {promises: fs} = require('fs');
-async function newGrpcConnection(): Promise<ServiceClient> {
+async function newGrpcConnection() {
 	const tlsRootCert = await fs.readFile(tlsCertPath);
 	const tlsCredentials = grpc.credentials.createSsl(tlsRootCert);
 
@@ -9,8 +9,14 @@ async function newGrpcConnection(): Promise<ServiceClient> {
 		'grpc.ssl_target_name_override': 'peer0.org1.example.com'
 	});
 }
-const gateway = connect({
-	client,
-	identity: await newIdentity(),
-	signer: await newSigner(),
-});
+
+async function newIdentity() {
+	const credentials = await fs.readFile(certPath);
+	return { mspId, credentials };
+}
+
+async function newSigner(){
+	const privateKeyPem = await fs.readFile(keyPath);
+	const privateKey = crypto.createPrivateKey(privateKeyPem);
+	return signers.newPrivateKeySigner(privateKey);
+}

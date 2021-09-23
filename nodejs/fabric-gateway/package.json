@@ -2,6 +2,7 @@
   "name": "@davidkhala/fabric-gateway",
   "version": "0.0.0",
   "dependencies": {
+    "@grpc/grpc-js": "^1.3.7",
     "fabric-gateway": "latest"
   }
 }

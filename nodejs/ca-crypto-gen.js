@@ -117,7 +117,7 @@ class CaCryptoGen {
 
 		const enrollmentID = ordererHostName;
 		let enrollmentSecret = cryptoPath.password;
-		const certificate = getCertificate(admin.getSigningIdentity());
+		const certificate = getCertificate(admin.signingIdentity);
 		cryptoPath.toAdminCerts({certificate}, type);
 		const {enrollmentSecret: newSecret} = await caUtil.register(caService, admin, {
 			enrollmentID,
@@ -162,7 +162,7 @@ class CaCryptoGen {
 
 		const enrollmentID = peerHostName;
 		let enrollmentSecret = cryptoPath.password;
-		const certificate = getCertificate(admin.getSigningIdentity());
+		const certificate = getCertificate(admin.signingIdentity);
 		cryptoPath.toAdminCerts({certificate}, type);
 		const {enrollmentSecret: newSecret} = await caUtil.register(caService, admin, {
 			enrollmentID,
@@ -193,7 +193,7 @@ class CaCryptoGen {
 		const affiliationRoot = cryptoPath[`${nodeType}OrgName`];
 
 
-		const mspid = admin.getSigningIdentity()._mspId;
+		const mspid = admin.mspId;
 		let user = userUtil.loadFromLocal(cryptoPath, nodeType, mspid);
 		if (user) {
 			logger.info('user exist', {name: user.getName()});
