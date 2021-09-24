@@ -6,7 +6,7 @@
     "lerna": "lerna bootstrap --no-ci"
   },
   "dependencies": {
-    "khala-dockerode": "latest",
+    "@davidkhala/dockerode": "latest",
     "khala-level": "latest",
     "khala-logger": "latest",
     "khala-nodeutils": "latest",

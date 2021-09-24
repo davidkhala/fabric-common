@@ -31,7 +31,6 @@ class FabricGateway {
 			},
 			signer: signers.newPrivateKeySigner(crypto.createPrivateKey(key))
 		});
-		// FIXME Wait for fabric-gateway update
 	}
 
 	getContract(channel, chaincode) {

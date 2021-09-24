@@ -1,6 +1,6 @@
-const DockerManager = require('khala-dockerode/docker');
+const DockerManager = require('@davidkhala/dockerode/docker');
 const dockerManager = new DockerManager();
-const ContainerOptsBuilder = require('khala-dockerode/containerOptsBuilder');
+const ContainerOptsBuilder = require('@davidkhala/dockerode/containerOptsBuilder');
 const peerUtil = require('./peer');
 const caUtil = require('./ca');
 const ordererUtil = require('./orderer');
