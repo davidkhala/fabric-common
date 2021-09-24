@@ -1,8 +1,8 @@
 {
   "packages": [
     "formatter",
-    "fabric-network",
-    "admin"
+    "admin",
+    "fabric-gateway"
   ],
   "version": "independent"
 }

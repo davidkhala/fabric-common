@@ -6,7 +6,7 @@ fabric-sdk-node integrated utils
 Component module list
 ---
 - [khala-fabric-admin](./admin)
-- [khala-fabric-network](./fabric-network)
+- [@davidkhala/fabric-gateway](./fabric-gateway)
 - [khala-fabric-formatter](./formatter)
 
 ## Windows Extra prerequisite
