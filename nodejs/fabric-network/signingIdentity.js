@@ -13,4 +13,4 @@ class SigningIdentity {
 
 }
 
-module.exports = {SigningIdentity};
+module.exports = SigningIdentity;

@@ -209,13 +209,22 @@ class Orderer {
 		formData.append('config-block', fs.createReadStream(blockFile), `${channelName}.block`);
 
 		const url = `${adminTLS ? 'https://' : 'http://'}${baseURL}/participation/v1/channels`;
-		return await httpClient({
-			url,
-			formData,
-			method: 'POST'
-		}, httpOpts);
 
+		try {
+			return await httpClient({
+				url,
+				formData,
+				method: 'POST'
+			}, httpOpts);
+		} catch (e) {
+			const {statusCode, statusMessage, response: {data: {error}}} = e;
+			if (statusCode === 405 && statusMessage === 'Method Not Allowed' && error === 'cannot join: channel already exists') {
+				return error;
+			} else {
+				throw e;
+			}
 
+		}
 	}
 }
 

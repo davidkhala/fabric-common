@@ -46,7 +46,7 @@ const main = async () => {
 	const {Gateway} = require('fabric-network');
 	const Client = require('fabric-common/lib/Client');
 	const IdentityContext = require('fabric-common/lib/IdentityContext');
-	const {SigningIdentity} = require('../signingIdentity');
+	const SigningIdentity = require('../signingIdentity');
 	const {getSampleUser} = require('./testUtil');
 
 	const gateWay = new Gateway();

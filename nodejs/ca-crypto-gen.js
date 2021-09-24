@@ -117,7 +117,7 @@ class CaCryptoGen {
 
 		const enrollmentID = ordererHostName;
 		let enrollmentSecret = cryptoPath.password;
-		const certificate = getCertificate(admin.signingIdentity);
+		const certificate = getCertificate(admin._signingIdentity);
 		cryptoPath.toAdminCerts({certificate}, type);
 		const {enrollmentSecret: newSecret} = await caUtil.register(caService, admin, {
 			enrollmentID,
@@ -162,7 +162,7 @@ class CaCryptoGen {
 
 		const enrollmentID = peerHostName;
 		let enrollmentSecret = cryptoPath.password;
-		const certificate = getCertificate(admin.signingIdentity);
+		const certificate = getCertificate(admin._signingIdentity);
 		cryptoPath.toAdminCerts({certificate}, type);
 		const {enrollmentSecret: newSecret} = await caUtil.register(caService, admin, {
 			enrollmentID,

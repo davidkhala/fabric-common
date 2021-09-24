@@ -13,7 +13,7 @@ class ChannelUpdate {
 	 */
 	constructor(channelName, user, committer, logger = console) {
 		this.name = channelName;
-		this.signingIdentityUtil = new SigningIdentityUtil(user.signingIdentity);
+		this.signingIdentityUtil = new SigningIdentityUtil(user._signingIdentity);
 		this.identityContext = new IdentityContext(user, null);
 		this.logger = logger;
 		this.committer = committer;
