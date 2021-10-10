@@ -39,7 +39,7 @@ const RemoteOptsTransform = (opts = {}, logger = console) => {
 	}
 	if (sslTargetNameOverride) {
 		opts['grpc.ssl_target_name_override'] = sslTargetNameOverride;
-		logger.warn(`[grpc.ssl_target_name_override]=${sslTargetNameOverride} used for test environment only when the server certificate's hostname ('CN') does not match the actual host endpoint`);
+		logger.warn(`[grpc.ssl_target_name_override]=${sslTargetNameOverride} should be used for test environment only. Please consider add entry DNS=localhost to SAN extension of the server certificate`);
 		opts['grpc.default_authority'] = sslTargetNameOverride;
 		delete opts.sslTargetNameOverride;
 	}

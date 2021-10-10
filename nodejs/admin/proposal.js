@@ -31,12 +31,12 @@ class ProposalManager extends Proposal {
 	/**
 	 *
 	 * @param {IdentityContext} identityContext
-	 * @param {Channel} channel
-	 * @param [chaincodeId]
+	 * @param {Channel} [channel]
+	 * @param {string} [chaincodeId]
 	 * @param {Endorser[]} endorsers
 	 */
 	constructor(identityContext, channel, chaincodeId, endorsers) {
-		super(chaincodeId || null, channel);
+		super(chaincodeId || null, channel || null);
 		Object.assign(this, {identityContext, endorsers});
 
 	}
