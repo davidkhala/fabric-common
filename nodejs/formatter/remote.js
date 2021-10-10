@@ -11,9 +11,9 @@
  */
 
 /**
- * @typedef {string} SSLTargetNameOverride Used in test environment only
- *  when the server certificate's hostname (in the 'CN' field) does not match the actual host endpoint that the server process runs at,
- *  the application can work around the client TLS verify failure by setting this property to the value of the server certificate's hostname
+ * @deprecated deprecated, replace it with SAN entry DNS=localhost
+ * @typedef {string} SSLTargetNameOverride
+ * Used in test environment only
  */
 
 const defaultGRPCOptions = {
@@ -42,8 +42,6 @@ const RemoteOptsTransform = (opts = {}, logger = console) => {
 		logger.warn(`[grpc.ssl_target_name_override]=${sslTargetNameOverride} used for test environment only when the server certificate's hostname ('CN') does not match the actual host endpoint`);
 		opts['grpc.default_authority'] = sslTargetNameOverride;
 		delete opts.sslTargetNameOverride;
-		delete opts.clientKey;
-		delete opts.clientCert;
 	}
 	opts['grpc-wait-for-ready-timeout'] = waitForReadyTimeout && Number.isInteger(waitForReadyTimeout) ? waitForReadyTimeout : 3000;// default 3 seconds
 	delete opts.waitForReadyTimeout;

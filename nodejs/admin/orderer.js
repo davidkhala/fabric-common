@@ -44,8 +44,8 @@ class Orderer {
 				host: this.host,
 				pem,
 				sslTargetNameOverride: this.sslTargetNameOverride,
-				clientKey: this.clientKey,
-				clientCert: this.clientCert
+				clientKey: this.clientKey && fs.readFileSync(this.clientKey).toString(),
+				clientCert: this.clientCert && fs.readFileSync(this.clientCert).toString()
 			});
 			const endpoint = new EndPoint(options);
 			committer = new Committer(endpoint.url, null, undefined);
@@ -93,7 +93,6 @@ class Orderer {
 
 	/**
 	 * basic health check for an orderer
-	 * @param {Committer} committer
 	 */
 	async ping() {
 		const {committer} = this;
@@ -217,12 +216,15 @@ class Orderer {
 				method: 'POST'
 			}, httpOpts);
 		} catch (e) {
-			const {statusCode, statusMessage, response: {data: {error}}} = e;
-			if (statusCode === 405 && statusMessage === 'Method Not Allowed' && error === 'cannot join: channel already exists') {
-				return error;
-			} else {
-				throw e;
+			const {statusCode, statusMessage} = e;
+			if (statusCode === 405 && statusMessage === 'Method Not Allowed') {
+				const {response: {data: {error}}} = e;
+				if (error === 'cannot join: channel already exists') {
+					return error;
+				}
+
 			}
+			throw e;
 
 		}
 	}

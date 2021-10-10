@@ -132,7 +132,7 @@ class CaCryptoGen {
 		// etcdraft always need TLS material
 
 
-		const dns = [ordererHostName];
+		const dns = [ordererHostName, 'localhost'];
 		const tlsResult = await caService.enroll({enrollmentID, enrollmentSecret, profile: 'tls'}, {dns});
 		cryptoPath.toTLS(tlsResult, type);
 
@@ -174,7 +174,7 @@ class CaCryptoGen {
 		const result = await caService.enroll({enrollmentID, enrollmentSecret});
 		cryptoPath.toMSP(result, type);
 		if (TLS) {
-			const dns = [peerHostName];
+			const dns = [peerHostName, 'localhost'];
 			const tlsResult = await caService.enroll({enrollmentID, enrollmentSecret, profile: 'tls'}, {dns});
 			cryptoPath.toTLS(tlsResult, type);
 		}

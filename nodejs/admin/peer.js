@@ -9,10 +9,7 @@ const fs = require('fs');
 class Peer {
 	/**
 	 * @param {intString} peerPort
-	 * @param {string} [peerHostName] Used in test environment only, when the server certificate's
-	 *    hostname (in the 'CN' field) does not match the actual host endpoint that the server process runs
-	 *    at, the application can work around the client TLS verify failure by setting this property to the
-	 *    value of the server certificate's hostname
+	 * @param {SSLTargetNameOverride} [peerHostName]
 	 * @param {string} [cert] TLS CA certificate file path
 	 * @param {CertificatePem} [pem] TLS CA certificate
 	 * @param {string} [host]
@@ -49,8 +46,8 @@ class Peer {
 			host: this.host,
 			pem,
 			sslTargetNameOverride: this.sslTargetNameOverride,
-			clientKey: this.clientKey,
-			clientCert: this.clientCert
+			clientKey: this.clientKey && fs.readFileSync(this.clientKey).toString(),
+			clientCert: this.clientCert && fs.readFileSync(this.clientCert).toString()
 		});
 		const endpoint = new EndPoint(options);
 		const endorser = new Endorser(endpoint.url, {}, mspid);
