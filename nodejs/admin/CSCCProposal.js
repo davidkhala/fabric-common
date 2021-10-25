@@ -6,7 +6,7 @@ const {EndorseALL} = require('./resultInterceptors');
 
 class CSCCProposal extends ProposalManager {
 	constructor(identityContext, endorsers) {
-		super(identityContext, null, CSCC, endorsers);
+		super(identityContext, endorsers, CSCC);
 		this.setProposalResultAssert(EndorseALL);
 	}
 
@@ -22,7 +22,7 @@ class CSCCProposal extends ProposalManager {
 			args: [blockBuffer],
 		};
 
-		return await this.send(buildProposalRequest);
+		return this.send(buildProposalRequest);
 	}
 
 	/**
@@ -36,7 +36,7 @@ class CSCCProposal extends ProposalManager {
 			fcn: GetChannels,
 			args: [],
 		};
-		return await this.send(buildProposalRequest);
+		return this.send(buildProposalRequest);
 	}
 }
 

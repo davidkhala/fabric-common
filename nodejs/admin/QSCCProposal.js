@@ -8,8 +8,14 @@ const {SystemChaincodeID: {QSCC}} = require('khala-fabric-formatter/constants');
 const {EndorseALL} = require('./resultInterceptors');
 
 class QSCCProposal extends ProposalManager {
-	constructor(identityContext, channel, endorsers) {
-		super(identityContext, channel, QSCC, endorsers);
+	/**
+	 *
+	 * @param {IdentityContext} identityContext
+	 * @param {Endorser[]} endorsers
+	 * @param {Channel} channel
+	 */
+	constructor(identityContext, endorsers, channel) {
+		super(identityContext, endorsers, QSCC, channel,);
 		this.asQuery();
 		this.setProposalResultAssert(EndorseALL);
 	}
@@ -29,7 +35,7 @@ class QSCCProposal extends ProposalManager {
 			args: [this.channel.name, blockNumber.toString()],
 		};
 
-		return await this.send(buildProposalRequest);
+		return this.send(buildProposalRequest);
 	}
 
 	async queryInfo() {
@@ -41,7 +47,7 @@ class QSCCProposal extends ProposalManager {
 			args: [this.channel.name],
 		};
 
-		return await this.send(buildProposalRequest);
+		return this.send(buildProposalRequest);
 	}
 
 	/**
@@ -56,7 +62,7 @@ class QSCCProposal extends ProposalManager {
 			fcn: GetBlockByHash,
 			args: [this.channel.name, blockHash],
 		};
-		return await this.send(buildProposalRequest);
+		return this.send(buildProposalRequest);
 	}
 
 	async queryTransaction(tx_id) {
@@ -67,7 +73,7 @@ class QSCCProposal extends ProposalManager {
 			fcn: GetTransactionByID,
 			args: [this.channel.name, tx_id],
 		};
-		return await this.send(buildProposalRequest);
+		return this.send(buildProposalRequest);
 	}
 }
 

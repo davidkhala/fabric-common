@@ -1,6 +1,6 @@
 const {CommonResponseStatus: {SUCCESS}} = require('khala-fabric-formatter/constants');
 /**
- * @typedef {function(result:ProposalResponseBundle):ProposalResponseBundle} ProposalResultHandler
+ * @typedef {function(result:ProposalResponse):ProposalResponse} ProposalResultHandler
  */
 /**
  * @typedef {function(result:CommitResponse):CommitResponse} CommitResultHandler

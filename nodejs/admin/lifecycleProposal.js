@@ -28,12 +28,12 @@ class LifecycleProposal extends ProposalManager {
 	/**
 	 *
 	 * @param {IdentityContext} identityContext
-	 * @param {Channel} channel
 	 * @param {Endorser[]} endorsers
+	 * @param {Channel} channel
 	 * @param [logger]
 	 */
-	constructor(identityContext, channel, endorsers, logger = console) {
-		super(identityContext, channel, LifeCycle, endorsers);
+	constructor(identityContext, endorsers, channel, logger = console) {
+		super(identityContext, endorsers, LifeCycle, channel);
 		this.logger = logger;
 		this.init_required = true;
 		this.setProposalResultAssert(EndorseALL);

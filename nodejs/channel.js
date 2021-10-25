@@ -79,7 +79,7 @@ const getChannelConfigFromOrderer = async (channelName, user, orderer) => {
  * @param {Client.User} user
  * @param {string} [blockFile] genesis block file
  * @param {Orderer} [orderer] required if blockFile is not provided
- * @returns {Promise<ProposalResponseBundle>}
+ * @returns {Promise<ProposalResponse>}
  */
 const join = async (channel, peers, user, blockFile, orderer) => {
 	logger.debug('join-channel', {

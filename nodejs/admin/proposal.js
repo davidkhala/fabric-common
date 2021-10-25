@@ -3,7 +3,8 @@ const Commit = require('fabric-common/lib/Commit');
 const {calculateTransactionId} = require('./user');
 
 /**
- * @typedef {Object} ProposalResponseBundle
+ * A copy of sdk's definition of ProposalResponse
+ * @typedef {Object} ProposalResponse
  * @property {ServiceError[]} errors
  * @property {EndorsementResponse[]} responses
  * @property {Buffer[]} queryResults
@@ -31,11 +32,11 @@ class ProposalManager extends Proposal {
 	/**
 	 *
 	 * @param {IdentityContext} identityContext
-	 * @param {Channel} [channel]
-	 * @param {string} [chaincodeId]
 	 * @param {Endorser[]} endorsers
+	 * @param {string} [chaincodeId]
+	 * @param {Channel} [channel]
 	 */
-	constructor(identityContext, channel, chaincodeId, endorsers) {
+	constructor(identityContext, endorsers, chaincodeId, channel) {
 		super(chaincodeId || null, channel || null);
 		Object.assign(this, {identityContext, endorsers});
 
@@ -68,7 +69,7 @@ class ProposalManager extends Proposal {
 	 *
 	 * @param {BuildProposalRequest} buildProposalRequest
 	 * @param {{[requestTimeout]:number, [handler]:function}} [connectOptions]
-	 * @return Promise<ProposalResponseBundle>
+	 * @return ProposalResponse
 	 */
 	async send(buildProposalRequest, connectOptions = {}) {
 		const {requestTimeout, handler} = connectOptions;
