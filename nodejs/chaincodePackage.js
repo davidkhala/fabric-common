@@ -2,6 +2,8 @@ const {ChaincodeType} = require('khala-fabric-formatter/chaincode');
 const fs = require('fs');
 const {isDirectory, execSync} = require('khala-light-util/index');
 const path = require('path');
+const {createTmpDir} = require('khala-nodeutils/tmp');
+const compress = require('compressing');
 
 class ChaincodePackage {
 	/**
@@ -27,8 +29,7 @@ class ChaincodePackage {
 		if (binManager) {
 			await binManager.peer().lifecycle.package({Type, Label, Path}, output);
 		} else {
-			const {createTmpDir} = require('khala-nodeutils/tmp');
-			const compress = require('compressing');
+
 			const [tmpRoot, t1] = createTmpDir();
 			let modulePath;
 			switch (Type) {

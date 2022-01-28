@@ -5,10 +5,9 @@
  * @property {Object[]} attrs
  * @property {number} max_enrollments
  */
-const IdentityService = require('fabric-ca-client/lib/IdentityService');
+import IdentityService from 'fabric-ca-client/lib/IdentityService';
 
-
-class IdentityServiceWrapper {
+export default class IdentityServiceWrapper {
 	/**
 	 *
 	 * @param {FabricCAService} caService
@@ -100,6 +99,3 @@ class IdentityServiceWrapper {
 		return identities;
 	}
 }
-
-module.exports = IdentityServiceWrapper;
-

@@ -8,10 +8,10 @@
   "dependencies": {
     "@davidkhala/dockerode": "latest",
     "khala-level": "latest",
-    "khala-logger": "latest",
-    "khala-nodeutils": "latest",
+    "@davidkhala/logger": "latest",
+    "@davidkhala/nodeutils": "latest",
     "khala-axios": "latest",
-    "khala-light-util": "latest",
+    "@davidkhala/light": "latest",
     "compressing": "latest",
     "khala-fabric-formatter": "latest",
     "khala-fabric-admin": "latest"
@@ -19,7 +19,7 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "lerna": "latest",
-    "mocha": "latest-6"
+    "mocha": "latest"
   },
   "keywords": [
     "fabric-sdk-node",
@@ -29,5 +29,6 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/davidkhala/fabric-common"
-  }
+  },
+  "type": "module"
 }

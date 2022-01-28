@@ -1,10 +1,13 @@
-const assert = require('assert');
-const fabprotos = require('fabric-protos');
-const commonProto = fabprotos.common;
-const {calculateTransactionId} = require('./helper');
-const {BlockMetadataIndex: {SIGNATURES, TRANSACTIONS_FILTER, LAST_CONFIG, ORDERER, COMMIT_HASH}} = require('./constants');
+import assert from 'assert';
+import fabprotos from 'fabric-protos';
+import {calculateTransactionId} from './helper.js';
+import {BlockMetadataIndex} from './constants.js';
 
-class blockDecoder {
+const commonProto = fabprotos.common;
+
+const {SIGNATURES, TRANSACTIONS_FILTER, LAST_CONFIG, ORDERER, COMMIT_HASH} = BlockMetadataIndex;
+
+export default class blockDecoder {
 	constructor(block, logger = console) {
 		Object.assign(this, {block, logger});
 	}
@@ -82,5 +85,3 @@ class blockDecoder {
 		return metadata;
 	}
 }
-
-module.exports = blockDecoder;

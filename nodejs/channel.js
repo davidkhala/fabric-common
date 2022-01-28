@@ -1,18 +1,18 @@
-const Logger = require('khala-logger/log4js');
-const logger = Logger.consoleLogger('channel');
-const fs = require('fs');
+import {consoleLogger} from '@davidkhala/logger/log4.js';
+const logger = consoleLogger('channel');
+import fs from 'fs';
 
-const SigningIdentityUtil = require('khala-fabric-admin/signingIdentity');
-const {
+import SigningIdentityUtil from 'khala-fabric-admin/signingIdentity.js';
+import {
 	extractLastConfigIndex,
 	assertConfigBlock,
 	extractConfigEnvelopeFromBlockData
-} = require('khala-fabric-formatter/protoTranslator');
-const IdentityContext = require('fabric-common/lib/IdentityContext');
-const EventHub = require('khala-fabric-admin/eventHub');
-const EventHubQuery = require('./eventHub');
-const CSCCProposal = require('khala-fabric-admin/CSCCProposal');
-const {fromEvent} = require('khala-fabric-formatter/blockEncoder');
+} from 'khala-fabric-formatter/protoTranslator.js';
+import IdentityContext from 'fabric-common/lib/IdentityContext';
+import EventHub from 'khala-fabric-admin/eventHub.js';
+import EventHubQuery from './eventHub.js';
+import CSCCProposal from 'khala-fabric-admin/CSCCProposal.js';
+import {fromEvent} from 'khala-fabric-formatter/blockEncoder.js';
 const {BlockNumberFilterType: {NEWEST}} = require('khala-fabric-formatter/eventHub');
 const assert = require('assert');
 
@@ -21,7 +21,7 @@ const assert = require('assert');
  * @param channel
  * @param {Client.User} user
  * @param {Orderer} orderer
- * @param verbose
+ * @param {boolean} [verbose]
  * @param [blockTime] wait x ms if block is still UNAVAILABLE, then retry
  * @return {Promise<Object|Buffer>} if !!verbose, it returns a decoded block object
  */

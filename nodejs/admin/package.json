@@ -9,7 +9,7 @@
     "khala-crypto": "latest"
   },
   "devDependencies": {
-    "khala-light-util": "latest"
+    "@davidkhala/light": "latest"
   },
   "repository": {
     "type": "git",
