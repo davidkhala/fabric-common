@@ -1,17 +1,17 @@
-const nameMatcher = (chaincodeName) => {
+export const nameMatcher = (chaincodeName) => {
 	const namePattern = /^[a-zA-Z0-9]+([-_][a-zA-Z0-9]+)*$/;
 	return chaincodeName.match(namePattern);
 };
-const versionMatcher = (ccVersionName) => {
+export const versionMatcher = (ccVersionName) => {
 	const namePattern = /^[A-Za-z0-9_.+-]+$/;
 	return ccVersionName.match(namePattern);
 };
 
-const collectionMatcher = (collectionName) => {
+export const collectionMatcher = (collectionName) => {
 	const namePattern = /^[A-Za-z0-9-]+([A-Za-z0-9_-]+)*$/;
 	return collectionName.match(namePattern);
 };
-const packageFileMatcher = (packageFileName) => {
+export const packageFileMatcher = (packageFileName) => {
 	const namePattern = /^(.+)[.]([0-9a-f]{64})[.]tar[.]gz$/;
 	return packageFileName.match(namePattern);
 };
@@ -19,7 +19,7 @@ const packageFileMatcher = (packageFileName) => {
 /**
  * @enum
  */
-const ChaincodeSpecType = {
+export const ChaincodeSpecType = {
 	UNDEFINED: 0,
 	GOLANG: 1,
 	NODE: 2,
@@ -30,15 +30,9 @@ const ChaincodeSpecType = {
 /**
  * @enum {string}
  */
-const ChaincodeType = {
+export const ChaincodeType = {
 	golang: 'golang',
 	node: 'node',
 	java: 'java'
 };
-module.exports = {
-	ChaincodeType,
-	ChaincodeSpecType,
-	implicitCollection: (mspid) => `_implicit_org_${mspid}`,
-	nameMatcher, collectionMatcher, versionMatcher, packageFileMatcher
-};
-
+export const implicitCollection = (mspid) => `_implicit_org_${mspid}`;

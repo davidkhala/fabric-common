@@ -1,10 +1,11 @@
 import fabprotos from 'fabric-protos';
-import {BlockNumberFilterType: {NEWEST, OLDEST}} from 'khala-fabric-formatter/eventHub';
-const {BufferFrom, ProtoFrom} = require('khala-fabric-formatter/protobuf');
+import {BlockNumberFilterType} from 'khala-fabric-formatter/eventHub.js';
+
+import {BufferFrom, ProtoFrom} from 'khala-fabric-formatter/protobuf.js';
 const commonProto = fabprotos.common;
 const ordererProto = fabprotos.orderer;
 const protosProto = fabprotos.protos;
-
+const {NEWEST, OLDEST} = BlockNumberFilterType;
 const buildCurrentTimestamp = () => {
 	const now = new Date();
 	const timestamp = new fabprotos.google.protobuf.Timestamp();

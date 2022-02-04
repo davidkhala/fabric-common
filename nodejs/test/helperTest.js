@@ -1,9 +1,11 @@
-const helper = require('../formatter/helper');
-const logger = require('khala-logger/log4js').consoleLogger('test:helper');
+import {sha2_256} from '../formatter/helper.js';
+import assert from 'assert';
+
 describe('helper', () => {
 	it('hash', () => {
-		const hashed = helper.sha2_256('abc');
-		logger.info(hashed);
+		const hashed = sha2_256('abc');
+		const digest = 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad';
+		assert.strictEqual(hashed, digest);
 	});
 });
 

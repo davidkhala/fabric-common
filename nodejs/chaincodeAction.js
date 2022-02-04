@@ -1,10 +1,10 @@
-const IdentityContext = require('fabric-common/lib/IdentityContext');
-const EventHub = require('khala-fabric-admin/eventHub');
+import IdentityContext from 'fabric-common/lib/IdentityContext';
+import EventHub from 'khala-fabric-admin/eventHub';
 const DefaultEventHubSelector = (hubs) => {
 	return hubs[0];
 };
 
-class ChaincodeAction {
+export default class ChaincodeAction {
 	constructor(peers, user, channel) {
 		this.channel = channel;
 		this.identityContext = new IdentityContext(user, null);
@@ -38,5 +38,3 @@ class ChaincodeAction {
 		return this.eventSelector(eventHubs);
 	}
 }
-
-module.exports = ChaincodeAction;

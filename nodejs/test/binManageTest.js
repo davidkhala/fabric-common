@@ -1,10 +1,14 @@
-const path = require('path');
-process.env.binPath = path.resolve(__dirname, '../../bin');
-const BinManager = require('../binManager');
-const fsExtra = require('fs-extra');
+import path from 'path';
+import BinManager from '../binManager.js';
+import fsExtra from 'fs-extra';
+import {consoleLogger} from '@davidkhala/logger/log4.js';
+import {filedirname} from '@davidkhala/light/es6.mjs';
+
+filedirname(import.meta);
+const logger = consoleLogger('test:binManager');
 const binManager = new BinManager();
 const configtxYaml = path.resolve(__dirname, '../../config/configtx.yaml');
-const logger = require('khala-logger/log4js').consoleLogger('test:binManager');
+process.env.binPath = path.resolve(__dirname, '../../bin');
 const blockProfiles = [
 	'SampleDevModeEtcdRaft'
 ];

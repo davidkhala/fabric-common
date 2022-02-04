@@ -1,10 +1,12 @@
-const fabprotos = require('fabric-protos');
+import fabprotos from 'fabric-protos';
+import Policy from '../formatter/policy';
+import {BufferFrom} from '../formatter/protobuf';
+import assert from 'assert';
+
 const protosProtos = fabprotos.protos;
 const commonProtos = fabprotos.common;
 const lifeCycleProtos = fabprotos.lifecycle;
-const Policy = require('../formatter/policy');
-const {BufferFrom} = require('../formatter/protobuf');
-const assert = require('assert');
+
 describe('ApplicationPolicy', () => {
 	it('empty SignaturePolicyEnvelope', () => {
 		const applicationPolicy = new protosProtos.ApplicationPolicy();

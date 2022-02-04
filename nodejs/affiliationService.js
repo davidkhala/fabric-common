@@ -1,9 +1,9 @@
-const AffiliationService = require('fabric-ca-client/lib/AffiliationService.js');
+import AffiliationService from 'fabric-ca-client/lib/AffiliationService';
 
 /**
  * TODO routing to all method
  */
-class AffiliationServiceBuilder {
+export default class AffiliationServiceBuilder {
 	/**
 	 *
 	 * @param caService
@@ -65,5 +65,3 @@ class AffiliationServiceBuilder {
 		await this.affiliationService.delete({name, force: true}, this.registrar);
 	}
 }
-
-module.exports = AffiliationServiceBuilder;

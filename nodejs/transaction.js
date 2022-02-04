@@ -1,4 +1,4 @@
-const ChaincodeAction = require('./chaincodeAction');
+import ChaincodeAction from './chaincodeAction.js';
 const ProposalManager = require('khala-fabric-admin/proposal');
 const EventHubQuery = require('./eventHub');
 const {transientMapTransform} = require('khala-fabric-formatter/txProposal');

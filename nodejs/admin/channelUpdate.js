@@ -1,6 +1,6 @@
-const {BroadcastResponseStatus} = require('khala-fabric-formatter/constants');
-const SigningIdentityUtil = require('./signingIdentity');
-const IdentityContext = require('fabric-common/lib/IdentityContext');
+import {BroadcastResponseStatus} from 'khala-fabric-formatter/constants.js';
+import SigningIdentityUtil from './signingIdentity.js';
+import IdentityContext from 'fabric-common/lib/IdentityContext.js';
 
 class ChannelUpdate {
 

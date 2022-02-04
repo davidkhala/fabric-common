@@ -1,17 +1,19 @@
-const DockerManager = require('@davidkhala/dockerode/docker');
+import DockerManager from '@davidkhala/dockerode/docker';
+import ContainerOptsBuilder from '@davidkhala/dockerode/containerOptsBuilder';
+import peerUtil from './peer.js';
+import caUtil from './ca.js';
+import ordererUtil from './orderer.js';
+import couchdbUtil from './couchdb.js';
+import {adminName as defaultAdminName, adminPwd as defaultAdminPwd} from 'khala-fabric-formatter/user';
+
 const dockerManager = new DockerManager();
-const ContainerOptsBuilder = require('@davidkhala/dockerode/containerOptsBuilder');
-const peerUtil = require('./peer');
-const caUtil = require('./ca');
-const ordererUtil = require('./orderer');
-const couchdbUtil = require('./couchdb');
-const {adminName: defaultAdminName, adminPwd: defaultAdminPwd} = require('khala-fabric-formatter/user');
+
 /**
  * @param [fabricTag]
  * @param [caTag]
  * @param {ChaincodeType} [chaincodeType]
  */
-exports.fabricImagePull = async ({fabricTag, caTag = fabricTag, chaincodeType = 'golang'}) => {
+export const fabricImagePull = async ({fabricTag, caTag = fabricTag, chaincodeType = 'golang'}) => {
 	if (fabricTag) {
 		const imageTag = fabricTag;
 		switch (chaincodeType) {
@@ -52,7 +54,7 @@ exports.fabricImagePull = async ({fabricTag, caTag = fabricTag, chaincodeType = 
  * @param intermediate
  * @returns {Promise<*>}
  */
-exports.runCA = async ({container_name, port, network, imageTag, adminName, adminPassword, TLS, issuer}, intermediate) => {
+export const runCA = async ({container_name, port, network, imageTag, adminName, adminPassword, TLS, issuer}, intermediate) => {
 	if (!adminName) {
 		adminName = defaultAdminName;
 	}
@@ -100,12 +102,12 @@ exports.runCA = async ({container_name, port, network, imageTag, adminName, admi
  * @param {string} container_name peer container name
  * @param {string} chaincodePackageId
  */
-exports.uninstallChaincode = async (container_name, chaincodePackageId) => {
+export const uninstallChaincode = async (container_name, chaincodePackageId) => {
 	const Cmd = ['rm', `${peerUtil.container.state}/lifecycle/chaincodes/${chaincodePackageId.replace(':', '.')}.tar.gz`];
 	await dockerManager.containerExec({container_name, Cmd});
 	await dockerManager.containerRestart(container_name);
 };
-exports.chaincodeImageList = async () => {
+export const chaincodeImageList = async () => {
 	const images = await dockerManager.imageList();
 	return images.filter(image => {
 		// RepoTags can be null
@@ -115,12 +117,12 @@ exports.chaincodeImageList = async () => {
 		return image.RepoTags.find(name => name.startsWith('dev-'));
 	});
 };
-exports.chaincodeContainerList = async () => {
+export const chaincodeContainerList = async () => {
 	const containers = await dockerManager.containerList();
 	return containers.filter(container => container.Names.find(name => name.startsWith('/dev-')));
 };
-exports.chaincodeImageClear = async (filter) => {
-	let images = await exports.chaincodeImageList();
+export const chaincodeImageClear = async (filter) => {
+	let images = await chaincodeImageList();
 	if (typeof filter === 'function') {
 		images = images.filter(filter);
 	}
@@ -133,8 +135,8 @@ exports.chaincodeImageClear = async (filter) => {
  * @param [filter]
  * @return {Promise<void>}
  */
-exports.chaincodeClear = async (filter) => {
-	let containers = await exports.chaincodeContainerList();
+export const chaincodeClear = async (filter) => {
+	let containers = await chaincodeContainerList();
 	if (typeof filter === 'function') {
 		containers = containers.filter(filter);
 	}
@@ -143,11 +145,10 @@ exports.chaincodeClear = async (filter) => {
 		await dockerManager.imageDelete(container.Image);
 	}
 };
-exports.runOrderer = async (opts, operations, metrics) => {
+export const runOrderer = async (opts, operations, metrics) => {
 	const {container_name, imageTag, port, network, msp, ordererType, tls, stateVolume, raft_tls} = opts;
 	const {id, configPath, volumeName} = msp;
 	const Image = `hyperledger/fabric-orderer:${imageTag}`;
-	const Cmd = ['orderer'];
 	raft_tls.host = container_name;
 	const {admin_tls, portAdmin} = opts;
 	const Env = ordererUtil.envBuilder({
@@ -156,7 +157,7 @@ exports.runOrderer = async (opts, operations, metrics) => {
 		}, ordererType, tls, raft_tls, admin_tls
 	}, undefined, operations, metrics);
 
-	const builder = new ContainerOptsBuilder(Image, Cmd);
+	const builder = new ContainerOptsBuilder(Image, ['orderer']);
 	builder.setName(container_name).setEnv(Env);
 	builder.setVolume(volumeName, peerUtil.container.MSPROOT);
 
@@ -175,7 +176,7 @@ exports.runOrderer = async (opts, operations, metrics) => {
 	return await dockerManager.containerStart(createOptions);
 };
 
-exports.runPeer = async (opts, operations, metrics) => {
+export const runPeer = async (opts, operations, metrics) => {
 	const {
 		container_name, port, network, imageTag,
 		msp: {
@@ -206,7 +207,7 @@ exports.runPeer = async (opts, operations, metrics) => {
 	return await dockerManager.containerStart(createOptions);
 };
 
-exports.runCouchDB = async ({container_name, port, network, user = 'admin', password = 'adminpw'}) => {
+export const runCouchDB = async ({container_name, port, network, user = 'admin', password = 'adminpw'}) => {
 	const Image = 'couchdb:3.1';
 	const Env = couchdbUtil.envBuilder(user, password);
 	const builder = new ContainerOptsBuilder(Image);

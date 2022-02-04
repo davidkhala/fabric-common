@@ -1,5 +1,6 @@
-const {axiosPromise} = require('khala-axios');
-const FormData = require('form-data');
+import {axiosPromise} from 'khala-axios';
+import FormData from 'form-data';
+
 const requestPost = async (opt, otherOptions) => {
 
 	return await axiosPromise(opt, otherOptions);
@@ -7,7 +8,7 @@ const requestPost = async (opt, otherOptions) => {
 
 };
 
-class ConfigtxlatorServer {
+export default class ConfigtxlatorServer {
 	constructor({protocol, host, port} = {}) {
 		if (!protocol) {
 			protocol = 'http';
@@ -64,7 +65,3 @@ class ConfigtxlatorServer {
 
 	}
 }
-
-
-module.exports = ConfigtxlatorServer;
-

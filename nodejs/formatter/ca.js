@@ -1,4 +1,4 @@
-exports.toString = (caService) => {
+export const toString = (caService) => {
 	const caClient = caService._fabricCAClient;
 	const returned = {
 		caName: caClient._caName,

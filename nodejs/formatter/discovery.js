@@ -1,7 +1,7 @@
-const {DiscoveryResultType} = require('./constants');
-const fabprotos = require('fabric-protos');
-const assert = require('assert');
-const ParsePeerResult = ({identity, membership_info, state_info}) => {
+import {DiscoveryResultType} from './constants.js';
+import fabprotos from 'fabric-protos';
+import assert from 'assert';
+export const ParsePeerResult = ({identity, membership_info, state_info}) => {
 	const peer = {};
 	// IDENTITY
 	{
@@ -38,7 +38,7 @@ const ParsePeerResult = ({identity, membership_info, state_info}) => {
 	}
 	return peer;
 };
-const ParseResult = ({results}) => {
+export const ParseResult = ({results}) => {
 	const returned = {};
 
 	for (const {result, error, config_result, cc_query_res, members} of results) {
@@ -85,8 +85,4 @@ const ParseResult = ({results}) => {
 		}
 	}
 	return returned;
-};
-module.exports = {
-	ParseResult,
-	ParsePeerResult,
 };

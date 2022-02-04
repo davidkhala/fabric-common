@@ -1,16 +1,16 @@
 const {LoggingLevel} = require('khala-fabric-formatter/remote');
 const {MetricsProvider} = require('./constants');
 
-exports.container = {
+export const container = {
 	MSPROOT: '/etc/hyperledger/crypto-config',
 	dockerSock: '/var/run/docker.sock',
 	state: '/var/hyperledger/production',
 	config: '/etc/hyperledger/'
 };
-exports.host = {
+export const host = {
 	dockerSock: '/var/run/docker.sock' // mac system, only  /var/run/docker.sock exist.
 };
-exports.statePath = {
+export const statePath = {
 	chaincodes: undefined, // diagnose.0.0.0
 	ledgersData: {
 		bookkeeper: {}, // leveldb
@@ -41,7 +41,7 @@ exports.statePath = {
  * @param [chaincodeOpts]
  * @returns {string[]}
  */
-exports.envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchDB}, loggingLevel, operationsOpts, metricsOpts, chaincodeOpts) => {
+export const envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchDB}, loggingLevel, operationsOpts, metricsOpts, chaincodeOpts) => {
 	let environment =
 		[
 			`CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${network}`,

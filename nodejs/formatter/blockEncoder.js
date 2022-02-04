@@ -1,5 +1,5 @@
 import {common as commonProto} from 'fabric-protos';
-import {BufferFrom} from 'khala-fabric-formatter/protobuf';
+import {BufferFrom} from 'khala-fabric-formatter/protobuf.js';
 
 export const fromEvent = ({block}) => {
 	const blockHeader = new commonProto.BlockHeader();

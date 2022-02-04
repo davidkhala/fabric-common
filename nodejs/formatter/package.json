@@ -10,10 +10,11 @@
     "tag": "latest"
   },
   "devDependencies": {
-    "mocha": "latest-6"
+    "mocha": "latest"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/davidkhala/fabric-common"
-  }
+  },
+  "type": "module"
 }

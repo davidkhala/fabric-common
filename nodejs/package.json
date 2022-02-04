@@ -7,7 +7,7 @@
   },
   "dependencies": {
     "@davidkhala/dockerode": "latest",
-    "khala-level": "latest",
+    "@davidkhala/level": "latest",
     "@davidkhala/logger": "latest",
     "@davidkhala/nodeutils": "latest",
     "khala-axios": "latest",

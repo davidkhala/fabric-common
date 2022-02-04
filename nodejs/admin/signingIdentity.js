@@ -1,14 +1,16 @@
-const fabprotos = require('fabric-protos');
-const commonProto = fabprotos.common;
-const {buildChannelHeader, buildHeader, buildPayload, buildSeekPayload} = require('khala-fabric-formatter/protoTranslator');
+import fabprotos from 'fabric-protos';
+import {buildChannelHeader, buildHeader, buildPayload, buildSeekPayload} from 'khala-fabric-formatter/protoTranslator.js';
+import {DeliverResponseStatus, DeliverResponseType} from 'khala-fabric-formatter/eventHub.js';
+import {BufferFrom, ProtoFrom} from 'khala-fabric-formatter/protobuf';
 
-const {DeliverResponseStatus: {SERVICE_UNAVAILABLE}, DeliverResponseType: {STATUS}} = require('khala-fabric-formatter/eventHub');
-const {BufferFrom, ProtoFrom} = require('khala-fabric-formatter/protobuf');
+const {SERVICE_UNAVAILABLE} = DeliverResponseStatus;
+const {STATUS} = DeliverResponseType;
+const commonProto = fabprotos.common;
 const sleep = (ms) => {
 	return new Promise(resolve => setTimeout(resolve, ms));
 };
 
-class SigningIdentityUtil {
+export default class SigningIdentityUtil {
 	/**
 	 *
 	 * @param {SigningIdentity} signingIdentity
@@ -125,5 +127,3 @@ class SigningIdentityUtil {
 
 	}
 }
-
-module.exports = SigningIdentityUtil;

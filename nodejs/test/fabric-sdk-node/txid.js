@@ -1,5 +1,5 @@
-const Utils = require('fabric-common/lib/Utils');
-const assert = require('assert');
+import Utils from 'fabric-common/lib/Utils';
+import assert from 'assert';
 describe('test sdk itself', () => {
 	it('getNonce', () => {
 		const nonce = Utils.getNonce();

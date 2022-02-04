@@ -1,8 +1,11 @@
-const logger = require('khala-logger/log4js').consoleLogger('test:hsm');
+import {consoleLogger} from '@davidkhala/logger/log4.js';
+
+const logger = consoleLogger('test:hsm');
+import HSM from '../hsm.js';
 
 describe('HSM', () => {
 	it('smoke Test', async () => {
-		const HSM = require('../hsm');
+
 		logger.info('libs', HSM.availablePKCSLibs);
 	});
 });

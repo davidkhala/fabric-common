@@ -1,6 +1,8 @@
 import GatePolicy from '../gatePolicy.js';
 import {FromStandard} from '../SideDB.js';
-const logger = require('khala-logger/log4js').consoleLogger('test:gate policy');
+import {consoleLogger} from '@davidkhala/logger/log4.js';
+
+const logger = consoleLogger('test:gate policy');
 describe('policy parser', () => {
 
 	it('orOfAnds', () => {
