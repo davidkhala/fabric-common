@@ -1,5 +1,5 @@
-const GatePolicy = require('../gatePolicy');
-const {FromStandard} = require('../SideDB');
+import GatePolicy from '../gatePolicy.js';
+import {FromStandard} from '../SideDB.js';
 const logger = require('khala-logger/log4js').consoleLogger('test:gate policy');
 describe('policy parser', () => {
 

@@ -1,7 +1,5 @@
-const fabprotos = require('fabric-protos');
-const protosProtos = fabprotos.protos;
-const commonProtos = fabprotos.common;
-const GatePolicy = require('./gatePolicy');
+import {protos as protosProtos, common as commonProtos} from 'fabric-protos';
+import GatePolicy from './gatePolicy.js';
 
 /**
  *
@@ -15,7 +13,16 @@ const GatePolicy = require('./gatePolicy');
  * @param {MspId[]} member_orgs
  * @return {CollectionConfig}
  */
-const buildCollectionConfig = ({name, required_peer_count, maximum_peer_count, endorsement_policy, block_to_live, member_only_read, member_only_write, member_orgs}) => {
+export const buildCollectionConfig = ({
+	name,
+	required_peer_count,
+	maximum_peer_count,
+	endorsement_policy,
+	block_to_live,
+	member_only_read,
+	member_only_write,
+	member_orgs
+}) => {
 	if (!maximum_peer_count) {
 		maximum_peer_count = required_peer_count;
 	}
@@ -98,7 +105,7 @@ const buildCollectionConfig = ({name, required_peer_count, maximum_peer_count, e
  * @param {[]|string} json
  * @return {CollectionConfig[]}
  */
-const FromStandard = (json) => {
+export const FromStandard = (json) => {
 	const object = typeof json === 'string' ? JSON.parse(json) : json;
 	return object.map(item => {
 		const {name, policy: gatePolicyEntry, requiredPeerCount, maxPeerCount, blockToLive, memberOnlyRead, memberOnlyWrite} = item;
@@ -115,8 +122,4 @@ const FromStandard = (json) => {
 			})
 		});
 	});
-};
-module.exports = {
-	buildCollectionConfig,
-	FromStandard
 };

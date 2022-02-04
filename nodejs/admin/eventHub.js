@@ -1,12 +1,18 @@
-const EventService = require('fabric-common/lib/EventService');
-const {
-	BlockEventFilterType: {FULL_BLOCK},
-	TxEventFilterType: {ALL},
-	BlockNumberFilterType: {NEWEST, OLDEST}
-} = require('khala-fabric-formatter/eventHub.js');
-const fabproto6 = require('fabric-protos');
+import EventService from 'fabric-common/lib/EventService';
+
+import {
+	BlockEventFilterType,
+	TxEventFilterType,
+	BlockNumberFilterType
+} from 'khala-fabric-formatter/eventHub.js';
+
+const {FULL_BLOCK} = BlockEventFilterType;
+const {ALL} = TxEventFilterType;
+const {NEWEST, OLDEST} = BlockNumberFilterType;
+import fabproto6 from 'fabric-protos';
+import Long from 'long';
+
 const {BLOCK_UNTIL_READY, FAIL_IF_NOT_READY} = fabproto6.orderer.SeekInfo.SeekBehavior;
-const Long = require('long');
 
 class EventHub {
 	/**

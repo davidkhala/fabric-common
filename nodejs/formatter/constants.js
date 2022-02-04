@@ -1,21 +1,21 @@
 /**
  * @enum {string}
  */
-const ChaincodeProposalCommand = {
+export const ChaincodeProposalCommand = {
 	deploy: 'deploy',
 	upgrade: 'upgrade'
 };
 /**
  * @enum {string}
  */
-const ChannelGroupType = {
+export const ChannelGroupType = {
 	system: 'Orderer',
 	application: 'Application'
 };
 /**
  * @enum {string}
  */
-const SystemChaincodeID = {
+export const SystemChaincodeID = {
 	LSCC: 'lscc',
 	QSCC: 'qscc',
 	CSCC: 'cscc',
@@ -26,7 +26,7 @@ const SystemChaincodeID = {
 /**
  * @enum {string}
  */
-const PolicyName = {
+export const PolicyName = {
 	Readers: 'Readers',
 	Writers: 'Writers',
 	Admins: 'Admins',
@@ -36,7 +36,7 @@ const PolicyName = {
  * MSPRoleType defines which of the available, pre-defined MSP-roles
  * @enum {string}
  */
-const MSPRoleType = [
+export const MSPRoleType = [
 	'MEMBER', // Represents an MSP Member
 	'ADMIN', // Represents an MSP Admin
 	'CLIENT', // Represents an MSP Client
@@ -47,14 +47,14 @@ const MSPRoleType = [
  * TODO
  * @enum {string}
  */
-const MspType = {
+export const MspType = {
 	idemix: 'idemix'
 };
 
 /**
  * @enum
  */
-const DiscoveryResultType = {
+export const DiscoveryResultType = {
 	config_result: 'config_result',
 	error: 'error',
 	cc_query_res: 'cc_query_res',
@@ -65,14 +65,14 @@ const DiscoveryResultType = {
 /**
  * @enum {string}
  */
-const OrdererType = {
+export const OrdererType = {
 	etcdraft: 'etcdraft'
 };
 /**
  *
  * @enum {string}
  */
-const MetricsProvider = {
+export const MetricsProvider = {
 	statsd: 'statsd',
 	prometheus: 'prometheus',
 	undefined: 'disabled',
@@ -81,7 +81,7 @@ const MetricsProvider = {
 /**
  * @enum {string}
  */
-const ImplicitMetaPolicyRule = {
+export const ImplicitMetaPolicyRule = {
 	ANY: 'ANY',
 	ALL: 'ALL',
 	MAJORITY: 'MAJORITY'
@@ -89,28 +89,28 @@ const ImplicitMetaPolicyRule = {
 /**
  * @enum {string}
  */
-const TransactionType = {
+export const TransactionType = {
 	ENDORSER_TRANSACTION: 'ENDORSER_TRANSACTION',
 	CONFIG: 'CONFIG'
 };
 /**
  * @enum {string}
  */
-const PolicyType = {
+export const PolicyType = {
 	IMPLICIT_META: 'IMPLICIT_META',
 	SIGNATURE: 'SIGNATURE'
 };
 /**
  * @enum {string}
  */
-const PolicyRuleType = {
+export const PolicyRuleType = {
 	n_out_of: 'n_out_of',
 	signed_by: 'signed_by'
 };
 /**
  * @enum {string}
  */
-const IdentityType = {
+export const IdentityType = {
 	Role: 'role',
 	OrganizationUnit: 'organization-unit',
 	Identity: 'identity'
@@ -118,7 +118,7 @@ const IdentityType = {
 /**
  * @enum
  */
-const TxValidationCode = {
+export const TxValidationCode = {
 	0: 'VALID',
 	1: 'NIL_ENVELOPE',
 	2: 'BAD_PAYLOAD',
@@ -149,10 +149,10 @@ const TxValidationCode = {
 	255: 'INVALID_OTHER_REASON'
 };
 /**
- * selected HTTP status codes
+ * selected HTTtatus codes
  * @enum
  */
-const Status = {
+export const Status = {
 	UNKNOWN: 0,
 	SUCCESS: 200,
 	BAD_REQUEST: 400,
@@ -167,7 +167,7 @@ const Status = {
  *
  * @enum {string}
  */
-const CommonResponseStatus = {
+export const CommonResponseStatus = {
 	SUCCESS: 'SUCCESS',
 	SERVICE_UNAVAILABLE: 'SERVICE_UNAVAILABLE',
 	NOT_FOUND: 'NOT_FOUND'
@@ -176,7 +176,7 @@ const CommonResponseStatus = {
  *
  * @enum {string}
  */
-const BroadcastResponseStatus = {
+export const BroadcastResponseStatus = {
 	SUCCESS: CommonResponseStatus.SUCCESS,
 	BAD_REQUEST: 'BAD_REQUEST'
 };
@@ -184,7 +184,7 @@ const BroadcastResponseStatus = {
 /**
  * @enum
  */
-const BlockMetadataIndex = {
+export const BlockMetadataIndex = {
 	SIGNATURES: 0,
 	/**
 	 * @deprecated Do not use
@@ -197,26 +197,3 @@ const BlockMetadataIndex = {
 	ORDERER: 3,
 	COMMIT_HASH: 4
 };
-
-module.exports = {
-	ChaincodeProposalCommand,
-	IdentityType,
-	TransactionType,
-	MSPRoleType,
-	PolicyType,
-	PolicyRuleType,
-	ImplicitMetaPolicyRule,
-	MetricsProvider,
-	OrdererType,
-	PolicyName,
-	TxValidationCode,
-	Status,
-	BroadcastResponseStatus,
-	SystemChaincodeID,
-	ChannelGroupType,
-	DiscoveryResultType,
-	MspType,
-	CommonResponseStatus,
-	BlockMetadataIndex,
-};
-

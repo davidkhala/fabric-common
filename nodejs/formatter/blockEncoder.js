@@ -1,8 +1,7 @@
-const fabprotos = require('fabric-protos');
-const {BufferFrom} = require('khala-fabric-formatter/protobuf');
-const commonProto = fabprotos.common;
+import {common as commonProto} from 'fabric-protos';
+import {BufferFrom} from 'khala-fabric-formatter/protobuf';
 
-const fromEvent = ({block}) => {
+export const fromEvent = ({block}) => {
 	const blockHeader = new commonProto.BlockHeader();
 	blockHeader.number = block.header.number;
 	blockHeader.previous_hash = block.header.previous_hash;
@@ -14,6 +13,4 @@ const fromEvent = ({block}) => {
 
 	return BufferFrom({header: blockHeader, data: blockData, metadata: blockMetadata}, commonProto.Block);
 };
-module.exports = {
-	fromEvent
-};
+

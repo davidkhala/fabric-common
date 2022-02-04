@@ -1,5 +1,5 @@
-const fs = require('fs');
-const {OrdererType} = require('./constants');
+import fs from 'fs';
+import {OrdererType} from './constants.js';
 
 class ConfigFactory {
 	/**

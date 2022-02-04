@@ -1,5 +1,5 @@
-const fabprotos = require('fabric-protos');
-const {BlockNumberFilterType: {NEWEST, OLDEST}} = require('khala-fabric-formatter/eventHub');
+import fabprotos from 'fabric-protos';
+import {BlockNumberFilterType: {NEWEST, OLDEST}} from 'khala-fabric-formatter/eventHub';
 const {BufferFrom, ProtoFrom} = require('khala-fabric-formatter/protobuf');
 const commonProto = fabprotos.common;
 const ordererProto = fabprotos.orderer;

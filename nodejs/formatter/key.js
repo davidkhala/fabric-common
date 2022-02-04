@@ -1,7 +1,7 @@
-const path = require('path');
-const fs = require('fs');
+import path from 'path';
+import fs from 'fs';
 
-class ECDSA_PrvKey {
+export class ECDSA_PrvKey {
 	/**
 	 * @param key
 	 */
@@ -34,7 +34,3 @@ class ECDSA_PrvKey {
 
 	}
 }
-
-module.exports = {
-	ECDSA_PrvKey
-};

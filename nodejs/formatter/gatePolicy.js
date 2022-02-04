@@ -7,8 +7,9 @@ const MSPRoleTypeInverse = {
 };
 const GateClausePattern = /^(AND|OR)\(([\w,.\s()']+)\)$/;
 const RoleClausePattern = /^'([0-9A-Za-z.-]+)(\.)(admin|member|client|peer|orderer)'$/;
-const commonProtos = require('fabric-protos').common;
-const {BufferFrom, ProtoFrom} = require('khala-fabric-formatter/protobuf');
+import {common as commonProtos} from 'fabric-protos';
+
+import {BufferFrom, ProtoFrom} from 'khala-fabric-formatter/protobuf';
 
 /**
  *  Reference: `common/policydsl/policyparser.go`
