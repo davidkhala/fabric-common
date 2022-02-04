@@ -1,11 +1,10 @@
-const {LoggingLevel, rootCAsStringBuilder} = require('khala-fabric-formatter/remote');
-const {OrdererType, MetricsProvider} = require('khala-fabric-formatter/constants');
-const containerDefaultPaths = {
+import {LoggingLevel, rootCAsStringBuilder} from 'khala-fabric-formatter/remote.js';
+import {OrdererType, MetricsProvider} from 'khala-fabric-formatter/constants.js';
+export const container = {
 	CONFIGTX: '/etc/hyperledger/configtx',
 	state: '/var/hyperledger/production/orderer/',
 	config: '/etc/hyperledger/'
 };
-exports.container = containerDefaultPaths;
 /**
  * [release-2.3] system chain removal
 
@@ -15,7 +14,7 @@ exports.container = containerDefaultPaths;
  * @param metricsOpts
  * @returns {string[]}
  */
-exports.envBuilder = (opts, loggingLevel, operationsOpts, metricsOpts) => {
+export const envBuilder = (opts, loggingLevel, operationsOpts, metricsOpts) => {
 
 	const {
 		bootStrapFile, // block file relative path, if unset, adopt no-genesis orderer mode
@@ -40,7 +39,7 @@ exports.envBuilder = (opts, loggingLevel, operationsOpts, metricsOpts) => {
 	if (bootStrapFile) {
 		env = env.concat([
 			'ORDERER_GENERAL_BOOTSTRAPMETHOD=file',
-			`ORDERER_GENERAL_BOOTSTRAPFILE=${containerDefaultPaths.CONFIGTX}/${bootStrapFile}`,
+			`ORDERER_GENERAL_BOOTSTRAPFILE=${container.CONFIGTX}/${bootStrapFile}`,
 		]);
 	} else {
 		env = env.concat([

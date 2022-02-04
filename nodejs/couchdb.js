@@ -1,6 +1,6 @@
-const path = require('path');
-const fsExtra = require('fs-extra');
-exports.envBuilder = (user, password, clusterOpt) => {
+import path from 'path';
+import fsExtra from 'fs-extra';
+export const envBuilder = (user, password, clusterOpt) => {
 	let env = [`COUCHDB_USER=${user}`, `COUCHDB_PASSWORD=${password}`];
 	if (clusterOpt) {
 		// TODO couchdb cluster
@@ -20,7 +20,7 @@ exports.envBuilder = (user, password, clusterOpt) => {
  * @param {number} limit Maximum number of results returned
  * @returns {string}
  */
-exports.queryBuilder = (selector = {}, sorts = [], direction = 0, limit = 25) => {
+export const queryBuilder = (selector = {}, sorts = [], direction = 0, limit = 25) => {
 	const sort = [];
 	const directions = ['asc', 'desc'];
 	for (const sortCol of sorts) {
@@ -44,7 +44,7 @@ exports.queryBuilder = (selector = {}, sorts = [], direction = 0, limit = 25) =>
  * @param {string} [fileName] should ends with ".json" default: index.json
  * @param {string} [fields] sorting fields
  */
-exports.couchDBIndex = (metaINFPath, collection, fileName, ...fields) => {
+export const couchDBIndex = (metaINFPath, collection, fileName, ...fields) => {
 	if (!fileName) {
 		fileName = 'index.json';
 	} else {

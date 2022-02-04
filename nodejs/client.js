@@ -1,6 +1,6 @@
-const Client = require('fabric-common/lib/Client');
+import Client from 'fabric-common/lib/Client';
 
-class ClientManager {
+export default class ClientManager {
 	/**
 	 *
 	 * @param {Client} [client]
@@ -20,5 +20,3 @@ class ClientManager {
 		this.client.channels.delete(channelName);
 	}
 }
-
-module.exports = ClientManager;

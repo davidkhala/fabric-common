@@ -1,5 +1,5 @@
-const fs = require('fs');
-const UserBuilder = require('khala-fabric-admin/user');
+import fs from 'fs';
+import UserBuilder from 'khala-fabric-admin/user';
 
 /**
  *
@@ -9,7 +9,7 @@ const UserBuilder = require('khala-fabric-admin/user');
  * @param {boolean} [toThrow]
  * @returns {User}
  */
-exports.loadFromLocal = (cryptoPath, nodeType, mspid, toThrow) => {
+export const loadFromLocal = (cryptoPath, nodeType, mspid, toThrow) => {
 	const name = cryptoPath[`${nodeType}UserHostName`];
 	const exist = cryptoPath.cryptoExistLocal(`${nodeType}User`);
 	if (!exist) {

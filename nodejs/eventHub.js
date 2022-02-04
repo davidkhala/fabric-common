@@ -1,7 +1,10 @@
-const {BlockNumberFilterType: {NEWEST, OLDEST}, TxEventFilterType: {ALL}} = require('khala-fabric-formatter/eventHub');
-const {TxValidationCode} = require('khala-fabric-formatter/constants');
+import {BlockNumberFilterType, TxEventFilterType} from 'khala-fabric-formatter/eventHub';
+import {TxValidationCode} from 'khala-fabric-formatter/constants';
 
-class EventHubQuery {
+const {NEWEST, OLDEST} = BlockNumberFilterType;
+const {ALL} = TxEventFilterType;
+
+export default class EventHubQuery {
 	/**
 	 *
 	 * @param eventHub
@@ -97,13 +100,13 @@ class EventHubQuery {
 				if (err) {
 					reject(err);
 				} else {
-					const {blockNumber, transactionId:txid, status} = event;
+					const {blockNumber, transactionId: txid, status} = event;
 					if (status !== TxValidationCode['0']) {
 						const error = Error(`Invalid transaction status [${status}]`);
 						Object.assign(error, event);
 						reject(error);
 					} else {
-						resolve({blockNumber, transactionId:txid, status});
+						resolve({blockNumber, transactionId: txid, status});
 					}
 				}
 
@@ -138,7 +141,3 @@ class EventHubQuery {
 		});
 	}
 }
-
-
-module.exports = EventHubQuery;
-

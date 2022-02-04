@@ -1,5 +1,5 @@
-const {LoggingLevel} = require('khala-fabric-formatter/remote');
-const {MetricsProvider} = require('./constants');
+import {LoggingLevel} from 'khala-fabric-formatter/remote.js';
+import {MetricsProvider} from 'khala-fabric-formatter/constants.js';
 
 export const container = {
 	MSPROOT: '/etc/hyperledger/crypto-config',

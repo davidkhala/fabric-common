@@ -1,13 +1,13 @@
 import ChaincodeAction from './chaincodeAction.js';
-const ProposalManager = require('khala-fabric-admin/proposal');
-const EventHubQuery = require('./eventHub');
-const {transientMapTransform} = require('khala-fabric-formatter/txProposal');
-const {EndorseALL, CommitSuccess} = require('khala-fabric-admin/resultInterceptors');
+import ProposalManager from 'khala-fabric-admin/proposal.js';
+import EventHubQuery from './eventHub.js';
+import {transientMapTransform} from 'khala-fabric-formatter/txProposal';
+import {EndorseALL, CommitSuccess} from 'khala-fabric-admin/resultInterceptors';
 
 /**
  *
  */
-class Transaction extends ChaincodeAction {
+export default class Transaction extends ChaincodeAction {
 	/**
 	 *
 	 * @param peers
@@ -16,11 +16,8 @@ class Transaction extends ChaincodeAction {
 	 * @param chaincodeId
 	 * @param logger
 	 */
-	constructor(peers, user, channel, chaincodeId, logger) {
+	constructor(peers, user, channel, chaincodeId, logger=console) {
 		super(peers, user, channel);
-		if (!logger) {
-			logger = require('khala-logger/log4js').consoleLogger('Transaction');
-		}
 
 		const proposal = new ProposalManager(this.identityContext, this.channel, chaincodeId, this.endorsers);
 		proposal.setProposalResultAssert(EndorseALL);
@@ -66,5 +63,3 @@ class Transaction extends ChaincodeAction {
 
 	}
 }
-
-module.exports = Transaction;

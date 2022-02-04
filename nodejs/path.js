@@ -1,8 +1,8 @@
-const path = require('path');
-const fsExtra = require('fs-extra');
+import path from 'path';
+import fsExtra from 'fs-extra';
 
-const {ECDSA_PrvKey} = require('khala-fabric-formatter/key');
-const {findKeyFiles} = require('khala-fabric-formatter/path');
+import {ECDSA_PrvKey} from 'khala-fabric-formatter/key.js';
+import {findKeyFiles} from 'khala-fabric-formatter/path.js';
 
 /**
  * @class

@@ -1,7 +1,8 @@
-const {execSync, execDetach, killProcess, findProcess} = require('khala-nodeutils/devOps');
-const path = require('path');
-const fs = require('fs');
-const {createTmpFile, createTmpDir} = require('khala-nodeutils/tmp');
+import {execSync, execDetach, killProcess, findProcess} from '@davidkhala/nodeutils/devOps.js';
+import path from 'path';
+import fs from 'fs';
+import {createTmpFile, createTmpDir} from '@davidkhala/nodeutils/tmp.js';
+
 const expectedBinaries = ['configtxgen', 'configtxlator', 'cryptogen', 'discover', 'fabric-ca-client', 'fabric-ca-server', 'idemixgen', 'orderer', 'osnadmin', 'peer'];
 
 class BinManager {
@@ -29,8 +30,7 @@ class BinManager {
 			}
 		});
 
-		this.logger = logger;
-		this.binPath = binPath;
+		Object.assign(this, {logger, binPath});
 		// TODO how to use streaming buffer to exec
 		this.configtxlatorCMD = {
 			/**

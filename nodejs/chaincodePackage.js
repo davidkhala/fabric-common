@@ -1,11 +1,11 @@
-const {ChaincodeType} = require('khala-fabric-formatter/chaincode');
-const fs = require('fs');
-const {isDirectory, execSync} = require('khala-light-util/index');
-const path = require('path');
-const {createTmpDir} = require('khala-nodeutils/tmp');
-const compress = require('compressing');
+import {ChaincodeType} from 'khala-fabric-formatter/chaincode';
+import fs from 'fs';
+import {isDirectory, execSync} from '@davidkhala/light/index.js';
+import path from 'path';
+import {createTmpDir} from '@davidkhala/nodeutils/tmp.js';
+import compress from 'compressing';
 
-class ChaincodePackage {
+export default class ChaincodePackage {
 	/**
 	 *
 	 * @param {string} Path
@@ -71,5 +71,3 @@ class ChaincodePackage {
 
 	}
 }
-
-module.exports = ChaincodePackage;

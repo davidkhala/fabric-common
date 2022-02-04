@@ -1,7 +1,6 @@
-const LevelDB = require('khala-level');
-const path = require('path');
-
-const fs = require('fs');
+import LevelDB from '@davidkhala/level';
+import path from 'path';
+import fs from 'fs';
 
 class PeerLevelDBs {
 	constructor(rootPath) {

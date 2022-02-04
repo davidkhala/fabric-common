@@ -1,5 +1,5 @@
-const {axiosPromise} = require('khala-axios');
-const {LoggingLevel} = require('khala-fabric-formatter/remote');
+import {axiosPromise} from 'khala-axios';
+import {LoggingLevel} from 'khala-fabric-formatter/remote.js';
 /**
  * @typedef {Object} OperationHealthz
  * @property {string} status
@@ -17,7 +17,7 @@ const {LoggingLevel} = require('khala-fabric-formatter/remote');
  * @property {string} spec
  */
 
-class OperationService {
+export default class OperationService {
 	/**
 	 *
 	 * @param baseUrl ${domain}:${port} port is usually 9443(for peer), 8443(for orderer)
@@ -76,6 +76,4 @@ class OperationService {
 		await axiosPromise({url, method: 'PUT', body: {spec: LoggingLevel[level]}}, this.options); // response is undefined
 	}
 }
-
-module.exports = OperationService;
 

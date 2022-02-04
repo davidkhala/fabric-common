@@ -25,10 +25,10 @@
  * @property {PolicyElement[]} [n-of]
  * @property {integer|MSPRoleType} [signedBy]
  */
-const commonProto = require('fabric-protos').common;
-const {BufferFrom} = require('khala-fabric-formatter/protobuf');
+import {common as commonProto} from 'fabric-protos';
+import {BufferFrom} from 'khala-fabric-formatter/protobuf';
 
-class Policy {
+export default class Policy {
 
 	/**
 	 *
@@ -79,7 +79,3 @@ class Policy {
 		return signaturePolicy;
 	}
 }
-
-
-module.exports = Policy;
-
