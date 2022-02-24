@@ -90,7 +90,7 @@ export const runCA = async ({container_name, port, network, imageTag, adminName,
 
 
 	const builder = new ContainerOptsBuilder(`hyperledger/fabric-ca:${imageTag}`, Cmd);
-	builder.setName(container_name).setEnv(caUtil.envBuilder());
+	builder.setName(container_name);
 	builder.setPortBind(`${port}:7054`).setNetwork(network, [container_name]);
 	const createOptions = builder.build();
 
