@@ -2,7 +2,7 @@ import {BroadcastResponseStatus} from 'khala-fabric-formatter/constants.js';
 import SigningIdentityUtil from './signingIdentity.js';
 import IdentityContext from 'fabric-common/lib/IdentityContext.js';
 
-class ChannelUpdate {
+export default class ChannelUpdate {
 
 	/**
 	 *
@@ -55,5 +55,3 @@ class ChannelUpdate {
 	}
 
 }
-
-module.exports = ChannelUpdate;

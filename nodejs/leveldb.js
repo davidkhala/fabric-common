@@ -45,4 +45,4 @@ PeerLevelDBs.filter = {
 	}
 };
 
-exports.PeerLedger = PeerLevelDBs;
+export {PeerLevelDBs as PeerLedger};

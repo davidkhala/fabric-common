@@ -1,6 +1,6 @@
-const Proposal = require('fabric-common/lib/Proposal');
-const Commit = require('fabric-common/lib/Commit');
-const {calculateTransactionId} = require('./user');
+import Proposal from 'fabric-common/lib/Proposal.js';
+import Commit from 'fabric-common/lib/Commit.js';
+import {calculateTransactionId} from './user.js';
 
 /**
  * A copy of sdk's definition of ProposalResponse
@@ -27,7 +27,7 @@ const {calculateTransactionId} = require('./user');
  * @property {boolean} [generateTransactionId] set false to avoid "idContext.calculateTransactionId()"
  * @property {Buffer} [nonce] if specify, random generated nonce will be overridden by this nonce
  */
-class ProposalManager extends Proposal {
+export default class ProposalManager extends Proposal {
 
 	/**
 	 *
@@ -114,5 +114,3 @@ class ProposalManager extends Proposal {
 	}
 
 }
-
-module.exports = ProposalManager;

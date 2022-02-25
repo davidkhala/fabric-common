@@ -1,5 +1,5 @@
-exports.adminName = 'Admin';
-exports.adminPwd = 'passwd';
+export const adminName = 'Admin';
+export const adminPwd = 'passwd';
 
 
 

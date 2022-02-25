@@ -10,7 +10,7 @@ const IdentityContext = require('fabric-common/lib/IdentityContext');
 const {getResponses} = require('khala-fabric-formatter/proposalResponse');
 const ChaincodeAction = require('./chaincodeAction');
 
-class QueryHub extends ChaincodeAction {
+export default class QueryHub extends ChaincodeAction {
 	constructor(peers, user) {
 		super(peers, user, undefined);
 		this.identityContext = new IdentityContext(user, null);
@@ -142,5 +142,3 @@ class QueryHub extends ChaincodeAction {
 		return queryResults.map(BlockDecoder.decodeTransaction);
 	}
 }
-
-module.exports = QueryHub;

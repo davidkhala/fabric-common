@@ -7,7 +7,7 @@ import {findKeyFiles} from 'khala-fabric-formatter/path.js';
 /**
  * @class
  */
-class CryptoPath {
+export class CryptoPath {
 	constructor(rootPath, {orderer, peer, user, password} = {}) {
 		this.password = password;
 		if (orderer) {
@@ -247,5 +247,3 @@ class CryptoPath {
 	}
 
 }
-
-exports.CryptoPath = CryptoPath;

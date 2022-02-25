@@ -1,15 +1,17 @@
-const LifecycleProposal = require('khala-fabric-admin/lifecycleProposal');
-const EventHubQuery = require('./eventHub');
-const {sleep} = require('khala-light-util');
-const ChaincodeAction = require('./chaincodeAction');
-const {emptyChannel} = require('khala-fabric-admin/channel');
-const Policy = require('khala-fabric-formatter/policy');
-const GatePolicy = require('khala-fabric-formatter/gatePolicy');
-const {CommonResponseStatus: {SERVICE_UNAVAILABLE}} = require('khala-fabric-formatter/constants');
-const {buildCollectionConfig} = require('khala-fabric-formatter/SideDB');
-const {CommitSuccess} = require('khala-fabric-admin/resultInterceptors');
+import LifecycleProposal from 'khala-fabric-admin/lifecycleProposal.js';
+import EventHubQuery from './eventHub.js';
+import {sleep} from '@davidkhala/light/index.js';
+import ChaincodeAction from './chaincodeAction.js';
+import {emptyChannel} from 'khala-fabric-admin/channel.js';
+import Policy from 'khala-fabric-formatter/policy.js';
+import GatePolicy from 'khala-fabric-formatter/gatePolicy.js';
+import {CommonResponseStatus} from 'khala-fabric-formatter/constants.js';
+import {buildCollectionConfig} from 'khala-fabric-formatter/SideDB.js';
+import {CommitSuccess} from 'khala-fabric-admin/resultInterceptors';
 
-class ChaincodeLifecycleOperation extends ChaincodeAction {
+const {SERVICE_UNAVAILABLE} = CommonResponseStatus;
+
+export default class ChaincodeLifecycleOperation extends ChaincodeAction {
 	/**
 	 *
 	 * @param peers
@@ -197,7 +199,6 @@ class ChaincodeLifecycleOperation extends ChaincodeAction {
 	}
 }
 
-module.exports = ChaincodeLifecycleOperation;
 
 
 

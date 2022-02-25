@@ -1,10 +1,10 @@
-import DockerManager from '@davidkhala/dockerode/docker';
-import ContainerOptsBuilder from '@davidkhala/dockerode/containerOptsBuilder';
-import peerUtil from './peer.js';
-import caUtil from './ca.js';
-import ordererUtil from './orderer.js';
-import couchdbUtil from './couchdb.js';
-import {adminName as defaultAdminName, adminPwd as defaultAdminPwd} from 'khala-fabric-formatter/user';
+import DockerManager from '@davidkhala/dockerode/docker.js';
+import ContainerOptsBuilder from '@davidkhala/dockerode/containerOptsBuilder.js';
+import * as peerUtil from './peer.js';
+import {container as caContainer} from './ca.js';
+import * as ordererUtil from './orderer.js';
+import * as couchdbUtil from './couchdb.js';
+import {adminName as defaultAdminName, adminPwd as defaultAdminPwd} from 'khala-fabric-formatter/user.js';
 
 const dockerManager = new DockerManager();
 
@@ -62,7 +62,7 @@ export const runCA = async ({container_name, port, network, imageTag, adminName,
 		adminPassword = defaultAdminPwd;
 	}
 
-	const {caKey, caCert} = caUtil.container;
+	const {caKey, caCert} = caContainer;
 	if (!issuer) {
 		issuer = {};
 	}

@@ -14,7 +14,7 @@ import Long from 'long';
 
 const {BLOCK_UNTIL_READY, FAIL_IF_NOT_READY} = fabproto6.orderer.SeekInfo.SeekBehavior;
 
-class EventHub {
+export default class EventHub {
 	/**
 	 * Does not support multiple stream managed in single EventService
 	 * Only single `eventService._current_eventer` take effect
@@ -187,6 +187,3 @@ class EventHub {
 		return eventService.registerTransactionListener(transactionID, callback, options);
 	}
 }
-
-
-module.exports = EventHub;

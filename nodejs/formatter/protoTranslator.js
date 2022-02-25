@@ -6,7 +6,7 @@ const commonProto = fabprotos.common;
 const ordererProto = fabprotos.orderer;
 const protosProto = fabprotos.protos;
 const {NEWEST, OLDEST} = BlockNumberFilterType;
-const buildCurrentTimestamp = () => {
+export const buildCurrentTimestamp = () => {
 	const now = new Date();
 	const timestamp = new fabprotos.google.protobuf.Timestamp();
 	timestamp.seconds = now.getTime() / 1000;
@@ -23,7 +23,7 @@ const buildCurrentTimestamp = () => {
  * @param [TLSCertHash]
  * @param [Timestamp]
  */
-const buildChannelHeader = ({Type, Version = 1, ChannelId, TxId, ChaincodeID, TLSCertHash, Timestamp}) => {
+export const buildChannelHeader = ({Type, Version = 1, ChannelId, TxId, ChaincodeID, TLSCertHash, Timestamp}) => {
 	const channelHeader = new commonProto.ChannelHeader();
 	channelHeader.type = Type; // int32
 	channelHeader.version = Version; // int32
@@ -55,7 +55,7 @@ const buildChannelHeader = ({Type, Version = 1, ChannelId, TxId, ChaincodeID, TL
  * @param Nonce
  * @param ChannelHeader
  */
-const buildHeader = ({Creator, Nonce, ChannelHeader}) => {
+export const buildHeader = ({Creator, Nonce, ChannelHeader}) => {
 	const signatureHeaderBytes = BufferFrom({creator: Creator, nonce: Nonce}, commonProto.SignatureHeader);
 
 	const header = new commonProto.Header();
@@ -71,7 +71,7 @@ const buildHeader = ({Creator, Nonce, ChannelHeader}) => {
  * @param {boolean} [asBuffer]
  * @return {commonProto.Payload}
  */
-const buildPayload = ({Header, Data}, asBuffer) => {
+export const buildPayload = ({Header, Data}, asBuffer) => {
 	const payload = ProtoFrom({header: Header, data: Data}, commonProto.Payload);
 
 	if (asBuffer) {
@@ -84,7 +84,7 @@ const buildPayload = ({Header, Data}, asBuffer) => {
  * @param {number|BlockNumberFilterType} heightFilter
  * @return {ordererProto.SeekPosition}
  */
-const buildSeekPosition = (heightFilter) => {
+export const buildSeekPosition = (heightFilter) => {
 	const seekPosition = new ordererProto.SeekPosition();
 
 	switch (typeof heightFilter) {
@@ -112,7 +112,7 @@ const buildSeekPosition = (heightFilter) => {
 /**
  * @enum {string}
  */
-const SeekBehavior = {
+export const SeekBehavior = {
 	BLOCK_UNTIL_READY: 'BLOCK_UNTIL_READY',
 	FAIL_IF_NOT_READY: 'FAIL_IF_NOT_READY',
 };
@@ -122,7 +122,7 @@ const SeekBehavior = {
  * @param {ordererProto.SeekPosition} stopSeekPosition
  * @param {SeekBehavior|string} [behavior]
  */
-const buildSeekInfo = (startSeekPosition, stopSeekPosition, behavior, asBuffer) => {
+export const buildSeekInfo = (startSeekPosition, stopSeekPosition, behavior, asBuffer) => {
 	const seekInfo = ProtoFrom({start: startSeekPosition, stop: stopSeekPosition}, ordererProto.SeekInfo);
 	if (behavior) {
 		seekInfo.behavior = ordererProto.SeekInfo.SeekBehavior[behavior];
@@ -159,7 +159,7 @@ const HeaderType = {
  * @param {SeekBehavior|string} [behavior]
  * @return {commonProto.Payload}
  */
-const buildSeekPayload = ({Creator, Nonce, ChannelId, TxId}, startHeight, stopHeight, behavior = SeekBehavior.FAIL_IF_NOT_READY, asBuffer) => {
+export const buildSeekPayload = ({Creator, Nonce, ChannelId, TxId}, startHeight, stopHeight, behavior = SeekBehavior.FAIL_IF_NOT_READY, asBuffer) => {
 
 	const startPosition = buildSeekPosition(startHeight);
 	const stopPosition = buildSeekPosition(stopHeight);
@@ -177,7 +177,7 @@ const buildSeekPayload = ({Creator, Nonce, ChannelId, TxId}, startHeight, stopHe
 	return buildPayload({Header: seekHeader, Data: seekInfoBytes}, asBuffer);
 
 };
-const extractLastConfigIndex = (block) => {
+export const extractLastConfigIndex = (block) => {
 	const metadata = commonProto.Metadata.decode(block.metadata.metadata[commonProto.BlockMetadataIndex.LAST_CONFIG]); // TODO it shows as deprecated in hyperledger/fabric-protos
 	const lastConfig = commonProto.LastConfig.decode(metadata.value);
 	return parseInt(lastConfig.index);
@@ -186,7 +186,7 @@ const extractLastConfigIndex = (block) => {
  * Extracts the protobuf 'ConfigUpdate' object out of the 'ConfigEnvelope' object
  * @param {Buffer} configEnvelope - channel config file content
  */
-const extractConfigUpdate = (configEnvelope) => {
+export const extractConfigUpdate = (configEnvelope) => {
 	const envelope = commonProto.Envelope.decode(configEnvelope);
 	const payload = commonProto.Payload.decode(envelope.payload);
 	const configtx = commonProto.ConfigUpdateEnvelope.decode(payload.data);
@@ -197,13 +197,13 @@ const extractConfigUpdate = (configEnvelope) => {
  *
  * @param {BlockData} blockData
  */
-const extractConfigEnvelopeFromBlockData = (blockData) => {
+export const extractConfigEnvelopeFromBlockData = (blockData) => {
 	const envelope = commonProto.Envelope.decode(blockData);
 	const payload = commonProto.Payload.decode(envelope.payload);
 	return commonProto.ConfigEnvelope.decode(payload.data);
 };
 
-const assertConfigBlock = (block) => {
+export const assertConfigBlock = (block) => {
 	if (block.data.data.length !== 1) {
 		throw new Error('Config block must only contain one transaction');
 	}
@@ -214,19 +214,4 @@ const assertConfigBlock = (block) => {
 		throw new Error(`Block must be of type "CONFIG" , but got "${HeaderType[channel_header.type]}" instead`);
 	}
 
-};
-
-module.exports = {
-	buildChannelHeader,
-	buildCurrentTimestamp,
-	buildHeader,
-	buildPayload,
-	buildSeekPosition,
-	buildSeekInfo,
-	buildSeekPayload,
-	extractLastConfigIndex,
-	extractConfigUpdate,
-	extractConfigEnvelopeFromBlockData,
-	SeekBehavior,
-	assertConfigBlock,
 };

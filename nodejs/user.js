@@ -1,5 +1,5 @@
 import fs from 'fs';
-import UserBuilder from 'khala-fabric-admin/user';
+import UserBuilder from 'khala-fabric-admin/user.js';
 
 /**
  *

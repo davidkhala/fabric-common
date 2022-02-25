@@ -3,7 +3,7 @@
  * @param {TransientMap} jsObject
  * @return {Client.TransientMap}
  */
-exports.transientMapTransform = (jsObject) => {
+export const transientMapTransform = (jsObject) => {
 	if (!jsObject) {
 		return null;
 	}

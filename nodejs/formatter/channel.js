@@ -2,7 +2,7 @@
  * @param {string} channelName
  * @param {boolean} [toThrow]
  */
-exports.nameMatcher = (channelName, toThrow) => {
+export const nameMatcher = (channelName, toThrow) => {
 	const namePattern = /^[a-z][a-z0-9.-]*$/;
 	const result = channelName.match(namePattern) && channelName.length < 250;
 	if (!result && toThrow) {
@@ -11,7 +11,7 @@ exports.nameMatcher = (channelName, toThrow) => {
 	return result;
 };
 
-exports.configGroupMatcher = (configGroupName, toThrow) => {
+export const configGroupMatcher = (configGroupName, toThrow) => {
 	const namePattern = /^[a-zA-Z0-9.-]+$/;
 	const result = configGroupName.match(namePattern) && configGroupName.length < 250;
 	if (!result && toThrow) {
@@ -25,7 +25,7 @@ exports.configGroupMatcher = (configGroupName, toThrow) => {
  * @param {MspId} mspid
  * @return {boolean}
  */
-exports.mspIdMatcher = (mspid) => {
+export const mspIdMatcher = (mspid) => {
 	const namePattern = /^[a-zA-Z0-9.-]+$/;
 	return !!mspid.match(namePattern);
 };

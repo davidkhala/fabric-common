@@ -1,10 +1,10 @@
 import fs from 'fs';
 import path from 'path';
-const findKeyFiles = (dir) => {
+export const findKeyFiles = (dir) => {
 	const files = fs.readdirSync(dir);
 	return files.filter((fileName) => fileName.endsWith('_sk')).map((fileName) => path.resolve(dir, fileName));
 };
-const getOneKeystore = (dir) => {
+export const getOneKeystore = (dir) => {
 	const files = fs.readdirSync(dir);
 	const filename = files.find((fileName) => fileName.endsWith('_sk'));
 	if (filename) {
@@ -16,7 +16,7 @@ const getOneKeystore = (dir) => {
  * and end line with '-----END CERTIFICATE-----', so as to be compliant
  * with x509 parsers
  */
-const normalizeX509 = (raw) => {
+export const normalizeX509 = (raw) => {
 	const regex = /(-----\s*BEGIN ?[^-]+?-----)([\s\S]*)(-----\s*END ?[^-]+?-----)/;
 	let matches = raw.match(regex);
 	if (!matches || matches.length !== 4) {
@@ -38,7 +38,7 @@ const normalizeX509 = (raw) => {
 	result = result.replace(new RegExp(regex2, 'g'), '-----\n-----');
 	return result;
 };
-const findCertFiles = (dir) => {
+export const findCertFiles = (dir) => {
 	const files = fs.readdirSync(dir);
 	return files.map((fileName) => path.resolve(dir, fileName)).filter(filePath => {
 		try {
@@ -49,10 +49,4 @@ const findCertFiles = (dir) => {
 			return false;
 		}
 	});
-};
-module.exports = {
-	findKeyFiles,
-	findCertFiles,
-	normalizeX509,
-	getOneKeystore,
 };

@@ -9,7 +9,7 @@
  * @returns {DiscoveryChaincodeCall[]}
  *
  */
-exports.discoveryChaincodeInterestBuilder = (configs) => {
+export const discoveryChaincodeInterestBuilder = (configs) => {
 	return Object.entries(configs).map(([name, collection_names]) => {
 		/**
 		 * @type DiscoveryChaincodeCall

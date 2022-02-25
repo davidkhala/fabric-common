@@ -1,15 +1,17 @@
-const ProposalManager = require('./proposal');
+import ProposalManager from './proposal.js';
+import {SystemChaincodeFunctions} from 'khala-fabric-formatter/systemChaincode.js';
+import fabprotos from 'fabric-protos';
+import {SystemChaincodeID} from 'khala-fabric-formatter/constants.js';
+import {BufferFrom} from 'khala-fabric-formatter/protobuf.js';
+import fs from 'fs';
+import {getResponses} from 'khala-fabric-formatter/proposalResponse.js';
+import {EndorseALL, CommitSuccess} from './resultInterceptors.js';
 const {
-	SystemChaincodeFunctions: {
-		_lifecycle: {
-			InstallChaincode, QueryInstalledChaincodes, QueryInstalledChaincode, ApproveChaincodeDefinitionForMyOrg,
-			QueryChaincodeDefinition, QueryChaincodeDefinitions, CheckCommitReadiness, CommitChaincodeDefinition
-		}
-	}
-} = require('khala-fabric-formatter/systemChaincode');
-const {SystemChaincodeID: {LifeCycle}} = require('khala-fabric-formatter/constants');
-const {BufferFrom} = require('khala-fabric-formatter/protobuf');
-const fabprotos = require('fabric-protos');
+	InstallChaincode, QueryInstalledChaincodes, QueryInstalledChaincode, ApproveChaincodeDefinitionForMyOrg,
+	QueryChaincodeDefinition, QueryChaincodeDefinitions, CheckCommitReadiness, CommitChaincodeDefinition
+} = SystemChaincodeFunctions._lifecycle;
+const {LifeCycle} = SystemChaincodeID;
+
 const protosProtos = fabprotos.protos;
 const lifeCycleProtos = fabprotos.lifecycle;
 const {
@@ -18,13 +20,11 @@ const {
 	ApproveChaincodeDefinitionForMyOrgArgs, CommitChaincodeDefinitionArgs, InstallChaincodeArgs,
 	QueryChaincodeDefinitionArgs,
 } = lifeCycleProtos;
-const fs = require('fs');
-const {getResponses} = require('khala-fabric-formatter/proposalResponse');
-const {EndorseALL, CommitSuccess} = require('./resultInterceptors');
+
 const {ApplicationPolicy, CollectionConfigPackage} = protosProtos;
 
 
-class LifecycleProposal extends ProposalManager {
+export default class LifecycleProposal extends ProposalManager {
 	/**
 	 *
 	 * @param {IdentityContext} identityContext
@@ -285,7 +285,3 @@ class LifecycleProposal extends ProposalManager {
 	}
 
 }
-
-module.exports = LifecycleProposal;
-
-

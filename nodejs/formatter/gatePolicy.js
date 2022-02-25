@@ -15,7 +15,7 @@ import {BufferFrom, ProtoFrom} from 'khala-fabric-formatter/protobuf';
  *  Reference: `common/policydsl/policyparser.go`
  *      `func FromString(policy string) (*cb.SignaturePolicyEnvelope, error)`
  */
-class GatePolicy {
+export default class GatePolicy {
 
 	static buildMSPPrincipal(MSPRoleType, mspid) {
 		const newPrincipal = new commonProtos.MSPPrincipal();
@@ -107,5 +107,4 @@ class GatePolicy {
 GatePolicy.MSPRoleTypeInverse = MSPRoleTypeInverse;
 GatePolicy.GateClausePattern = GateClausePattern;
 GatePolicy.RoleClausePattern = RoleClausePattern;
-module.exports = GatePolicy;
 

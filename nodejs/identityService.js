@@ -5,7 +5,7 @@
  * @property {Object[]} attrs
  * @property {number} max_enrollments
  */
-import IdentityService from 'fabric-ca-client/lib/IdentityService';
+import IdentityService from 'fabric-ca-client/lib/IdentityService.js';
 
 export default class IdentityServiceWrapper {
 	/**

@@ -1,7 +1,7 @@
 import fabprotos from 'fabric-protos';
 import {MSPRoleType} from 'khala-fabric-formatter/constants';
 const {ROLE, ORGANIZATION_UNIT, IDENTITY} = fabprotos.common.MSPPrincipal.Classification;
-const decodeIdentity = (id_bytes) => {
+export const decodeIdentity = (id_bytes) => {
 	const identity = {};
 
 	const proto_identity = fabprotos.msp.SerializedIdentity.decode(id_bytes);
@@ -11,7 +11,7 @@ const decodeIdentity = (id_bytes) => {
 	return identity;
 };
 
-const decodeMSPPrincipal = (proto_msp_principal) => {
+export const decodeMSPPrincipal = (proto_msp_principal) => {
 	let msp_principal = {};
 	msp_principal.principal_classification = proto_msp_principal.principal_classification;
 	let proto_principal = null;
@@ -34,7 +34,7 @@ const decodeMSPPrincipal = (proto_msp_principal) => {
 
 	return msp_principal;
 };
-const decodeSignaturePolicy = (proto_signature_policy) => {
+export const decodeSignaturePolicy = (proto_signature_policy) => {
 	const signature_policy = {};
 	signature_policy.Type = proto_signature_policy.Type;
 	switch (signature_policy.Type) {
@@ -53,7 +53,7 @@ const decodeSignaturePolicy = (proto_signature_policy) => {
 	}
 	return signature_policy;
 };
-const decodeSignaturePolicyEnvelope = (signature_policy_envelope_bytes) => {
+export const decodeSignaturePolicyEnvelope = (signature_policy_envelope_bytes) => {
 	const signature_policy_envelope = {};
 	const proto_signature_policy_envelope = fabprotos.common.SignaturePolicyEnvelope.decode(signature_policy_envelope_bytes);
 	signature_policy_envelope.version = proto_signature_policy_envelope.version;
@@ -67,10 +67,4 @@ const decodeSignaturePolicyEnvelope = (signature_policy_envelope_bytes) => {
 
 
 	return signature_policy_envelope;
-};
-module.exports = {
-	decodeIdentity,
-	decodeMSPPrincipal,
-	decodeSignaturePolicy,
-	decodeSignaturePolicyEnvelope
 };
