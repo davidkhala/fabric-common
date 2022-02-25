@@ -1,7 +1,7 @@
-const DiscoveryService = require('fabric-common/lib/DiscoveryService');
-const {emptyChannel} = require('./channel');
+import DiscoveryService from 'fabric-common/lib/DiscoveryService.js';
+import {emptyChannel} from './channel.js';
 
-class SlimDiscoveryService extends DiscoveryService {
+export default class SlimDiscoveryService extends DiscoveryService {
 
 	constructor(channelName, discoverer) {
 		super('-', emptyChannel(channelName));
@@ -53,5 +53,3 @@ class SlimDiscoveryService extends DiscoveryService {
 	}
 
 }
-
-module.exports = SlimDiscoveryService;

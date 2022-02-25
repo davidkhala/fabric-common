@@ -1,4 +1,4 @@
-import AffiliationService from 'fabric-ca-client/lib/AffiliationService';
+import AffiliationService from 'fabric-ca-client/lib/AffiliationService.js';
 
 /**
  * TODO routing to all method

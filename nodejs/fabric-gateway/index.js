@@ -1,8 +1,8 @@
-const {signers, connect} = require('fabric-gateway');
-const grpc = require('@grpc/grpc-js');
-const crypto = require('crypto');
+import {signers, connect} from 'fabric-gateway';
+import grpc from '@grpc/grpc-js';
+import crypto from 'crypto';
 
-class FabricGateway {
+export default class FabricGateway {
 	/**
 	 *
 	 * @param {Peer} peer
@@ -39,5 +39,3 @@ class FabricGateway {
 	}
 
 }
-
-module.exports = FabricGateway;

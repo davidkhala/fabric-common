@@ -1,12 +1,11 @@
-const logger = require('khala-logger/log4js').consoleLogger('channel-config');
-
-const ConfigtxlatorServer = require('./configtxlator');
+import {consoleLogger} from '@davidkhala/logger/log4.js'
+import ConfigtxlatorServer from './configtxlator.js';
+import {getChannelConfigFromOrderer} from './channel.js';
+import BinManager from './binManager.js';
+import {ConfigtxlatorType} from 'khala-fabric-formatter/configtxlator.js';
+import ConfigFactory from 'khala-fabric-formatter/configFactory.js';
+import {BufferFrom} from 'khala-fabric-formatter/protobuf.js';
 const configtxlatorServer = new ConfigtxlatorServer();
-const {getChannelConfigFromOrderer} = require('./channel');
-const BinManager = require('./binManager');
-const {ConfigtxlatorType} = require('khala-fabric-formatter/configtxlator');
-const ConfigFactory = require('khala-fabric-formatter/configFactory');
-const {BufferFrom} = require('khala-fabric-formatter/protobuf');
 const ChannelUpdate = require('khala-fabric-admin/channelUpdate');
 const SigningIdentityUtil = require('khala-fabric-admin/signingIdentity');
 const {getNonce} = require('khala-fabric-formatter/helper');
@@ -17,8 +16,8 @@ const assert = require('assert');
 const EventHub = require('khala-fabric-admin/eventHub');
 const {emptyChannel} = require('khala-fabric-admin/channel');
 const EventHubQuery = require('./eventHub');
-
-class ChannelConfig {
+const logger = consoleLogger('channel-config');
+export class ChannelConfig {
 	/**
 	 * @param {string} channelName
 	 * @param {Client.User} user
@@ -114,8 +113,3 @@ class ChannelConfig {
 
 	}
 }
-
-
-module.exports = {
-	ChannelConfig,
-};

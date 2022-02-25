@@ -1,12 +1,12 @@
-const caUtil = require('./ca');
-const {toString: caStringify} = require('khala-fabric-formatter/ca');
-const userUtil = require('./user');
-const AffiliationServiceBuilder = require('./affiliationService');
-const {sleep} = require('khala-light-util');
+import {register} from './ca.js';
+import {toString as caStringify} from 'khala-fabric-formatter/ca.js';
+import * as userUtil from './user.js';
+import AffiliationServiceBuilder from './affiliationService.js';
+import {sleep} from '@davidkhala/light/index.js';
 
-const {getCertificate} = require('khala-fabric-formatter/signingIdentity');
+import {getCertificate} from 'khala-fabric-formatter/signingIdentity.js';
 
-class CaCryptoGen {
+export default class CaCryptoGen {
 	/**
 	 *
 	 * @param {FabricCAService} caService
@@ -85,7 +85,7 @@ class CaCryptoGen {
 		const enrollmentID = orgName;
 
 		const enrollmentSecret = 'passwd';
-		await caUtil.register(caService, admin, {
+		await register(caService, admin, {
 			enrollmentID,
 			enrollmentSecret,
 			affiliation: orgName
@@ -119,7 +119,7 @@ class CaCryptoGen {
 		let enrollmentSecret = cryptoPath.password;
 		const certificate = getCertificate(admin._signingIdentity);
 		cryptoPath.toAdminCerts({certificate}, type);
-		const {enrollmentSecret: newSecret} = await caUtil.register(caService, admin, {
+		const {enrollmentSecret: newSecret} = await register(caService, admin, {
 			enrollmentID,
 			enrollmentSecret,
 			role: 'orderer',
@@ -164,7 +164,7 @@ class CaCryptoGen {
 		let enrollmentSecret = cryptoPath.password;
 		const certificate = getCertificate(admin._signingIdentity);
 		cryptoPath.toAdminCerts({certificate}, type);
-		const {enrollmentSecret: newSecret} = await caUtil.register(caService, admin, {
+		const {enrollmentSecret: newSecret} = await register(caService, admin, {
 			enrollmentID,
 			enrollmentSecret,
 			role: 'peer',
@@ -202,7 +202,7 @@ class CaCryptoGen {
 
 		const enrollmentID = cryptoPath[`${nodeType}UserHostName`];
 		let enrollmentSecret = cryptoPath.password;
-		const {enrollmentSecret: newSecret} = await caUtil.register(caService, admin, {
+		const {enrollmentSecret: newSecret} = await register(caService, admin, {
 			enrollmentID,
 			enrollmentSecret,
 			role: 'user',
@@ -218,7 +218,7 @@ class CaCryptoGen {
 
 	async genClientKeyPair({enrollmentID, enrollmentSecret}, admin, affiliationRoot) {
 		const {caService} = this;
-		const {enrollmentSecret: newSecret} = await caUtil.register(caService, admin, {
+		const {enrollmentSecret: newSecret} = await register(caService, admin, {
 			enrollmentID,
 			enrollmentSecret,
 			role: 'client',
@@ -236,6 +236,3 @@ class CaCryptoGen {
 		return {key, certificate, rootCertificate};
 	}
 }
-
-
-module.exports = CaCryptoGen;

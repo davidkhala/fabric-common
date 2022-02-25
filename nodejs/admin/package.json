@@ -6,7 +6,7 @@
     "fabric-common": "latest",
     "khala-fabric-formatter": "latest",
     "form-data": "latest",
-    "khala-crypto": "latest"
+    "@davidkhala/crypto": "latest"
   },
   "devDependencies": {
     "@davidkhala/light": "latest"
@@ -15,5 +15,6 @@
     "type": "git",
     "url": "https://github.com/davidkhala/fabric-common"
   },
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "type": "module"
 }

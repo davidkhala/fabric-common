@@ -1,10 +1,10 @@
-const FabricCAClient = require('fabric-ca-client/lib/FabricCAClient');
-const {ECDSAConfig, ECDSAKey} = require('khala-crypto/ECDSA');
-const {Extension} = require('khala-crypto/extension');
-const {emptySuite} = require('khala-fabric-admin/cryptoSuite');
-const {asn1} = require('jsrsasign');
+import FabricCAClient from 'fabric-ca-client/lib/FabricCAClient.js';
+import {ECDSAConfig, ECDSAKey} from '@davidkhala/crypto/ECDSA.js';
+import {Extension} from '@davidkhala/crypto/extension.js';
+import {emptySuite} from 'khala-fabric-admin/cryptoSuite.js';
+import {asn1} from 'jsrsasign';
 
-class FabricCAService {
+export default class FabricCAService {
 
 	constructor({trustedRoots = [], protocol, hostname, port, caname = ''}, cryptoSuite = emptySuite(), logger = console) {
 		const tlsOptions = {
@@ -99,5 +99,3 @@ class FabricCAService {
 
 	}
 }
-
-module.exports = FabricCAService;

@@ -1,7 +1,7 @@
 import fs from 'fs';
 import {OrdererType} from './constants.js';
 
-class ConfigFactory {
+export default class ConfigFactory {
 	/**
 	 * @param {string|json} original_config
 	 * @param logger
@@ -351,5 +351,3 @@ class ConfigFactory {
 		return JSON.stringify(this.newConfig);
 	}
 }
-
-module.exports = ConfigFactory;

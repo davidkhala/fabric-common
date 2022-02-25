@@ -1,13 +1,12 @@
-const ProposalManager = require('./proposal');
-const {
-	SystemChaincodeFunctions: {
-		qscc: {GetBlockByNumber, GetChainInfo, GetBlockByHash, GetTransactionByID}
-	}
-} = require('khala-fabric-formatter/systemChaincode');
-const {SystemChaincodeID: {QSCC}} = require('khala-fabric-formatter/constants');
-const {EndorseALL} = require('./resultInterceptors');
+import ProposalManager from './proposal.js';
+import {SystemChaincodeFunctions} from 'khala-fabric-formatter/systemChaincode';
+import {SystemChaincodeID} from 'khala-fabric-formatter/constants';
+import {EndorseALL} from './resultInterceptors';
 
-class QSCCProposal extends ProposalManager {
+const {qscc: {GetBlockByNumber, GetChainInfo, GetBlockByHash, GetTransactionByID}} = SystemChaincodeFunctions;
+const {QSCC} = SystemChaincodeID;
+
+export default class QSCCProposal extends ProposalManager {
 	/**
 	 *
 	 * @param {IdentityContext} identityContext
@@ -76,5 +75,3 @@ class QSCCProposal extends ProposalManager {
 		return this.send(buildProposalRequest);
 	}
 }
-
-module.exports = QSCCProposal;

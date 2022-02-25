@@ -1,11 +1,14 @@
-const fs = require('fs');
-const {RemoteOptsTransform} = require('khala-fabric-formatter/remote');
-const {DeliverResponseStatus: {SUCCESS}, DeliverResponseType: {FULL_BLOCK, STATUS}} = require('khala-fabric-formatter/eventHub');
-const EndPoint = require('fabric-common/lib/Endpoint');
-const Committer = require('fabric-common/lib/Committer');
-const Eventer = require('fabric-common/lib/Eventer');
+import fs from 'fs';
+import {RemoteOptsTransform} from 'khala-fabric-formatter/remote';
+import {DeliverResponseStatus, DeliverResponseType} from 'khala-fabric-formatter/eventHub';
 
-class Orderer {
+import EndPoint from 'fabric-common/lib/Endpoint';
+import Committer from 'fabric-common/lib/Committer';
+import Eventer from 'fabric-common/lib/Eventer';
+const {SUCCESS} = DeliverResponseStatus;
+const {FULL_BLOCK, STATUS} = DeliverResponseType;
+
+export default class Orderer {
 	/**
 	 * @param {intString|integer} ordererPort
 	 * @param {string} [tlsCaCert] TLS CA certificate file path
@@ -229,5 +232,3 @@ class Orderer {
 		}
 	}
 }
-
-module.exports = Orderer;

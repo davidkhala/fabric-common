@@ -16,7 +16,7 @@
  * Used in test environment only
  */
 
-const defaultGRPCOptions = {
+export const defaultGRPCOptions = {
 	'grpc.max_receive_message_length': -1,
 	'grpc.max_send_message_length': -1,
 	'grpc.keepalive_time_ms': 120000,
@@ -31,7 +31,7 @@ const defaultGRPCOptions = {
  * @param {Object} opts
  * @param [logger]
  */
-const RemoteOptsTransform = (opts = {}, logger = console) => {
+export const RemoteOptsTransform = (opts = {}, logger = console) => {
 	const {sslTargetNameOverride, host, waitForReadyTimeout, requestTimeout} = opts;
 
 	if (host && host.toLowerCase() !== host) {
@@ -61,7 +61,7 @@ const RemoteOptsTransform = (opts = {}, logger = console) => {
  * Valid logging levels are case-insensitive string
  * @enum {string}
  */
-const LoggingLevel = {
+export const LoggingLevel = {
 	fatal: 'FATAL', FATAL: 'FATAL',
 	panic: 'PANIC', PANIC: 'PANIC',
 	error: 'ERROR', ERROR: 'ERROR',
@@ -70,14 +70,10 @@ const LoggingLevel = {
 	debug: 'DEBUG', DEBUG: 'DEBUG',
 	undefined: 'INFO', null: 'INFO'
 };
-const rootCAsStringBuilder = ({caCert, rootCAs}) => {
+export const rootCAsStringBuilder = ({caCert, rootCAs}) => {
 	let result = [caCert];
 	if (Array.isArray(rootCAs)) {
 		result = result.concat(rootCAs);
 	}
 	return result.join(',');
-};
-
-module.exports = {
-	rootCAsStringBuilder, defaultGRPCOptions, LoggingLevel, RemoteOptsTransform
 };

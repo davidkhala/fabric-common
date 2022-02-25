@@ -1,12 +1,12 @@
-const IdentityContext = require('fabric-common/lib/IdentityContext');
-const SigningIdentity = require('fabric-common/lib/SigningIdentity');
-const Signer = require('fabric-common/lib/Signer');
-const User = require('fabric-common/lib/User');
-const {emptySuite} = require('./cryptoSuite');
-const {calculateTransactionId} = require('khala-fabric-formatter/helper');
-const fs = require('fs');
+import IdentityContext from 'fabric-common/lib/IdentityContext.js';
+import SigningIdentity from 'fabric-common/lib/SigningIdentity.js';
+import Signer from 'fabric-common/lib/Signer.js';
+import User from 'fabric-common/lib/User.js';
+import {emptySuite} from './cryptoSuite.js';
+import {calculateTransactionId} from 'khala-fabric-formatter/helper.js';
+import fs from 'fs';
 
-class UserBuilder {
+export default class UserBuilder {
 
 	/**
 	 *
@@ -126,5 +126,3 @@ class UserBuilder {
 	}
 
 }
-
-module.exports = UserBuilder;

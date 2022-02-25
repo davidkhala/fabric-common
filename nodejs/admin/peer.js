@@ -1,12 +1,13 @@
-const EndPoint = require('fabric-common/lib/Endpoint');
-const Endorser = require('fabric-common/lib/Endorser');
-const Eventer = require('fabric-common/lib/Eventer');
-const Discoverer = require('fabric-common/lib/Discoverer');
-const {RemoteOptsTransform} = require('khala-fabric-formatter/remote');
-const {BlockEventFilterType: {FILTERED_BLOCK, FULL_BLOCK, PRIVATE_BLOCK}} = require('khala-fabric-formatter/eventHub');
-const fs = require('fs');
+import EndPoint from 'fabric-common/lib/Endpoint.js';
+import Endorser from 'fabric-common/lib/Endorser.js';
+import Eventer from 'fabric-common/lib/Eventer.js';
+import Discoverer from 'fabric-common/lib/Discoverer.js';
+import {RemoteOptsTransform} from 'khala-fabric-formatter/remote.js';
+import fs from 'fs';
+import {BlockEventFilterType} from 'khala-fabric-formatter/eventHub';
 
-class Peer {
+const {FILTERED_BLOCK, FULL_BLOCK, PRIVATE_BLOCK} = BlockEventFilterType;
+export default class Peer {
 	/**
 	 * @param {intString} peerPort
 	 * @param {SSLTargetNameOverride} [peerHostName]
@@ -164,6 +165,3 @@ class Peer {
 		return JSON.stringify({Peer: this.endorser.endpoint.url});
 	}
 }
-
-
-module.exports = Peer;

@@ -1,4 +1,4 @@
-const SystemChaincodeFunctions = {
+export const SystemChaincodeFunctions = {
 	qscc: {
 		GetBlockByNumber: 'GetBlockByNumber',
 		GetChainInfo: 'GetChainInfo',
@@ -40,9 +40,3 @@ const SystemChaincodeFunctions = {
 
 	}
 };
-
-module.exports = {
-	SystemChaincodeFunctions
-};
-
-

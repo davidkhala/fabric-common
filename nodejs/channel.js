@@ -25,7 +25,7 @@ const assert = require('assert');
  * @param [blockTime] wait x ms if block is still UNAVAILABLE, then retry
  * @return {Promise<Object|Buffer>} if !!verbose, it returns a decoded block object
  */
-const getGenesisBlock = async (channel, user, orderer, verbose, blockTime = 1000) => {
+export const getGenesisBlock = async (channel, user, orderer, verbose, blockTime = 1000) => {
 
 	const identityContext = new IdentityContext(user, null);
 
@@ -54,7 +54,7 @@ const getGenesisBlock = async (channel, user, orderer, verbose, blockTime = 1000
  * @param {Client.User} user
  * @param {Orderer} orderer
  */
-const getChannelConfigFromOrderer = async (channelName, user, orderer) => {
+export const getChannelConfigFromOrderer = async (channelName, user, orderer) => {
 
 	const identityContext = new IdentityContext(user, null);
 	const signingIdentityUtil = new SigningIdentityUtil(user._signingIdentity);
@@ -81,7 +81,7 @@ const getChannelConfigFromOrderer = async (channelName, user, orderer) => {
  * @param {Orderer} [orderer] required if blockFile is not provided
  * @returns {Promise<ProposalResponse>}
  */
-const join = async (channel, peers, user, blockFile, orderer) => {
+export const join = async (channel, peers, user, blockFile, orderer) => {
 	logger.debug('join-channel', {
 		channelName: channel.name,
 		user: user.toString(),
@@ -117,10 +117,3 @@ const join = async (channel, peers, user, blockFile, orderer) => {
 	return result;
 
 };
-
-module.exports = {
-	getGenesisBlock,
-	getChannelConfigFromOrderer,
-	join
-};
-

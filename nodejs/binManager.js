@@ -1,11 +1,12 @@
-import {execSync, execDetach, killProcess, findProcess} from '@davidkhala/nodeutils/devOps.js';
+import {findProcess} from '@davidkhala/nodeutils/devOps.js';
+import {execSync, execDetach, killProcess} from '@davidkhala/light/devOps.js';
 import path from 'path';
 import fs from 'fs';
 import {createTmpFile, createTmpDir} from '@davidkhala/nodeutils/tmp.js';
 
 const expectedBinaries = ['configtxgen', 'configtxlator', 'cryptogen', 'discover', 'fabric-ca-client', 'fabric-ca-server', 'idemixgen', 'orderer', 'osnadmin', 'peer'];
 
-class BinManager {
+export default class BinManager {
 	_buildCMD(executable, ...args) {
 		return `${path.resolve(this.binPath, executable)} ${args.join(' ')}`;
 	}
@@ -83,7 +84,8 @@ class BinManager {
 				fs.writeFileSync(tmpFile, original_config_proto);
 
 				await this.configtxlatorCMD.decodeFile(type, {inputFile: tmpFile, outputFile: tmpJSONFile});
-				const returned = JSON.stringify(require(tmpJSONFile));
+
+				const returned = fs.readFileSync(tmpJSONFile, 'utf-8');
 
 				t1();
 				t2();
@@ -290,6 +292,3 @@ class BinManager {
 		};
 	}
 }
-
-
-module.exports = BinManager;
