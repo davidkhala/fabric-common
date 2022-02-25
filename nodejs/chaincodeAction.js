@@ -1,5 +1,5 @@
-import IdentityContext from 'fabric-common/lib/IdentityContext';
-import EventHub from 'khala-fabric-admin/eventHub';
+import IdentityContext from 'fabric-common/lib/IdentityContext.js';
+import EventHub from 'khala-fabric-admin/eventHub.js';
 const DefaultEventHubSelector = (hubs) => {
 	return hubs[0];
 };

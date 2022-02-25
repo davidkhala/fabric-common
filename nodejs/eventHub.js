@@ -1,5 +1,5 @@
-import {BlockNumberFilterType, TxEventFilterType} from 'khala-fabric-formatter/eventHub';
-import {TxValidationCode} from 'khala-fabric-formatter/constants';
+import {BlockNumberFilterType, TxEventFilterType} from 'khala-fabric-formatter/eventHub.js';
+import {TxValidationCode} from 'khala-fabric-formatter/constants.js';
 
 const {NEWEST, OLDEST} = BlockNumberFilterType;
 const {ALL} = TxEventFilterType;

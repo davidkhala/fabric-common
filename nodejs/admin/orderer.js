@@ -1,10 +1,10 @@
 import fs from 'fs';
-import {RemoteOptsTransform} from 'khala-fabric-formatter/remote';
-import {DeliverResponseStatus, DeliverResponseType} from 'khala-fabric-formatter/eventHub';
+import {RemoteOptsTransform} from 'khala-fabric-formatter/remote.js';
+import {DeliverResponseStatus, DeliverResponseType} from 'khala-fabric-formatter/eventHub.js';
 
-import EndPoint from 'fabric-common/lib/Endpoint';
-import Committer from 'fabric-common/lib/Committer';
-import Eventer from 'fabric-common/lib/Eventer';
+import EndPoint from 'fabric-common/lib/Endpoint.js';
+import Committer from 'fabric-common/lib/Committer.js';
+import Eventer from 'fabric-common/lib/Eventer.js';
 const {SUCCESS} = DeliverResponseStatus;
 const {FULL_BLOCK, STATUS} = DeliverResponseType;
 

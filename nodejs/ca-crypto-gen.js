@@ -14,7 +14,7 @@ export default class CaCryptoGen {
 	 * @param {boolean} [TLS]
 	 * @param logger
 	 */
-	constructor(caService, cryptoPath, TLS, logger = require('khala-logger/log4js').consoleLogger('ca-crypto-gen')) {
+	constructor(caService, cryptoPath, TLS, logger = console) {
 		Object.assign(this, {caService, cryptoPath, logger, TLS});
 	}
 

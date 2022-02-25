@@ -1,14 +1,14 @@
-const QSCCProposal = require('khala-fabric-admin/QSCCProposal');
-const CSCCProposal = require('khala-fabric-admin/CSCCProposal');
-const fabprotos = require('fabric-protos');
+import fabprotos from 'fabric-protos';
+import QSCCProposal from 'khala-fabric-admin/QSCCProposal.js';
+import CSCCProposal from 'khala-fabric-admin/CSCCProposal.js';
+import LifecycleProposal from 'khala-fabric-admin/lifecycleProposal.js';
+import {emptyChannel} from 'khala-fabric-admin/channel.js';
+import BlockDecoder from 'fabric-common/lib/BlockDecoder.js';
+import IdentityContext from 'fabric-common/lib/IdentityContext.js';
+import {getResponses} from 'khala-fabric-formatter/proposalResponse.js';
+import ChaincodeAction from './chaincodeAction.js';
 const protosProto = fabprotos.protos;
 const commonProto = fabprotos.common;
-const LifecycleProposal = require('khala-fabric-admin/lifecycleProposal');
-const {emptyChannel} = require('khala-fabric-admin/channel');
-const BlockDecoder = require('fabric-common/lib/BlockDecoder');
-const IdentityContext = require('fabric-common/lib/IdentityContext');
-const {getResponses} = require('khala-fabric-formatter/proposalResponse');
-const ChaincodeAction = require('./chaincodeAction');
 
 export default class QueryHub extends ChaincodeAction {
 	constructor(peers, user) {
