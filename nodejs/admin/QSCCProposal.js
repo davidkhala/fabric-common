@@ -1,7 +1,7 @@
 import ProposalManager from './proposal.js';
-import {SystemChaincodeFunctions} from 'khala-fabric-formatter/systemChaincode';
-import {SystemChaincodeID} from 'khala-fabric-formatter/constants';
-import {EndorseALL} from './resultInterceptors';
+import {SystemChaincodeFunctions} from 'khala-fabric-formatter/systemChaincode.js';
+import {SystemChaincodeID} from 'khala-fabric-formatter/constants.js';
+import {EndorseALL} from './resultInterceptors.js';
 
 const {qscc: {GetBlockByNumber, GetChainInfo, GetBlockByHash, GetTransactionByID}} = SystemChaincodeFunctions;
 const {QSCC} = SystemChaincodeID;

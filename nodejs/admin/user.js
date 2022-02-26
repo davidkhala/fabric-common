@@ -1,10 +1,10 @@
+import fs from 'fs';
 import IdentityContext from 'fabric-common/lib/IdentityContext.js';
 import SigningIdentity from 'fabric-common/lib/SigningIdentity.js';
 import Signer from 'fabric-common/lib/Signer.js';
 import User from 'fabric-common/lib/User.js';
 import {emptySuite} from './cryptoSuite.js';
 import {calculateTransactionId} from 'khala-fabric-formatter/helper.js';
-import fs from 'fs';
 
 export default class UserBuilder {
 

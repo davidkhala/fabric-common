@@ -1,7 +1,7 @@
 import fabprotos from 'fabric-protos';
 import {buildChannelHeader, buildHeader, buildPayload, buildSeekPayload} from 'khala-fabric-formatter/protoTranslator.js';
 import {DeliverResponseStatus, DeliverResponseType} from 'khala-fabric-formatter/eventHub.js';
-import {BufferFrom, ProtoFrom} from 'khala-fabric-formatter/protobuf';
+import {BufferFrom, ProtoFrom} from 'khala-fabric-formatter/protobuf.js';
 
 const {SERVICE_UNAVAILABLE} = DeliverResponseStatus;
 const {STATUS} = DeliverResponseType;

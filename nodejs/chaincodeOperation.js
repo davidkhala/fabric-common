@@ -7,7 +7,7 @@ import Policy from 'khala-fabric-formatter/policy.js';
 import GatePolicy from 'khala-fabric-formatter/gatePolicy.js';
 import {CommonResponseStatus} from 'khala-fabric-formatter/constants.js';
 import {buildCollectionConfig} from 'khala-fabric-formatter/SideDB.js';
-import {CommitSuccess} from 'khala-fabric-admin/resultInterceptors';
+import {CommitSuccess} from 'khala-fabric-admin/resultInterceptors.js';
 
 const {SERVICE_UNAVAILABLE} = CommonResponseStatus;
 
@@ -19,11 +19,8 @@ export default class ChaincodeLifecycleOperation extends ChaincodeAction {
 	 * @param channel
 	 * @param logger
 	 */
-	constructor(peers, user, channel = emptyChannel(''), logger) {
+	constructor(peers, user, channel = emptyChannel(''), logger = console) {
 		super(peers, user, channel);
-		if (!logger) {
-			logger = require('khala-logger/log4js').consoleLogger('Chaincode Operation');
-		}
 		const proposal = new LifecycleProposal(this.identityContext, channel, this.endorsers, logger);
 		Object.assign(this, {logger, proposal});
 

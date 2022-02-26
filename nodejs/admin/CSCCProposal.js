@@ -1,8 +1,10 @@
 import ProposalManager from './proposal.js';
-const {SystemChaincodeID: {CSCC}} = require('khala-fabric-formatter/constants');
-const {SystemChaincodeFunctions: {cscc: {JoinChain, GetChannels}}} = require('khala-fabric-formatter/systemChaincode');
+import {SystemChaincodeID} from 'khala-fabric-formatter/constants.js';
+import {SystemChaincodeFunctions} from 'khala-fabric-formatter/systemChaincode.js';
+import {EndorseALL} from './resultInterceptors.js';
 
-const {EndorseALL} = require('./resultInterceptors');
+const {CSCC} = SystemChaincodeID;
+const {cscc: {JoinChain, GetChannels}} = SystemChaincodeFunctions;
 
 export default class CSCCProposal extends ProposalManager {
 	constructor(identityContext, endorsers) {

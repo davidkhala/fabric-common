@@ -1,4 +1,6 @@
-const {CommonResponseStatus: {SUCCESS}} = require('khala-fabric-formatter/constants');
+import {CommonResponseStatus} from 'khala-fabric-formatter/constants.js';
+
+const {SUCCESS} = CommonResponseStatus;
 /**
  * @typedef {function(result:ProposalResponse):ProposalResponse} ProposalResultHandler
  */
