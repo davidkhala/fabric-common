@@ -1,5 +1,5 @@
 import fabprotos from 'fabric-protos';
-import {MSPRoleType} from 'khala-fabric-formatter/constants';
+import {MSPRoleType} from './constants.js';
 const {ROLE, ORGANIZATION_UNIT, IDENTITY} = fabprotos.common.MSPPrincipal.Classification;
 export const decodeIdentity = (id_bytes) => {
 	const identity = {};

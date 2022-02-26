@@ -1,22 +1,25 @@
-import {consoleLogger} from '@davidkhala/logger/log4.js'
+import {consoleLogger} from '@davidkhala/logger/log4.js';
 import ConfigtxlatorServer from './configtxlator.js';
 import {getChannelConfigFromOrderer} from './channel.js';
 import BinManager from './binManager.js';
 import {ConfigtxlatorType} from 'khala-fabric-formatter/configtxlator.js';
 import ConfigFactory from 'khala-fabric-formatter/configFactory.js';
 import {BufferFrom} from 'khala-fabric-formatter/protobuf.js';
+import ChannelUpdate from 'khala-fabric-admin/channelUpdate.js';
+import SigningIdentityUtil from 'khala-fabric-admin/signingIdentity.js';
+import {getNonce} from 'khala-fabric-formatter/helper.js';
+import {CommonResponseStatus} from 'khala-fabric-formatter/constants.js';
+import fabprotos from 'fabric-protos';
+import assert from 'assert';
+import EventHub from 'khala-fabric-admin/eventHub.js';
+import {emptyChannel} from 'khala-fabric-admin/channel.js';
+import EventHubQuery from './eventHub.js';
+
+const {SUCCESS} = CommonResponseStatus;
 const configtxlatorServer = new ConfigtxlatorServer();
-const ChannelUpdate = require('khala-fabric-admin/channelUpdate');
-const SigningIdentityUtil = require('khala-fabric-admin/signingIdentity');
-const {getNonce} = require('khala-fabric-formatter/helper');
-const {CommonResponseStatus: {SUCCESS}} = require('khala-fabric-formatter/constants');
-const fabprotos = require('fabric-protos');
 const commonProto = fabprotos.common;
-const assert = require('assert');
-const EventHub = require('khala-fabric-admin/eventHub');
-const {emptyChannel} = require('khala-fabric-admin/channel');
-const EventHubQuery = require('./eventHub');
 const logger = consoleLogger('channel-config');
+
 export class ChannelConfig {
 	/**
 	 * @param {string} channelName

@@ -1,4 +1,4 @@
-import EventService from 'fabric-common/lib/EventService';
+import EventService from 'fabric-common/lib/EventService.js';
 
 import {
 	BlockEventFilterType,

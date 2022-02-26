@@ -1,7 +1,7 @@
 import fabprotos from 'fabric-protos';
-import {BlockNumberFilterType} from 'khala-fabric-formatter/eventHub.js';
+import {BlockNumberFilterType} from './eventHub.js';
+import {BufferFrom, ProtoFrom} from './protobuf.js';
 
-import {BufferFrom, ProtoFrom} from 'khala-fabric-formatter/protobuf.js';
 const commonProto = fabprotos.common;
 const ordererProto = fabprotos.orderer;
 const protosProto = fabprotos.protos;

@@ -1,4 +1,4 @@
-import Utils from 'fabric-common/lib/Utils';
+import Utils from 'fabric-common/lib/Utils.js';
 
 /**
  *
