@@ -1,6 +1,7 @@
 import ProposalManager from './proposal.js';
 import {SystemChaincodeID} from 'khala-fabric-formatter/constants.js';
 import {SystemChaincodeFunctions} from 'khala-fabric-formatter/systemChaincode.js';
+import {emptyChannel} from './channel.js';
 import {EndorseALL} from './resultInterceptors.js';
 
 const {CSCC} = SystemChaincodeID;
@@ -15,7 +16,7 @@ export default class CSCCProposal extends ProposalManager {
 	/**
 	 * @param {Buffer} blockBuffer
 	 */
-	async joinChannel(blockBuffer) {
+	async joinChannel(blockBuffer, channelName) {
 		/**
 		 * @type {BuildProposalRequest}
 		 */
@@ -24,7 +25,10 @@ export default class CSCCProposal extends ProposalManager {
 			args: [blockBuffer],
 		};
 
-		return this.send(buildProposalRequest);
+		this.channel = emptyChannel(channelName);// TODO workaround for missing this.channel
+		const result = await this.send(buildProposalRequest);
+		delete this.channel;
+		return result;
 	}
 
 	/**

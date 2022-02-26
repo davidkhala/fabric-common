@@ -3,7 +3,7 @@ set -e
 
 curl https://raw.githubusercontent.com/hyperledger/fabric-sdk-node/master/test/ts-fixtures/hsm/softhsm2.conf >> softhsm2.conf
 export SOFTHSM2_CONF=softhsm2.conf
-export FABRIC_VERSION=2.3
+export FABRIC_VERSION=2.4
 sudo apt-get install -y softhsm2
 set +e
 softhsm2-util --delete-token --token "ForFabric"

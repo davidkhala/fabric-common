@@ -99,7 +99,7 @@ export const join = async (channel, peers, user, blockFile, orderer) => {
 	}
 	const identityContext = new IdentityContext(user, null);
 	const proposal = new CSCCProposal(identityContext, peers.map(({endorser}) => endorser));
-	const result = await proposal.joinChannel(block);
+	const result = await proposal.joinChannel(block, channel.name);
 
 	const {errors, responses} = result;
 	assert.ok(errors.length === 0);

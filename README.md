@@ -1,15 +1,11 @@
 # fabric-common
 
-Current version 2.3.2
+Current version 2.4.3
 ## Prerequisite
 - docker: 18.03 +
 ### Prerequisite: For development
 - docker-compose: 1.14.0 +
 - golang: 1.15.x
-- fabric-sdk-node
-    - nodejs: 12.x
-    - npm: 6 + 
-    - Python: 2.7
 - fabric-sdk-java
     - java: openjdk 11.0.7 2020-04-14
 ### Prerequisite: [Windows 10 extras](https://hyperledger-fabric.readthedocs.io/en/release-2.0/prereqs.html#windows-extras)
