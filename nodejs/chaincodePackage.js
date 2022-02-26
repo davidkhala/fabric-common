@@ -1,10 +1,11 @@
-import {ChaincodeType} from 'khala-fabric-formatter/chaincode';
+import path from 'path';
 import fs from 'fs';
 import fsExtra from 'fs-extra';
-import {isDirectory, execSync} from '@davidkhala/light/index.js';
-import path from 'path';
-import {createTmpDir} from '@davidkhala/nodeutils/tmp.js';
 import compress from 'compressing';
+import {ChaincodeType} from 'khala-fabric-formatter/chaincode.js';
+import {execSync} from '@davidkhala/light/devOps.js';
+import {isDirectory} from '@davidkhala/light/index.js';
+import {createTmpDir} from '@davidkhala/nodeutils/tmp.js';
 
 export default class ChaincodePackage {
 	/**
@@ -46,7 +47,6 @@ export default class ChaincodePackage {
 			const couchdbDir = path.resolve(Path, 'META-INF', 'statedb', 'couchdb');
 			if (isDirectory(couchdbDir)) {
 				const [tmpRoot2, t2] = createTmpDir();
-
 
 
 				fsExtra.moveSync(path.resolve(Path, 'META-INF'), path.resolve(tmpRoot2, 'META-INF'));// NOTE: The move operation eliminate the META-INF autogen footprint

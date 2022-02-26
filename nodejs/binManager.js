@@ -1,7 +1,7 @@
-import {findProcess} from '@davidkhala/nodeutils/devOps.js';
-import {execSync, execDetach, killProcess} from '@davidkhala/light/devOps.js';
 import path from 'path';
 import fs from 'fs';
+import {findProcess} from '@davidkhala/nodeutils/devOps.js';
+import {execSync, execDetach, killProcess} from '@davidkhala/light/devOps.js';
 import {createTmpFile, createTmpDir} from '@davidkhala/nodeutils/tmp.js';
 
 const expectedBinaries = ['configtxgen', 'configtxlator', 'cryptogen', 'discover', 'fabric-ca-client', 'fabric-ca-server', 'idemixgen', 'orderer', 'osnadmin', 'peer'];

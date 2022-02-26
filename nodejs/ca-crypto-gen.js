@@ -1,10 +1,10 @@
-import {register} from './ca.js';
 import {toString as caStringify} from 'khala-fabric-formatter/ca.js';
-import * as userUtil from './user.js';
-import AffiliationServiceBuilder from './affiliationService.js';
 import {sleep} from '@davidkhala/light/index.js';
-
 import {getCertificate} from 'khala-fabric-formatter/signingIdentity.js';
+import {register} from './ca.js';
+import * as userUtil from './user.js';
+
+import AffiliationServiceBuilder from './affiliationService.js';
 
 export default class CaCryptoGen {
 	/**

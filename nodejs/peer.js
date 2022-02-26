@@ -41,7 +41,7 @@ export const statePath = {
  * @param [chaincodeOpts]
  * @returns {string[]}
  */
-export const envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchDB}, loggingLevel, operationsOpts, metricsOpts, chaincodeOpts) => {
+export const envBuilder = ({network, msp: {configPath, id, peerHostName}, tls, couchDB}, loggingLevel='DEBUG', operationsOpts, metricsOpts, chaincodeOpts) => {
 	let environment =
 		[
 			`CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${network}`,

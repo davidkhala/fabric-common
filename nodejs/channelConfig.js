@@ -1,3 +1,5 @@
+import fabprotos from 'fabric-protos';
+import assert from 'assert';
 import {consoleLogger} from '@davidkhala/logger/log4.js';
 import ConfigtxlatorServer from './configtxlator.js';
 import {getChannelConfigFromOrderer} from './channel.js';
@@ -9,8 +11,6 @@ import ChannelUpdate from 'khala-fabric-admin/channelUpdate.js';
 import SigningIdentityUtil from 'khala-fabric-admin/signingIdentity.js';
 import {getNonce} from 'khala-fabric-formatter/helper.js';
 import {CommonResponseStatus} from 'khala-fabric-formatter/constants.js';
-import fabprotos from 'fabric-protos';
-import assert from 'assert';
 import EventHub from 'khala-fabric-admin/eventHub.js';
 import {emptyChannel} from 'khala-fabric-admin/channel.js';
 import EventHubQuery from './eventHub.js';

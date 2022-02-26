@@ -1,4 +1,4 @@
-import LevelDB from '@davidkhala/level';
+import LevelDB from '@davidkhala/level/index.js';
 import path from 'path';
 import fs from 'fs';
 

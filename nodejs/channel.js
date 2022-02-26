@@ -1,6 +1,6 @@
-import {consoleLogger} from '@davidkhala/logger/log4.js';
 import fs from 'fs';
 import assert from 'assert';
+import {consoleLogger} from '@davidkhala/logger/log4.js';
 import SigningIdentityUtil from 'khala-fabric-admin/signingIdentity.js';
 import {
 	extractLastConfigIndex,
@@ -9,10 +9,10 @@ import {
 } from 'khala-fabric-formatter/protoTranslator.js';
 import IdentityContext from 'fabric-common/lib/IdentityContext.js';
 import EventHub from 'khala-fabric-admin/eventHub.js';
-import EventHubQuery from './eventHub.js';
 import CSCCProposal from 'khala-fabric-admin/CSCCProposal.js';
 import {fromEvent} from 'khala-fabric-formatter/blockEncoder.js';
 import {BlockNumberFilterType} from 'khala-fabric-formatter/eventHub.js';
+import EventHubQuery from './eventHub.js';
 const logger = consoleLogger('channel');
 const {NEWEST} = BlockNumberFilterType;
 

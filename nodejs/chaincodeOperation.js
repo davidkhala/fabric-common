@@ -21,7 +21,7 @@ export default class ChaincodeLifecycleOperation extends ChaincodeAction {
 	 */
 	constructor(peers, user, channel = emptyChannel(''), logger = console) {
 		super(peers, user, channel);
-		const proposal = new LifecycleProposal(this.identityContext, channel, this.endorsers, logger);
+		const proposal = new LifecycleProposal(this.identityContext, this.endorsers, channel,  logger);
 		Object.assign(this, {logger, proposal});
 
 	}

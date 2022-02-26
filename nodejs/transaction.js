@@ -1,8 +1,8 @@
 import ChaincodeAction from './chaincodeAction.js';
 import ProposalManager from 'khala-fabric-admin/proposal.js';
 import EventHubQuery from './eventHub.js';
-import {transientMapTransform} from 'khala-fabric-formatter/txProposal';
-import {EndorseALL, CommitSuccess} from 'khala-fabric-admin/resultInterceptors';
+import {transientMapTransform} from 'khala-fabric-formatter/txProposal.js';
+import {EndorseALL, CommitSuccess} from 'khala-fabric-admin/resultInterceptors.js';
 
 /**
  *
@@ -27,7 +27,7 @@ export default class Transaction extends ChaincodeAction {
 
 	async evaluate({fcn, args = [], transientMap, nonce}) {
 		this.proposal.asQuery();
-		return await this.proposal.send({
+		return this.proposal.send({
 			fcn,
 			args,
 			nonce,

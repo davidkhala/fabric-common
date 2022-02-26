@@ -1,4 +1,4 @@
-import Client from 'fabric-common/lib/Client';
+import Client from 'fabric-common/lib/Client.js';
 
 export default class ClientManager {
 	/**

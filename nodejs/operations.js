@@ -1,4 +1,4 @@
-import {axiosPromise} from 'khala-axios';
+import {axiosPromise} from 'khala-axios/index.js';
 import {LoggingLevel} from 'khala-fabric-formatter/remote.js';
 /**
  * @typedef {Object} OperationHealthz
