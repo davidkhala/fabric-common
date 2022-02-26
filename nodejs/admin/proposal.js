@@ -1,7 +1,8 @@
 import Proposal from 'fabric-common/lib/Proposal.js';
 import Commit from 'fabric-common/lib/Commit.js';
-import {calculateTransactionId} from './user.js';
+import UserBuilder from './user.js';
 
+const {calculateTransactionId} = UserBuilder;
 /**
  * A copy of sdk's definition of ProposalResponse
  * @typedef {Object} ProposalResponse

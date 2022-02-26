@@ -1,3 +1,7 @@
+import fabricProtos from 'fabric-protos';
+import {BufferFrom, ProtoFrom} from './protobuf.js';
+
+const {common: commonProtos} = fabricProtos;
 const MSPRoleTypeInverse = {
 	'MEMBER': 0,
 	'ADMIN': 1,
@@ -7,9 +11,6 @@ const MSPRoleTypeInverse = {
 };
 const GateClausePattern = /^(AND|OR)\(([\w,.\s()']+)\)$/;
 const RoleClausePattern = /^'([0-9A-Za-z.-]+)(\.)(admin|member|client|peer|orderer)'$/;
-import {common as commonProtos} from 'fabric-protos';
-
-import {BufferFrom, ProtoFrom} from 'khala-fabric-formatter/protobuf';
 
 /**
  *  Reference: `common/policydsl/policyparser.go`

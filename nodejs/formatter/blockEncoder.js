@@ -1,6 +1,7 @@
-import {common as commonProto} from 'fabric-protos';
-import {BufferFrom} from 'khala-fabric-formatter/protobuf.js';
+import fabricProtos from 'fabric-protos';
+import {BufferFrom} from './protobuf.js';
 
+const {common: commonProto} = fabricProtos;
 export const fromEvent = ({block}) => {
 	const blockHeader = new commonProto.BlockHeader();
 	blockHeader.number = block.header.number;

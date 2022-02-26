@@ -1,6 +1,7 @@
-import {protos as protosProtos, common as commonProtos} from 'fabric-protos';
+import fabricProtos from 'fabric-protos';
 import GatePolicy from './gatePolicy.js';
 
+const {protos: protosProtos, common: commonProtos} = fabricProtos;
 /**
  *
  * @param name

@@ -1,8 +1,12 @@
+import fabricProtos from 'fabric-protos';
+import {BufferFrom} from './protobuf.js';
+
+const {common: commonProto} = fabricProtos;
+
 /**
  * @typedef {Object} RoleIdentity
  * @property {{type: integer, mspid: MspId}} [role]
  */
-
 
 /**
  * @typedef {Object} Policy
@@ -19,14 +23,11 @@
 	    }
 	  }
  */
-
 /**
  * @typedef {Object} PolicyElement
  * @property {PolicyElement[]} [n-of]
  * @property {integer|MSPRoleType} [signedBy]
  */
-import {common as commonProto} from 'fabric-protos';
-import {BufferFrom} from 'khala-fabric-formatter/protobuf';
 
 export default class Policy {
 
