@@ -12,6 +12,17 @@ channelList() {
 	$CMD
 
 }
+JoinChain() {
+	# Path to file containing genesis block
+	# peer.sh JoinChain peer0.astri.org ~/Documents/delphi-fabric/config/configtx/all.block
+	local container=$1
+	local fileName=$(basename $2)
+	local CMD="peer channel join --blockpath=/etc/hyperledger/fabric/$fileName"
+	docker cp $2 "$container:/etc/hyperledger/fabric/$fileName"
+	docker exec $1 $CMD
+	# TODO Error: proposal failed (err: bad proposal response 500: access denied for [JoinChain][allchannel]: [Failed verifying that proposal's creator satisfies local MSP principal during channelless check policy with policy [Admins]: [This identity is not an admin]])
+
+}
 
 #Usage:
 #  peer channel fetch <newest|oldest|config|(number)> [outputfile] [flags]
