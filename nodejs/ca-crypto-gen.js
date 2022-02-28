@@ -43,7 +43,7 @@ export default class CaCryptoGen {
 		}
 
 		cryptoPath.toMSP(result, type);
-		cryptoPath.toOrgAdmin(result, nodeType);
+		cryptoPath.toOrgAdmin(result, nodeType, true);
 		cryptoPath.toAdminCerts(result, type);// required for 'peer channel signconfigtx'
 	}
 

@@ -90,8 +90,10 @@ export const join = async (channel, peers, user, blockFile, orderer) => {
 
 	let block;
 	if (!blockFile) {
+		logger.info('getGenesisBlock from', orderer)
 		block = await getGenesisBlock(channel, user, orderer);
 	} else {
+		logger.info('getGenesisBlock from', blockFile)
 		block = fs.readFileSync(blockFile);
 	}
 	for (const peer of peers) {

@@ -3,6 +3,7 @@ import fsExtra from 'fs-extra';
 
 import {ECDSA_PrvKey} from 'khala-fabric-formatter/key.js';
 import {findKeyFiles} from 'khala-fabric-formatter/path.js';
+import {write} from '@davidkhala/nodeutils/yaml.js';
 
 /**
  * @class
@@ -96,7 +97,8 @@ export class CryptoPath {
 			},
 			peers: this.resolve(dir, 'peers'),
 			tlsca: this.resolve(dir, 'tlsca', tlscaCertBaseName),
-			users: this.resolve(dir, 'users')
+			users: this.resolve(dir, 'users'),
+			nodeou: this.resolve(dir, 'config.yaml')
 		};
 	}
 
@@ -232,12 +234,42 @@ export class CryptoPath {
 		fsExtra.outputFileSync(tlscacerts, rootCertificate);
 	}
 
-	toOrgAdmin({certificate, rootCertificate}, nodeType) {
-		const {ca, msp: {admincerts, cacerts}} = this.OrgFile(nodeType);
-
+	/**
+	 *
+	 * @param certificate
+	 * @param rootCertificate
+	 * @param nodeType
+	 * @param {boolean} [NodeOU]
+	 */
+	toOrgAdmin({certificate, rootCertificate}, nodeType, NodeOU) {
+		const {ca, msp: {admincerts, cacerts}, nodeou} = this.OrgFile(nodeType);
 		fsExtra.outputFileSync(cacerts, rootCertificate);
 		fsExtra.outputFileSync(ca, rootCertificate);
 		fsExtra.outputFileSync(admincerts, certificate);
+		if (NodeOU) {
+			const data = {
+				// TODO do we need line
+				//  OrganizationalUnitIdentifiers:
+				//   - Certificate: "cacerts/cacert.pem"
+				//     OrganizationalUnitIdentifier: "COP"
+				NodeOUs: {
+					Enable: true,
+					ClientOUIdentifier: {
+						OrganizationalUnitIdentifier: 'client'
+					},
+					PeerOUIdentifier: {
+						OrganizationalUnitIdentifier: 'peer'
+					},
+					AdminOUIdentifier: {
+						OrganizationalUnitIdentifier: 'admin'
+					},
+					OrdererOUIdentifier: {
+						OrganizationalUnitIdentifier: 'orderer'
+					}
+				}
+			};
+			write(data, nodeou);
+		}
 	}
 
 	toOrgTLS({rootCertificate}, nodeType) {

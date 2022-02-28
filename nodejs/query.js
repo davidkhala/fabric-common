@@ -7,6 +7,7 @@ import BlockDecoder from 'fabric-common/lib/BlockDecoder.js';
 import IdentityContext from 'fabric-common/lib/IdentityContext.js';
 import {getResponses} from 'khala-fabric-formatter/proposalResponse.js';
 import ChaincodeAction from './chaincodeAction.js';
+
 const protosProto = fabprotos.protos;
 const commonProto = fabprotos.common;
 
@@ -18,7 +19,7 @@ export default class QueryHub extends ChaincodeAction {
 
 	async getChainInfo(channelName) {
 		const channel = emptyChannel(channelName);
-		const proposal = new QSCCProposal(this.identityContext, channel, this.endorsers);
+		const proposal = new QSCCProposal(this.identityContext, this.endorsers, channel);
 		const result = await proposal.queryInfo();
 		const {queryResults} = result;
 
@@ -38,7 +39,7 @@ export default class QueryHub extends ChaincodeAction {
 	 * @param {string} [packageId] exact name search
 	 */
 	async chaincodesInstalled(label, packageId) {
-		const lifecycleProposal = new LifecycleProposal(this.identityContext, emptyChannel(''), this.endorsers);
+		const lifecycleProposal = new LifecycleProposal(this.identityContext, this.endorsers, emptyChannel(''));
 		const result = await lifecycleProposal.queryInstalledChaincodes(packageId);
 		if (!label || !!packageId) {
 			return result.queryResults;
@@ -57,21 +58,21 @@ export default class QueryHub extends ChaincodeAction {
 	}
 
 	async chaincodesInstantiated(channelName) {
-		const lifecycleProposal = new LifecycleProposal(this.identityContext, emptyChannel(channelName), this.endorsers);
+		const lifecycleProposal = new LifecycleProposal(this.identityContext, this.endorsers, emptyChannel(channelName));
 		const result = await lifecycleProposal.queryChaincodeDefinition();
 		return result.queryResults;
 	}
 
 	async blockFromHash(channelName, hashHex) {
 		const blockHash = Buffer.from(hashHex, 'hex');
-		const qsccProposal = new QSCCProposal(this.identityContext, emptyChannel(channelName), this.endorsers);
+		const qsccProposal = new QSCCProposal(this.identityContext, this.endorsers, emptyChannel(channelName));
 		const result = await qsccProposal.queryBlockByHash(blockHash);
 		const {queryResults} = result;
 		return queryResults.map(payload => BlockDecoder.decode(payload));
 	}
 
 	async blockFromHeight(channelName, blockNumber) {
-		const proposal = new QSCCProposal(this.identityContext, emptyChannel(channelName), this.endorsers);
+		const proposal = new QSCCProposal(this.identityContext, this.endorsers, emptyChannel(channelName));
 		const result = await proposal.queryBlock(blockNumber);
 		const {queryResults} = result;
 		return queryResults.map(payload => BlockDecoder.decode(payload));
@@ -90,7 +91,7 @@ export default class QueryHub extends ChaincodeAction {
 	}
 
 	async tx(channelName, txId) {
-		const qsccProposal = new QSCCProposal(this.identityContext, emptyChannel(channelName), this.endorsers);
+		const qsccProposal = new QSCCProposal(this.identityContext, this.endorsers, emptyChannel(channelName));
 
 		const TxNotFound = (result) => {
 			const {errors, responses} = result;

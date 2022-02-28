@@ -10,13 +10,17 @@ const {cscc: {JoinChain, GetChannels}} = SystemChaincodeFunctions;
 export default class CSCCProposal extends ProposalManager {
 	constructor(identityContext, endorsers) {
 		super(identityContext, endorsers, CSCC);
+		/** channel with empty name is required in
+		https://github.com/hyperledger/fabric/blob/2a200f6cabf08fcc04b0a450668003849cf534b1/core/endorser/endorser.go#L326
+		 */
+		this.channel = emptyChannel('');
 		this.setProposalResultAssert(EndorseALL);
 	}
 
 	/**
 	 * @param {Buffer} blockBuffer
 	 */
-	async joinChannel(blockBuffer, channelName) {
+	async joinChannel(blockBuffer) {
 		/**
 		 * @type {BuildProposalRequest}
 		 */
@@ -25,10 +29,7 @@ export default class CSCCProposal extends ProposalManager {
 			args: [blockBuffer],
 		};
 
-		this.channel = emptyChannel(channelName);// TODO workaround for missing this.channel
-		const result = await this.send(buildProposalRequest);
-		delete this.channel;
-		return result;
+		return this.send(buildProposalRequest);
 	}
 
 	/**
