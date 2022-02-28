@@ -16,10 +16,10 @@ export default class Transaction extends ChaincodeAction {
 	 * @param chaincodeId
 	 * @param logger
 	 */
-	constructor(peers, user, channel, chaincodeId, logger=console) {
+	constructor(peers, user, channel, chaincodeId, logger = console) {
 		super(peers, user, channel);
 
-		const proposal = new ProposalManager(this.identityContext, this.channel, chaincodeId, this.endorsers);
+		const proposal = new ProposalManager(this.identityContext, this.endorsers, chaincodeId, this.channel);
 		proposal.setProposalResultAssert(EndorseALL);
 		proposal.setCommitResultAssert(CommitSuccess);
 		Object.assign(this, {logger, proposal});
