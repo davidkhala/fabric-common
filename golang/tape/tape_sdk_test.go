@@ -7,6 +7,7 @@ import (
 	"github.com/davidkhala/goutils"
 	tape "github.com/hyperledger-twgc/tape/pkg/infra"
 	"github.com/hyperledger/fabric-protos-go/common"
+	"github.com/hyperledger/fabric-protos-go/orderer"
 	"github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/kortschak/utter"
 	"github.com/sirupsen/logrus"
@@ -78,7 +79,7 @@ func TestCreateProposal(t *testing.T) {
 	var proposalResponse *peer.ProposalResponse
 	var proposalResponses []*peer.ProposalResponse
 	var transaction *common.Envelope
-	//var txResult *orderer.BroadcastResponse
+	var txResult *orderer.BroadcastResponse
 	var peer0, ordererGrpc *grpc.ClientConn
 	var ctx = context.Background()
 	defer func() {
@@ -125,11 +126,9 @@ func TestCreateProposal(t *testing.T) {
 	}
 	err = committer.Setup()
 	goutils.PanicError(err)
-	err = committer.AtomicBroadcast_BroadcastClient.Send(transaction)
-	goutils.PanicError(err)
+
 	//
-	//// FIXME not ready to use
-	_, err = committer.AtomicBroadcast_BroadcastClient.Recv()
-	//goutils.PanicError(err)
-	//utter.Dump(txResult)
+	txResult, err = committer.SendRecv(transaction)
+	goutils.PanicError(err)
+	utter.Dump(txResult)
 }
