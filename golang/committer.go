@@ -2,6 +2,7 @@ package golang
 
 import (
 	"context"
+	"github.com/davidkhala/goutils"
 	"github.com/hyperledger/fabric-protos-go/common"
 	"github.com/hyperledger/fabric-protos-go/orderer"
 	"google.golang.org/grpc"
@@ -18,7 +19,7 @@ func CommitterFrom(connect *grpc.ClientConn) orderer.AtomicBroadcastClient {
 }
 func (committer *Committer) Setup() (err error) {
 	if committer.Context == nil {
-		committer.Context = GetGoContext()
+		committer.Context = goutils.GetGoContext()
 	}
 	committer.AtomicBroadcast_BroadcastClient, err = committer.AtomicBroadcastClient.Broadcast(committer.Context)
 
@@ -33,7 +34,7 @@ func (committer *Committer) SendRecv(envelope *common.Envelope) (*orderer.Broadc
 		close(errorChannel)
 	}()
 	go func() {
-		// only one try
+		// AtomicBroadcast_BroadcastClient.Recv() is blocking, and only one try here
 		broadcastResponse, err := committer.AtomicBroadcast_BroadcastClient.Recv()
 		errorChannel <- err
 		responsesChannel <- broadcastResponse

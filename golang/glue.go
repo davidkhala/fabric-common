@@ -4,6 +4,7 @@ import (
 	"crypto/x509"
 	"github.com/davidkhala/goutils"
 	"github.com/davidkhala/goutils/crypto"
+	. "github.com/davidkhala/goutils/grpc"
 	tape "github.com/hyperledger-twgc/tape/pkg/infra"
 	"google.golang.org/grpc"
 )

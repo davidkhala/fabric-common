@@ -2,6 +2,7 @@ package golang
 
 import (
 	"context"
+	"github.com/davidkhala/goutils"
 	"github.com/hyperledger/fabric-protos-go/peer"
 	"google.golang.org/grpc"
 )
@@ -18,7 +19,7 @@ func EndorserFrom(connect *grpc.ClientConn) peer.EndorserClient {
 func (endorser *Endorser) ProcessProposal(in *peer.SignedProposal) (*peer.ProposalResponse, error) {
 	// pseudo overwrite
 	if endorser.Context == nil {
-		endorser.Context = GetGoContext()
+		endorser.Context = goutils.GetGoContext()
 	}
 	return endorser.EndorserClient.ProcessProposal(endorser.Context, in)
 }

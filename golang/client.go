@@ -1,6 +1,7 @@
 package golang
 
 import (
+	. "github.com/davidkhala/goutils/grpc"
 	"google.golang.org/grpc"
 	"strings"
 )
