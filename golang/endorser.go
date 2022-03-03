@@ -1,19 +1,24 @@
 package golang
 
 import (
+	"context"
 	"github.com/hyperledger/fabric-protos-go/peer"
 	"google.golang.org/grpc"
 )
 
 type Endorser struct {
 	peer.EndorserClient
+	context.Context
 }
 
 func EndorserFrom(connect *grpc.ClientConn) peer.EndorserClient {
 	return peer.NewEndorserClient(connect)
 }
 
-func (endorser Endorser) ProcessProposal(in *peer.SignedProposal) (*peer.ProposalResponse, error) {
+func (endorser *Endorser) ProcessProposal(in *peer.SignedProposal) (*peer.ProposalResponse, error) {
 	// pseudo overwrite
-	return endorser.EndorserClient.ProcessProposal(GetGoContext(), in)
+	if endorser.Context == nil {
+		endorser.Context = GetGoContext()
+	}
+	return endorser.EndorserClient.ProcessProposal(endorser.Context, in)
 }

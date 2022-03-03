@@ -27,8 +27,8 @@ github.com/daaku/go.zipexe v1.0.0/go.mod h1:z8IiR6TsVLEYKwXAoE/I+8ys/sDkgTzSL0CL
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/davidkhala/goutils v1.5.1 h1:tvXRnMzjF8Nj1JOYqEhJZWyxNOEYpkIbcTsTjnP6o3A=
-github.com/davidkhala/goutils v1.5.1/go.mod h1:v6p+JuaIjyb+LDQ3K2mtMLgLefwhaYeK+Zlpt0wghZ4=
+github.com/davidkhala/goutils v1.5.2 h1:wT/Frr4ZkRM1Jf38yI3ZseANe600dOLMsG1rk1uoSDk=
+github.com/davidkhala/goutils v1.5.2/go.mod h1:v6p+JuaIjyb+LDQ3K2mtMLgLefwhaYeK+Zlpt0wghZ4=
 github.com/envoyproxy/go-control-plane v0.9.0/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/go-control-plane v0.9.4/go.mod h1:6rpuAdCZL397s3pYoYcLgu1mIlRU8Am5FuJP05cCM98=
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
