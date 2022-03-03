@@ -3,14 +3,15 @@ package tape
 import (
 	"context"
 	"fmt"
+	"github.com/davidkhala/fabric-common/golang"
 	"github.com/davidkhala/goutils"
-	//
 	tape "github.com/hyperledger-twgc/tape/pkg/infra"
 	"github.com/hyperledger/fabric-protos-go/common"
 	"github.com/hyperledger/fabric-protos-go/orderer"
 	"github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/kortschak/utter"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
 	"testing"
 )
 
@@ -19,13 +20,13 @@ var logger = logrus.New()
 // peer0.icdd
 var peer0_icdd = tape.Node{
 	Addr:      "localhost:8051", // TLSCACert should have a SAN extension
-	TLSCACert: "~/Documents/delphi-fabric/config/ca-crypto-config/peerOrganizations/icdd/tlsca/tlsca.icdd-cert.pem",
+	TLSCACert: "/home/davidliu/Documents/delphi-fabric/config/ca-crypto-config/peerOrganizations/icdd/tlsca/tlsca.icdd-cert.pem",
 }
 
 // peer0.astri.org
 var peer0_astri = tape.Node{
 	Addr:      "localhost:7051",
-	TLSCACert: "~/Documents/delphi-fabric/config/ca-crypto-config/peerOrganizations/astri.org/peers/peer0.astri.org/tls/ca.crt",
+	TLSCACert: "/home/davidliu/Documents/delphi-fabric/config/ca-crypto-config/peerOrganizations/astri.org/peers/peer0.astri.org/tls/ca.crt",
 }
 
 // orderer0.hyperledger
@@ -65,14 +66,17 @@ func TestCreateProposal(t *testing.T) {
 	var err error
 	var proposal *peer.Proposal
 	var signed *peer.SignedProposal
-	var ctx, cancel = context.WithCancel(context.Background())
 	var endorser peer.EndorserClient
 	var proposalResponse *peer.ProposalResponse
 	var proposalResponses []*peer.ProposalResponse
 	var transaction *common.Envelope
 	var broadcaster orderer.AtomicBroadcast_BroadcastClient
 	var txResult *orderer.BroadcastResponse
-	defer cancel()
+	var connect *grpc.ClientConn
+	var ctx = context.Background()
+	defer func() {
+		err = connect.Close()
+	}()
 	signer, err = config.LoadCrypto()
 	goutils.PanicError(err)
 	proposal, err = tape.CreateProposal(
@@ -86,7 +90,15 @@ func TestCreateProposal(t *testing.T) {
 	//
 	signed, err = tape.SignProposal(proposal, signer)
 	goutils.PanicError(err)
-	endorser, err = tape.CreateEndorserClient(peer0_icdd, logger)
+	// peer0.icdd
+	var peer0_icdd_p = golang.Node{
+		Node:                  peer0_icdd,
+		SslTargetNameOverride: "peer0.icdd",
+	}
+
+	connect, err = peer0_icdd_p.AsGRPCClient()
+
+	endorser = golang.EndorserFrom(connect)
 	goutils.PanicError(err)
 	proposalResponse, err = endorser.ProcessProposal(ctx, signed)
 	goutils.PanicError(err)

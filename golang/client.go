@@ -17,28 +17,18 @@ func ToAddress(url string) string {
 	return url
 }
 
-func Pings(target string, params Params) (err error) {
+func Pings(target string, params Params) (connect *grpc.ClientConn, err error) {
 	var opts []grpc.DialOption
 	opts, err = DialOptionsFrom(params)
 	if err != nil {
 		return
 	}
-	err = Ping(target, opts...)
+	connect, err = Ping(target, opts...)
 	return
 }
-func Ping(target string, opts ...grpc.DialOption) (err error) {
-	var connect *grpc.ClientConn
 
-	defer func() { err = connect.Close() }()
-	opts = append(opts, grpc.WithBlock()) // To make it a blocking dial, use WithBlock() dial option.
+func Ping(target string, opts ...grpc.DialOption) (connect *grpc.ClientConn, err error) {
+
 	connect, err = grpc.Dial(ToAddress(target), opts...)
 	return
 }
-
-//var opts []grpc.DialOption
-//...
-//conn, err := grpc.Dial(*serverAddr, opts...)
-//if err != nil {
-//  ...
-//}
-//defer conn.Close()
