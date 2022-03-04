@@ -45,21 +45,18 @@ var orderer0 = golang.Node{
 }
 
 var config = tape.Config{
-	Endorsers:       []tape.Node{peer0_icdd.Node},
-	Committers:      nil,
-	CommitThreshold: 0,
-	Orderer:         orderer0.Node,
-	Channel:         "allchannel",
-	Chaincode:       "diagnose",
-	Version:         "",
-	Args:            []string{"whoami"},
-	MSPID:           "astriMSP",
-	PrivateKey:      "/home/davidliu/Documents/delphi-fabric/config/ca-crypto-config/peerOrganizations/astri.org/users/Admin@astri.org/msp/keystore/5c2c5db454e25750fc84853900e5913cb4df49bcffff8a881146d08ca409c3af_sk",
-	// TODO why not support ~
+	Endorsers:  []tape.Node{peer0_icdd.Node},
+	Committers: nil,
+	Orderer:    orderer0.Node,
+	Channel:    "allchannel",
+	Chaincode:  "diagnose",
+	Args:       []string{"whoami"},
+}
+var cryptoConfig = tape.CryptoConfig{
+	MSPID:    "astriMSP",
+	PrivKey:  "/home/davidliu/Documents/delphi-fabric/config/ca-crypto-config/peerOrganizations/astri.org/users/Admin@astri.org/msp/keystore/5c2c5db454e25750fc84853900e5913cb4df49bcffff8a881146d08ca409c3af_sk",
 	SignCert: "/home/davidliu/Documents/delphi-fabric/config/ca-crypto-config/peerOrganizations/astri.org/users/Admin@astri.org/msp/signcerts/Admin@astri.org-cert.pem",
 	// TODO why not support ~
-	NumOfConn:     1,
-	ClientPerConn: 1,
 }
 
 func TestPing(t *testing.T) {
@@ -86,7 +83,7 @@ func TestE2E(t *testing.T) {
 		err = peer0.Close()
 		err = ordererGrpc.Close()
 	}()
-	signer, err = config.LoadCrypto()
+	signer, err = golang.LoadCryptoFrom(cryptoConfig)
 	goutils.PanicError(err)
 	proposal, err = tape.CreateProposal(
 		signer,
