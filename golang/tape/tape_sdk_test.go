@@ -134,12 +134,12 @@ func TestE2E(t *testing.T) {
 	if txResult.Status != common.Status_SUCCESS {
 		t.Fatal(txResult)
 	}
-	//
 
 	var eventer = golang.EventerFrom(ctx, peer1)
 	var seek = golang.SeekInfoFrom(golang.SeekNewest, golang.SeekMax)
 	signedEvent, err := seek.SignBy(config.Channel, signer)
 	goutils.PanicError(err)
-	eventer.SendRecv(signedEvent)
-
+	deliverResponse, err := eventer.SendRecv(signedEvent)
+	goutils.PanicError(err)
+	utter.Dump(deliverResponse)
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/hyperledger/fabric/protoutil"
 	"google.golang.org/grpc"
+	"io"
 	"math"
 )
 
@@ -17,7 +18,7 @@ type Eventer struct {
 	context.Context
 	peer.Deliver_DeliverWithPrivateDataClient
 	Continue     func(currentDeliverResponse *peer.DeliverResponse, currentError error, deliverResponses []*peer.DeliverResponse, errors []error) bool
-	ErrorReducer func(errors []error) string
+	ErrorReducer func(errors []error) error
 }
 
 var SeekNewest = &orderer.SeekPosition{
@@ -42,17 +43,34 @@ func EventerFrom(ctx context.Context, connect *grpc.ClientConn) Eventer {
 		Context:                              ctx,
 		Deliver_DeliverWithPrivateDataClient: client,
 		Continue: func(currentDeliverResponse *peer.DeliverResponse, currentError error, deliverResponses []*peer.DeliverResponse, errors []error) bool {
-			return false // default to break immediately
+			if currentError == io.EOF {
+				return false
+			} else if currentError != nil {
+				panic(currentError)
+			}
+			switch currentDeliverResponse.Type.(type) {
+			case *peer.DeliverResponse_Status:
+				var status = currentDeliverResponse.Type.(*peer.DeliverResponse_Status)
+				switch status.Status {
+				case common.Status_SUCCESS, common.Status_NOT_FOUND:
+					return false
+				}
+			}
+			return true
 		},
-		ErrorReducer: func(errors []error) string {
+		ErrorReducer: func(errorsSlice []error) error {
+
 			var errorSum = ""
-			for index, value := range errors {
+			for index, value := range errorsSlice {
 				if value != nil {
 					errorSum += "[" + string(rune(index)) + "]" + value.Error() + `\n`
 					break
 				}
 			}
-			return errorSum
+			if errorSum == "" {
+				return nil
+			}
+			return errors.New(errorSum)
 		},
 	}
 }
@@ -76,40 +94,28 @@ func SeekInfoFrom(start, stop *orderer.SeekPosition) SeekInfo {
 		&orderer.SeekInfo{
 			Start:    start,
 			Stop:     stop,
-			Behavior: orderer.SeekInfo_BLOCK_UNTIL_READY,
+			Behavior: orderer.SeekInfo_FAIL_IF_NOT_READY,
 		},
 	}
 }
 
 func (eventer Eventer) SendRecv(seek *common.Envelope) ([]*peer.DeliverResponse, error) {
-	var errorsChannel chan []error
-	var deliverResponsesChannel chan []*peer.DeliverResponse
-	defer func() {
-		close(errorsChannel)
-		close(deliverResponsesChannel)
-	}()
-	go func() {
-		var deliverResponses []*peer.DeliverResponse
-		var errorSlice []error
-
-		for {
-			deliverResponse, err := eventer.Recv()
-
-			deliverResponses = append(deliverResponses, deliverResponse)
-			errorSlice = append(errorSlice, err)
-			if !eventer.Continue(deliverResponse, err, deliverResponses, errorSlice) {
-				errorsChannel <- errorSlice
-				deliverResponsesChannel <- deliverResponses
-
-				return
-			}
-		}
-
-	}()
 	err := eventer.Send(seek)
 
 	if err != nil {
 		return nil, err
 	}
-	return <-deliverResponsesChannel, errors.New(eventer.ErrorReducer(<-errorsChannel))
+	var deliverResponses []*peer.DeliverResponse
+	var errorSlice []error
+
+	for {
+		deliverResponse, recvErr := eventer.Recv()
+		deliverResponses = append(deliverResponses, deliverResponse)
+		errorSlice = append(errorSlice, recvErr)
+		if !eventer.Continue(deliverResponse, recvErr, deliverResponses, errorSlice) {
+			break
+		}
+	}
+
+	return deliverResponses, eventer.ErrorReducer(errorSlice)
 }

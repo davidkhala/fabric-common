@@ -27,24 +27,11 @@ func (committer *Committer) Setup() (err error) {
 }
 
 func (committer *Committer) SendRecv(envelope *common.Envelope) (*orderer.BroadcastResponse, error) {
-	responsesChannel := make(chan *orderer.BroadcastResponse)
-	errorChannel := make(chan error)
-	defer func() {
-		close(responsesChannel)
-		close(errorChannel)
-	}()
-	go func() {
-		// AtomicBroadcast_BroadcastClient.Recv() is blocking, and only one try here
-		broadcastResponse, err := committer.AtomicBroadcast_BroadcastClient.Recv()
-		errorChannel <- err
-		responsesChannel <- broadcastResponse
-	}()
+
 	err := committer.Send(envelope)
 	if err != nil {
 		return nil, err
 	}
 
-	err = <-errorChannel
-	responses := <-responsesChannel
-	return responses, err
+	return committer.AtomicBroadcast_BroadcastClient.Recv()
 }
