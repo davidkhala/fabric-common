@@ -85,7 +85,7 @@ func TestE2E(t *testing.T) {
 	}()
 	signer, err = golang.LoadCryptoFrom(cryptoConfig)
 	goutils.PanicError(err)
-	proposal, err = tape.CreateProposal(
+	proposal, txid, err := golang.CreateProposal(
 		signer,
 		config.Channel,
 		config.Chaincode,
@@ -129,14 +129,16 @@ func TestE2E(t *testing.T) {
 	txResult, err = committer.SendRecv(transaction)
 	goutils.PanicError(err)
 	if txResult.Status != common.Status_SUCCESS {
-		t.Fatal(txResult)
+		panic(txResult)
 	}
 
+	utter.Dump(txid)
+
 	var eventer = golang.EventerFrom(ctx, peer1)
-	var seek = golang.SeekInfoFrom(golang.SeekNewest, golang.SeekMax)
+	eventer.AsTransactionListener(txid)
+	var seek = golang.SeekInfoFrom(golang.SeekNewest, golang.SeekMax).WaitUtilReady()
 	signedEvent, err := seek.SignBy(config.Channel, signer)
 	goutils.PanicError(err)
-	deliverResponse, err := eventer.SendRecv(signedEvent)
+	_, err = eventer.SendRecv(signedEvent)
 	goutils.PanicError(err)
-	utter.Dump(deliverResponse)
 }
