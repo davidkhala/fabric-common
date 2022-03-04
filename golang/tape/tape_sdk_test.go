@@ -70,7 +70,7 @@ func TestPing(t *testing.T) {
 	_, err = tape.DailConnection(orderer0.Node, logger)
 	goutils.PanicError(err)
 }
-func TestCreateProposal(t *testing.T) {
+func TestE2E(t *testing.T) {
 	var signer *tape.Crypto
 	var err error
 	var proposal *peer.Proposal
@@ -80,7 +80,7 @@ func TestCreateProposal(t *testing.T) {
 	var proposalResponses []*peer.ProposalResponse
 	var transaction *common.Envelope
 	var txResult *orderer.BroadcastResponse
-	var peer0, ordererGrpc *grpc.ClientConn
+	var peer0, peer1, ordererGrpc *grpc.ClientConn
 	var ctx = context.Background()
 	defer func() {
 		err = peer0.Close()
@@ -102,7 +102,8 @@ func TestCreateProposal(t *testing.T) {
 	// peer0.icdd
 
 	peer0, err = peer0_icdd.AsGRPCClient()
-
+	goutils.PanicError(err)
+	peer1, err = peer0_astri.AsGRPCClient()
 	endorser = golang.EndorserFrom(peer0)
 	goutils.PanicError(err)
 
@@ -130,5 +131,15 @@ func TestCreateProposal(t *testing.T) {
 	//
 	txResult, err = committer.SendRecv(transaction)
 	goutils.PanicError(err)
-	utter.Dump(txResult)
+	if txResult.Status != common.Status_SUCCESS {
+		t.Fatal(txResult)
+	}
+	//
+
+	var eventer = golang.EventerFrom(ctx, peer1)
+	var seek = golang.SeekInfoFrom(golang.SeekNewest, golang.SeekMax)
+	signedEvent, err := seek.SignBy(config.Channel, signer)
+	goutils.PanicError(err)
+	eventer.SendRecv(signedEvent)
+
 }
