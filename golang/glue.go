@@ -26,7 +26,10 @@ func (node Node) AsGRPCClient() (connect *grpc.ClientConn, err error) {
 		return nil, err
 	}
 
-	certificate = crypto.ParseCertPem(tlsCACertBytes)
+	certificate, err = crypto.ParseCertPem(tlsCACertBytes)
+	if err != nil {
+		return nil, err
+	}
 
 	var param = Params{
 		SslTargetNameOverride: node.SslTargetNameOverride,
