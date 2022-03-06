@@ -14,19 +14,19 @@ import (
 
 type Node struct {
 	tape.Node
-	SslTargetNameOverride string
+	SslTargetNameOverride string `json:"ssl-target-name-override"`
 }
 
 func (node Node) AsGRPCClient() (connect *grpc.ClientConn, err error) {
 
 	var certificate *x509.Certificate
-	var tlsCACertBytes []byte
-	tlsCACertBytes, err = goutils.ReadFile(node.TLSCACert)
+	var tlsCARootCertBytes []byte
+	tlsCARootCertBytes, err = goutils.ReadFile(node.TLSCARoot)
 	if err != nil {
 		return nil, err
 	}
 
-	certificate, err = crypto.ParseCertPem(tlsCACertBytes)
+	certificate, err = crypto.ParseCertPem(tlsCARootCertBytes)
 	if err != nil {
 		return nil, err
 	}

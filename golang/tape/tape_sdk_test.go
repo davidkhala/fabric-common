@@ -21,7 +21,7 @@ var logger = logrus.New()
 var peer0_icdd = golang.Node{
 	Node: tape.Node{
 		Addr:      "localhost:8051",
-		TLSCACert: "/home/davidliu/Documents/delphi-fabric/config/ca-crypto-config/peerOrganizations/icdd/tlsca/tlsca.icdd-cert.pem",
+		TLSCARoot: "/home/davidliu/Documents/delphi-fabric/config/ca-crypto-config/peerOrganizations/icdd/tlsca/tlsca.icdd-cert.pem",
 	},
 	SslTargetNameOverride: "peer0.icdd",
 }
@@ -30,7 +30,7 @@ var peer0_icdd = golang.Node{
 var peer0_astri = golang.Node{
 	Node: tape.Node{
 		Addr:      "localhost:7051",
-		TLSCACert: "/home/davidliu/Documents/delphi-fabric/config/ca-crypto-config/peerOrganizations/astri.org/peers/peer0.astri.org/tls/ca.crt",
+		TLSCARoot: "/home/davidliu/Documents/delphi-fabric/config/ca-crypto-config/peerOrganizations/astri.org/peers/peer0.astri.org/tls/ca.crt",
 	},
 	SslTargetNameOverride: "peer0.astri.org",
 }
@@ -39,7 +39,7 @@ var peer0_astri = golang.Node{
 var orderer0 = golang.Node{
 	Node: tape.Node{
 		Addr:      "localhost:7050",
-		TLSCACert: "/home/davidliu/Documents/delphi-fabric/config/ca-crypto-config/ordererOrganizations/hyperledger/orderers/orderer0.hyperledger/tls/ca.crt",
+		TLSCARoot: "/home/davidliu/Documents/delphi-fabric/config/ca-crypto-config/ordererOrganizations/hyperledger/orderers/orderer0.hyperledger/tls/ca.crt",
 	},
 	SslTargetNameOverride: "orderer0.hyperledger",
 }
@@ -54,7 +54,7 @@ var config = tape.Config{
 }
 var cryptoConfig = tape.CryptoConfig{
 	MSPID:    "astriMSP",
-	PrivKey:  "/home/davidliu/Documents/delphi-fabric/config/ca-crypto-config/peerOrganizations/astri.org/users/Admin@astri.org/msp/keystore/5c2c5db454e25750fc84853900e5913cb4df49bcffff8a881146d08ca409c3af_sk",
+	PrivKey:  golang.FindKeyFilesOrPanic("/home/davidliu/Documents/delphi-fabric/config/ca-crypto-config/peerOrganizations/astri.org/users/Admin@astri.org/msp/keystore/")[0],
 	SignCert: "/home/davidliu/Documents/delphi-fabric/config/ca-crypto-config/peerOrganizations/astri.org/users/Admin@astri.org/msp/signcerts/Admin@astri.org-cert.pem",
 	// TODO why not support ~
 }
