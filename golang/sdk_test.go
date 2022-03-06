@@ -12,6 +12,7 @@ func TestConnection(t *testing.T) {
 			Addr:      "localhost:8051",
 			TLSCACert: "/home/davidliu/Documents/delphi-fabric/config/ca-crypto-config/peerOrganizations/icdd/tlsca/tlsca.icdd-cert.pem",
 		},
+		SslTargetNameOverride: "peer0.icdd",
 	}
 	var err error
 	_, err = peer0_icdd.AsGRPCClient()

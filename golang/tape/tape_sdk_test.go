@@ -81,23 +81,26 @@ func TestE2E(t *testing.T) {
 	var ctx = context.Background()
 	defer func() {
 		err = peer0.Close()
+		err = peer1.Close()
 		err = ordererGrpc.Close()
 	}()
+	// client side
 	signer, err = golang.LoadCryptoFrom(cryptoConfig)
 	goutils.PanicError(err)
+	// client side end
 	proposal, txid, err := golang.CreateProposal(
-		signer,
+		signer.Creator,
 		config.Channel,
 		config.Chaincode,
 		config.Version,
 		config.Args...,
 	)
 	goutils.PanicError(err)
-	//
+	// server side end
 	signed, err = tape.SignProposal(proposal, signer)
 	goutils.PanicError(err)
+	// server side
 	// peer0.icdd
-
 	peer0, err = peer0_icdd.AsGRPCClient()
 	goutils.PanicError(err)
 	peer1, err = peer0_astri.AsGRPCClient()
@@ -115,8 +118,10 @@ func TestE2E(t *testing.T) {
 	utter.Dump(string(proposalResponse.Response.Payload))
 
 	proposalResponses = []*peer.ProposalResponse{proposalResponse}
+	// server side end
 	transaction, err = tape.CreateSignedTx(proposal, signer, proposalResponses)
 	goutils.PanicError(err)
+	// server side
 	ordererGrpc, err = orderer0.AsGRPCClient()
 	goutils.PanicError(err)
 	var committer = golang.Committer{
@@ -125,13 +130,12 @@ func TestE2E(t *testing.T) {
 	err = committer.Setup()
 	goutils.PanicError(err)
 
-	//
 	txResult, err = committer.SendRecv(transaction)
 	goutils.PanicError(err)
 	if txResult.Status != common.Status_SUCCESS {
 		panic(txResult)
 	}
-
+	// server side end
 	utter.Dump(txid)
 
 	var eventer = golang.EventerFrom(ctx, peer1)
