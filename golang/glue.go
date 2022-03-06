@@ -20,10 +20,12 @@ type Node struct {
 func (node Node) AsGRPCClient() (connect *grpc.ClientConn, err error) {
 
 	var certificate *x509.Certificate
-	var tlsCARootCertBytes []byte
-	tlsCARootCertBytes, err = goutils.ReadFile(node.TLSCARoot)
-	if err != nil {
-		return nil, err
+	var tlsCARootCertBytes = node.TLSCARootByte
+	if tlsCARootCertBytes == nil {
+		tlsCARootCertBytes, err = goutils.ReadFile(node.TLSCARoot)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	certificate, err = crypto.ParseCertPem(tlsCARootCertBytes)
