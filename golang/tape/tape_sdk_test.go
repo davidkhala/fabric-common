@@ -92,7 +92,7 @@ func TestE2E(t *testing.T) {
 		signer.Creator,
 		config.Channel,
 		config.Chaincode,
-		config.Version,
+		"",
 		config.Args...,
 	)
 	goutils.PanicError(err)
