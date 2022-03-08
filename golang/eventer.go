@@ -8,7 +8,6 @@ import (
 	"github.com/hyperledger/fabric-protos-go/orderer"
 	"github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/hyperledger/fabric/protoutil"
-	"github.com/kortschak/utter"
 	"google.golang.org/grpc"
 	"io"
 	"math"
@@ -20,6 +19,7 @@ type Eventer struct {
 	peer.Deliver_DeliverWithPrivateDataClient
 	Continue     func(currentDeliverResponse *peer.DeliverResponse, currentError error, deliverResponses []*peer.DeliverResponse, errors []error) bool
 	ErrorReducer func(errors []error) error
+	ReceiptData  interface{}
 }
 
 var SeekNewest = &orderer.SeekPosition{
@@ -113,7 +113,10 @@ func SeekInfoFrom(start, stop *orderer.SeekPosition) SeekInfo {
 		},
 	}
 }
-func (eventer *Eventer) AsTransactionListener(txid string) {
+
+// AsTransactionListener return a proper SeekInfo
+func (eventer *Eventer) AsTransactionListener(txid string) SeekInfo {
+	eventer.ReceiptData = nil
 	eventer.Continue = func(currentDeliverResponse *peer.DeliverResponse, currentError error, deliverResponses []*peer.DeliverResponse, errors []error) bool {
 		if currentError == io.EOF {
 			return false
@@ -125,7 +128,6 @@ func (eventer *Eventer) AsTransactionListener(txid string) {
 		case *peer.DeliverResponse_BlockAndPrivateData:
 			var full_block = currentDeliverResponse.GetBlockAndPrivateData()
 			var block = full_block.Block
-			utter.Dump(int32(block.Header.Number))
 			var txStatusCodes = block.Metadata.Metadata[common.BlockMetadataIndex_TRANSACTIONS_FILTER]
 
 			for index, value := range block.Data.Data {
@@ -133,16 +135,16 @@ func (eventer *Eventer) AsTransactionListener(txid string) {
 				payload := protoutil.UnmarshalPayloadOrPanic(envelope.Payload)
 				var txStatusCode = peer.TxValidationCode(txStatusCodes[index])
 				var channel_header = protoutil.UnmarshalChannelHeaderOrPanic(payload.Header.ChannelHeader)
-				utter.Dump(channel_header.TxId)
 				if channel_header.Type == int32(common.HeaderType_ENDORSER_TRANSACTION) && txid == channel_header.TxId {
-					if txStatusCode == peer.TxValidationCode_VALID {
-						utter.Dump("found") // TODO cannot get latest block
-					}
+					// found
+					eventer.ReceiptData = peer.TxValidationCode_name[int32(txStatusCode)]
+					return false
 				}
 			}
 		}
 		return true
 	}
+	return SeekInfoFrom(SeekNewest, SeekMax).WaitUtilReady()
 }
 func (eventer Eventer) SendRecv(seek *common.Envelope) ([]*peer.DeliverResponse, error) {
 	err := eventer.Send(seek)

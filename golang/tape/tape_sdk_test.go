@@ -139,10 +139,10 @@ func TestE2E(t *testing.T) {
 	utter.Dump(txid)
 
 	var eventer = golang.EventerFrom(ctx, peer1)
-	eventer.AsTransactionListener(txid)
-	var seek = golang.SeekInfoFrom(golang.SeekNewest, golang.SeekMax).WaitUtilReady()
+	var seek = eventer.AsTransactionListener(txid)
 	signedEvent, err := seek.SignBy(config.Channel, signer)
 	goutils.PanicError(err)
 	_, err = eventer.SendRecv(signedEvent)
 	goutils.PanicError(err)
+	utter.Dump(eventer.ReceiptData)
 }
