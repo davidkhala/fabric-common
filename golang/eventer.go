@@ -35,6 +35,24 @@ var SeekMax = &orderer.SeekPosition{
 	},
 }
 
+// DefaultContinue TODO
+var DefaultContinue = func(currentDeliverResponse *peer.DeliverResponse, currentError error, deliverResponses []*peer.DeliverResponse, errors []error) bool {
+	if currentError == io.EOF {
+		return false
+	} else if currentError != nil {
+		panic(currentError)
+	}
+	switch currentDeliverResponse.Type.(type) {
+	case *peer.DeliverResponse_Status:
+		var status = currentDeliverResponse.Type.(*peer.DeliverResponse_Status)
+		switch status.Status {
+		case common.Status_SUCCESS, common.Status_NOT_FOUND:
+			return false
+		}
+	}
+	return true
+}
+
 func EventerFrom(ctx context.Context, connect *grpc.ClientConn) Eventer {
 	deliverClient := peer.NewDeliverClient(connect)
 	client, err := deliverClient.DeliverWithPrivateData(ctx) // always get most info
@@ -43,22 +61,7 @@ func EventerFrom(ctx context.Context, connect *grpc.ClientConn) Eventer {
 		DeliverClient:                        deliverClient,
 		Context:                              ctx,
 		Deliver_DeliverWithPrivateDataClient: client,
-		Continue: func(currentDeliverResponse *peer.DeliverResponse, currentError error, deliverResponses []*peer.DeliverResponse, errors []error) bool {
-			if currentError == io.EOF {
-				return false
-			} else if currentError != nil {
-				panic(currentError)
-			}
-			switch currentDeliverResponse.Type.(type) {
-			case *peer.DeliverResponse_Status:
-				var status = currentDeliverResponse.Type.(*peer.DeliverResponse_Status)
-				switch status.Status {
-				case common.Status_SUCCESS, common.Status_NOT_FOUND:
-					return false
-				}
-			}
-			return true
-		},
+		Continue:                             DefaultContinue,
 		ErrorReducer: func(errorsSlice []error) error {
 
 			var errorSum = ""
