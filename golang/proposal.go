@@ -16,7 +16,7 @@ func GetRandomNonce() []byte {
 	return key
 }
 
-func CreateProposal(creator []byte, channel, ccname, version string, args ...string) (proposal *peer.Proposal, txid string, err error) {
+func CreateProposal(creator []byte, channel, ccname, version string, transientMap map[string][]byte, args ...string) (proposal *peer.Proposal, txid string, err error) {
 	var argsInByte [][]byte
 	for _, arg := range args {
 		argsInByte = append(argsInByte, []byte(arg))
@@ -30,7 +30,7 @@ func CreateProposal(creator []byte, channel, ccname, version string, args ...str
 
 	invocation := &peer.ChaincodeInvocationSpec{ChaincodeSpec: spec}
 
-	prop, txid, err := protoutil.CreateChaincodeProposal(common.HeaderType_ENDORSER_TRANSACTION, channel, invocation, creator)
+	prop, txid, err := protoutil.CreateChaincodeProposalWithTransient(common.HeaderType_ENDORSER_TRANSACTION, channel, invocation, creator, transientMap)
 	if err != nil {
 		return nil, "", err
 	}
