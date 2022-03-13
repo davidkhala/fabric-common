@@ -117,12 +117,11 @@ export default class EventHubQuery {
 	}
 
 	async replayTx(MaxTxAmount, endBlock) {
-		const {eventHub, identityContext, logger} = this;
+		const {eventHub, identityContext} = this;
 		eventHub.build(identityContext, {startBlock: OLDEST, endBlock});
 		return await new Promise((resolve, reject) => {
 			const result = [];
 			const callback = (err, event) => {
-				logger.debug({err, event});
 				if (err) {
 					listener.unregisterEventListener();
 					reject(err);

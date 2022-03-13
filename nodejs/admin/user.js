@@ -72,7 +72,7 @@ export default class UserBuilder {
 
 	/**
 	 *
-	 * @return {CertificatePem}
+	 * @return {Buffer} untrimmed Buffer
 	 */
 	get certificate() {
 		return this.signingIdentity._certificate;
