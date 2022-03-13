@@ -76,17 +76,23 @@ export class ChannelConfig {
 		configFactory.setAnchorPeers(orgName, anchorPeers);
 		const updateConfigJSON = configFactory.build();
 
+
+		assert.ok(!!this.binPath, '[deprecated] configtxlatorServer is deprecated. env.binPath must be specified');
+		const binManager = new BinManager(this.binPath);
+		const updatedProto = await binManager.configtxlatorCMD.encode(ConfigtxlatorType.Config, updateConfigJSON);
 		let config;
-		if (!this.binPath) {
-			const updatedProto = await configtxlatorServer.encode(ConfigtxlatorType.Config, updateConfigJSON);
-			config = await configtxlatorServer.computeUpdate(channelName, proto, updatedProto);
-		} else {
-
-			const binManager = new BinManager(this.binPath);
-			const updatedProto = await binManager.configtxlatorCMD.encode(ConfigtxlatorType.Config, updateConfigJSON);
+		try {
 			config = await binManager.configtxlatorCMD.computeUpdate(channelName, proto, updatedProto);
-
+		} catch (e) {
+			const expected = 'configtxlator: error: Error computing update: error computing config update: no differences detected between original and updated config';
+			if (e.stderr.trim() === expected) {
+				logger.warn('[skip]no differences detected between original and updated config');
+				return;
+			} else {
+				throw e;
+			}
 		}
+
 
 		const signatures = signingIdentities.map(signingIdentity => {
 			const extraSigningIdentityUtil = new SigningIdentityUtil(signingIdentity);
@@ -98,6 +104,7 @@ export class ChannelConfig {
 		const {status, info} = await channelUpdate.submit(channelUpdate.identityContext);
 		assert.strictEqual(info, '');
 		assert.strictEqual(status, SUCCESS);
+		// wait for finality
 		if (finalityRequired) {
 			const channel = emptyChannel(channelName);
 			const eventHub = new EventHub(channel, orderer.eventer);
@@ -106,6 +113,10 @@ export class ChannelConfig {
 			await eventHubQuery.waitForBlock();
 
 			await eventHub.disconnect();
+			const {json: updatedJson} = await this.getChannelConfigReadable();
+			const updatedAnchorPeers = new ConfigFactory(updatedJson).getAnchorPeers(orgName);
+
+			assert.deepStrictEqual(updatedAnchorPeers.value.anchor_peers, anchorPeers);
 		}
 
 	}

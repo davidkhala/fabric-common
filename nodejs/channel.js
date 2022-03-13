@@ -1,5 +1,3 @@
-import fs from 'fs';
-import assert from 'assert';
 import {consoleLogger} from '@davidkhala/logger/log4.js';
 import SigningIdentityUtil from 'khala-fabric-admin/signingIdentity.js';
 import {
@@ -9,7 +7,6 @@ import {
 } from 'khala-fabric-formatter/protoTranslator.js';
 import IdentityContext from 'fabric-common/lib/IdentityContext.js';
 import EventHub from 'khala-fabric-admin/eventHub.js';
-import CSCCProposal from 'khala-fabric-admin/CSCCProposal.js';
 import {fromEvent} from 'khala-fabric-formatter/blockEncoder.js';
 import {BlockNumberFilterType} from 'khala-fabric-formatter/eventHub.js';
 import EventHubQuery from './eventHub.js';
@@ -70,52 +67,4 @@ export const getChannelConfigFromOrderer = async (channelName, user, orderer) =>
 	assertConfigBlock(eventLastConfigBlock);
 
 	return extractConfigEnvelopeFromBlockData(eventLastConfigBlock.data.data[0]);
-};
-
-
-/**
- * @param {Client.Channel} channel
- * @param {Peer[]} peers
- * @param {Client.User} user
- * @param {string} [blockFile] genesis block file
- * @param {Orderer} [orderer] required if blockFile is not provided
- * @returns {Promise<ProposalResponse>}
- */
-export const join = async (channel, peers, user, blockFile, orderer) => {
-	logger.debug('join-channel', {
-		channelName: channel.name,
-		user: user.toString(),
-		peers: peers.map((peer) => peer.toString())
-	});
-
-	let block;
-	if (!blockFile) {
-		logger.info('getGenesisBlock from', orderer)
-		block = await getGenesisBlock(channel, user, orderer);
-	} else {
-		logger.info('getGenesisBlock from', blockFile)
-		block = fs.readFileSync(blockFile);
-	}
-	for (const peer of peers) {
-		await peer.endorser.connect();
-	}
-	const identityContext = new IdentityContext(user, null);
-	const proposal = new CSCCProposal(identityContext, peers.map(({endorser}) => endorser));
-	const result = await proposal.joinChannel(block, channel.name);
-
-	const {errors, responses} = result;
-	assert.ok(errors.length === 0);
-	responses.forEach(({response}, index) => {
-		const {status, message} = response;
-		if (status === 500 && message === 'cannot create ledger from genesis block: LedgerID already exists') {
-			logger.warn(`${peers[index].toString()} has joined channel [${channel.name}] already`);
-		} else if (status === 200 && message === '') {
-			logger.info(`${peers[index].toString()} join channel [${channel.name}] success`);
-		} else {
-			logger.error(`${peers[index].toString()}`, response);
-		}
-	});
-
-	return result;
-
 };
