@@ -187,7 +187,7 @@ export default class CaCryptoGen {
 	 * @returns {Promise<User>}
 	 */
 	async genUser(nodeType, admin) {
-		const {caService, cryptoPath, logger, TLS} = this;
+		const {caService, cryptoPath, logger} = this;
 		const type = `${nodeType}User`;
 
 		const affiliationRoot = cryptoPath[`${nodeType}OrgName`];

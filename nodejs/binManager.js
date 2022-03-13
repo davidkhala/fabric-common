@@ -7,10 +7,6 @@ import {createTmpFile, createTmpDir} from '@davidkhala/nodeutils/tmp.js';
 const expectedBinaries = ['configtxgen', 'configtxlator', 'cryptogen', 'discover', 'fabric-ca-client', 'fabric-ca-server', 'idemixgen', 'orderer', 'osnadmin', 'peer'];
 
 export default class BinManager {
-	_buildCMD(executable, ...args) {
-		return `${path.resolve(this.binPath, executable)} ${args.join(' ')}`;
-	}
-
 	/**
 	 *
 	 * @param binPath
@@ -123,6 +119,10 @@ export default class BinManager {
 				return returned;
 			}
 		};
+	}
+
+	_buildCMD(executable, ...args) {
+		return `${path.resolve(this.binPath, executable)} ${args.join(' ')}`;
 	}
 
 	/**

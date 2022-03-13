@@ -50,6 +50,7 @@ export default class UserBuilder {
 		this.user.getIdentity = () => {
 			return this.user._signingIdentity;
 		};
+		Object.defineProperty(this.user, 'mspId', {get: () => (this.mspId)});
 		return this.user;
 	}
 

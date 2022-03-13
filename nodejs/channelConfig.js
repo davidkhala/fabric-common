@@ -25,18 +25,10 @@ export class ChannelConfig {
 	 * @param {string} channelName
 	 * @param {Client.User} user
 	 * @param {Orderer} orderer
-	 * @param logger
+	 * @param {string} [binPath]
 	 */
-	constructor(channelName, user, orderer) {
-		Object.assign(this, {channelName, user, orderer});
-	}
-
-	/**
-	 * This requires 'configtxlator' RESTful server running locally on port 7059
-	 * Otherwise in default we will use 'configtxlator' as command line tool
-	 */
-	configServerReady() {
-		this.viaServer = true;
+	constructor(channelName, user, orderer, binPath = process.env.binPath) {
+		Object.assign(this, {channelName, user, orderer, binPath});
 	}
 
 	/**
@@ -48,11 +40,13 @@ export class ChannelConfig {
 		const protoBytes = BufferFrom(configEnvelope.config, commonProto.Config);
 
 		let json;
-		if (this.viaServer) {
+		if (!this.binPath) {
+			// This requires 'configtxlator' RESTful server running locally on port 7059
 			const body = await configtxlatorServer.decode(ConfigtxlatorType.Config, protoBytes);
 			json = JSON.stringify(body);
 		} else {
-			const binManager = new BinManager();
+			// Otherwise in default we will use 'configtxlator' command line tool residing in this.binPath
+			const binManager = new BinManager(this.binPath);
 			json = await binManager.configtxlatorCMD.decode(ConfigtxlatorType.Config, protoBytes);
 		}
 
@@ -71,7 +65,7 @@ export class ChannelConfig {
 	 * @return {Promise<void>}
 	 */
 	async setAnchorPeers(signingIdentities = [], orgName, anchorPeers, finalityRequired) {
-		const {channelName, user, orderer, viaServer} = this;
+		const {channelName, user, orderer} = this;
 		if (signingIdentities.length === 0) {
 			signingIdentities = [user._signingIdentity];
 		}
@@ -83,12 +77,12 @@ export class ChannelConfig {
 		const updateConfigJSON = configFactory.build();
 
 		let config;
-		if (viaServer) {
+		if (!this.binPath) {
 			const updatedProto = await configtxlatorServer.encode(ConfigtxlatorType.Config, updateConfigJSON);
 			config = await configtxlatorServer.computeUpdate(channelName, proto, updatedProto);
 		} else {
 
-			const binManager = new BinManager();
+			const binManager = new BinManager(this.binPath);
 			const updatedProto = await binManager.configtxlatorCMD.encode(ConfigtxlatorType.Config, updateConfigJSON);
 			config = await binManager.configtxlatorCMD.computeUpdate(channelName, proto, updatedProto);
 
