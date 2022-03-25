@@ -146,7 +146,10 @@ export const chaincodeClear = async (filter) => {
 	}
 };
 export const runOrderer = async (opts, operations, metrics) => {
-	const {container_name, imageTag, port, network, msp, ordererType, tls, stateVolume, raft_tls} = opts;
+	const {
+		container_name, imageTag, port, network, msp,
+		ordererType, tls, stateVolume, raft_tls, loggingLevel,
+	} = opts;
 	const {id, configPath, volumeName} = msp;
 	const Image = `hyperledger/fabric-orderer:${imageTag}`;
 	raft_tls.host = container_name;
@@ -155,7 +158,7 @@ export const runOrderer = async (opts, operations, metrics) => {
 		msp: {
 			configPath, id
 		}, ordererType, tls, raft_tls, admin_tls
-	}, undefined, operations, metrics);
+	}, loggingLevel, operations, metrics);
 
 	const builder = new ContainerOptsBuilder(Image, ['orderer']);
 	builder.setName(container_name).setEnv(Env);
@@ -178,7 +181,7 @@ export const runOrderer = async (opts, operations, metrics) => {
 
 export const runPeer = async (opts, operations, metrics) => {
 	const {
-		container_name, port, network, imageTag,
+		container_name, port, network, imageTag, loggingLevel,
 		msp: {
 			id, volumeName,
 			configPath
@@ -190,7 +193,7 @@ export const runPeer = async (opts, operations, metrics) => {
 		network, msp: {
 			configPath, id, peerHostName
 		}, tls, couchDB
-	}, undefined, operations, metrics);
+	}, loggingLevel, operations, metrics);
 
 	const builder = new ContainerOptsBuilder(Image, Cmd);
 	builder.setName(container_name).setEnv(Env);
