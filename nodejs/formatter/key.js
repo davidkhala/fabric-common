@@ -14,6 +14,7 @@ export class ECDSA_PrvKey {
 	}
 
 	/**
+	 * @deprecated use static filename "priv_sk" from 2.x
 	 * fabric private key raw PEM filename
 	 * @return {string}
 	 */
@@ -26,7 +27,7 @@ export class ECDSA_PrvKey {
 	}
 
 	toKeystore(dirName) {
-		const filename = this.filename();
+		const filename = 'priv_sk';
 		const absolutePath = path.resolve(dirName, filename);
 		const data = this.pem();
 		fs.mkdirSync(dirName, {recursive: true});
