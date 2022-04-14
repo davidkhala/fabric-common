@@ -1,6 +1,7 @@
-import {signers, connect} from 'fabric-gateway';
+import {connect, signers} from '@hyperledger/fabric-gateway';
 import grpc from '@grpc/grpc-js';
 import crypto from 'crypto';
+import Contract from './contract.js';
 
 export default class FabricGateway {
 	/**
@@ -10,32 +11,45 @@ export default class FabricGateway {
 	 */
 	constructor(peer, user) {
 
-
-		const {pem, sslTargetNameOverride, endorser: {endpoint: {url}}} = peer;
-		// TODO should url be format like 'localhost:7051'
+		Object.assign(this, {peer, user});
 
 		const {key, mspId, certificate} = user;
 
+		this.identity = {
+			mspId,
+			credentials: certificate
+		};
+		this.signer = signers.newPrivateKeySigner(crypto.createPrivateKey(key));
+
+		this.connect();
+	}
+
+	connect() {
+		const {pem, sslTargetNameOverride, endorser: {endpoint: {addr}}} = this.peer;
+
 		const tlsCredentials = grpc.credentials.createSsl(Buffer.from(pem));
 
-		const GrpcClient = grpc.makeGenericClientConstructor({}, '');
-		const client = new GrpcClient(url, tlsCredentials, {
+		this.client = new grpc.Client(addr, tlsCredentials, {
 			'grpc.ssl_target_name_override': sslTargetNameOverride
 		});
 
 		this.gateway = connect({
-			client,
-			identity: {
-				mspId,
-				credentials: certificate
-			},
-			signer: signers.newPrivateKeySigner(crypto.createPrivateKey(key))
+			client: this.client,
+			identity: this.identity,
+			signer: this.signer
 		});
 	}
 
 	getContract(channel, chaincode) {
 		const network = this.gateway.getNetwork(channel);
-		return network.getContract(chaincode);
+		return new Contract(network.getContract(chaincode));
+	}
+
+	disconnect() {
+		this.gateway.close();
+		this.client.close();
+		delete this.client;
+		delete this.gateway;
 	}
 
 }
