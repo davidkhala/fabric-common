@@ -10,7 +10,7 @@
  * @typedef {string} MspId msp_identifier, member service provider identifier
  */
 /**
- * @typedef {Object} TransientMap jsObject of key<string> --> value<string>
+ * @typedef {Object|Record<string, string | Uint8Array>} TransientMap jsObject of key<string> --> value<string>
  */
 
 /**

@@ -64,6 +64,10 @@ export default class Peer {
 		this.discoverer = discoverer;
 	}
 
+	get mspId() {
+		return this.endorser.mspid;
+	}
+
 	getServiceEndpoints() {
 		return [this.endorser, this.eventer, this.discoverer];
 	}
