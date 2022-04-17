@@ -58,7 +58,33 @@ export default class EventHubQuery {
 		});
 	}
 
-	async waitForBlock(futureSteps = 1) {
+	async waitUntilBlock(targetHeight) {
+		const {eventHub, identityContext, logger} = this;
+		eventHub.build(identityContext, {startBlock: OLDEST});
+		logger.info({targetHeight});
+		return await new Promise((resolve, reject) => {
+
+			const callback = (err, event) => {
+				if (err) {
+					reject(err);
+				} else {
+					const {block} = event;
+					const height = parseInt(block.header.number);
+					logger.info('replaying', height);
+					if (height === targetHeight) {
+						listener.unregisterEventListener();
+						resolve(block);
+					}
+
+				}
+
+			};
+			const listener = eventHub.blockEvent(callback, {unregister: false, startBlock: targetHeight, endBlock: Number.MAX_SAFE_INTEGER});
+			eventHub.connect();
+		});
+	}
+
+	async waitForBlocks(futureSteps = 1) {
 		const {eventHub, identityContext, logger} = this;
 		eventHub.build(identityContext, {startBlock: NEWEST});
 		return await new Promise((resolve, reject) => {
@@ -69,10 +95,10 @@ export default class EventHubQuery {
 				} else {
 					const {block} = event;
 					if (futureBlocks.length < futureSteps) {
-						logger.debug('currentBlock', block.header.number);
+						logger.info('currentBlock', block.header.number);
 						futureBlocks.push(block);
 					} else {
-						logger.debug('comingBlock', block.header.number);
+						logger.info('comingBlock', block.header.number);
 						listener.unregisterEventListener();
 						resolve(block);
 					}
@@ -80,7 +106,7 @@ export default class EventHubQuery {
 				}
 
 			};
-			const listener = eventHub.blockEvent(callback, {unregister: false, startBlock: 0, endBlock: 999});
+			const listener = eventHub.blockEvent(callback, {unregister: false, startBlock: 0, endBlock: Number.MAX_SAFE_INTEGER});
 			eventHub.connect();
 		});
 	}

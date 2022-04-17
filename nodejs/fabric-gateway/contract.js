@@ -35,18 +35,21 @@ export default class Contract {
 	 * @param {string[]} args
 	 * @param {TransientMap} [transientMap]
 	 * @param {MspId[]} [endorsingOrganizations]
+	 * @param {boolean} [finalityRequired] default to true
 	 * @returns {Promise<string>}
 	 */
-	async submit(args, transientMap, endorsingOrganizations) {
+	async submit(args, transientMap, endorsingOrganizations, finalityRequired = true) {
 
 		const [name, ...params] = args;
-		const submitResult = await this.contract.submit(name, {
+
+		const method = finalityRequired ? 'submit' : 'submitAsync';
+		const submitResult = await this.contract[method](name, {
 			arguments: params,
 			transientData: transientMap,
 			endorsingOrganizations,
 		});
-
-		return utf8Decoder.decode(submitResult);
+		return utf8Decoder.decode(finalityRequired ? submitResult : submitResult.getResult());
 	}
+
 
 }

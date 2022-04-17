@@ -24,6 +24,10 @@ export default class FabricGateway {
 		this.connect();
 	}
 
+	get mspId() {
+		return this.identity.mspId;
+	}
+
 	connect() {
 		const {pem, sslTargetNameOverride, endorser: {endpoint: {addr}}} = this.peer;
 

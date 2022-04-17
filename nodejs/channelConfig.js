@@ -101,16 +101,23 @@ export class ChannelConfig {
 
 		channelUpdate.useSignatures(config, signatures);
 		channelUpdate.identityContext.calculateTransactionId();
+		let channel, eventHub, eventHubQuery, beforeHeight;
+		if (finalityRequired) {
+			channel = emptyChannel(channelName);
+			eventHub = new EventHub(channel, orderer.eventer);
+			eventHubQuery = new EventHubQuery(eventHub, channelUpdate.identityContext, logger);
+
+			const block = await eventHubQuery.getLastBlock();
+			beforeHeight = parseInt(block.header.number);
+			await eventHub.disconnect();
+		}
 		const {status, info} = await channelUpdate.submit(channelUpdate.identityContext);
 		assert.strictEqual(info, '');
 		assert.strictEqual(status, SUCCESS);
 		// wait for finality
 		if (finalityRequired) {
-			const channel = emptyChannel(channelName);
-			const eventHub = new EventHub(channel, orderer.eventer);
 
-			const eventHubQuery = new EventHubQuery(eventHub, channelUpdate.identityContext, logger);
-			await eventHubQuery.waitForBlock();
+			await eventHubQuery.waitUntilBlock(beforeHeight + 1);
 
 			await eventHub.disconnect();
 			const {json: updatedJson} = await this.getChannelConfigReadable();
