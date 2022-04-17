@@ -14,7 +14,7 @@ export default class Transaction extends ChaincodeAction {
 	 * @param user
 	 * @param channel
 	 * @param chaincodeId
-	 * @param logger
+	 * @param [logger]
 	 */
 	constructor(peers, user, channel, chaincodeId, logger = console) {
 		super(peers, user, channel);
