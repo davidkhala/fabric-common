@@ -40,7 +40,7 @@ if [[ -n "$1" ]]; then
 else
 	npm config set package-lock false
 	if [[ -z "$CI" ]]; then
-		curl --silent --show-error https://raw.githubusercontent.com/davidkhala/docker-manager/master/install.sh | bash -s installDocker
+		curl --silent --show-error https://raw.githubusercontent.com/davidkhala/docker-manager/master/install.sh | bash -s Docker
 		nodejsInstall="curl --silent --show-error https://raw.githubusercontent.com/davidkhala/node-utils/master/install.sh"
 		if [[ $(uname) == "Darwin" ]]; then
 			# TODO build-essential
