@@ -5,10 +5,10 @@ export const container = {
 	MSPROOT: '/etc/hyperledger/crypto-config',
 	dockerSock: '/var/run/docker.sock',
 	state: '/var/hyperledger/production',
-	config: '/etc/hyperledger/'
+	config: '/etc/hyperledger/',
 };
 export const host = {
-	dockerSock: '/var/run/docker.sock' // mac system, only  /var/run/docker.sock exist.
+	dockerSock: '/var/run/docker.sock',
 };
 export const statePath = {
 	chaincodes: undefined, // diagnose.0.0.0
@@ -62,20 +62,24 @@ export const envBuilder = ({
 			`CORE_PEER_ADDRESS=${peerHostName}:7051`,
 		];
 	if (chaincodeOpts) {
-		const {attachLog, endpoint, tls} = chaincodeOpts;
-		if (endpoint) {
-			environment.push(`CORE_VM_ENDPOINT=${endpoint}`);
-		}
+		const {attachLog, dockerPort, tls} = chaincodeOpts;
+
 		if (tls) {
 			const {ca, cert, key} = tls;
 			environment = environment.concat([
-				`CORE_VM_DOCKER_TLS_ENABLED=${endpoint}`,
+				`CORE_VM_DOCKER_TLS_ENABLED=true`,
 				`CORE_VM_DOCKER_TLS_CA_FILE=${ca}`,
 				`CORE_VM_DOCKER_TLS_CERT_FILE=${cert}`,
 				`CORE_VM_DOCKER_TLS_KEY_FILE=${key}`,
 			]);
 
 		}
+		if (dockerPort) {
+			environment.push(`CORE_VM_ENDPOINT=${tls ? 'https' : 'http'}://host.docker.internal:${dockerPort}`);
+			environment.push(`CORE_CHAINCODE_EXTERNALBUILDERS=[]`);
+		}
+
+
 		environment.push(`CORE_VM_DOCKER_ATTACHSTDOUT=${!!attachLog}`); // Enables/disables the standard out/err from chaincode containers for debugging purposes
 	}
 	if (loggingLevel) {

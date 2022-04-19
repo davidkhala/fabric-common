@@ -92,9 +92,8 @@ export const runCA = async ({container_name, port, network, imageTag, adminName,
 	const builder = new ContainerOptsBuilder(`hyperledger/fabric-ca:${imageTag}`, Cmd);
 	builder.setName(container_name);
 	builder.setPortBind(`${port}:7054`).setNetwork(network, [container_name]);
-	const createOptions = builder.build();
 
-	return await dockerManager.containerStart(createOptions);
+	return await dockerManager.containerStart(builder.opts);
 };
 
 /**
@@ -175,8 +174,7 @@ export const runOrderer = async (opts, operations, metrics) => {
 	if (operations) {
 		builder.setPortBind(`${operations.port}:8443`);
 	}
-	const createOptions = builder.build();
-	return await dockerManager.containerStart(createOptions);
+	return await dockerManager.containerStart(builder.opts);
 };
 
 export const runPeer = async (opts, operations, metrics) => {
@@ -185,7 +183,8 @@ export const runPeer = async (opts, operations, metrics) => {
 		msp: {
 			id, volumeName,
 			configPath
-		}, peerHostName, tls, couchDB, stateVolume
+		},
+		peerHostName, tls, couchDB, stateVolume, chaincodeOpts,
 	} = opts;
 	const Image = `hyperledger/fabric-peer:${imageTag}`;
 	const Cmd = ['peer', 'node', 'start'];
@@ -193,21 +192,27 @@ export const runPeer = async (opts, operations, metrics) => {
 		network, msp: {
 			configPath, id, peerHostName
 		}, tls, couchDB
-	}, loggingLevel, operations, metrics);
+	}, loggingLevel, operations, metrics, chaincodeOpts);
 
 	const builder = new ContainerOptsBuilder(Image, Cmd);
 	builder.setName(container_name).setEnv(Env);
 	builder.setVolume(volumeName, peerUtil.container.MSPROOT);
-	builder.setVolume(peerUtil.host.dockerSock, peerUtil.container.dockerSock);
+	if (!chaincodeOpts || !chaincodeOpts.dockerPort) {
+		builder.setVolume(peerUtil.host.dockerSock, peerUtil.container.dockerSock);
+	} else {
+		builder.setHostGateway();
+	}
+
 	builder.setPortBind(`${port}:7051`).setNetwork(network, [peerHostName]);
+
 	if (operations) {
 		builder.setPortBind(`${operations.port}:9443`);
 	}
 	if (stateVolume) {
 		builder.setVolume(stateVolume, peerUtil.container.state);
 	}
-	const createOptions = builder.build();
-	return await dockerManager.containerStart(createOptions);
+
+	return await dockerManager.containerStart(builder.opts);
 };
 
 export const runCouchDB = async ({container_name, port, network, user = 'admin', password = 'adminpw'}) => {
@@ -220,6 +225,5 @@ export const runCouchDB = async ({container_name, port, network, user = 'admin',
 	if (port) {
 		builder.setPortBind(`${port}:5984`);
 	}
-	const createOptions = builder.build();
-	return await dockerManager.containerStart(createOptions);
+	return await dockerManager.containerStart(builder.opts);
 };
