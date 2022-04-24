@@ -33,6 +33,7 @@ export const ChaincodeSpecType = {
 export const ChaincodeType = {
 	golang: 'golang',
 	node: 'node',
-	java: 'java'
+	java: 'java',
+	external: 'ccaas',
 };
 export const implicitCollection = (mspid) => `_implicit_org_${mspid}`;

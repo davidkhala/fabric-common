@@ -12,7 +12,7 @@
     "@davidkhala/nodeutils": "latest",
     "khala-axios": "latest",
     "@davidkhala/light": "latest",
-    "compressing": "latest",
+    "@davidkhala/compress": "latest",
     "khala-fabric-formatter": "latest",
     "khala-fabric-admin": "latest"
   },

@@ -151,7 +151,7 @@
  * @typedef {Object} ConfigGroup
  * @property {integer} version
  * @property {{Orderer:ConfigGroup,Application?:ConfigGroup,OrgName?:ConfigGroup}} groups
- * @property {{?:ConfigValue}} values usual keys:
+ * @property {Record<string,ConfigValue>} values usual keys:
  * - for global: Consortium|HashingAlgorithm|BlockDataHashingStructure,
  * - for Orderer: ConsensusType|BatchSize|BatchTimeout|ChannelRestrictions
  * - for organization: MSP
@@ -364,3 +364,13 @@
  * and those steps will be processed atomically, meaning if any one step failed then the whole transaction will be marked as rejected.
  */
 
+/**
+ * @typedef {Object} ExternalConnect
+ * @property {string} address "your.chaincode.host.com:9999"
+ * @property {string} dial_timeout “10s”, “500ms”, “1m”
+ * @property {boolean} tls_required
+ * @property {boolean} client_auth_required
+ * @property {string} client_key used when client_auth_required
+ * @property {string} client_cert used when client_auth_required
+ * @property {string} root_cert used when tls_required
+ */

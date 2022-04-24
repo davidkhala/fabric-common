@@ -1,7 +1,7 @@
 import path from 'path';
 import fs from 'fs';
 import fsExtra from 'fs-extra';
-import compress from 'compressing';
+import {create} from '@davidkhala/compress/npm-tar.js';
 import {ChaincodeType} from 'khala-fabric-formatter/chaincode.js';
 import {execSync} from '@davidkhala/light/devOps.js';
 import {isDirectory} from '@davidkhala/light/index.js';
@@ -46,20 +46,19 @@ export default class ChaincodePackage {
 
 			const couchdbDir = path.resolve(Path, 'META-INF', 'statedb', 'couchdb');
 			const [tmpRoot2, t2] = createTmpDir();
-			fsExtra.copySync(Path, path.resolve(tmpRoot2, 'src'));
+
 			if (isDirectory(couchdbDir)) {
 
-				fsExtra.moveSync(path.resolve(Path, 'META-INF'), path.resolve(tmpRoot2, 'META-INF'));// NOTE: The move operation eliminate the META-INF autogen footprint
-				fsExtra.copySync(Path, path.resolve(tmpRoot2, 'src'));
+				/**
+				 * NOTE: The move operation eliminate the META-INF autogen footprint
+				 */
+				fsExtra.moveSync(path.resolve(Path, 'META-INF'), path.resolve(tmpRoot2, 'META-INF'));
 
 			}
-			await compress.tgz.compressDir(tmpRoot2, path.resolve(tmpRoot, 'code.tar.gz'), {
-				ignoreBase: true,
-			});
-			t2()
-			await compress.tgz.compressDir(tmpRoot, output, {
-				ignoreBase: true
-			});
+			fsExtra.copySync(Path, path.resolve(tmpRoot2, 'src'));
+			create(tmpRoot2, path.resolve(tmpRoot, 'code.tar.gz'));
+			t2();
+			create(tmpRoot, output);
 			t1();
 		}
 
