@@ -244,7 +244,7 @@ export default class BinManager {
 				 * @param {string} Path ChaincodePath
 				 * @param {string} outputFile
 				 */
-				package: async ({Type = 'golang', Label, Path}, outputFile) => {
+				package: ({Type = 'golang', Label, Path}, outputFile) => {
 					const t1 = createTmpCoreYml();
 					const optionTokens = `--label=${Label} --lang=${Type} --path=${Path}`;
 					const CMD = this._buildCMD('peer', 'lifecycle chaincode package', optionTokens, outputFile);

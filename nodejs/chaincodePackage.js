@@ -1,4 +1,6 @@
+import fs from 'fs';
 import {ChaincodeType} from 'khala-fabric-formatter/chaincode.js';
+import {sha2_256} from 'khala-fabric-formatter/helper.js';
 
 export default class ChaincodePackage {
 	/**
@@ -15,19 +17,24 @@ export default class ChaincodePackage {
 	}
 
 	calculateId(chaincodeArchive, binManager) {
-		const out = binManager.peer().lifecycle.packageid(chaincodeArchive);
-		return out.trim();
+		if (binManager) {
+			const out = binManager.peer().lifecycle.packageid(chaincodeArchive);
+			return out.trim();
+		} else {
+			return `${this.Label}:${sha2_256(fs.readFileSync(chaincodeArchive))}`;
+		}
+
 	}
 
 	/**
-	 *
+	 * TODO No pure js alternative yet
 	 * @param {string} output File path
 	 * @param {BinManager} binManager
 	 */
-	async pack(output, binManager) {
+	pack(output, binManager) {
 		const {Path, Type, Label} = this;
 
-		await binManager.peer().lifecycle.package({Type, Label, Path}, output);
+		binManager.peer().lifecycle.package({Type, Label, Path}, output);
 
 	}
 }
