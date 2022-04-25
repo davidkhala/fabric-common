@@ -14,7 +14,7 @@ export default class CSCCProposal extends ProposalManager {
 		https://github.com/hyperledger/fabric/blob/2a200f6cabf08fcc04b0a450668003849cf534b1/core/endorser/endorser.go#L326
 		 */
 		this.channel = emptyChannel('');
-		this.setProposalResultAssert(EndorseALL);
+		this.resultHandler = EndorseALL;
 	}
 
 	/**

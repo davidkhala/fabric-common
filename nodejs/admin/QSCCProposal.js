@@ -16,7 +16,7 @@ export default class QSCCProposal extends ProposalManager {
 	constructor(identityContext, endorsers, channel) {
 		super(identityContext, endorsers, QSCC, channel,);
 		this.asQuery();
-		this.setProposalResultAssert(EndorseALL);
+		this.resultHandler = EndorseALL
 	}
 
 	/**

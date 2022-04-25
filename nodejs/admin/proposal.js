@@ -1,6 +1,7 @@
 import Proposal from 'fabric-common/lib/Proposal.js';
 import Commit from 'fabric-common/lib/Commit.js';
 import UserBuilder from './user.js';
+import assert from 'assert';
 
 const {calculateTransactionId} = UserBuilder;
 /**
@@ -47,7 +48,8 @@ export default class ProposalManager extends Proposal {
 	 *
 	 * @param {ProposalResultHandler} assertFunction
 	 */
-	setProposalResultAssert(assertFunction) {
+	set resultHandler(assertFunction) {
+		assert.ok(typeof assertFunction === 'function');
 		this.assertProposalResult = assertFunction;
 	}
 
@@ -109,8 +111,11 @@ export default class ProposalManager extends Proposal {
 		commit.build(this.identityContext);
 		commit.sign(this.identityContext);
 
-		const result = await commit.send({targets: committers, requestTimeout});
-		typeof this.assertCommitResult === 'function' && this.assertCommitResult(result);
+		let result = await commit.send({targets: committers, requestTimeout});
+		if (typeof this.assertCommitResult === 'function') {
+			result = this.assertCommitResult(result);
+		}
+
 		return result;
 	}
 

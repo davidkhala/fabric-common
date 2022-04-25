@@ -12,7 +12,7 @@ const {SUCCESS} = CommonResponseStatus;
  *
  * @type ProposalResultHandler
  */
-export const EndorseALL = (result) => {
+export const SanCheck = (result) => {
 	const {errors, responses} = result;
 	if (errors.length > 0) {
 		const err = Error('SYSTEM_ERROR');
@@ -28,6 +28,15 @@ export const EndorseALL = (result) => {
 		}
 
 	}
+	return endorsementErrors;
+};
+
+/**
+ *
+ * @type ProposalResultHandler
+ */
+export const EndorseALL = (result) => {
+	const endorsementErrors = SanCheck(result);
 	if (endorsementErrors.length > 0) {
 		const err = Error('ENDORSE_ERROR');
 		err.errors = endorsementErrors.reduce((sum, {response, connection}) => {

@@ -20,7 +20,7 @@ export default class Transaction extends ChaincodeAction {
 		super(peers, user, channel);
 
 		const proposal = new ProposalManager(this.identityContext, this.endorsers, chaincodeId, this.channel);
-		proposal.setProposalResultAssert(EndorseALL);
+		proposal.resultHandler = EndorseALL;
 		proposal.setCommitResultAssert(CommitSuccess);
 		Object.assign(this, {logger, proposal});
 	}

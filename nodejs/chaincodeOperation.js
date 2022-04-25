@@ -21,7 +21,7 @@ export default class ChaincodeLifecycleOperation extends ChaincodeAction {
 	 */
 	constructor(peers, user, channel = emptyChannel(''), logger = console) {
 		super(peers, user, channel);
-		const proposal = new LifecycleProposal(this.identityContext, this.endorsers, channel,  logger);
+		const proposal = new LifecycleProposal(this.identityContext, this.endorsers, channel, logger);
 		Object.assign(this, {logger, proposal});
 
 	}
@@ -33,16 +33,12 @@ export default class ChaincodeLifecycleOperation extends ChaincodeAction {
 	/**
 	 * Install phase does not require `init_required` flag, neither this.channel as valid object
 	 * @param chaincodePackagePath
-	 * @param useDynamicTimeout
+	 * @param requestTimeout
 	 * @return {Promise<*>}
 	 */
-	async install(chaincodePackagePath, useDynamicTimeout) {
+	async install(chaincodePackagePath, requestTimeout) {
 		const {proposal} = this;
-		let requestTimeout;
-		if (useDynamicTimeout) {
-			requestTimeout = 30000 * this.endorsers.length;
-		}
-		return await proposal.installChaincode(chaincodePackagePath, requestTimeout);
+		return await proposal.installChaincode(chaincodePackagePath, requestTimeout || 30000 * this.endorsers.length);
 	}
 
 	setEndorsementPolicy(endorsementPolicy) {
@@ -51,10 +47,6 @@ export default class ChaincodeLifecycleOperation extends ChaincodeAction {
 
 	setCollectionsConfig(collectionsConfig) {
 		this.collectionsConfig = collectionsConfig;
-	}
-
-	setInitRequired(init_required) {
-		this.init_required = init_required;
 	}
 
 	buildCollectionConfig(name, config) {
@@ -105,7 +97,7 @@ export default class ChaincodeLifecycleOperation extends ChaincodeAction {
 			});
 			lifecycleProposal.setCollectionConfigPackage(collectionConfigPackage);
 		}
-		lifecycleProposal.setInitRequired(init_required);
+		lifecycleProposal.init_required = init_required;
 
 	}
 

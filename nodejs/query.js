@@ -2,6 +2,7 @@ import fabprotos from 'fabric-protos';
 import QSCCProposal from 'khala-fabric-admin/QSCCProposal.js';
 import CSCCProposal from 'khala-fabric-admin/CSCCProposal.js';
 import LifecycleProposal from 'khala-fabric-admin/lifecycleProposal.js';
+import {SanCheck} from 'khala-fabric-admin/resultInterceptors.js'
 import {emptyChannel} from 'khala-fabric-admin/channel.js';
 import BlockDecoder from 'fabric-common/lib/BlockDecoder.js';
 import {getResponses} from 'khala-fabric-formatter/proposalResponse.js';
@@ -12,6 +13,38 @@ import {getGenesisBlock} from './channel.js';
 
 const protosProto = fabprotos.protos;
 const commonProto = fabprotos.common;
+
+/**
+ * @type ProposalResultHandler
+ */
+const TxNotFound = (result) => {
+	const endorsementErrors = SanCheck(result)
+
+	if (endorsementErrors.length > 0) {
+
+		const err = Error('ENDORSE_ERROR');
+		let notFoundCounter = 0;
+		const NotFoundSymptom = `Failed to get transaction with id ${txId}, error no such transaction ID [${txId}] in index`;
+		err.errors = endorsementErrors.reduce((sum, {response, connection}) => {
+			delete response.payload;
+			sum[connection.url] = response;
+
+			if (response.status === 500 &&
+				response.message === NotFoundSymptom) {
+				notFoundCounter++;
+			}
+			return sum;
+		}, {});
+		if (notFoundCounter === endorsementErrors.length) {
+			result.NotFound = true;
+			return result;
+		} else {
+			throw err;
+		}
+
+	}
+	return result;
+};
 
 export default class QueryHub extends ChaincodeAction {
 	constructor(peers, user, logger = console) {
@@ -156,48 +189,7 @@ export default class QueryHub extends ChaincodeAction {
 	async tx(channelName, txId) {
 		const qsccProposal = new QSCCProposal(this.identityContext, this.endorsers, emptyChannel(channelName));
 
-		const TxNotFound = (result) => {
-			const {errors, responses} = result;
-			if (errors.length > 0) {
-				const err = Error('SYSTEM_ERROR');
-				err.errors = errors;
-				throw err;
-			}
-
-			const endorsementErrors = [];
-			for (const Response of responses) {
-				const {response, connection} = Response;
-				if (response.status !== 200) {
-					endorsementErrors.push({response, connection});
-				}
-
-			}
-			if (endorsementErrors.length > 0) {
-
-				const err = Error('ENDORSE_ERROR');
-				let notFoundCounter = 0;
-				const NotFoundSymptom = `Failed to get transaction with id ${txId}, error no such transaction ID [${txId}] in index`;
-				err.errors = endorsementErrors.reduce((sum, {response, connection}) => {
-					delete response.payload;
-					sum[connection.url] = response;
-
-					if (response.status === 500 &&
-						response.message === NotFoundSymptom) {
-						notFoundCounter++;
-					}
-					return sum;
-				}, {});
-				if (notFoundCounter === endorsementErrors.length) {
-					result.NotFound = true;
-					return result;
-				} else {
-					throw err;
-				}
-
-			}
-			return result;
-		};
-		qsccProposal.setProposalResultAssert(TxNotFound);
+		qsccProposal.resultHandler = TxNotFound;
 		const result = await qsccProposal.queryTransaction(txId);
 		const {queryResults, NotFound} = result;
 		if (NotFound) {

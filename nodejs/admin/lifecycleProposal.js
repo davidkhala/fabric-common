@@ -5,7 +5,8 @@ import {SystemChaincodeID} from 'khala-fabric-formatter/constants.js';
 import {BufferFrom} from 'khala-fabric-formatter/protobuf.js';
 import fs from 'fs';
 import {getResponses} from 'khala-fabric-formatter/proposalResponse.js';
-import {EndorseALL, CommitSuccess} from './resultInterceptors.js';
+import {EndorseALL, CommitSuccess, SanCheck} from './resultInterceptors.js';
+
 const {
 	InstallChaincode, QueryInstalledChaincodes, QueryInstalledChaincode, ApproveChaincodeDefinitionForMyOrg,
 	QueryChaincodeDefinition, QueryChaincodeDefinitions, CheckCommitReadiness, CommitChaincodeDefinition
@@ -22,7 +23,26 @@ const {
 } = lifeCycleProtos;
 
 const {ApplicationPolicy, CollectionConfigPackage} = protosProtos;
-
+/**
+ * @type ProposalResultHandler
+ */
+const skipIfInstalled = (result) => {
+	const endorsementErrors = SanCheck(result).filter(({response}) => {
+		const {status, message} = response;
+		const prefix = `failed to invoke backing implementation of 'InstallChaincode': chaincode already successfully installed`;
+		return status !== 500 || !message.startsWith(prefix);
+	});
+	if (endorsementErrors.length > 0) {
+		const err = Error('ENDORSE_ERROR');
+		err.errors = endorsementErrors.reduce((sum, {response, connection}) => {
+			delete response.payload;
+			sum[connection.url] = response;
+			return sum;
+		}, {});
+		throw err;
+	}
+	return result
+};
 
 export default class LifecycleProposal extends ProposalManager {
 	/**
@@ -35,9 +55,19 @@ export default class LifecycleProposal extends ProposalManager {
 	constructor(identityContext, endorsers, channel, logger = console) {
 		super(identityContext, endorsers, LifeCycle, channel);
 		this.logger = logger;
+
+		/**
+		 * new chaincode lifeCycle do not have init phase. Init function is optional in chaincode entrance
+		 * Be careful: init_required information is indexing information in chaincode definition.
+		 * @type {boolean}
+		 */
 		this.init_required = true;
-		this.setProposalResultAssert(EndorseALL);
+		this.resetResultHandler();
 		this.setCommitResultAssert(CommitSuccess);
+	}
+
+	resetResultHandler() {
+		this.resultHandler = EndorseALL;
 	}
 
 	/**
@@ -46,7 +76,7 @@ export default class LifecycleProposal extends ProposalManager {
 	 * @param [requestTimeout]
 	 * @return {Promise<*>}
 	 */
-	async installChaincode(packageTarGz, requestTimeout = 30000) {
+	async installChaincode(packageTarGz, requestTimeout) {
 		const fileContent = fs.readFileSync(packageTarGz);
 		/**
 		 * @type {BuildProposalRequest}
@@ -55,6 +85,7 @@ export default class LifecycleProposal extends ProposalManager {
 			fcn: InstallChaincode,
 			args: [BufferFrom({chaincode_install_package: fileContent}, InstallChaincodeArgs)],
 		};
+		this.resultHandler = skipIfInstalled;
 		const result = await this.send(buildProposalRequest, {requestTimeout});
 		getResponses(result).forEach((response) => {
 			const {package_id, label} = InstallChaincodeResult.decode(response.payload);
@@ -62,25 +93,8 @@ export default class LifecycleProposal extends ProposalManager {
 				package_id, label,
 			});
 		});
+		this.resetResultHandler();
 		return result;
-	}
-
-
-	setEndorsementPlugin(endorsement_plugin) {
-		this.endorsement_plugin = endorsement_plugin;
-	}
-
-	setValidationPlugin(validation_plugin) {
-		this.validation_plugin = validation_plugin;
-	}
-
-	/**
-	 * new chaincode lifeCycle do not have initialize phase. Thus Init function is optional in chaincode entrance
-	 * Be careful: init_required information is indexing information in chaincode definition.
-	 * @param {boolean} init_required
-	 */
-	setInitRequired(init_required) {
-		this.init_required = init_required;
 	}
 
 	setCollectionConfigPackage(collectionConfigs) {
