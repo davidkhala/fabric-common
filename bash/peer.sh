@@ -60,8 +60,13 @@ package() {
 }
 packageID(){
 	local label=$chaincodeId
-	local outputfile=${1:-"${label}.tar.gz"}
-	echo $label:$(sha256sum ${outputfile} | awk '{print $1}')
+	local chaincodeArchive=${1:-"${label}.tar.gz"}
+	if peer version; then
+		peer lifecycle chaincode calculatepackageid ${chaincodeArchive}
+	else
+		echo $label:$(sha256sum "${chaincodeArchive}" | awk '{print $1}')
+	fi
+
 }
 
 install() {
