@@ -58,6 +58,12 @@ package() {
 	local outputfile=${1:-"${label}.tar.gz"}
 	peer lifecycle chaincode package $outputfile --lang $chaincodeType --path $chaincodePath --label $label
 }
+packageID(){
+	local label=$chaincodeId
+	local outputfile=${1:-"${label}.tar.gz"}
+	echo $label:$(sha256sum ${outputfile} | awk '{print $1}')
+}
+
 install() {
 	#  TODO WIP
 	local ccPackage=$1

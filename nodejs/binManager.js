@@ -255,7 +255,7 @@ export default class BinManager {
 					return outputFile;
 				},
 
-				packageid: (chaincodeArchive) => {
+				packageID: (chaincodeArchive) => {
 
 					const t1 = createTmpCoreYml();
 					const CMD = this._buildCMD('peer', `lifecycle chaincode calculatepackageid ${chaincodeArchive}`);

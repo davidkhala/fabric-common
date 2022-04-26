@@ -1,6 +1,7 @@
 import fs from 'fs';
 import {ChaincodeType} from 'khala-fabric-formatter/chaincode.js';
 import {sha2_256} from 'khala-fabric-formatter/helper.js';
+import {execSync} from '@davidkhala/light/devOps.js';
 
 export default class ChaincodePackage {
 	/**
@@ -16,9 +17,14 @@ export default class ChaincodePackage {
 		Object.assign(this, {Path, Type, Label});
 	}
 
-	calculateId(chaincodeArchive, binManager) {
+	calculateID(chaincodeArchive, binManager, bash) {
+		if (bash) {
+			const cmd = `sha256sum ${chaincodeArchive} | awk '{print $1}'`
+			const hash = execSync(cmd);
+			return `${this.Label}:${hash.trim()}`;
+		}
 		if (binManager) {
-			const out = binManager.peer().lifecycle.packageid(chaincodeArchive);
+			const out = binManager.peer().lifecycle.packageID(chaincodeArchive);
 			return out.trim();
 		} else {
 			return `${this.Label}:${sha2_256(fs.readFileSync(chaincodeArchive))}`;
