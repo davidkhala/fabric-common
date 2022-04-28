@@ -2,7 +2,7 @@ import fabprotos from 'fabric-protos';
 import QSCCProposal from 'khala-fabric-admin/QSCCProposal.js';
 import CSCCProposal from 'khala-fabric-admin/CSCCProposal.js';
 import LifecycleProposal from 'khala-fabric-admin/lifecycleProposal.js';
-import {SanCheck} from 'khala-fabric-admin/resultInterceptors.js'
+import {SanCheck} from 'khala-fabric-admin/resultInterceptors.js';
 import {emptyChannel} from 'khala-fabric-admin/channel.js';
 import BlockDecoder from 'fabric-common/lib/BlockDecoder.js';
 import {getResponses} from 'khala-fabric-formatter/proposalResponse.js';
@@ -17,8 +17,8 @@ const commonProto = fabprotos.common;
 /**
  * @type ProposalResultHandler
  */
-const TxNotFound = (result) => {
-	const endorsementErrors = SanCheck(result)
+const TxNotFound = (result, txId) => {
+	const endorsementErrors = SanCheck(result);
 
 	if (endorsementErrors.length > 0) {
 
@@ -189,7 +189,7 @@ export default class QueryHub extends ChaincodeAction {
 	async tx(channelName, txId) {
 		const qsccProposal = new QSCCProposal(this.identityContext, this.endorsers, emptyChannel(channelName));
 
-		qsccProposal.resultHandler = TxNotFound;
+		qsccProposal.resultHandler = (result) => TxNotFound(result, txId);
 		const result = await qsccProposal.queryTransaction(txId);
 		const {queryResults, NotFound} = result;
 		if (NotFound) {

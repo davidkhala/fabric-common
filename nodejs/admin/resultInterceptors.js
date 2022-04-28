@@ -2,7 +2,7 @@ import {CommonResponseStatus} from 'khala-fabric-formatter/constants.js';
 
 const {SUCCESS} = CommonResponseStatus;
 /**
- * @typedef {function(result:ProposalResponse):ProposalResponse} ProposalResultHandler
+ * @typedef {function(result:ProposalResponse, ...Object):ProposalResponse} ProposalResultHandler
  */
 /**
  * @typedef {function(result:CommitResponse):CommitResponse} CommitResultHandler
