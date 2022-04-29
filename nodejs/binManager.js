@@ -261,7 +261,6 @@ export default class BinManager {
 					const CMD = this._buildCMD('peer', `lifecycle chaincode calculatepackageid ${chaincodeArchive}`);
 					this.logger.info('CMD', CMD);
 					const result = execSync(CMD);
-					this.logger.info(result);
 					t1();
 					return result
 				}
