@@ -45,7 +45,7 @@ export default class ChaincodePackage {
 
 	/**
 	 * @param {string} output File path
-	 * @param {BinManager} binManager
+	 * @param {BinManager} [binManager]
 	 */
 	pack(output, binManager) {
 		const {Path, Type, Label} = this;
@@ -77,7 +77,7 @@ export default class ChaincodePackage {
 			t2();
 			create(tmpRoot, output, {portable: true});
 			t1();
-			return this.calculateID(output, binManager)
+			return this.calculateID(output)
 		}
 
 
