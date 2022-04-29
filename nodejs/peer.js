@@ -62,7 +62,7 @@ export const envBuilder = ({
 			`CORE_PEER_ADDRESS=${peerHostName}:7051`,
 		];
 	if (chaincodeOpts) {
-		const {attachLog, dockerPort, tls} = chaincodeOpts;
+		const {attachLog, dockerPort, tls, external} = chaincodeOpts;
 
 		if (tls) {
 			const {ca, cert, key} = tls;
@@ -77,6 +77,9 @@ export const envBuilder = ({
 		if (dockerPort) {
 			environment.push(`CORE_VM_ENDPOINT=${tls ? 'https' : 'http'}://host.docker.internal:${dockerPort}`);
 			environment.push(`CORE_CHAINCODE_EXTERNALBUILDERS=[]`);
+		}else if (external) {
+			environment.push(`CORE_VM_ENDPOINT`) // TODO un-configure
+
 		}
 
 

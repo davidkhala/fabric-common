@@ -39,8 +39,14 @@ export default class ChaincodePackage {
 	 */
 	pack(output, binManager) {
 		const {Path, Type, Label} = this;
+		if(ChaincodeType[Type]){
+			binManager.peer().lifecycle.package({Type, Label, Path}, output);
+		}else {
+			// `$peer lifecycle package` cannot handle external chaincodeType, which is required in ccaasbuilder
+			// Error: failed to normalize chaincode path: unknown chaincodeType: EXTERNAL
+			// TODO
+		}
 
-		binManager.peer().lifecycle.package({Type, Label, Path}, output);
 
 	}
 }
