@@ -1,5 +1,6 @@
 import IdentityContext from 'fabric-common/lib/IdentityContext.js';
 import EventHub from 'khala-fabric-admin/eventHub.js';
+
 const DefaultEventHubSelector = (hubs) => {
 	return hubs[0];
 };
@@ -11,6 +12,37 @@ export default class ChaincodeAction {
 		this.endorsers = peers.map(({endorser}) => endorser);
 		this.eventers = peers.map(({eventer}) => eventer);
 		this.eventSelector = DefaultEventHubSelector;
+	}
+
+	async connect(type) {
+		if (type) {
+			for (const endpoint of this[type]) {
+				await endpoint.connect();
+			}
+			return;
+		}
+		for (const endorser of this.endorsers) {
+			await endorser.connect();
+		}
+		for (const eventer of this.eventers) {
+			await eventer.connect();
+		}
+
+	}
+
+	async disconnect(type) {
+		if (type) {
+			for (const endpoint of this[type]) {
+				await endpoint.disconnect();
+			}
+			return;
+		}
+		for (const endorser of this.endorsers) {
+			await endorser.disconnect();
+		}
+		for (const eventer of this.eventers) {
+			await eventer.disconnect();
+		}
 	}
 
 	setProposalOptions(options) {

@@ -6,6 +6,7 @@ export const container = {
 	dockerSock: '/var/run/docker.sock',
 	state: '/var/hyperledger/production',
 	config: '/etc/hyperledger/',
+	builder: '/opt/hyperledger/ccaas_builder/',
 };
 export const host = {
 	dockerSock: '/var/run/docker.sock',
@@ -77,8 +78,8 @@ export const envBuilder = ({
 		if (dockerPort) {
 			environment.push(`CORE_VM_ENDPOINT=${tls ? 'https' : 'http'}://host.docker.internal:${dockerPort}`);
 			environment.push(`CORE_CHAINCODE_EXTERNALBUILDERS=[]`);
-		}else if (external) {
-			environment.push(`CORE_VM_ENDPOINT`) // TODO un-configure
+		} else if (external) {
+			environment.push(`CORE_VM_ENDPOINT`); // TODO un-configure
 
 		}
 

@@ -23,7 +23,6 @@ export default class ChaincodeLifecycleOperation extends ChaincodeAction {
 		super(peers, user, channel);
 		const proposal = new LifecycleProposal(this.identityContext, this.endorsers, channel, logger);
 		Object.assign(this, {logger, proposal});
-
 	}
 
 	static _defaultVersion(sequence) {
@@ -33,7 +32,7 @@ export default class ChaincodeLifecycleOperation extends ChaincodeAction {
 	/**
 	 * Install phase does not require `init_required` flag, neither this.channel as valid object
 	 * @param chaincodePackagePath
-	 * @param requestTimeout
+	 * @param [requestTimeout]
 	 * @return {Promise<*>}
 	 */
 	async install(chaincodePackagePath, requestTimeout) {

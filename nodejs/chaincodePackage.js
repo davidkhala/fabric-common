@@ -46,12 +46,13 @@ export default class ChaincodePackage {
 	/**
 	 * @param {string} output File path
 	 * @param {BinManager} [binManager]
+	 * @return {string} package id
 	 */
 	pack(output, binManager) {
 		const {Path, Type, Label} = this;
 		if (ChaincodeType[Type] && binManager) {
 			binManager.peer().lifecycle.package({Type, Label, Path}, output);
-			return this.calculateID(output, binManager)
+			return this.calculateID(output, binManager);
 		} else {
 			// `$peer lifecycle package` cannot handle external chaincodeType, which is required in ccaasbuilder
 			// Error: failed to normalize chaincode path: unknown chaincodeType: EXTERNAL
@@ -72,12 +73,17 @@ export default class ChaincodePackage {
 				fsExtra.moveSync(path.resolve(Path, 'META-INF'), path.resolve(tmpRoot2, 'META-INF'));
 
 			}
-			fsExtra.copySync(Path, path.resolve(tmpRoot2, 'src'));
+			if (ChaincodeType[Type]) {
+				fsExtra.copySync(Path, path.resolve(tmpRoot2, 'src'));
+			} else {
+				fsExtra.copySync(Path, path.resolve(tmpRoot2));
+			}
+
 			create(tmpRoot2, path.resolve(tmpRoot, 'code.tar.gz'), {portable: true});
 			t2();
 			create(tmpRoot, output, {portable: true});
 			t1();
-			return this.calculateID(output)
+			return this.calculateID(output);
 		}
 
 

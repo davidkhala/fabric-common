@@ -53,15 +53,11 @@ export default class QueryHub extends ChaincodeAction {
 	}
 
 	async connect() {
-		for (const endorser of this.endorsers) {
-			await endorser.connect();
-		}
+		await super.connect('endorsers');
 	}
 
 	async disconnect() {
-		for (const endorser of this.endorsers) {
-			await endorser.disconnect();
-		}
+		await super.disconnect('endorsers');
 	}
 
 	async getChainInfo(channelName) {
