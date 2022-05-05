@@ -284,6 +284,7 @@ export default class LifecycleProposal extends ProposalManager {
 
 			if (name) {
 				const resultSingle = QueryChaincodeDefinitionResult.decode(payload);
+				resultSingle.sequence = resultSingle.sequence.toInt()
 				return singleChaincodeDefinitionAmend(resultSingle);
 			} else {
 				const {chaincode_definitions} = QueryChaincodeDefinitionsResult.decode(payload);
