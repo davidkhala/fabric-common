@@ -144,18 +144,25 @@ export default class LifecycleProposal extends ProposalManager {
 			args,
 		};
 		const result = await this.send(buildProposalRequest);
+		const parseReferences  = ({references})=>{
+			const result = {}
+			for (const [key, value] of Object.entries(references)) {
+				result[key] = value;
+			}
+			return result
+		}
+
 		result.queryResults = getResponses(result).map(response => {
 			if (packageId) {
 				const {package_id, label, references} = QueryInstalledChaincodeResult.decode(response.payload);
-				return {package_id, label, references};
+				return {
+					[package_id]: parseReferences({references})
+				};
 			} else {
 				const {installed_chaincodes} = QueryInstalledChaincodesResult.decode(response.payload);
 				const installedChaincodes = {};
 				for (const {package_id, label, references} of installed_chaincodes) {
-					installedChaincodes[package_id] = {};
-					for (const [key, value] of Object.entries(references)) {
-						installedChaincodes[package_id][key] = value;
-					}
+					installedChaincodes[package_id] = parseReferences({references});
 				}
 
 				return installedChaincodes;

@@ -1,3 +1,7 @@
+export const parsePackageID = (packageId) => {
+	const [name, hash] = packageId.split(':');
+	return {name, hash, label: name};
+};
 export const nameMatcher = (chaincodeName) => {
 	const namePattern = /^[a-zA-Z0-9]+([-_][a-zA-Z0-9]+)*$/;
 	return chaincodeName.match(namePattern);
