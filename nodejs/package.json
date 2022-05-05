@@ -2,7 +2,7 @@
   "name": "khala-fabric-sdk-node",
   "version": "2.3.0-alpha.3",
   "scripts": {
-    "preinstall": "cd ../; ./install.sh fabricInstall -d -s;",
+    "preinstall": "cd ../; if ! bin/peer version; then ./install.sh fabricInstall -d -s; fi",
     "test": "mocha test",
     "lerna": "lerna bootstrap --no-ci"
   },
