@@ -1,6 +1,6 @@
 import {LoggingLevel} from 'khala-fabric-formatter/remote.js';
 import {MetricsProvider} from 'khala-fabric-formatter/constants.js';
-
+import {uid} from '@davidkhala/light/devOps.js'
 export const container = {
 	MSPROOT: '/etc/hyperledger/crypto-config',
 	dockerSock: '/var/run/docker.sock',
@@ -9,7 +9,7 @@ export const container = {
 	builder: '/opt/hyperledger/ccaas_builder/',
 };
 export const host = {
-	dockerSock: '/var/run/docker.sock',
+	dockerSock: `/run/user/${uid}/docker.sock`,
 };
 export const statePath = {
 	chaincodes: undefined, // diagnose.0.0.0
