@@ -1,13 +1,13 @@
-import ContainerOptsBuilder from '@davidkhala/dockerode/containerOptsBuilder.js';
 import * as peerUtil from './peer.js';
-import {container as caContainer} from './ca.js';
+
 import * as ordererUtil from './orderer.js';
 import * as couchdbUtil from './couchdb.js';
 import {adminName as defaultAdminName, adminPwd as defaultAdminPwd} from 'khala-fabric-formatter/user.js';
 
 export class FabricDockerode {
-	constructor(dockerManager) {
-		this.dockerManager = dockerManager;
+	constructor(dockerManager, ContainerOptsBuilder) {
+		Object.assign(this, {dockerManager, ContainerOptsBuilder});
+
 	}
 
 	/**
@@ -49,7 +49,7 @@ export class FabricDockerode {
 	 * @returns {Promise<*>}
 	 */
 	async runCA({container_name, port, network, imageTag, adminName, adminPassword, TLS, issuer}, intermediate) {
-		const {dockerManager} = this;
+		const {dockerManager, ContainerOptsBuilder} = this;
 		if (!adminName) {
 			adminName = defaultAdminName;
 		}
@@ -57,7 +57,6 @@ export class FabricDockerode {
 			adminPassword = defaultAdminPwd;
 		}
 
-		const {caKey, caCert} = caContainer;
 		if (!issuer) {
 			issuer = {};
 		}
@@ -81,13 +80,14 @@ export class FabricDockerode {
 			cmdAppend += ` --csr.hosts=${hosts.toString()}`;
 		}
 		const allowDelete = '--cfg.affiliations.allowremove --cfg.identities.allowremove';
-		const Cmd = ['sh', '-c', `rm ${caKey}; rm ${caCert};fabric-ca-server start ${cmdAppend} ${allowDelete}`];
+		const Cmd = ['sh', '-c', `fabric-ca-server start ${cmdAppend} ${allowDelete}`];
 
 
 		const builder = new ContainerOptsBuilder(`hyperledger/fabric-ca:${imageTag}`, Cmd);
 		builder.setName(container_name);
-		builder.setPortBind(`${port}:7054`)
-		builder.setNetwork(network, [container_name]);
+		builder.setPortBind(`${port}:7054`);
+
+		builder.setNetwork('bridge'); // FIXME
 
 		return await dockerManager.containerStart(builder.opts);
 	}
@@ -151,7 +151,7 @@ export class FabricDockerode {
 	}
 
 	async runOrderer(opts, operations, metrics) {
-		const {dockerManager} = this;
+		const {dockerManager,ContainerOptsBuilder} = this;
 		const {
 			container_name, imageTag, port, network, msp,
 			ordererType, tls, stateVolume, raft_tls, loggingLevel,
@@ -185,7 +185,7 @@ export class FabricDockerode {
 	}
 
 	async runPeer(opts, operations, metrics) {
-		const {dockerManager} = this;
+		const {dockerManager, ContainerOptsBuilder} = this;
 		const {
 			container_name, port, network, imageTag, loggingLevel,
 			msp: {
@@ -224,7 +224,7 @@ export class FabricDockerode {
 	}
 
 	async runCouchDB({container_name, port, network, user = 'admin', password = 'adminpw'}) {
-		const {dockerManager} = this;
+		const {dockerManager, ContainerOptsBuilder} = this;
 		const Image = 'couchdb:3.1.1';
 		const Env = couchdbUtil.envBuilder(user, password);
 		const builder = new ContainerOptsBuilder(Image);

@@ -5,9 +5,11 @@ export const container = {
 	MSPROOT: '/etc/hyperledger/crypto-config',
 	dockerSock: '/var/run/docker.sock',
 	state: '/var/hyperledger/production',
-	config: '/etc/hyperledger/',
+	config: '/etc/hyperledger/fabric',
+	"volume-state": '/var/hyperledger', // the only content is /var/hyperledger/production
 	builder: '/opt/hyperledger/ccaas_builder/',
-};
+}
+
 export const host = {
 	dockerSock: `/run/user/${uid}/docker.sock`,
 };
