@@ -1,5 +1,5 @@
 import FabricCAClient from 'fabric-ca-client/lib/FabricCAClient.js';
-import {Utils} from 'fabric-common/lib/Utils.js';
+import Utils from 'fabric-common/lib/Utils.js';
 import {ECDSAConfig, ECDSAKeyPair} from '@davidkhala/crypto/ECDSA.js';
 import {Extension} from '@davidkhala/crypto/extension.js';
 import {emptySuite} from 'khala-fabric-admin/cryptoSuite.js';
