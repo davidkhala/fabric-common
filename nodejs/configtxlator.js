@@ -1,4 +1,4 @@
-import {axiosPromise} from 'khala-axios';
+import {axiosPromise} from '@davidkhala/axios/index.js';
 import FormData from 'form-data';
 
 const requestPost = async (opt, otherOptions) => {

@@ -1,5 +1,6 @@
 import path from 'path';
 import IdentityService from './identityService.js';
+import {axiosPromise} from '@davidkhala/axios/index.js';
 import {consoleLogger} from '@davidkhala/logger/log4.js';
 
 const logger = consoleLogger('CA core');
@@ -42,5 +43,11 @@ export const intermediateCA = {
 		});
 	}
 };
+
+export async function ping(caUrl) {
+	const {result} = await axiosPromise({url: `${caUrl}/cainfo`, method: 'GET'});
+	return result;
+}
+
 export {registerIfNotExist as register};
 

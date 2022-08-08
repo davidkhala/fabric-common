@@ -11,7 +11,7 @@
     "@davidkhala/level": "latest",
     "@davidkhala/logger": "latest",
     "@davidkhala/nodeutils": "latest",
-    "khala-axios": "latest",
+    "@davidkhala/axios": "latest",
     "@davidkhala/light": "latest",
     "@davidkhala/compress": "latest",
     "khala-fabric-formatter": "latest",
