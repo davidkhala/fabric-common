@@ -1,12 +1,13 @@
 import FabricCAClient from 'fabric-ca-client/lib/FabricCAClient.js';
-import {ECDSAConfig, ECDSAKey} from '@davidkhala/crypto/ECDSA.js';
+import {Utils} from 'fabric-common/lib/Utils.js';
+import {ECDSAConfig, ECDSAKeyPair} from '@davidkhala/crypto/ECDSA.js';
 import {Extension} from '@davidkhala/crypto/extension.js';
 import {emptySuite} from 'khala-fabric-admin/cryptoSuite.js';
 import {asn1} from 'jsrsasign';
 
 export default class FabricCAService {
 
-	constructor({trustedRoots = [], protocol, hostname, port, caname = ''}, cryptoSuite = emptySuite(), logger = console) {
+	constructor({trustedRoots = [], protocol, hostname, port, caname = '', timeout}, cryptoSuite = emptySuite(), logger = console) {
 		const tlsOptions = {
 			trustedRoots,
 			verify: trustedRoots.length > 0
@@ -19,6 +20,9 @@ export default class FabricCAService {
 			tlsOptions,
 		}, cryptoSuite);
 		Object.assign(this, {caname, _cryptoSuite: cryptoSuite, logger});
+		if (timeout) {
+			Utils.setConfigSetting('connection-timeout', timeout);
+		}
 	}
 
 	/**
@@ -43,8 +47,8 @@ export default class FabricCAService {
 	 * @param {EnrollmentRequest} req If the request contains the field "csr", this csr will be used for
 	 *     getting the certificate from Fabric-CA. Otherwise , a new private key will be generated and be used to
 	 *     generate a csr later.
-	 * @param subject
-	 * @param dns
+	 * @param [subject]
+	 * @param [dns]
 	 */
 	async enroll(req, {subject, dns = []} = {}) {
 		const {enrollmentID, enrollmentSecret, profile, attr_reqs} = req;
@@ -60,7 +64,7 @@ export default class FabricCAService {
 			const keySize = _cryptoSuite._keySize;
 			const config = new ECDSAConfig(keySize);
 			const keyPair = config.generateEphemeralKey();
-			const key = new ECDSAKey(keyPair, {keySize});
+			const key = new ECDSAKeyPair(keyPair, {keySize});
 			Object.assign(result, {keyPair, key: keyPair.prvKeyObj});
 			const extension = Extension.asSAN(dns);
 			csr = key.generateCSR({str: asn1.x509.X500Name.ldapToOneline(subject)}, [extension]);
