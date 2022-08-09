@@ -68,6 +68,11 @@ export default class ProposalManager extends Proposal {
 		this.type = 'Endorsement';
 	}
 
+	set signingProcess(signCallback) {
+		assert.ok(typeof signCallback === 'function');
+		this.signFunction = signCallback;
+	}
+
 	/**
 	 *
 	 * @param {BuildProposalRequest} buildProposalRequest
@@ -75,7 +80,7 @@ export default class ProposalManager extends Proposal {
 	 * @return ProposalResponse
 	 */
 	async send(buildProposalRequest, connectOptions = {}) {
-		const {requestTimeout, handler} = connectOptions;
+		const {requestTimeout} = connectOptions;
 
 		const {identityContext} = this;
 		const {nonce} = buildProposalRequest;
@@ -85,14 +90,20 @@ export default class ProposalManager extends Proposal {
 			identityContext.transactionId = calculateTransactionId(identityContext, nonce);
 		}
 		this.build(identityContext, buildProposalRequest);
-		this.sign(identityContext); // TODO take care of offline signing
+		if (this.signFunction) {
+			// take care of offline signing
+			const signature = await this.signFunction(this._payload);
+			this.sign(signature);
+		} else {
+			this.sign(identityContext);
+		}
+
 		/**
 		 * @type {SendProposalRequest}
 		 */
 		const sendProposalRequest = {
 			targets: this.endorsers,
 			requestTimeout,
-			handler, // TODO investigate
 		};
 		const results = await super.send(sendProposalRequest);
 		typeof this.assertProposalResult === 'function' && this.assertProposalResult(results);
@@ -106,14 +117,22 @@ export default class ProposalManager extends Proposal {
 	 * @return Promise<CommitResponse|*>
 	 */
 	async commit(committers, {requestTimeout} = {}) {
+		const {identityContext} = this;
 		const commit = new Commit(this.chaincodeId, this.channel, this);
 
-		commit.build(this.identityContext);
-		commit.sign(this.identityContext);
+		commit.build(identityContext);
 
-		let result = await commit.send({targets: committers, requestTimeout});
+		if (this.signFunction) {
+			// take care of offline signing
+			const signature = await this.signFunction(commit._payload);
+			commit.sign(signature);
+		} else {
+			commit.sign(identityContext);
+		}
+
+		const result = await commit.send({targets: committers, requestTimeout});
 		if (typeof this.assertCommitResult === 'function') {
-			result = this.assertCommitResult(result);
+			return this.assertCommitResult(result);
 		}
 
 		return result;

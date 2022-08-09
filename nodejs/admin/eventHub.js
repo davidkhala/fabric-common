@@ -11,6 +11,7 @@ const {ALL} = TxEventFilterType;
 const {NEWEST, OLDEST} = BlockNumberFilterType;
 import fabproto6 from 'fabric-protos';
 import Long from 'long';
+import assert from 'assert';
 
 const {BLOCK_UNTIL_READY, FAIL_IF_NOT_READY} = fabproto6.orderer.SeekInfo.SeekBehavior;
 
@@ -37,6 +38,11 @@ export default class EventHub {
 		this.eventOptions = options;
 	}
 
+	set signingProcess(signCallback) {
+		assert.ok(typeof signCallback === 'function');
+		this.signFunction = signCallback;
+	}
+
 	/**
 	 *
 	 * @param {IdentityContext} identityContext
@@ -47,7 +53,7 @@ export default class EventHub {
 	 * 		FAIL_IF_NOT_READY will mean if the block is not there throw an error
 	 * @param {BlockEventFilterType} [blockType]
 	 */
-	build(identityContext, {startBlock, endBlock, behavior, blockType = FULL_BLOCK} = {}) {
+	async build(identityContext, {startBlock, endBlock, behavior, blockType = FULL_BLOCK} = {}) {
 		const {eventService, eventService: {channel}} = this;
 
 
@@ -108,7 +114,13 @@ export default class EventHub {
 		eventService.blockType = blockType;
 		eventService._payload = fabproto6.common.Payload.encode(seekPayload).finish();
 
-		eventService.sign(identityContext);
+		if (this.signFunction) {
+			// take care of offline signing
+			const signature = await this.signFunction(eventService._payload);
+			eventService.sign(signature);
+		} else {
+			eventService.sign(identityContext);
+		}
 	}
 
 	async connect() {

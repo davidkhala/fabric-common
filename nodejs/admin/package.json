@@ -1,6 +1,6 @@
 {
   "name": "khala-fabric-admin",
-  "version": "2.4.0-alpha.6",
+  "version": "2.4.0-alpha.8",
   "dependencies": {
     "fabric-ca-client": "latest",
     "fabric-common": "latest",
