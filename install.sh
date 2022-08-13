@@ -4,24 +4,7 @@ set -e -x
 golang() {
 	curl --silent --show-error https://raw.githubusercontent.com/davidkhala/goutils/master/scripts/install.sh | bash -s latest $1
 }
-install_libtool() {
-	if [[ $(uname) == "Darwin" ]]; then
-		brew install libtool
-	else
-		sudo apt-get install -y libtool
-	fi
-}
 
-java() {
-	if [[ $(uname) == "Darwin" ]]; then
-		echo "XCode should embed OpenJDK already"
-		java --version
-	else
-		echo "[WARNING] This is to install OpenJDK, Oracle requires fee to use Java in production."
-		sudo apt install -y default-jdk
-	fi
-
-}
 softHSMInstall() {
 	if [[ $(uname) == "Darwin" ]]; then
 		HOMEBREW_NO_AUTO_UPDATE=1 brew install softhsm
