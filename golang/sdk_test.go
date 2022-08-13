@@ -10,7 +10,7 @@ import (
 var peer0_icdd = Node{
 	Node: tape.Node{
 		Addr:      "localhost:8051",
-		TLSCARoot: "/home/davidliu/Documents/delphi-fabric/config/ca-crypto-config/peerOrganizations/icdd/tlsca/tlsca.icdd-cert.pem",
+		TLSCARoot: "/home/davidliu/delphi-fabric/config/ca-crypto-config/peerOrganizations/icdd/tlsca/tlsca.icdd-cert.pem",
 	},
 	SslTargetNameOverride: "peer0.icdd",
 }
@@ -27,6 +27,6 @@ func TestNodeJsonFormat(t *testing.T) {
 	println(string(goutils.ToJson(peer0_icdd)))
 }
 func TestFindKeyFilesOrPanic(t *testing.T) {
-	var dirname = "/home/davidliu/Documents/delphi-fabric/config/ca-crypto-config/peerOrganizations/astri.org/users/Admin@astri.org/msp/keystore/"
+	var dirname = "/home/davidliu/delphi-fabric/config/ca-crypto-config/peerOrganizations/astri.org/users/Admin@astri.org/msp/keystore/"
 	utter.Dump(FindKeyFilesOrPanic(dirname))
 }

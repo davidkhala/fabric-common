@@ -14,7 +14,7 @@ channelList() {
 }
 JoinChain() {
 	# Path to file containing genesis block
-	# peer.sh JoinChain peer0.astri.org ~/Documents/delphi-fabric/config/configtx/all.block
+	# peer.sh JoinChain peer0.astri.org ~/delphi-fabric/config/configtx/all.block
 	local container=$1
 	local fileName=$(basename $2)
 	local CMD="peer channel join --blockpath=/etc/hyperledger/fabric/$fileName"
