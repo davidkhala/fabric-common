@@ -1,14 +1,15 @@
 import {LoggingLevel} from 'khala-fabric-formatter/remote.js';
 import {MetricsProvider} from 'khala-fabric-formatter/constants.js';
-import {uid} from '@davidkhala/light/devOps.js'
+import {uid} from '@davidkhala/light/devOps.js';
+
 export const container = {
 	MSPROOT: '/etc/hyperledger/crypto-config',
-	dockerSock: '/var/run/docker.sock',
+	dockerSock: '/run/containerd/containerd.sock',
 	state: '/var/hyperledger/production',
 	config: '/etc/hyperledger/fabric',
-	"volume-state": '/var/hyperledger', // the only content is /var/hyperledger/production
+	'volume-state': '/var/hyperledger', // the only content is /var/hyperledger/production
 	builder: '/opt/hyperledger/ccaas_builder/',
-}
+};
 
 export const host = {
 	dockerSock: `/run/user/${uid}/docker.sock`,

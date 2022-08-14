@@ -5,8 +5,8 @@ import * as couchdbUtil from './couchdb.js';
 import {adminName as defaultAdminName, adminPwd as defaultAdminPwd} from 'khala-fabric-formatter/user.js';
 
 export class FabricDockerode {
-	constructor(dockerManager, ContainerOptsBuilder) {
-		Object.assign(this, {dockerManager, ContainerOptsBuilder});
+	constructor(containerManager, ContainerOptsBuilder) {
+		Object.assign(this, {containerManager, ContainerOptsBuilder});
 
 	}
 
@@ -16,23 +16,23 @@ export class FabricDockerode {
 	 * @param {ChaincodeType} [chaincodeType]
 	 */
 	async fabricImagePull({fabricTag, caTag = fabricTag, chaincodeType = 'golang'}) {
-		const {dockerManager} = this;
+		const {containerManager} = this;
 		if (fabricTag) {
 			const imageTag = fabricTag;
 			switch (chaincodeType) {
 				case 'java':
-					await dockerManager.imagePullIfNotExist(`hyperledger/fabric-javaenv:${imageTag}`);
+					await containerManager.imagePullIfNotExist(`hyperledger/fabric-javaenv:${imageTag}`);
 					break;
 				default:
-					await dockerManager.imagePullIfNotExist(`hyperledger/fabric-ccenv:${imageTag}`);
+					await containerManager.imagePullIfNotExist(`hyperledger/fabric-ccenv:${imageTag}`);
 			}
-			await dockerManager.imagePullIfNotExist(`hyperledger/fabric-orderer:${imageTag}`);
-			await dockerManager.imagePullIfNotExist(`hyperledger/fabric-peer:${imageTag}`);
+			await containerManager.imagePullIfNotExist(`hyperledger/fabric-orderer:${imageTag}`);
+			await containerManager.imagePullIfNotExist(`hyperledger/fabric-peer:${imageTag}`);
 		}
 		if (caTag) {
-			await dockerManager.imagePullIfNotExist(`hyperledger/fabric-ca:${caTag}`);
+			await containerManager.imagePullIfNotExist(`hyperledger/fabric-ca:${caTag}`);
 		}
-		await dockerManager.imagePullIfNotExist('couchdb:3.1.1');
+		await containerManager.imagePullIfNotExist('couchdb:3.1.1');
 	}
 
 	/**
@@ -49,7 +49,7 @@ export class FabricDockerode {
 	 * @returns {Promise<*>}
 	 */
 	async runCA({container_name, port, network, imageTag, adminName, adminPassword, TLS, issuer}, intermediate) {
-		const {dockerManager, ContainerOptsBuilder} = this;
+		const {containerManager, ContainerOptsBuilder} = this;
 		if (!adminName) {
 			adminName = defaultAdminName;
 		}
@@ -89,7 +89,7 @@ export class FabricDockerode {
 
 		builder.setNetwork('bridge'); // FIXME
 
-		return await dockerManager.containerStart(builder.opts);
+		return await containerManager.containerStart(builder.opts);
 	}
 
 	/**
@@ -98,15 +98,15 @@ export class FabricDockerode {
 	 * @param {string} chaincodePackageId
 	 */
 	async uninstallChaincode(container_name, chaincodePackageId) {
-		const {dockerManager} = this;
+		const {containerManager} = this;
 		const Cmd = ['rm', `${peerUtil.container.state}/lifecycle/chaincodes/${chaincodePackageId.replace(':', '.')}.tar.gz`];
-		await dockerManager.containerExec({container_name, Cmd});
-		await dockerManager.containerRestart(container_name);
+		await containerManager.containerExec({container_name, Cmd});
+		await containerManager.containerRestart(container_name);
 	}
 
 	async chaincodeImageList() {
-		const {dockerManager} = this;
-		const images = await dockerManager.imageList();
+		const {containerManager} = this;
+		const images = await containerManager.imageList();
 		return images.filter(image => {
 			// RepoTags can be null
 			if (!image.RepoTags) {
@@ -117,19 +117,19 @@ export class FabricDockerode {
 	}
 
 	async chaincodeContainerList() {
-		const {dockerManager} = this;
-		const containers = await dockerManager.containerList();
+		const {containerManager} = this;
+		const containers = await containerManager.containerList();
 		return containers.filter(container => container.Names.find(name => name.startsWith('/dev-')));
 	};
 
 	async chaincodeImageClear(filter) {
-		const {dockerManager} = this;
+		const {containerManager} = this;
 		let images = await this.chaincodeImageList();
 		if (typeof filter === 'function') {
 			images = images.filter(filter);
 		}
 		for (const image of images) {
-			await dockerManager.imageDelete(image.Id);
+			await containerManager.imageDelete(image.Id);
 		}
 	}
 
@@ -139,19 +139,19 @@ export class FabricDockerode {
 	 * @return {Promise<void>}
 	 */
 	async chaincodeClear(filter) {
-		const {dockerManager} = this;
+		const {containerManager} = this;
 		let containers = await this.chaincodeContainerList();
 		if (typeof filter === 'function') {
 			containers = containers.filter(filter);
 		}
 		for (const container of containers) {
-			await dockerManager.containerDelete(container.Id);
-			await dockerManager.imageDelete(container.Image);
+			await containerManager.containerDelete(container.Id);
+			await containerManager.imageDelete(container.Image);
 		}
 	}
 
 	async runOrderer(opts, operations, metrics) {
-		const {dockerManager,ContainerOptsBuilder} = this;
+		const {containerManager, ContainerOptsBuilder} = this;
 		const {
 			container_name, imageTag, port, network, msp,
 			ordererType, tls, stateVolume, raft_tls, loggingLevel,
@@ -181,11 +181,11 @@ export class FabricDockerode {
 		if (operations) {
 			builder.setPortBind(`${operations.port}:8443`);
 		}
-		return await dockerManager.containerStart(builder.opts);
+		return await containerManager.containerStart(builder.opts);
 	}
 
 	async runPeer(opts, operations, metrics) {
-		const {dockerManager, ContainerOptsBuilder} = this;
+		const {containerManager, ContainerOptsBuilder} = this;
 		const {
 			container_name, port, network, imageTag, loggingLevel,
 			msp: {
@@ -220,11 +220,11 @@ export class FabricDockerode {
 			builder.setVolume(stateVolume, peerUtil.container.state);
 		}
 
-		return await dockerManager.containerStart(builder.opts);
+		return await containerManager.containerStart(builder.opts);
 	}
 
 	async runCouchDB({container_name, port, network, user = 'admin', password = 'adminpw'}) {
-		const {dockerManager, ContainerOptsBuilder} = this;
+		const {containerManager, ContainerOptsBuilder} = this;
 		const Image = 'couchdb:3.1.1';
 		const Env = couchdbUtil.envBuilder(user, password);
 		const builder = new ContainerOptsBuilder(Image);
@@ -234,7 +234,7 @@ export class FabricDockerode {
 		if (port) {
 			builder.setPortBind(`${port}:5984`);
 		}
-		return await dockerManager.containerStart(builder.opts);
+		return await containerManager.containerStart(builder.opts);
 	}
 }
 
