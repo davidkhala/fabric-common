@@ -17,5 +17,5 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/sykesm/zap-logfmt v0.0.4 // indirect
 	go.uber.org/zap v1.21.0 // indirect
-	google.golang.org/grpc v1.44.0
+	google.golang.org/grpc v1.53.0
 )
