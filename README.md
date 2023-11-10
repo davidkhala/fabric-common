@@ -1,10 +1,11 @@
 # fabric-common
 
-Current version 2.4.3
+Fabric version 2.5.4
+
+CA version 1.5.7
 ## Prerequisite
 - docker: 18.03 +
 ### Prerequisite: For development
-- docker-compose: 1.14.0 +
 - golang: 1.15.x
 - fabric-sdk-java
     - java: openjdk 11.0.7 2020-04-14
