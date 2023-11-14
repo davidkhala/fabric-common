@@ -1,10 +1,6 @@
 #!/usr/bin/env bash
 set -e -x
 
-golang() {
-	curl --silent --show-error https://raw.githubusercontent.com/davidkhala/goutils/master/scripts/install.sh | bash -s latest $1
-}
-
 softHSMInstall() {
 	if [[ $(uname) == "Darwin" ]]; then
 		HOMEBREW_NO_AUTO_UPDATE=1 brew install softhsm
