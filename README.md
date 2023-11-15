@@ -1,10 +1,11 @@
 # fabric-common
 
-Fabric version 2.5.4
 
-CA version 1.5.7
 ## Prerequisite
 - docker: 18.03 +
+- Fabric: v2.5.4
+- CA: v1.5.7
+- couchdb:v3.3.2
 ### Prerequisite: For development
 - golang: 1.15.x
 - fabric-sdk-java
