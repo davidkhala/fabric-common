@@ -11,7 +11,7 @@ softHSMInstall() {
 
 fabricInstall() {
 	#	If you want the latest production release, omit all version identifiers.
-	curl -sSL https://bit.ly/2ysbOFE | bash -s -- -s "$@"
+	curl -sSL https://raw.githubusercontent.com/hyperledger/fabric/master/scripts/bootstrap.sh | bash -s -- -s "$@"
 	docker pull couchdb:3.1.1
 }
 if [[ -n "$1" ]]; then

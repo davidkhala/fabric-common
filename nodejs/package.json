@@ -2,9 +2,9 @@
   "name": "khala-fabric-sdk-node",
   "version": "2.3.0-alpha.5",
   "scripts": {
-    "pre-install": "cd ../; if ! bin/peer version; then ./install.sh fabricInstall -d -s; fi",
-    "test": "mocha test",
-    "lerna": "lerna bootstrap --no-ci"
+    "preinstall": "cd ../; if ! bin/peer version; then ./install.sh fabricInstall -d -s; fi",
+    "postinstall": "cd admin; npm install; cd ../formatter; npm install; cd ../fabric-gateway; npm install",
+    "test": "mocha test"
   },
   "dependencies": {
     "@davidkhala/dockerode": "latest",
@@ -19,7 +19,6 @@
   },
   "license": "Apache-2.0",
   "devDependencies": {
-    "lerna": "latest",
     "mocha": "latest"
   },
   "keywords": [
