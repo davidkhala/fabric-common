@@ -1,11 +1,11 @@
 import fs from 'fs';
+import fsExtra from 'fs-extra';
+import path from 'path';
 import {ChaincodeType} from 'khala-fabric-formatter/chaincode.js';
 import {sha2_256} from 'khala-fabric-formatter/helper.js';
 import {execSync} from '@davidkhala/light/devOps.js';
 import {createTmpDir} from '@davidkhala/nodeutils/tmp.js';
-import path from 'path';
-import {isDirectory} from '@davidkhala/light';
-import fsExtra from 'fs-extra';
+import {isDirectory} from '@davidkhala/light/file.js';
 import {create} from '@davidkhala/compress/npm-tar.js';
 
 export default class ChaincodePackage {
