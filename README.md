@@ -95,7 +95,7 @@
 - level db navigator(https://github.com/Level/level or https://github.com/syndtr/goleveldb) and richQuery for leveldb;leveldb analyzer 
 - NodeOUs enable and intermediate CA
 - make use of npm jsrsasign
-- make use of softHSM in node-sdk
+
 - [2.2] what is the lifecycle function for `peer lifecycle chaincode queryapproved`
 - [2.3] Hyperledger Fabric v2.3 introduces two new features for improved orderer and peer operations
         - [Channel Participation]:  Orderer channel management without a system channel

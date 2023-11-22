@@ -1,14 +1,6 @@
 #!/usr/bin/env bash
 set -e -x
 
-softHSMInstall() {
-	if [[ $(uname) == "Darwin" ]]; then
-		HOMEBREW_NO_AUTO_UPDATE=1 brew install softhsm
-	else
-		sudo apt-get install -y softhsm2
-	fi
-}
-
 fabricInstall() {
 	#	If you want the latest production release, omit all version identifiers.
 	curl -sSL https://raw.githubusercontent.com/hyperledger/fabric/master/scripts/bootstrap.sh | bash -s -- -s "$@"
