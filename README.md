@@ -101,11 +101,5 @@
         - [Channel Participation]:  Orderer channel management without a system channel
             - translate `osadmin` into part of `khala-fabric-admin`
         - Ledger snapshot
-## Fabric weakness
-- fabric RSA key support: 
-    - not supported as peer|orderer keystore
-- new Feature required: GetPrivateStateByRangeWithPagination: https://jira.hyperledger.org/browse/FAB-11732
 
-## Abandoned
-- docker-swarm support
-- graphiteapp/graphite-statsd not working to receive metrics: push statsD to AWS 
+
