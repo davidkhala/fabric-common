@@ -2,6 +2,7 @@
 set -e -x
 
 fabricInstall() {
+  # alternative: curl -sSL https://raw.githubusercontent.com/hyperledger/fabric/main/scripts/install-fabric.sh | bash -s "$@"
 	#	If you want the latest production release, omit all version identifiers.
 	curl -sSL https://raw.githubusercontent.com/hyperledger/fabric/master/scripts/bootstrap.sh | bash -s -- -s "$@"
 	docker pull couchdb:3.3.2
