@@ -19,7 +19,7 @@ JoinChain() {
 	local fileName=$(basename $2)
 	local CMD="peer channel join --blockpath=/etc/hyperledger/fabric/$fileName"
 	docker cp $2 "$container:/etc/hyperledger/fabric/$fileName"
-	docker exec $1 $CMD
+	docker exec $container $CMD
 	# TODO Error: proposal failed (err: bad proposal response 500: access denied for [JoinChain][allchannel]: [Failed verifying that proposal's creator satisfies local MSP principal during channelless check policy with policy [Admins]: [This identity is not an admin]])
 
 }
