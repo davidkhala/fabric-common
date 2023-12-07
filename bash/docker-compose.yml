@@ -1,0 +1,20 @@
+networks:
+  network:
+    name: delphiNetwork
+    external: true
+
+services:
+  cli:
+    container_name: fabric-cli
+    image: hyperledger/fabric-tools:2.5.4
+    tty: true
+    stdin_open: true
+    environment:
+      - GOPATH=/opt/gopath
+      - FABRIC_LOGGING_SPEC=INFO
+      - FABRIC_CFG_PATH=/etc/hyperledger/fabric/config
+    command: /bin/bash
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - network

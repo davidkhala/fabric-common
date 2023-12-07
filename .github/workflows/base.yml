@@ -24,4 +24,4 @@ jobs:
     - run: ./install.sh
     - run: ./bash/test/shunit2Install.sh
       name: setup bash
-    - run: ./bash/test/softHSMTest.sh
+    - run: ./bash/test/softHSM.sh
