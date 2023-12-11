@@ -23,6 +23,10 @@ JoinChain() {
 	# TODO Error: proposal failed (err: bad proposal response 500: access denied for [JoinChain][allchannel]: [Failed verifying that proposal's creator satisfies local MSP principal during channelless check policy with policy [Admins]: [This identity is not an admin]])
 
 }
+committed(){
+	peer lifecycle chaincode querycommitted -O=json -o orderer0.${ORG_DOMAIN}:7050 --channelID $CHANNEL_NAME --tls --cafile $cafile --peerAddresses peer0.${ORG_DOMAIN}:7051 --tlsRootCertFiles=$tlsRootCertFiles | jq .chaincode_definitions
+
+}
 
 #Usage:
 #  peer channel fetch <newest|oldest|config|(number)> [outputfile] [flags]
