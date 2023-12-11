@@ -48,7 +48,10 @@ chaincodeInstantiated() {
 }
 chaincodeInstalled() {
 	#  TODO WIP
-	peer lifecycle chaincode queryinstalled
+ 	# 'queryinstalled' command supports one peer. (only)
+  	local peerAddress=$1
+	peer lifecycle chaincode queryinstalled -O=json --peerAddresses $peerAddress --tlsRootCertFiles=$tlsRootCertFiles | jq .installed_chaincodes
+ 	
 }
 package() {
 	#  TODO WIP
