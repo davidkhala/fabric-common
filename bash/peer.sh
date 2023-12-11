@@ -24,6 +24,7 @@ JoinChain() {
 
 }
 committed(){
+	# 'querycommitted' command supports one peer (only)
 	peer lifecycle chaincode querycommitted -O=json -o orderer0.${ORG_DOMAIN}:7050 --channelID $CHANNEL_NAME --tls --cafile $cafile --peerAddresses peer0.${ORG_DOMAIN}:7051 --tlsRootCertFiles=$tlsRootCertFiles | jq .chaincode_definitions
 
 }
