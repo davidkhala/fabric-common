@@ -22,4 +22,5 @@ else
 		fi
 		$nodejsInstall | bash -s LTS
 	fi
+	fabricInstall -d -s
 fi

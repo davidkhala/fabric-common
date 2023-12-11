@@ -32,7 +32,7 @@ export class FabricDockerode {
 		if (caTag) {
 			await containerManager.imagePullIfNotExist(`hyperledger/fabric-ca:${caTag}`);
 		}
-		await containerManager.imagePullIfNotExist('couchdb:3.1.1');
+		await containerManager.imagePullIfNotExist('couchdb:3.3.2');
 	}
 
 	/**
@@ -120,7 +120,7 @@ export class FabricDockerode {
 		const {containerManager} = this;
 		const containers = await containerManager.containerList();
 		return containers.filter(container => container.Names.find(name => name.startsWith('/dev-')));
-	};
+	}
 
 	async chaincodeImageClear(filter) {
 		const {containerManager} = this;
@@ -225,7 +225,7 @@ export class FabricDockerode {
 
 	async runCouchDB({container_name, port, network, user = 'admin', password = 'adminpw'}) {
 		const {containerManager, ContainerOptsBuilder} = this;
-		const Image = 'couchdb:3.1.1';
+		const Image = 'couchdb:3.3.2';
 		const Env = couchdbUtil.envBuilder(user, password);
 		const builder = new ContainerOptsBuilder(Image);
 		builder.setName(container_name).setEnv(Env);

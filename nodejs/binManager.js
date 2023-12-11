@@ -2,7 +2,7 @@ import path from 'path';
 import fs from 'fs';
 import {findProcess} from '@davidkhala/nodeutils/devOps.js';
 import {execSync, execDetach, killProcess} from '@davidkhala/light/devOps.js';
-import {isDirectory} from '@davidkhala/light/file.js'
+import {isDirectory} from '@davidkhala/light/file.js';
 import {createTmpFile, createTmpDir} from '@davidkhala/nodeutils/tmp.js';
 
 const expectedBinaries = ['configtxgen', 'configtxlator', 'idemixgen', 'osnadmin', 'peer'];
@@ -263,7 +263,7 @@ export default class BinManager {
 					this.logger.info('CMD', CMD);
 					const result = execSync(CMD);
 					t1();
-					return result
+					return result;
 				}
 			}
 		};

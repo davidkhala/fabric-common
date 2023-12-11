@@ -1,9 +1,7 @@
 {
-  "name": "khala-fabric-sdk-node",
+  "name": "@davidkhala/fabric-sdk-node",
   "version": "2.3.0-alpha.5",
   "scripts": {
-    "preinstall": "cd ../; if ! bin/peer version; then ./install.sh fabricInstall -d -s; fi",
-    "postinstall": "cd admin; npm install; cd ../formatter; npm install; cd ../fabric-gateway; npm install",
     "test": "mocha test"
   },
   "dependencies": {
