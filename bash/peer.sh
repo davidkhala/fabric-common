@@ -79,6 +79,7 @@ packageID(){
 
 install() {
 	#  TODO WIP
+ 	# 'install' command supports one peer. (only)
 	local ccPackage=$1
 	peer lifecycle chaincode install $1
 }
