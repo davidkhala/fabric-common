@@ -3,7 +3,7 @@ import assert from 'assert';
 import {consoleLogger} from '@davidkhala/logger/log4.js';
 import ConfigtxlatorServer from './configtxlator.js';
 import {getChannelConfigFromOrderer} from './channel.js';
-import BinManager from './binManager.js';
+import BinManager from './binManager/binManager.js';
 import {ConfigtxlatorType} from 'khala-fabric-formatter/configtxlator.js';
 import ConfigFactory from 'khala-fabric-formatter/configFactory.js';
 import {BufferFrom} from 'khala-fabric-formatter/protobuf.js';

@@ -1,5 +1,5 @@
 import path from 'path';
-import BinManager from '../binManager.js';
+import BinManager from '../binManager/binManager.js';
 import fsExtra from 'fs-extra';
 import {consoleLogger} from '@davidkhala/logger/log4.js';
 import {filedirname} from '@davidkhala/light/es6.mjs';
