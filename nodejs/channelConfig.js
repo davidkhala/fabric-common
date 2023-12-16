@@ -1,9 +1,9 @@
 import fabprotos from 'fabric-protos';
 import assert from 'assert';
 import {consoleLogger} from '@davidkhala/logger/log4.js';
-import ConfigtxlatorServer from './configtxlator.js';
+import {ServerClient, configtxlator as Configtxlator} from './binManager/configtxlator.js';
 import {getChannelConfigFromOrderer} from './channel.js';
-import BinManager from './binManager/binManager.js';
+
 import {ConfigtxlatorType} from 'khala-fabric-formatter/configtxlator.js';
 import ConfigFactory from 'khala-fabric-formatter/configFactory.js';
 import {BufferFrom} from 'khala-fabric-formatter/protobuf.js';
@@ -16,7 +16,7 @@ import {emptyChannel} from 'khala-fabric-admin/channel.js';
 import EventHubQuery from './eventHub.js';
 
 const {SUCCESS} = CommonResponseStatus;
-const configtxlatorServer = new ConfigtxlatorServer();
+const configtxlatorClient = new ServerClient();
 const commonProto = fabprotos.common;
 const logger = consoleLogger('channel-config');
 
@@ -42,12 +42,12 @@ export class ChannelConfig {
 		let json;
 		if (!this.binPath) {
 			// This requires 'configtxlator' RESTful server running locally on port 7059
-			const body = await configtxlatorServer.decode(ConfigtxlatorType.Config, protoBytes);
+			const body = await configtxlatorClient.decode(ConfigtxlatorType.Config, protoBytes);
 			json = JSON.stringify(body);
 		} else {
 			// Otherwise in default we will use 'configtxlator' command line tool residing in this.binPath
-			const binManager = new BinManager(this.binPath);
-			json = await binManager.configtxlatorCMD.decode(ConfigtxlatorType.Config, protoBytes);
+			const configtxlator = new Configtxlator(this.binPath);
+			json = configtxlator.decode(ConfigtxlatorType.Config, protoBytes);
 		}
 
 		return {
@@ -78,11 +78,11 @@ export class ChannelConfig {
 
 
 		assert.ok(!!this.binPath, '[deprecated] configtxlatorServer is deprecated. env.binPath must be specified');
-		const binManager = new BinManager(this.binPath);
-		const updatedProto = await binManager.configtxlatorCMD.encode(ConfigtxlatorType.Config, updateConfigJSON);
+		const configtxlator = new Configtxlator(this.binPath);
+		const updatedProto = configtxlator.encode(ConfigtxlatorType.Config, updateConfigJSON);
 		let config;
 		try {
-			config = await binManager.configtxlatorCMD.computeUpdate(channelName, proto, updatedProto);
+			config = configtxlator.computeUpdate(channelName, proto, updatedProto);
 		} catch (e) {
 			const expected = 'configtxlator: error: Error computing update: error computing config update: no differences detected between original and updated config';
 			if (e.stderr.trim() === expected) {
