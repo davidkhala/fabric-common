@@ -38,15 +38,36 @@ export class CryptoPath {
 		this.root = rootPath;
 	}
 
-	setReact(react) {
-		this.react = react;
-		return this;
+	/**
+	 * @abstract
+	 * @returns {string}
+	 */
+	get reaction() {
+		return 'mkdir';
+	}
+
+	/**
+	 * @abstract
+	 * @returns {string}
+	 */
+	get platform() {
+		return undefined;
 	}
 
 	resolve(...tokens) {
-		const result = path.resolve(...tokens);
-		const dir = path.dirname(result);
-		switch (this.react) {
+		let platformPath = path;
+		switch (this.platform) {
+			case 'win32':
+				platformPath = path.win32;
+				break;
+			case 'posix':
+				platformPath = path.posix;
+				break;
+			default:
+		}
+		const result = platformPath.resolve(...tokens);
+		const dir = platformPath.dirname(result);
+		switch (this.reaction) {
 			case 'throw':
 				if (!fsExtra.pathExistsSync(dir)) {
 					throw new Error(`${dir} not exist`);
