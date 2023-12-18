@@ -84,7 +84,7 @@ export class FabricDockerode {
 
 
 		const builder = new ContainerOptsBuilder(`hyperledger/fabric-ca:${imageTag}`, Cmd);
-		builder.setName(container_name);
+		builder.name = container_name;
 		builder.setPortBind(`${port}:7054`);
 
 		builder.setNetwork('bridge'); // FIXME
@@ -167,7 +167,8 @@ export class FabricDockerode {
 		}, loggingLevel, operations, metrics);
 
 		const builder = new ContainerOptsBuilder(Image, ['orderer']);
-		builder.setName(container_name).setEnv(Env);
+		builder.name = container_name;
+		builder.env = Env;
 		builder.setVolume(volumeName, peerUtil.container.MSPROOT);
 
 		builder.setPortBind(`${portAdmin}:9443`);
@@ -203,7 +204,8 @@ export class FabricDockerode {
 		}, loggingLevel, operations, metrics, chaincodeOpts);
 
 		const builder = new ContainerOptsBuilder(Image, Cmd);
-		builder.setName(container_name).setEnv(Env);
+		builder.name = container_name;
+		builder.env = Env;
 		builder.setVolume(volumeName, peerUtil.container.MSPROOT);
 		if (!chaincodeOpts || !chaincodeOpts.dockerPort) {
 			builder.setVolume(peerUtil.host.dockerSock, peerUtil.container.dockerSock);
@@ -228,7 +230,8 @@ export class FabricDockerode {
 		const Image = 'couchdb:3.3.2';
 		const Env = couchdbUtil.envBuilder(user, password);
 		const builder = new ContainerOptsBuilder(Image);
-		builder.setName(container_name).setEnv(Env);
+		builder.name = container_name
+		builder.env = Env
 		builder.setNetwork(network, [container_name]);
 
 		if (port) {

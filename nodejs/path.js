@@ -308,3 +308,9 @@ export class PosixCryptoPath extends CryptoPath {
 	}
 
 }
+export class ContainerCryptoPath extends PosixCryptoPath {
+
+	get reaction() {
+		return undefined;
+	}
+}
