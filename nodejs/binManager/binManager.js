@@ -80,8 +80,8 @@ export class DockerRun extends CMDManager {
 
 	async start(volumes = {}) {
 		const builder = new ContainerOptsBuilder('hyperledger/fabric-tools');
-		builder.setName(this.name);
-		builder.setTTY(true);
+		builder.name = this.name;
+		builder.tty = true;
 		for (const [volumeName, containerPath] of Object.entries(volumes)) {
 			builder.setVolume(volumeName, containerPath);
 		}

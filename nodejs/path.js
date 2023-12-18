@@ -300,3 +300,11 @@ export class CryptoPath {
 	}
 
 }
+
+export class PosixCryptoPath extends CryptoPath {
+
+	get platform() {
+		return 'posix';
+	}
+
+}

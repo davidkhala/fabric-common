@@ -5,7 +5,8 @@
     "test": "mocha test"
   },
   "dependencies": {
-    "@davidkhala/dockerode": "latest",
+    "@davidkhala/docker": "latest",
+    "@davidkhala/container": "latest",
     "@davidkhala/level": "latest",
     "@davidkhala/logger": "latest",
     "@davidkhala/nodeutils": "latest",
