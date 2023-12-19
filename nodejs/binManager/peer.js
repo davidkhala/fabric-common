@@ -34,42 +34,6 @@ export class peer extends BinManager {
 		t1();
 	}
 
-	/**
-	 *
-	 * @param chaincodeId
-	 * @param chaincodePath
-	 * @param [chaincodeType]
-	 * @param chaincodeVersion
-	 * @param localMspId
-	 * @param mspConfigPath
-	 * @param outputFile
-	 * @param [instantiatePolicy]
-	 */
-	package({chaincodeId, chaincodePath, chaincodeType, chaincodeVersion}, {
-		localMspId,
-		mspConfigPath
-	}, outputFile, instantiatePolicy) {
-		const t1 = createTmpCoreYml();
-		process.env.CORE_PEER_LOCALMSPID = localMspId;
-		process.env.CORE_PEER_MSPCONFIGPATH = mspConfigPath;
-		let optionTokens = `--name ${chaincodeId} --path ${chaincodePath} --version ${chaincodeVersion}`;
-		if (instantiatePolicy) {
-			optionTokens += ` --instantiate-policy ${instantiatePolicy} --cc-package`;
-		}
-		if (chaincodeType) {
-			optionTokens += ` --lang ${chaincodeType}`;
-		}
-		const CMD = this._buildCMD(`chaincode package ${optionTokens} ${outputFile}`);
-		this.logger.info('CMD', CMD);
-		const result = execSync(CMD);
-		this.logger.info(result);
-		t1();
-
-		delete process.env.CORE_PEER_LOCALMSPID;
-		delete process.env.CORE_PEER_MSPCONFIGPATH;
-		return outputFile;
-	}
-
 	get executable() {
 		return 'peer';
 	}
@@ -86,10 +50,7 @@ export class lifecycle extends BinManager {
 	package({Type = 'golang', Label, Path}, outputFile) {
 		const t1 = createTmpCoreYml();
 		const optionTokens = `--label=${Label} --lang=${Type} --path=${Path}`;
-		const CMD = this._buildCMD('lifecycle chaincode package', optionTokens, outputFile);
-		this.logger.info('CMD', CMD);
-		const result = execSync(CMD);
-		this.logger.info(result);
+		this.exec('package', optionTokens, outputFile);
 		t1();
 		return outputFile;
 	}
@@ -97,14 +58,12 @@ export class lifecycle extends BinManager {
 	packageID(chaincodeArchive) {
 
 		const t1 = createTmpCoreYml();
-		const CMD = this._buildCMD(`lifecycle chaincode calculatepackageid ${chaincodeArchive}`);
-		this.logger.info('CMD', CMD);
-		const result = execSync(CMD);
+		const result = this.exec(`calculatepackageid ${chaincodeArchive}`);
 		t1();
 		return result;
 	}
 
 	get executable() {
-		return 'peer';
+		return 'peer lifecycle chaincode';
 	}
 }

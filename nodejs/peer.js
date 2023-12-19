@@ -54,6 +54,7 @@ export const envBuilder = ({
 	let environment =
 		[
 			`CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${network}`,
+			`CORE_VM_ENDPOINT=unix://${container.dockerSock}`,
 			'CORE_LEDGER_HISTORY_ENABLEHISTORYDATABASE=true',
 			'CORE_PEER_GOSSIP_USELEADERELECTION=false', // FAB-15317
 			'CORE_PEER_GOSSIP_ORGLEADER=true', // FAB-15317

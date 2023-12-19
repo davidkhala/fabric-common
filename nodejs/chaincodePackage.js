@@ -25,7 +25,7 @@ export default class ChaincodePackage {
 	/**
 	 *
 	 * @param chaincodeArchive
-	 * @param [binManager]
+	 * @param {lifecycle} [binManager]
 	 * @param [bash]
 	 * @returns {string}
 	 */
@@ -36,7 +36,7 @@ export default class ChaincodePackage {
 			return `${this.Label}:${hash.trim()}`;
 		}
 		if (binManager) {
-			const out = binManager.peer().lifecycle.packageID(chaincodeArchive);
+			const out = binManager.packageID(chaincodeArchive);
 			return out.trim();
 		}
 		return `${this.Label}:${sha2_256(fs.readFileSync(chaincodeArchive))}`;
@@ -45,15 +45,16 @@ export default class ChaincodePackage {
 
 	/**
 	 * @param {string} output File path
-	 * @param {BinManager} [binManager]
+	 * @param {lifecycle} [binManager]
 	 * @return {string} package id
 	 */
 	pack(output, binManager) {
 		const {Path, Type, Label} = this;
 		if (ChaincodeType[Type] && binManager) {
-			binManager.peer().lifecycle.package({Type, Label, Path}, output);
+			binManager.package({Type, Label, Path}, output);
 			return this.calculateID(output, binManager);
 		} else {
+			// FIXME
 			// `$peer lifecycle package` cannot handle external chaincodeType, which is required in ccaasbuilder
 			// Error: failed to normalize chaincode path: unknown chaincodeType: EXTERNAL
 

@@ -1,0 +1,7 @@
+npm i
+cd admin
+npm i
+cd fabric-gateway
+npm i
+cd formatter
+npm i
