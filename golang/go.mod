@@ -3,7 +3,7 @@ module github.com/davidkhala/fabric-common/golang
 go 1.20
 
 require (
-	github.com/davidkhala/goutils v1.5.3
+	github.com/davidkhala/goutils v1.5.5
 	github.com/davidkhala/goutils/grpc v0.0.0
 	github.com/davidkhala/protoutil v0.0.1
 	github.com/hyperledger/fabric-protos-go-apiv2 v0.3.1
