@@ -21,18 +21,12 @@ func ToAddress(url string) string {
 	return url
 }
 
-func Pings(target string, params Params) (connect *grpc.ClientConn, err error) {
+func Ping(target string, params Params) (connect *grpc.ClientConn, err error) {
 	var opts []grpc.DialOption
 	opts, err = DialOptionsFrom(params)
 	if err != nil {
 		return
 	}
-	connect, err = Ping(target, opts...)
-	return
-}
-
-func Ping(target string, opts ...grpc.DialOption) (connect *grpc.ClientConn, err error) {
-
 	connect, err = grpc.Dial(ToAddress(target), opts...)
 	return
 }

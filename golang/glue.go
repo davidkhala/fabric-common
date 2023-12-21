@@ -5,17 +5,11 @@ import (
 	"github.com/davidkhala/goutils"
 	"github.com/davidkhala/goutils/crypto"
 	. "github.com/davidkhala/goutils/grpc"
-	"github.com/golang/protobuf/proto"
-	tape "github.com/hyperledger-twgc/tape/pkg/infra"
-	"github.com/hyperledger/fabric-protos-go/msp"
+	"github.com/hyperledger/fabric-protos-go-apiv2/msp"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/proto"
 )
-
-type Node struct {
-	tape.Node
-	SslTargetNameOverride string `json:"ssl-target-name-override"`
-}
 
 func (node Node) AsGRPCClient() (connect *grpc.ClientConn, err error) {
 
@@ -38,18 +32,18 @@ func (node Node) AsGRPCClient() (connect *grpc.ClientConn, err error) {
 		Certificate:           certificate,
 		WaitForReady:          true,
 	}
-	connect, err = Pings(node.Addr, param)
+	connect, err = Ping(node.Addr, param)
 	return
 
 }
-func LoadCryptoFrom(config tape.CryptoConfig) (*tape.Crypto, error) {
+func LoadCryptoFrom(config CryptoConfig) (*Crypto, error) {
 
-	priv, err := tape.GetPrivateKey(config.PrivKey)
+	priv, err := GetPrivateKey(config.PrivKey)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error loading priv key")
 	}
 
-	cert, certBytes, err := tape.GetCertificate(config.SignCert)
+	cert, certBytes, err := GetCertificate(config.SignCert)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error loading certificate")
 	}
@@ -64,7 +58,7 @@ func LoadCryptoFrom(config tape.CryptoConfig) (*tape.Crypto, error) {
 		return nil, errors.Wrapf(err, "error get msp id")
 	}
 
-	return &tape.Crypto{
+	return &Crypto{
 		Creator:  name,
 		PrivKey:  priv,
 		SignCert: cert,

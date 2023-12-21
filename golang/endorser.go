@@ -3,7 +3,7 @@ package golang
 import (
 	"context"
 	"github.com/davidkhala/goutils"
-	"github.com/hyperledger/fabric-protos-go/peer"
+	"github.com/hyperledger/fabric-protos-go-apiv2/peer"
 	"google.golang.org/grpc"
 )
 
