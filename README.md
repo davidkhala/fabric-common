@@ -7,9 +7,7 @@
 - CA: v1.5.7
 - couchdb:v3.3.2
 ### Prerequisite: For development
-- golang: 1.15.x
-- fabric-sdk-java
-    - java: openjdk 11.0.7 2020-04-14
+
 ### Prerequisite: [Windows 10 extras](https://hyperledger-fabric.readthedocs.io/en/release-2.0/prereqs.html#windows-extras)
 - Git x64: [64-bit Git for Windows Setup](https://github.com/git-for-windows/git/releases/download/v2.25.1.windows.1/Git-2.25.1-64-bit.exe)
 - use the Windows PowerShell
@@ -29,16 +27,7 @@
 - [java](java)
 - [nodejs](nodejs)
 
-## Milestone
-- [2.0]
-    - Use only raft for all CFT consensus scenario
-    - new lifecycle chaincode
-    - admin-service is removed from fabric-sdk-node
-    - allow to share private data on-chain
-    - chaincode fingerprint check is removed
-    - [configtxgen] remove anchor peer file generator, user should update anchor peer vis config update transaction 
 ## Notes
-- [connectionProfile]A connection profile is normally created by an administrator who understands the network topology.
 - if random result is included in WriteSet, it corrupts the deterministic process.
 - [keystore] For private keys existing in local file system, you should set the permissions to 0400 on *nix based OS.  
 - [gRPCs][docker network] **host name SHOULD not include upper-case character, otherwise gRpcs ping for discovery_client will not response back with docker network DNS** 
@@ -50,7 +39,7 @@
 - [configtxgen] configtx.yaml: Organization Name and Organization ID can include alphanumeric characters as well as dots and dashes.
 - The default ApplicationPolicy is `{channel_config_policy_reference: '/Channel/Application/Endorsement'}` 
 - [query][blockEvent] blockHeight (got from GetChainInfo) indexing from 1, blockNumber in blockEvent starting from 0.
-- QueryInstalledChaincode/s would not change even after removal source archive, we could refresh it by restarting peer 
+ 
      
 ### Notes: Private Data 
 
