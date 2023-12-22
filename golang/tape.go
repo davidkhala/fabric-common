@@ -3,11 +3,18 @@ package golang
 
 import (
 	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
+	"crypto/sha256"
 	"crypto/x509"
+	"encoding/asn1"
 	"encoding/pem"
 	"fmt"
+	"github.com/davidkhala/protoutil/common/crypto"
+	"github.com/hyperledger/fabric-protos-go-apiv2/common"
 	"github.com/pkg/errors"
 	"io/ioutil"
+	"math/big"
 )
 
 type Node struct {
@@ -108,6 +115,91 @@ type Crypto struct {
 	Creator  []byte
 	PrivKey  *ecdsa.PrivateKey
 	SignCert *x509.Certificate
+	Digest   func([]byte) []byte
+}
+
+func (s *Crypto) SetDefaultDigest() {
+	s.Digest = func(in []byte) []byte {
+		h := sha256.New()
+		h.Write(in)
+		return h.Sum(nil)
+	}
+}
+
+type ECDSASignature struct {
+	R, S *big.Int
+}
+
+func (s *Crypto) Sign(msg []byte) ([]byte, error) {
+	ri, si, err := ecdsa.Sign(rand.Reader, s.PrivKey, s.Digest(msg))
+	if err != nil {
+		return nil, err
+	}
+
+	si, _, err = ToLowS(&s.PrivKey.PublicKey, si)
+	if err != nil {
+		return nil, err
+	}
+
+	return asn1.Marshal(ECDSASignature{ri, si})
+}
+
+var (
+	// CurveHalfOrders contains the precomputed curve group orders halved.
+	// It is used to ensure that signature' S value is lower or equal to the
+	// curve group order halved. We accept only low-S signatures.
+	// They are precomputed for efficiency reasons.
+	CurveHalfOrders = map[elliptic.Curve]*big.Int{
+		elliptic.P224(): new(big.Int).Rsh(elliptic.P224().Params().N, 1),
+		elliptic.P256(): new(big.Int).Rsh(elliptic.P256().Params().N, 1),
+		elliptic.P384(): new(big.Int).Rsh(elliptic.P384().Params().N, 1),
+		elliptic.P521(): new(big.Int).Rsh(elliptic.P521().Params().N, 1),
+	}
+)
+
+func IsLowS(k *ecdsa.PublicKey, s *big.Int) (bool, error) {
+	halfOrder, ok := CurveHalfOrders[k.Curve]
+	if !ok {
+		return false, fmt.Errorf("curve not recognized [%s]", k.Curve)
+	}
+
+	return s.Cmp(halfOrder) != 1, nil
+}
+func ToLowS(k *ecdsa.PublicKey, s *big.Int) (*big.Int, bool, error) {
+	lowS, err := IsLowS(k, s)
+	if err != nil {
+		return nil, false, err
+	}
+
+	if !lowS {
+		// Set s to N - s that will be then in the lower part of signature space
+		// less or equal to half order
+		s.Sub(k.Params().N, s)
+
+		return s, true, nil
+	}
+
+	return s, false, nil
+}
+
+func (s *Crypto) Serialize() ([]byte, error) {
+	return s.Creator, nil
+}
+
+func (s *Crypto) NewSignatureHeader() (*common.SignatureHeader, error) {
+	creator, err := s.Serialize()
+	if err != nil {
+		return nil, err
+	}
+	nonce, err := crypto.GetRandomNonce()
+	if err != nil {
+		return nil, err
+	}
+
+	return &common.SignatureHeader{
+		Creator: creator,
+		Nonce:   nonce,
+	}, nil
 }
 
 func GetCertificate(f string) (*x509.Certificate, []byte, error) {
