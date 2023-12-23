@@ -10,8 +10,10 @@ import (
 	"encoding/asn1"
 	"encoding/pem"
 	"fmt"
+	"github.com/davidkhala/protoutil"
 	"github.com/davidkhala/protoutil/common/crypto"
 	"github.com/hyperledger/fabric-protos-go-apiv2/common"
+	"github.com/hyperledger/fabric-protos-go-apiv2/peer"
 	"github.com/pkg/errors"
 	"io/ioutil"
 	"math/big"
@@ -212,4 +214,13 @@ func GetCertificate(f string) (*x509.Certificate, []byte, error) {
 
 	c, err := x509.ParseCertificate(block.Bytes)
 	return c, in, err
+}
+func GetChaincodeHeaderExtension(hdr *common.Header) (*peer.ChaincodeHeaderExtension, error) {
+	chdr, err := protoutil.UnmarshalChannelHeader(hdr.ChannelHeader)
+	if err != nil {
+		return nil, err
+	}
+
+	chaincodeHdrExt, err := protoutil.UnmarshalChaincodeHeaderExtension(chdr.Extension)
+	return chaincodeHdrExt, errors.Wrap(err, "error unmarshalling ChaincodeHeaderExtension")
 }
