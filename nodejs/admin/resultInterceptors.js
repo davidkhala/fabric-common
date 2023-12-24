@@ -1,16 +1,11 @@
 import {CommonResponseStatus} from 'khala-fabric-formatter/constants.js';
 
 const {SUCCESS} = CommonResponseStatus;
-/**
- * @typedef {function(result:ProposalResponse, ...Object):ProposalResponse} ProposalResultHandler
- */
-/**
- * @typedef {function(result:CommitResponse):CommitResponse} CommitResultHandler
- */
 
 /**
  *
- * @type ProposalResultHandler
+ * @param {ProposalResponse} result
+ * @returns {EndorsementResponse[]}
  */
 export const SanCheck = (result) => {
 	const {errors, responses} = result;
@@ -20,23 +15,26 @@ export const SanCheck = (result) => {
 		throw err;
 	}
 
-	const endorsementErrors = [];
-	for (const Response of responses) {
-		const {response, connection} = Response;
+	const endorsementResponses = [];
+	for (const {response, connection} of responses) {
 		if (response.status !== 200) {
-			endorsementErrors.push({response, connection});
+			endorsementResponses.push({response, connection});
 		}
-
 	}
-	return endorsementErrors;
+	return endorsementResponses;
 };
 
 /**
  *
  * @type ProposalResultHandler
+ * @param result
+ * @param {ErrorsFilter} [errorsFilter]
  */
-export const EndorseALL = (result) => {
-	const endorsementErrors = SanCheck(result);
+export const EndorseALL = (result, errorsFilter) => {
+	if (!errorsFilter) {
+		errorsFilter = () => true;
+	}
+	const endorsementErrors = SanCheck(result).filter(errorsFilter);
 	if (endorsementErrors.length > 0) {
 		const err = Error('ENDORSE_ERROR');
 		err.errors = endorsementErrors.reduce((sum, {response, connection}) => {
@@ -48,6 +46,7 @@ export const EndorseALL = (result) => {
 	}
 	return result;
 };
+
 
 /**
  *
@@ -64,3 +63,13 @@ export const CommitSuccess = (result) => {
 	Object.assign(err, {status, info});
 	throw err;
 };
+
+/**
+ * @typedef {function(result:ProposalResponse, ...Object):ProposalResponse} ProposalResultHandler
+ */
+/**
+ * @typedef {function(result:CommitResponse):CommitResponse} CommitResultHandler
+ */
+/**
+ * @typedef {function(EndorsementResponse):boolean} ErrorsFilter
+ */

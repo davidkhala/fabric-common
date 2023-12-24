@@ -5,7 +5,8 @@ import {SystemChaincodeID} from 'khala-fabric-formatter/constants.js';
 import {BufferFrom} from 'khala-fabric-formatter/protobuf.js';
 import fs from 'fs';
 import {getResponses} from 'khala-fabric-formatter/proposalResponse.js';
-import {EndorseALL, CommitSuccess, SanCheck} from './resultInterceptors.js';
+import {EndorseALL, CommitSuccess} from './resultInterceptors.js';
+import {match} from '@davidkhala/light/regx.js';
 
 const {
 	InstallChaincode, QueryInstalledChaincodes, QueryInstalledChaincode, ApproveChaincodeDefinitionForMyOrg,
@@ -27,21 +28,22 @@ const {ApplicationPolicy, CollectionConfigPackage} = protosProtos;
  * @type ProposalResultHandler
  */
 const skipIfInstalled = (result) => {
-	const endorsementErrors = SanCheck(result).filter(({response}) => {
+	const prefix = 'failed to invoke backing implementation of \'InstallChaincode\': chaincode already successfully installed';
+	return EndorseALL(result, ({response}) => {
 		const {status, message} = response;
-		const prefix = `failed to invoke backing implementation of 'InstallChaincode': chaincode already successfully installed`;
 		return status !== 500 || !message.startsWith(prefix);
 	});
-	if (endorsementErrors.length > 0) {
-		const err = Error('ENDORSE_ERROR');
-		err.errors = endorsementErrors.reduce((sum, {response, connection}) => {
-			delete response.payload;
-			sum[connection.url] = response;
-			return sum;
-		}, {});
-		throw err;
-	}
-	return result
+};
+/**
+ * @type ProposalResultHandler
+ */
+const skipIfNoChange = (result) => {
+	const pattern = /failed to invoke backing implementation of 'ApproveChaincodeDefinitionForMyOrg': attempted to redefine uncommitted sequence \(\d+\) for namespace diagnose with unchanged content/;
+
+	return EndorseALL(result, ({response}) => {
+		const {status, message} = response;
+		return status !== 500 || !match(message, pattern);
+	});
 };
 
 export default class LifecycleProposal extends ProposalManager {
@@ -144,13 +146,13 @@ export default class LifecycleProposal extends ProposalManager {
 			args,
 		};
 		const result = await this.send(buildProposalRequest);
-		const parseReferences  = ({references})=>{
-			const result = {}
+		const parseReferences = ({references}) => {
+			const _result = {};
 			for (const [key, value] of Object.entries(references)) {
-				result[key] = value;
+				_result[key] = value;
 			}
-			return result
-		}
+			return _result;
+		};
 
 		result.queryResults = getResponses(result).map(response => {
 			if (packageId) {
@@ -211,7 +213,11 @@ export default class LifecycleProposal extends ProposalManager {
 			fcn: ApproveChaincodeDefinitionForMyOrg,
 			args: [BufferFrom(approveChaincodeDefinitionForMyOrgArgs, ApproveChaincodeDefinitionForMyOrgArgs)],
 		};
-		return await this.send(buildProposalRequest);
+		this.resultHandler = skipIfNoChange;
+
+		const result = await this.send(buildProposalRequest);
+		this.resetResultHandler();
+		return result;
 	}
 
 
@@ -287,7 +293,7 @@ export default class LifecycleProposal extends ProposalManager {
 
 			if (name) {
 				const resultSingle = QueryChaincodeDefinitionResult.decode(payload);
-				resultSingle.sequence = resultSingle.sequence.toInt()
+				resultSingle.sequence = resultSingle.sequence.toInt();
 				return singleChaincodeDefinitionAmend(resultSingle);
 			} else {
 				const {chaincode_definitions} = QueryChaincodeDefinitionsResult.decode(payload);
