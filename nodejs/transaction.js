@@ -26,7 +26,6 @@ export default class Transaction extends ChaincodeAction {
 	}
 
 	async evaluate({fcn, args = [], transientMap, nonce}) {
-		this.proposal.asQuery();
 		return this.proposal.send({
 			fcn,
 			args,
@@ -39,7 +38,6 @@ export default class Transaction extends ChaincodeAction {
 		if (init) {
 			fcn = 'init';
 		}
-		this.proposal.asEndorsement();
 		const result = await this.proposal.send({
 			fcn,
 			args,

@@ -60,14 +60,6 @@ export default class ProposalManager extends Proposal {
 		this.assertCommitResult = assertFunction;
 	}
 
-	asQuery() {
-		this.type = 'Query';
-	}
-
-	asEndorsement() {
-		this.type = 'Endorsement';
-	}
-
 	set signingProcess(signCallback) {
 		assert.ok(typeof signCallback === 'function');
 		this.signFunction = signCallback;

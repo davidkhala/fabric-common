@@ -222,7 +222,6 @@ export default class LifecycleProposal extends ProposalManager {
 
 
 	async checkCommitReadiness({name, version, sequence}) {
-		this.asQuery();
 		const checkCommitReadinessArgs = {
 			sequence, name, version
 		};
@@ -269,7 +268,6 @@ export default class LifecycleProposal extends ProposalManager {
 	async queryChaincodeDefinition(name) {
 		let fcn;
 		let args;
-		this.asQuery();
 		if (name) {
 			fcn = QueryChaincodeDefinition;
 			args = [BufferFrom({name}, QueryChaincodeDefinitionArgs)];
