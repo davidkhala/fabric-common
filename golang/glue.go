@@ -58,9 +58,11 @@ func LoadCryptoFrom(config CryptoConfig) (*Crypto, error) {
 		return nil, errors.Wrapf(err, "error get msp id")
 	}
 
-	return &Crypto{
+	_crypto := &Crypto{
 		Creator:  name,
 		PrivKey:  priv,
 		SignCert: cert,
-	}, nil
+	}
+	_crypto.SetDefaultDigest()
+	return _crypto, nil
 }
