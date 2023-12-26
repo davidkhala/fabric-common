@@ -15,7 +15,7 @@ func NewTransactionListener(eventer BlockEventer, txid string) TransactionListen
 	var listener = TransactionListener{
 		BlockEventer: eventer,
 	}
-	listener.BlockEventer.Continue = eventer.ContinueBuilder(func(currentDeliverResponse interface{}, currentError error, deliverResponses []interface{}, errors []error) (bool, interface{}) {
+	listener.BlockEventer.Continue = eventer.ContinueBuilder(func(currentDeliverResponse interface{}, deliverResponses []interface{}) (bool, interface{}) {
 		switch currentDeliverResponse.(type) {
 		case *peer.DeliverResponse_BlockAndPrivateData:
 			var actual = currentDeliverResponse.(*peer.DeliverResponse_BlockAndPrivateData)
