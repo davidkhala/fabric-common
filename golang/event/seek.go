@@ -7,6 +7,11 @@ import (
 	"math"
 )
 
+var SeekOldest = &orderer.SeekPosition{
+	Type: &orderer.SeekPosition_Oldest{
+		Oldest: &orderer.SeekOldest{},
+	},
+}
 var SeekNewest = &orderer.SeekPosition{
 	Type: &orderer.SeekPosition_Newest{
 		Newest: &orderer.SeekNewest{},
@@ -26,14 +31,14 @@ type SeekInfo struct {
 
 // WaitUtilReady will wait for future block
 // Commonly used for: Wait for next block, confirming tx finality
-func (seekInfo SeekInfo) WaitUtilReady() SeekInfo {
+func (seekInfo *SeekInfo) WaitUtilReady() *SeekInfo {
 	seekInfo.Behavior = orderer.SeekInfo_BLOCK_UNTIL_READY
 	return seekInfo
 }
 
 // Fetch will only get current existing blocks.
 // Commonly used for: get genesis block, query block content
-func (seekInfo SeekInfo) Fetch() SeekInfo {
+func (seekInfo *SeekInfo) Fetch() *SeekInfo {
 	seekInfo.Behavior = orderer.SeekInfo_FAIL_IF_NOT_READY
 	return seekInfo
 }
@@ -48,12 +53,11 @@ func (seekInfo SeekInfo) SignBy(channel string, signer protoutil.Signer) (*commo
 		0,
 	)
 }
-func SeekInfoFrom(start, stop *orderer.SeekPosition) SeekInfo {
-	return SeekInfo{
+func SeekInfoFrom(start, stop *orderer.SeekPosition) *SeekInfo {
+	return &SeekInfo{
 		&orderer.SeekInfo{
-			Start:    start,
-			Stop:     stop,
-			Behavior: orderer.SeekInfo_FAIL_IF_NOT_READY,
+			Start: start,
+			Stop:  stop,
 		},
 	}
 }

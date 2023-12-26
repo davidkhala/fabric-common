@@ -42,5 +42,7 @@ func NewTransactionListener(eventer BlockEventer, txid string) TransactionListen
 
 func (TransactionListener) GetSeekInfo() SeekInfo {
 
-	return SeekInfoFrom(SeekNewest, SeekMax).WaitUtilReady()
+	var seek = SeekInfoFrom(SeekNewest, SeekMax)
+	seek.WaitUtilReady()
+	return *seek
 }
