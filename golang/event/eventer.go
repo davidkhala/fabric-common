@@ -10,7 +10,7 @@ import (
 	"io"
 )
 
-type ContinueFcn func(currentDeliverResponse interface{}, currentError error, deliverResponses []interface{}, errors []error) bool
+type ContinueFcn func(currentDeliverResponse interface{}, currentError error, deliverResponses []interface{}, errors []error) (bool, interface{})
 type Eventer struct {
 	peer.DeliverClient
 	peer.Deliver_DeliverClient
@@ -21,18 +21,18 @@ type Eventer struct {
 
 func (Eventer) ContinueBuilder(next ContinueFcn) ContinueFcn {
 
-	return func(currentDeliverResponse interface{}, currentError error, deliverResponses []interface{}, _errors []error) bool {
+	return func(currentDeliverResponse interface{}, currentError error, deliverResponses []interface{}, _errors []error) (bool, interface{}) {
 		if currentError == io.EOF {
-			return false
+			return false, nil
 		} else if currentError != nil {
 			panic(currentError)
 		}
 
 		switch currentDeliverResponse.(type) {
-		case peer.DeliverResponse_Status:
-		case peer.DeliverResponse_Block:
-		case peer.DeliverResponse_FilteredBlock:
-		case peer.DeliverResponse_BlockAndPrivateData:
+		case *peer.DeliverResponse_Status:
+		case *peer.DeliverResponse_Block:
+		case *peer.DeliverResponse_FilteredBlock:
+		case *peer.DeliverResponse_BlockAndPrivateData:
 		default:
 			panic(fmt.Sprintf("Unknown DeliverResponse type=%T", currentDeliverResponse))
 		}
@@ -42,16 +42,16 @@ func (Eventer) ContinueBuilder(next ContinueFcn) ContinueFcn {
 
 // SetDefaultContinue TODO
 func (e *Eventer) SetDefaultContinue() {
-	e.Continue = e.ContinueBuilder(func(currentDeliverResponse interface{}, currentError error, deliverResponses []interface{}, errors []error) bool {
+	e.Continue = e.ContinueBuilder(func(currentDeliverResponse interface{}, currentError error, deliverResponses []interface{}, errors []error) (bool, interface{}) {
 		switch currentDeliverResponse.(type) {
 		case peer.DeliverResponse_Status:
 			var status = currentDeliverResponse.(peer.DeliverResponse_Status)
 			switch status.Status {
 			case common.Status_SUCCESS, common.Status_NOT_FOUND:
-				return false
+				return false, status.Status
 			}
 		}
-		return true
+		return true, nil
 	})
 }
 
@@ -78,24 +78,26 @@ func NewEventer(ctx context.Context, connect *grpc.ClientConn) Eventer {
 	}
 }
 
-func (eventer Eventer) SendRecv(seek *common.Envelope) ([]interface{}, error) {
+func (eventer Eventer) SendRecv(seek *common.Envelope) (interface{}, []interface{}, error) {
 	err := eventer.Send(seek)
 
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	var deliverResponses []interface{}
-	var errorSlice []error
-
+	var errorSlice []error // TODO Do we really need error reducer, how about panic on single error?
+	var receiptData interface{}
+	var toContinue bool
 	for {
 		deliverResponse, recvErr := eventer.Recv()
 		var deliverResponseType = (*deliverResponse).Type
 		deliverResponses = append(deliverResponses, deliverResponseType)
 		errorSlice = append(errorSlice, recvErr)
-		if !eventer.Continue(deliverResponseType, recvErr, deliverResponses, errorSlice) {
+		toContinue, receiptData = eventer.Continue(deliverResponseType, recvErr, deliverResponses, errorSlice)
+		if !toContinue {
 			break
 		}
 	}
 
-	return deliverResponses, eventer.ErrorReducer(errorSlice)
+	return receiptData, deliverResponses, eventer.ErrorReducer(errorSlice)
 }
