@@ -12,10 +12,10 @@ export default class SlimDiscoveryService extends DiscoveryService {
 		delete this.targets;
 		delete this.setTargets;
 
-		this.setDiscoverer(discoverer);
+		this.discoverer = discoverer;
 	}
 
-	setDiscoverer(discoverer) {
+	set discoverer(discoverer) {
 		this.currentTarget = discoverer;
 	}
 

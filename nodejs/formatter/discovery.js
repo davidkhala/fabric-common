@@ -1,6 +1,7 @@
 import {DiscoveryResultType} from './constants.js';
 import fabprotos from 'fabric-protos';
 import assert from 'assert';
+
 export const ParsePeerResult = ({identity, membership_info, state_info}) => {
 	const peer = {};
 	// IDENTITY
@@ -20,10 +21,18 @@ export const ParsePeerResult = ({identity, membership_info, state_info}) => {
 		const {tag, alive_msg} = fabprotos.gossip.GossipMessage.decode(payload);
 		assert.strictEqual(tag, 1);
 		const {membership: {endpoint, pki_id}, timestamp: {inc_num, seq_num}} = alive_msg;
-		// TODO WIP what is the content of pki_id and readable format
-		// TODO What is the gossip inc_num, seq_num
-		// TODO What is this inc_num: Long { low: -664492743, high: 377579470, unsigned: true },
-		peer.membership_info = {endpoint};
+		peer.membership_info = {
+			endpoint,
+			// pki_id is a digest(sha256) of [mspID, IdBytes] from a peer.
+			// See in Fabric core code `GetPKIidOfCert(peerIdentity api.PeerIdentityType) common.PKIidType`
+			pki_id: pki_id.toString('hex')
+		};
+		peer.timestamp = {
+			// Date.now() in nano second. 19 digits length. UnixSecond is 13 digits length
+			unix_nano: inc_num.toString(),
+			// auto-increment as long as gossip alive in the blockchain network. (starting from 0)
+			logical_time: seq_num.toInt()
+		};
 	}
 
 	// STATE
@@ -31,6 +40,9 @@ export const ParsePeerResult = ({identity, membership_info, state_info}) => {
 		const {payload, signature, secret_envelope} = state_info;
 		assert.strictEqual(secret_envelope, null);
 		const {tag, state_info: {timestamp, pki_id, channel_MAC, properties}} = fabprotos.gossip.GossipMessage.decode(payload);
+
+		// channel_MAC is an authentication code that proves that the peer that sent this message knows the name of the channel.
+		channel_MAC;
 		assert.strictEqual(tag, 5);
 		const {chaincodes, ledger_height} = properties;
 		peer.ledger_height = ledger_height.toInt();
