@@ -3,10 +3,10 @@ package discover
 import (
 	"fmt"
 	"github.com/davidkhala/goutils"
-	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric-protos-go-apiv2/discovery"
 	"github.com/hyperledger/fabric-protos-go-apiv2/gossip"
 	"github.com/hyperledger/fabric-protos-go-apiv2/msp"
+	"google.golang.org/protobuf/proto"
 )
 
 type IsQueryResult interface {
