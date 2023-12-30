@@ -11,7 +11,7 @@ import (
 type Client struct {
 	discovery.DiscoveryClient
 	context.Context
-	clientTlsCertHash []byte
+	ClientTlsCertHash []byte
 }
 
 func (c *Client) Init(grpcClient grpc.ClientConnInterface) {
@@ -20,7 +20,7 @@ func (c *Client) Init(grpcClient grpc.ClientConnInterface) {
 
 }
 func (c Client) Request(crypto protoutil.Signer, queries ...*discovery.Query) (responses []IsQueryResult) {
-	var signedRequest = Request(crypto, c.clientTlsCertHash, queries...)
+	var signedRequest = Request(crypto, c.ClientTlsCertHash, queries...)
 	discoverResponse, err := c.DiscoveryClient.Discover(c.Context, &signedRequest)
 	goutils.PanicError(err)
 
