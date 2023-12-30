@@ -4,7 +4,9 @@ import (
 	"context"
 	"github.com/davidkhala/fabric-common/golang/discover"
 	"github.com/davidkhala/goutils"
+	"github.com/hyperledger/fabric-protos-go-apiv2/discovery"
 	"github.com/kortschak/utter"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -51,6 +53,22 @@ func TestDiscover(t *testing.T) {
 			var result = response.(discover.ConfigResult)
 			utter.Dump(result.GetMSPs())
 		}
+	})
+	t.Run("configQuery: empty channel", func(t *testing.T) {
+		var query = discovery.Query{
+			Query: &discovery.Query_ConfigQuery{
+				ConfigQuery: &discovery.ConfigQuery{},
+			},
+		}
+		var responses = client.Request(crypto, &query)
+		var response = responses[0]
+
+		assert.Equal(t, "access denied", response.(discover.Error).Content)
+
+		assert.Panics(t, func() {
+			var _ = response.(discover.ConfigResult)
+		})
+
 	})
 	t.Run("PeerMembershipQuery", func(t *testing.T) {
 		var query = discover.PeerMembershipQuery(channel, nil)
