@@ -11,21 +11,17 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func (node Node) AsGRPCClient() (connect *grpc.ClientConn, err error) {
-
+func (node Node) AsGRPCClient() (connect *grpc.ClientConn) {
+	var err error
 	var certificate *x509.Certificate
 	var tlsCARootCertBytes = node.TLSCARootByte
 	if tlsCARootCertBytes == nil {
 		tlsCARootCertBytes, err = goutils.ReadFile(node.TLSCARoot)
-		if err != nil {
-			return nil, err
-		}
+		goutils.PanicError(err)
 	}
 
 	certificate, err = crypto.ParseCertPem(tlsCARootCertBytes)
-	if err != nil {
-		return nil, err
-	}
+	goutils.PanicError(err)
 
 	var param = Params{
 		SslTargetNameOverride: node.SslTargetNameOverride,
@@ -33,6 +29,7 @@ func (node Node) AsGRPCClient() (connect *grpc.ClientConn, err error) {
 		WaitForReady:          true,
 	}
 	connect, err = Ping(node.Addr, param)
+	goutils.PanicError(err)
 	return
 
 }
@@ -53,13 +50,13 @@ func LoadCryptoFrom(config CryptoConfig) (*Crypto, error) {
 		IdBytes: certBytes,
 	}
 
-	name, err := proto.Marshal(id)
+	idBytes, err := proto.Marshal(id)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error get msp id")
 	}
 
 	_crypto := &Crypto{
-		Creator:  name,
+		Creator:  idBytes,
 		PrivKey:  priv,
 		SignCert: cert,
 	}

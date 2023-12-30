@@ -112,6 +112,7 @@ type CryptoConfig struct {
 	PrivKey    string
 	SignCert   string
 	TLSCACerts []string
+	//	TODO to cater ClientTlsCertHash
 }
 type Crypto struct {
 	Creator  []byte
