@@ -19,6 +19,7 @@ export default class FabricCAService {
 			port,
 			tlsOptions,
 		}, cryptoSuite);
+		this.url = `${protocol}://${hostname}:${port}`;
 		Object.assign(this, {caname, _cryptoSuite: cryptoSuite, logger});
 		if (timeout) {
 			Utils.setConfigSetting('connection-timeout', timeout);

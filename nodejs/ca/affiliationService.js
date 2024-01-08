@@ -38,7 +38,7 @@ export default class AffiliationServiceBuilder {
 			return result;
 		} catch (e) {
 			const {errors} = e;
-			if (errors && Array.isArray(errors)) {
+			if (errors && Array.isArray(errors) && errors.length === 1) {
 				const {code, message} = errors[0];
 				if (code === 63 && message === 'Failed to get affiliation: sql: no rows in result set') {
 					return undefined;

@@ -21,6 +21,7 @@ export default class IdentityServiceWrapper {
 	}
 
 	/**
+	 * create if not exist
 	 * @param {string} enrollmentID
 	 * @param {string} [enrollmentSecret]
 	 * @param {string} affiliation
@@ -28,9 +29,15 @@ export default class IdentityServiceWrapper {
 	 * @param {KeyValueAttribute[]} [attrs]
 	 * @param [caname]
 	 * @param [maxEnrollments]
-	 * @return {Promise<string>} The enrollment secret.  If not provided as parameter, a random secret is generated.
+	 * @return {Promise<string|undefined>} The enrollment secret if not exist. If not provided as parameter, a random secret is generated.
 	 */
-	async create({enrollmentID, enrollmentSecret, affiliation, role, attrs, caname, maxEnrollments}) {
+	async createIfNotExist({enrollmentID, enrollmentSecret, affiliation, role, attrs, caname, maxEnrollments}) {
+		const existing = await this.getOne({enrollmentID});
+		if (existing) {
+			this.logger.warn(`warn: ${enrollmentID} exist`);
+			this.logger.warn(existing);
+			return;
+		}
 		if (!maxEnrollments) {
 			maxEnrollments = -1;
 		}
@@ -97,5 +104,22 @@ export default class IdentityServiceWrapper {
 		}
 		const {identities} = result;
 		return identities;
+	}
+
+	async getOne({enrollmentID}) {
+		try {
+			const {result} = await this.identityService.getOne(enrollmentID, this.registrar);
+			return result;
+		} catch (e) {
+			const {errors} = e;
+			if (errors && Array.isArray(errors) && errors.length === 1) {
+				const {code, message} = errors[0];
+				if (code === 63 && message === 'Failed to get User: sql: no rows in result set') {
+					return undefined;
+				}
+			}
+			throw e;
+		}
+
 	}
 }
