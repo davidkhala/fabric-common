@@ -14,7 +14,9 @@
     "@davidkhala/light": "latest",
     "@davidkhala/compress": "latest",
     "khala-fabric-formatter": "latest",
-    "khala-fabric-admin": "latest"
+    "khala-fabric-admin": "latest",
+    "fabric-ca-client": "latest",
+    "@davidkhala/crypto": "latest"
   },
   "license": "Apache-2.0",
   "devDependencies": {

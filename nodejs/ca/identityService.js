@@ -3,9 +3,20 @@
  * @property {string} id
  * @property {string} type
  * @property {Object[]} attrs
+ * @property {string} affiliation
  * @property {number} max_enrollments
  */
 import IdentityService from 'fabric-ca-client/lib/IdentityService.js';
+
+
+function isNotExistError({errors}) {
+	if (errors && Array.isArray(errors) && errors.length === 1) {
+		const {code, message} = errors[0];
+		if (code === 63 && message === 'Failed to get User: sql: no rows in result set') {
+			return true;
+		}
+	}
+}
 
 export default class IdentityServiceWrapper {
 	/**
@@ -94,14 +105,7 @@ export default class IdentityServiceWrapper {
 	 * @returns {Promise<Identity[]>}
 	 */
 	async getAll() {
-		const {result, errors, messages, success} = await this.identityService.getAll(this.registrar);
-		if (!success) {
-			const err = Error('identityService:getAll');
-			err.result = result;
-			err.errors = errors;
-			err.messages = messages;
-			throw err;
-		}
+		const {result} = await this.identityService.getAll(this.registrar);
 		const {identities} = result;
 		return identities;
 	}
@@ -111,12 +115,25 @@ export default class IdentityServiceWrapper {
 			const {result} = await this.identityService.getOne(enrollmentID, this.registrar);
 			return result;
 		} catch (e) {
-			const {errors} = e;
-			if (errors && Array.isArray(errors) && errors.length === 1) {
-				const {code, message} = errors[0];
-				if (code === 63 && message === 'Failed to get User: sql: no rows in result set') {
-					return undefined;
-				}
+			if (isNotExistError(e)) {
+				return;
+			}
+			throw e;
+		}
+	}
+
+	/**
+	 *
+	 * @param enrollmentID
+	 * @returns {Promise<Identity|undefined>}
+	 */
+	async delete({enrollmentID}) {
+		try {
+			const {result} = await this.identityService.delete(enrollmentID, this.registrar, true);
+			return result;
+		} catch (e) {
+			if (isNotExistError(e)) {
+				return;
 			}
 			throw e;
 		}
