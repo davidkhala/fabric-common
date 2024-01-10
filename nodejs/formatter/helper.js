@@ -11,6 +11,16 @@ export const calculateTransactionId = (signature_header) => {
 	const trans_bytes = Buffer.concat([nonce, creator_bytes]);
 	return sha2_256(trans_bytes);
 };
+
+/**
+ * pki_id is a digest(sha256) of [mspID, IdBytes] from a peer.
+ * See in Fabric core code `GetPKIidOfCert(peerIdentity api.PeerIdentityType) common.PKIidType`
+ * @param identity
+ */
+export function calculatePKI_ID(identity) {
+	return sha2_256(Buffer.concat([Buffer.from(identity.mspid), identity.id_bytes]));
+}
+
 // utility function to create a random number of
 // the specified length.
 export const getNonce = (length = 24) => {

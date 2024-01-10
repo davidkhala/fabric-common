@@ -1,39 +1,38 @@
 import {DiscoveryResultType} from './constants.js';
 import fabprotos from 'fabric-protos';
 import assert from 'assert';
+import {calculatePKI_ID} from './helper.js';
 
 export const ParsePeerResult = ({identity, membership_info, state_info}) => {
 	const peer = {};
 	// IDENTITY
-	{
-		const {mspid, id_bytes} = fabprotos.msp.SerializedIdentity.decode(identity);
-		peer.identity = {
-			mspid,
-			id_bytes: id_bytes.toString()
-		};
-	}
+	const {mspid, id_bytes} = fabprotos.msp.SerializedIdentity.decode(identity);
+	peer.identity = {
+		mspid,
+		id_bytes: id_bytes.toString()
+	};
 
 	// MEMBERSHIP - Peer.membership_info
 	// gossip.Envelope.payload
-	{
-		const {payload, signature, secret_envelope} = membership_info;
-		assert.strictEqual(secret_envelope, null);
-		const {tag, alive_msg} = fabprotos.gossip.GossipMessage.decode(payload);
-		assert.strictEqual(tag, 1);
-		const {membership: {endpoint, pki_id}, timestamp: {inc_num, seq_num}} = alive_msg;
-		peer.membership_info = {
-			endpoint,
-			// pki_id is a digest(sha256) of [mspID, IdBytes] from a peer.
-			// See in Fabric core code `GetPKIidOfCert(peerIdentity api.PeerIdentityType) common.PKIidType`
-			pki_id: pki_id.toString('hex')
-		};
-		peer.timestamp = {
-			// Date.now() in nano second. 19 digits length. UnixSecond is 13 digits length
-			unix_nano: inc_num.toString(),
-			// auto-increment as long as gossip alive in the blockchain network. (starting from 0)
-			logical_time: seq_num.toInt()
-		};
-	}
+	const {payload, signature, secret_envelope} = membership_info;
+	assert.strictEqual(secret_envelope, null);
+	const {tag, alive_msg} = fabprotos.gossip.GossipMessage.decode(payload);
+	assert.strictEqual(tag, 1);
+	const {membership: {endpoint, pki_id}, timestamp: {inc_num, seq_num}} = alive_msg;
+	const pki_id_hex = pki_id.toString('hex');
+	assert.strictEqual(pki_id_hex, calculatePKI_ID({mspid, id_bytes}));
+	peer.membership_info = {
+		endpoint,
+		// pki_id is a digest(sha256) of [mspID, IdBytes] from a peer.
+		// See in Fabric core code `GetPKIidOfCert(peerIdentity api.PeerIdentityType) common.PKIidType`
+		pki_id: pki_id_hex
+	};
+	peer.timestamp = {
+		// Date.now() in nano second. 19 digits length. UnixSecond is 13 digits length
+		unix_nano: inc_num.toString(),
+		// auto-increment as long as gossip alive in the blockchain network. (starting from 0)
+		logical_time: seq_num.toInt()
+	};
 
 	// STATE
 	if (state_info) {

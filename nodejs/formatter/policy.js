@@ -72,7 +72,7 @@ export default class Policy {
 			const nOutOf = new commonProto.SignaturePolicy.NOutOf();
 
 			nOutOf.n = parseInt(n);
-			nOutOf.rules = array.map((sub) => this.parsePolicy(sub));
+			nOutOf.rules = array.map((sub) => Policy.parsePolicy(sub));
 
 			signaturePolicy.n_out_of = nOutOf;
 			signaturePolicy.Type = 'n_out_of';
