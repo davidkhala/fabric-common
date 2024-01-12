@@ -1,6 +1,7 @@
 package event
 
 import (
+	"github.com/davidkhala/goutils"
 	"github.com/davidkhala/protoutil"
 	"github.com/hyperledger/fabric-protos-go-apiv2/common"
 	"github.com/hyperledger/fabric-protos-go-apiv2/orderer"
@@ -43,8 +44,8 @@ func (seekInfo *SeekInfo) Fetch() *SeekInfo {
 	return seekInfo
 }
 
-func (seekInfo SeekInfo) SignBy(channel string, signer protoutil.Signer) (*common.Envelope, error) {
-	return protoutil.CreateSignedEnvelope(
+func (seekInfo SeekInfo) SignBy(channel string, signer protoutil.Signer) *common.Envelope {
+	var envelop, err = protoutil.CreateSignedEnvelope(
 		common.HeaderType_DELIVER_SEEK_INFO,
 		channel,
 		signer,
@@ -52,6 +53,8 @@ func (seekInfo SeekInfo) SignBy(channel string, signer protoutil.Signer) (*commo
 		0,
 		0,
 	)
+	goutils.PanicError(err)
+	return envelop
 }
 func SeekInfoFrom(start, stop *orderer.SeekPosition) *SeekInfo {
 	return &SeekInfo{

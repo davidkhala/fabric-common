@@ -27,6 +27,7 @@ var cryptoConfig_icdd = CryptoConfig{
 	PrivKey:  FindKeyFilesOrPanic(goutils.HomeResolve("delphi-fabric/config/ca-crypto-config/peerOrganizations/icdd/users/Admin@icdd/msp/keystore"))[0],
 	SignCert: goutils.HomeResolve("delphi-fabric/config/ca-crypto-config/peerOrganizations/icdd/users/Admin@icdd/msp/signcerts/Admin@icdd-cert.pem"),
 }
+var channel = "allchannel"
 
 func TestConnection(t *testing.T) {
 	peer0_icdd.AsGRPCClient()
@@ -35,8 +36,15 @@ func TestConnection(t *testing.T) {
 func TestEvent(t *testing.T) {
 
 	var eventer = event.NewEventer(context.Background(), peer0_icdd.AsGRPCClient())
-	var blockEventer = event.NewBlockEventer(eventer)
-	blockEventer.SendRecv()
+	var blockEventer = event.NewBlockEventer(eventer, func(this event.DeliverResponseType, deliverResponses []event.DeliverResponseType) (bool, interface{}) {
+		println(this.Block.Header.Number)
+
+		return true, nil
+	})
+	var seek = event.SeekInfoFrom(event.SeekOldest, event.SeekNewest)
+	var _crypto = LoadCryptoFrom(cryptoConfig_astri)
+
+	blockEventer.SendRecv(seek.SignBy(channel, _crypto))
 }
 
 func TestDiscover(t *testing.T) {
@@ -45,15 +53,12 @@ func TestDiscover(t *testing.T) {
 		Context: context.Background(),
 	}
 	client.Init(peer0_icdd.AsGRPCClient()) // return client
-	crypto, err := LoadCryptoFrom(cryptoConfig_astri)
-	goutils.PanicError(err)
-
-	var channel = "allchannel"
+	var _crypto = LoadCryptoFrom(cryptoConfig_astri)
 
 	t.Run("configQuery", func(t *testing.T) {
 		var query = discover.ConfigQuery(channel)
 
-		var responses = client.Request(crypto, &query)
+		var responses = client.Request(_crypto, &query)
 
 		for _, response := range responses {
 			var result = response.(discover.ConfigResult)
@@ -66,7 +71,7 @@ func TestDiscover(t *testing.T) {
 				ConfigQuery: &discovery.ConfigQuery{},
 			},
 		}
-		var responses = client.Request(crypto, &query)
+		var responses = client.Request(_crypto, &query)
 		var response = responses[0]
 
 		assert.Equal(t, "access denied", response.(discover.Error).Content)
@@ -78,7 +83,7 @@ func TestDiscover(t *testing.T) {
 	})
 	t.Run("PeerMembershipQuery", func(t *testing.T) {
 		var query = discover.PeerMembershipQuery(channel, nil)
-		var responses = client.Request(crypto, &query)
+		var responses = client.Request(_crypto, &query)
 
 		for _, response := range responses {
 			var result = response.(discover.Members)
@@ -87,9 +92,8 @@ func TestDiscover(t *testing.T) {
 	})
 	t.Run("LocalPeerQuery", func(t *testing.T) {
 		var query = discover.LocalPeerQuery()
-		crypto, err := LoadCryptoFrom(cryptoConfig_icdd)
-		goutils.PanicError(err)
-		var responses = client.Request(crypto, &query)
+		var _crypto = LoadCryptoFrom(cryptoConfig_icdd)
+		var responses = client.Request(_crypto, &query)
 
 		for _, response := range responses {
 			var result = response.(discover.Members)
@@ -98,7 +102,7 @@ func TestDiscover(t *testing.T) {
 	})
 	t.Run("ChaincodeQuery", func(t *testing.T) {
 		var query = discover.ChaincodeQuery(channel)
-		var responses = client.Request(crypto, &query)
+		var responses = client.Request(_crypto, &query)
 		for _, response := range responses {
 			utter.Dump(response)
 		}

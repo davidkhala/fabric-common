@@ -6,7 +6,6 @@ import (
 	"github.com/davidkhala/goutils/crypto"
 	. "github.com/davidkhala/goutils/grpc"
 	"github.com/hyperledger/fabric-protos-go-apiv2/msp"
-	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
 )
@@ -33,17 +32,14 @@ func (node Node) AsGRPCClient() (connect *grpc.ClientConn) {
 	return
 
 }
-func LoadCryptoFrom(config CryptoConfig) (*Crypto, error) {
+func LoadCryptoFrom(config CryptoConfig) *Crypto {
 
 	priv, err := GetPrivateKey(config.PrivKey)
-	if err != nil {
-		return nil, errors.Wrapf(err, "error loading priv key")
-	}
+	goutils.PanicError(err)
 
 	cert, certBytes, err := GetCertificate(config.SignCert)
-	if err != nil {
-		return nil, errors.Wrapf(err, "error loading certificate")
-	}
+
+	goutils.PanicError(err)
 
 	id := &msp.SerializedIdentity{
 		Mspid:   config.MSPID,
@@ -51,9 +47,7 @@ func LoadCryptoFrom(config CryptoConfig) (*Crypto, error) {
 	}
 
 	idBytes, err := proto.Marshal(id)
-	if err != nil {
-		return nil, errors.Wrapf(err, "error get msp id")
-	}
+	goutils.PanicError(err)
 
 	_crypto := &Crypto{
 		Creator:  idBytes,
@@ -61,5 +55,5 @@ func LoadCryptoFrom(config CryptoConfig) (*Crypto, error) {
 		SignCert: cert,
 	}
 	_crypto.SetDefaultDigest()
-	return _crypto, nil
+	return _crypto
 }

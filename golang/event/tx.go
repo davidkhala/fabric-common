@@ -11,22 +11,18 @@ type TransactionListener struct {
 }
 
 func (t *TransactionListener) WaitForTx(txid string) {
-	t.BlockEventer.Continue = t.BlockEventer.ContinueBuilder(func(currentDeliverResponse interface{}, deliverResponses []interface{}) (bool, interface{}) {
-		switch currentDeliverResponse.(type) {
-		case *peer.DeliverResponse_BlockAndPrivateData:
-			var actual = currentDeliverResponse.(*peer.DeliverResponse_BlockAndPrivateData)
-			var block = actual.BlockAndPrivateData.Block
-			var txStatusCodes = block.Metadata.Metadata[common.BlockMetadataIndex_TRANSACTIONS_FILTER]
+	t.BlockEventer.Continue = ContinueBuilder(func(this DeliverResponseType, all []DeliverResponseType) (bool, interface{}) {
+		var block = this.Block
+		var txStatusCodes = block.Metadata.Metadata[common.BlockMetadataIndex_TRANSACTIONS_FILTER]
 
-			for index, value := range block.Data.Data {
-				envelope := protoutil.UnmarshalEnvelopeOrPanic(value)
-				payload := protoutil.UnmarshalPayloadOrPanic(envelope.Payload)
-				var txStatusCode = peer.TxValidationCode(txStatusCodes[index])
-				var channelHeader = protoutil.UnmarshalChannelHeaderOrPanic(payload.Header.ChannelHeader)
-				if channelHeader.Type == int32(common.HeaderType_ENDORSER_TRANSACTION) && txid == channelHeader.TxId {
-					// found
-					return false, peer.TxValidationCode_name[int32(txStatusCode)]
-				}
+		for index, value := range block.Data.Data {
+			envelope := protoutil.UnmarshalEnvelopeOrPanic(value)
+			payload := protoutil.UnmarshalPayloadOrPanic(envelope.Payload)
+			var txStatusCode = peer.TxValidationCode(txStatusCodes[index])
+			var channelHeader = protoutil.UnmarshalChannelHeaderOrPanic(payload.Header.ChannelHeader)
+			if channelHeader.Type == int32(common.HeaderType_ENDORSER_TRANSACTION) && txid == channelHeader.TxId {
+				// found
+				return false, peer.TxValidationCode_name[int32(txStatusCode)]
 			}
 		}
 		return true, nil
