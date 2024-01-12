@@ -15,7 +15,7 @@ type Transaction struct {
 	*common.SignatureHeader
 	*msp.SerializedIdentity
 	*common.Config               // if TxType==common.HeaderType_CONFIG
-	*common.ConfigUpdateEnvelope // if TxType==common.HeaderType_CONFIG_UPDATE
+	*common.ConfigUpdateEnvelope // if TxType==common.HeaderType_CONFIG_UPDATE or TxType==common.HeaderType_CONFIG
 	*peer.ChaincodeActionPayload // if TxType==common.HeaderType_ENDORSER_TRANSACTION
 	*peer.ChaincodeAction        // if TxType==common.HeaderType_ENDORSER_TRANSACTION
 }
@@ -35,6 +35,9 @@ func ParseTransaction(txBody *common.Payload) (t Transaction) {
 		config, err := protoutil.UnmarshalConfigEnvelope(txBody.Data)
 		goutils.PanicError(err)
 		t.Config = config.Config
+		configUpdate, err := protoutil.EnvelopeToConfigUpdate(config.LastUpdate) // TODO is it?
+		t.ConfigUpdateEnvelope = configUpdate
+
 	case common.HeaderType_CONFIG_UPDATE:
 		configUpdateEnv := &common.ConfigUpdateEnvelope{}
 		err := proto.Unmarshal(txBody.Data, configUpdateEnv)

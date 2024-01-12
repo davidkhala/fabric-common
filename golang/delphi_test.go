@@ -3,6 +3,7 @@ package golang
 import (
 	"context"
 	"github.com/davidkhala/fabric-common/golang/discover"
+	"github.com/davidkhala/fabric-common/golang/event"
 	"github.com/davidkhala/goutils"
 	"github.com/hyperledger/fabric-protos-go-apiv2/discovery"
 	"github.com/kortschak/utter"
@@ -29,10 +30,15 @@ var cryptoConfig_icdd = CryptoConfig{
 
 func TestConnection(t *testing.T) {
 	peer0_icdd.AsGRPCClient()
-}
-func TestNodeJsonFormat(t *testing.T) {
 	println(string(goutils.ToJson(peer0_icdd)))
 }
+func TestEvent(t *testing.T) {
+
+	var eventer = event.NewEventer(context.Background(), peer0_icdd.AsGRPCClient())
+	var blockEventer = event.NewBlockEventer(eventer)
+	blockEventer.SendRecv()
+}
+
 func TestDiscover(t *testing.T) {
 
 	var client = discover.Client{
