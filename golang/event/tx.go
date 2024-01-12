@@ -10,12 +10,8 @@ type TransactionListener struct {
 	BlockEventer
 }
 
-func NewTransactionListener(eventer BlockEventer, txid string) TransactionListener {
-
-	var listener = TransactionListener{
-		BlockEventer: eventer,
-	}
-	listener.BlockEventer.Continue = eventer.ContinueBuilder(func(currentDeliverResponse interface{}, deliverResponses []interface{}) (bool, interface{}) {
+func (t *TransactionListener) WaitForTx(txid string) {
+	t.BlockEventer.Continue = t.BlockEventer.ContinueBuilder(func(currentDeliverResponse interface{}, deliverResponses []interface{}) (bool, interface{}) {
 		switch currentDeliverResponse.(type) {
 		case *peer.DeliverResponse_BlockAndPrivateData:
 			var actual = currentDeliverResponse.(*peer.DeliverResponse_BlockAndPrivateData)
@@ -35,9 +31,6 @@ func NewTransactionListener(eventer BlockEventer, txid string) TransactionListen
 		}
 		return true, nil
 	})
-
-	return listener
-
 }
 
 func (TransactionListener) GetSeekInfo() SeekInfo {

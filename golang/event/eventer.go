@@ -18,9 +18,9 @@ type Eventer struct {
 	Continue ContinueFcn
 }
 
-func (Eventer) ContinueBuilder(next ContinueFcn) ContinueFcn {
-
-	return func(currentDeliverResponse interface{}, deliverResponses []interface{}) (bool, interface{}) {
+func (Eventer) ContinueBuilder(continueFcns ...ContinueFcn) ContinueFcn {
+	// TODO is it the best way to default a continueFcn?
+	continueFcns = append([]ContinueFcn{func(currentDeliverResponse interface{}, deliverResponses []interface{}) (bool, interface{}) {
 		switch currentDeliverResponse.(type) {
 		case *peer.DeliverResponse_Status:
 			var status = currentDeliverResponse.(*peer.DeliverResponse_Status)
@@ -30,13 +30,21 @@ func (Eventer) ContinueBuilder(next ContinueFcn) ContinueFcn {
 			default:
 				panic(fmt.Sprintf("Unknown DeliverResponse_Status=%s", status.Status))
 			}
-		case *peer.DeliverResponse_Block:
-		case *peer.DeliverResponse_FilteredBlock:
-		case *peer.DeliverResponse_BlockAndPrivateData:
+		case *peer.DeliverResponse_Block, *peer.DeliverResponse_FilteredBlock, *peer.DeliverResponse_BlockAndPrivateData:
 		default:
 			panic(fmt.Sprintf("Unknown DeliverResponse type=%T", currentDeliverResponse))
 		}
-		return next(currentDeliverResponse, deliverResponses)
+		return true, currentDeliverResponse
+	}}, continueFcns...)
+
+	return func(currentDeliverResponse interface{}, deliverResponses []interface{}) (bool, interface{}) {
+		for _, next := range continueFcns {
+			ok, result := next(currentDeliverResponse, deliverResponses)
+			if !ok {
+				return ok, result
+			}
+		}
+		return true, nil
 	}
 }
 

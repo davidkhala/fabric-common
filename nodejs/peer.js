@@ -6,8 +6,8 @@ export const container = {
 	MSPROOT: '/etc/hyperledger/crypto-config',
 	dockerSock: '/run/containerd/containerd.sock',
 	state: '/var/hyperledger/production',
-	config: '/etc/hyperledger/fabric',
-	'volume-state': '/var/hyperledger', // the only content is /var/hyperledger/production
+	config: '/var/hyperledger/fabric',
+	'volume-state': '/var/hyperledger/',
 	builder: '/opt/hyperledger/ccaas_builder/',
 };
 
