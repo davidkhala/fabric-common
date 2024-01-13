@@ -39,8 +39,12 @@ func TestEvent(t *testing.T) {
 	var eventer = event.NewEventer(context.Background(), peer0_icdd.AsGRPCClient())
 	t.Run("reply", func(t *testing.T) { // TODO WIP
 		var blockEventer = event.NewBlockEventer(eventer, func(this event.DeliverResponseType, deliverResponses []event.DeliverResponseType) (bool, interface{}) {
-			println(this.Block.Header.Number)
-			proto.FromFullBlock(this.Block)
+
+			var trimmedBlock = proto.FromFullBlock(this.Block)
+
+			for index, tx := range trimmedBlock.TrimmedTransactions {
+				println(trimmedBlock.Number, index, tx.Type.String())
+			}
 
 			return true, nil
 		})

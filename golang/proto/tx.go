@@ -20,10 +20,6 @@ type Transaction struct {
 	*peer.ChaincodeAction        // if TxType==common.HeaderType_ENDORSER_TRANSACTION
 }
 
-func (t Transaction) GetType() string {
-	return common.HeaderType_name[int32(t.TxType)]
-}
-
 func ParseTransaction(txBody *common.Payload) (t Transaction) {
 	var channelHeader = GetChannelHeaderFromPayload(txBody)
 	t.TxType = common.HeaderType(channelHeader.Type)
@@ -35,8 +31,11 @@ func ParseTransaction(txBody *common.Payload) (t Transaction) {
 		config, err := protoutil.UnmarshalConfigEnvelope(txBody.Data)
 		goutils.PanicError(err)
 		t.Config = config.Config
-		configUpdate, err := protoutil.EnvelopeToConfigUpdate(config.LastUpdate) // TODO is it?
-		t.ConfigUpdateEnvelope = configUpdate
+		if config.LastUpdate != nil { // in genesis block, nil is expected, in setAnchor tx, non-nil is expected
+			configUpdate, err := protoutil.EnvelopeToConfigUpdate(config.LastUpdate)
+			goutils.PanicError(err)
+			t.ConfigUpdateEnvelope = configUpdate
+		}
 
 	case common.HeaderType_CONFIG_UPDATE:
 		configUpdateEnv := &common.ConfigUpdateEnvelope{}
