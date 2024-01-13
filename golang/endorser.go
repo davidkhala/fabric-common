@@ -12,14 +12,16 @@ type Endorser struct {
 	context.Context
 }
 
-func EndorserFrom(connect *grpc.ClientConn) peer.EndorserClient {
-	return peer.NewEndorserClient(connect)
+func EndorserFrom(ctx context.Context, connect *grpc.ClientConn) Endorser {
+	if ctx == nil {
+		ctx = goutils.GetGoContext()
+	}
+	return Endorser{
+		EndorserClient: peer.NewEndorserClient(connect),
+		Context:        ctx,
+	}
 }
 
 func (endorser *Endorser) ProcessProposal(in *peer.SignedProposal) (*peer.ProposalResponse, error) {
-	// pseudo overwrite
-	if endorser.Context == nil {
-		endorser.Context = goutils.GetGoContext()
-	}
 	return endorser.EndorserClient.ProcessProposal(endorser.Context, in)
 }

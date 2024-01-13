@@ -11,17 +11,16 @@ import (
 type Committer struct {
 	orderer.AtomicBroadcastClient
 	orderer.AtomicBroadcast_BroadcastClient // not intrinsic
-	context.Context
 }
 
 func CommitterFrom(connect *grpc.ClientConn) orderer.AtomicBroadcastClient {
 	return orderer.NewAtomicBroadcastClient(connect)
 }
-func (committer *Committer) Setup() (err error) {
-	if committer.Context == nil {
-		committer.Context = goutils.GetGoContext()
+func (committer *Committer) Setup(ctx context.Context) (err error) {
+	if ctx == nil {
+		ctx = goutils.GetGoContext()
 	}
-	committer.AtomicBroadcast_BroadcastClient, err = committer.AtomicBroadcastClient.Broadcast(committer.Context)
+	committer.AtomicBroadcast_BroadcastClient, err = committer.AtomicBroadcastClient.Broadcast(ctx)
 
 	return
 }

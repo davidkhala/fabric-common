@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/davidkhala/fabric-common/golang/discover"
 	"github.com/davidkhala/fabric-common/golang/event"
+	"github.com/davidkhala/fabric-common/golang/proto"
 	"github.com/davidkhala/goutils"
 	"github.com/hyperledger/fabric-protos-go-apiv2/discovery"
 	"github.com/kortschak/utter"
@@ -36,15 +37,29 @@ func TestConnection(t *testing.T) {
 func TestEvent(t *testing.T) {
 
 	var eventer = event.NewEventer(context.Background(), peer0_icdd.AsGRPCClient())
-	var blockEventer = event.NewBlockEventer(eventer, func(this event.DeliverResponseType, deliverResponses []event.DeliverResponseType) (bool, interface{}) {
-		println(this.Block.Header.Number)
+	t.Run("reply", func(t *testing.T) { // TODO WIP
+		var blockEventer = event.NewBlockEventer(eventer, func(this event.DeliverResponseType, deliverResponses []event.DeliverResponseType) (bool, interface{}) {
+			println(this.Block.Header.Number)
+			proto.FromFullBlock(this.Block)
 
-		return true, nil
+			return true, nil
+		})
+		var seek = event.SeekInfoFrom(event.SeekOldest, event.SeekNewest)
+		var _crypto = LoadCryptoFrom(cryptoConfig_astri)
+
+		blockEventer.SendRecv(seek.SignBy(channel, _crypto))
 	})
-	var seek = event.SeekInfoFrom(event.SeekOldest, event.SeekNewest)
-	var _crypto = LoadCryptoFrom(cryptoConfig_astri)
+	t.Run("waitForTx", func(t *testing.T) {
+		var blockEventer = event.NewSimpleBlockEventer(eventer)
+		var txEvent = event.TransactionListener{
+			BlockEventer: blockEventer,
+		}
+		txEvent.WaitForTx("abc") // FIXME replace with known one
+		var seek = txEvent.GetSeekInfo()
+		var _crypto = LoadCryptoFrom(cryptoConfig_astri)
+		txEvent.SendRecv(seek.SignBy(channel, _crypto))
+	})
 
-	blockEventer.SendRecv(seek.SignBy(channel, _crypto))
 }
 
 func TestDiscover(t *testing.T) {

@@ -9,7 +9,7 @@ type BlockEventer struct {
 }
 
 func NewBlockEventer(eventer Eventer, continueFcns ...ContinueFcn) BlockEventer {
-	client, err := eventer.DeliverClient.DeliverWithPrivateData(eventer.Context) // always get most info
+	client, err := eventer.DeliverClient.DeliverWithPrivateData(eventer.Context)
 	goutils.PanicError(err)
 	eventer.Deliver_DeliverClient = client
 
@@ -17,5 +17,13 @@ func NewBlockEventer(eventer Eventer, continueFcns ...ContinueFcn) BlockEventer 
 	return BlockEventer{
 		Eventer: eventer,
 	}
+}
 
+func NewSimpleBlockEventer(eventer Eventer) BlockEventer {
+	client, err := eventer.DeliverClient.DeliverFiltered(eventer.Context)
+	goutils.PanicError(err)
+	eventer.Deliver_DeliverClient = client
+	return BlockEventer{
+		Eventer: eventer,
+	}
 }
