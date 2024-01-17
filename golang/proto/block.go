@@ -24,6 +24,8 @@ type TrimmedTransaction struct {
 }
 
 func (t *TrimmedTransaction) Fill(transaction Transaction) {
+	t.Txid = transaction.TxId
+	t.Type = transaction.TxType
 	for _, action := range transaction.ChaincodeActions {
 		t.ChaincodeActions = append(t.ChaincodeActions, action.Action.ProposalResponsePayload.Extension.Events)
 	}
@@ -44,8 +46,6 @@ func FromFullBlock(block *common.Block) (trimmedBlock TrimmedBlock) {
 		trimmedBlock.ChannelId = channelHeader.ChannelId
 
 		var tx = TrimmedTransaction{
-			Txid:             channelHeader.TxId,
-			Type:             common.HeaderType(channelHeader.Type),
 			TxValidationCode: peer.TxValidationCode(txStatusCodes[index]),
 		}
 		tx.Fill(ParseTransaction(payload))

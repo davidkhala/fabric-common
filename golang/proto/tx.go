@@ -15,6 +15,7 @@ import (
 
 type Transaction struct {
 	TxType common.HeaderType
+	TxId   string
 	*common.SignatureHeader
 	*msp.SerializedIdentity
 	*common.Config                                        // if TxType==common.HeaderType_CONFIG
@@ -25,6 +26,7 @@ type Transaction struct {
 func ParseTransaction(txBody *common.Payload) (t Transaction) {
 	var channelHeader = protoutil.UnmarshalChannelHeaderOrPanic(txBody.Header.ChannelHeader)
 	t.TxType = common.HeaderType(channelHeader.Type)
+	t.TxId = channelHeader.TxId
 	t.SignatureHeader = protoutil.UnmarshalSignatureHeaderOrPanic(txBody.Header.SignatureHeader)
 	t.SerializedIdentity = GetCreatorFromSignatureHeader(t.SignatureHeader)
 	switch t.TxType {
