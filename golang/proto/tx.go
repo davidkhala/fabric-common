@@ -61,11 +61,14 @@ func ParseTransaction(txBody *common.Payload) (t Transaction) {
 			var args = chaincodeSpec.Input.Args
 			var fcn = string(args[0])
 			var remainArgs = args[1:]
+			var extension = chaincodeActionPayload.Action.ProposalResponsePayload.Extension
 
 			if cche.ChaincodeId.Name == LifecycleName {
 				goutils.AssertNil(chaincodeActionPayload.ChaincodeProposalPayload.TransientMap, "chaincode lifecycle operation should have nil transientMap")
 				goutils.AssertOK(chaincodeSpec.ChaincodeId.Name == LifecycleName, "ChaincodeSpec.ChaincodeId.Name != LifecycleName in _lifecycle transaction")
 				goutils.AssertOK(chaincodeSpec.Type == peer.ChaincodeSpec_GOLANG, "chaincode lifecycle should be a golang chaincode")
+				goutils.AssertOK(extension.Response.Status == int32(common.Status_SUCCESS), "chaincode lifecycle tx should be status:200")
+				goutils.AssertNil(extension.Events.String(), "chaincode lifecycle should have no event")
 
 				switch fcn {
 				case ApproveFuncName:
