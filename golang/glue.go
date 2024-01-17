@@ -19,8 +19,7 @@ func (node Node) AsGRPCClient() (connect *grpc.ClientConn) {
 		goutils.PanicError(err)
 	}
 
-	certificate, err = crypto.ParseCertPem(tlsCARootCertBytes)
-	goutils.PanicError(err)
+	certificate = crypto.ParseCertPemOrPanic(tlsCARootCertBytes)
 
 	var param = Params{
 		SslTargetNameOverride: node.SslTargetNameOverride,

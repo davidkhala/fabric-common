@@ -14,8 +14,8 @@ github.com/cncf/xds/go v0.0.0-20211011173535-cb28da3451f1/go.mod h1:eXthEFrGJvWH
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/davidkhala/goutils v1.5.9 h1:Kidz+Me17UP15epAW1xKwQeWBhTJI/Kxh8PGiTmEmvw=
-github.com/davidkhala/goutils v1.5.9/go.mod h1:vUEFyO8rG7HzRhaL413vZZfngC8146L4Qqf75Buvw2M=
+github.com/davidkhala/goutils v1.6.0 h1:uDjfyEiRUf/FQSfX3W5xUrQuNrX95iAb41r+/6FGqzI=
+github.com/davidkhala/goutils v1.6.0/go.mod h1:vUEFyO8rG7HzRhaL413vZZfngC8146L4Qqf75Buvw2M=
 github.com/davidkhala/goutils/grpc v0.0.0 h1:YxXKE2GITtvB8Nwqj4v+kdgFRSc5hT1dl6Ds2BShlAw=
 github.com/davidkhala/goutils/grpc v0.0.0/go.mod h1:NDdLnCGFhFWYZCEF/bLfIHId6I+y2NQc0KZqrCGREwQ=
 github.com/davidkhala/protoutil v0.0.2 h1:iBymuTwAWw+unEulwGVDcFxzh6GOaC5A8INmWXDCYFE=

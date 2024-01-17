@@ -27,7 +27,7 @@ func ContinueBuilder(continueFcns ...ContinueFcn) ContinueFcn {
 
 			switch *this.Status {
 			case common.Status_SUCCESS, common.Status_NOT_FOUND:
-				return false, *this.Status
+				return false, this.Status.String()
 			default:
 				panic(fmt.Sprintf("Unknown DeliverResponse_Status=%s", *this.Status))
 			}

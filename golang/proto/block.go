@@ -20,10 +20,15 @@ type TrimmedTransaction struct {
 	Txid             string
 	Type             common.HeaderType
 	TxValidationCode peer.TxValidationCode
-	ChaincodeActions []peer.ChaincodeEvent
+	ChaincodeActions []*peer.ChaincodeEvent
 }
 
-// TODO WIP
+func (t *TrimmedTransaction) Fill(transaction Transaction) {
+	for _, action := range transaction.ChaincodeActions {
+		t.ChaincodeActions = append(t.ChaincodeActions, action.Action.ProposalResponsePayload.Extension.Events)
+	}
+}
+
 func FromFullBlock(block *common.Block) (trimmedBlock TrimmedBlock) {
 	trimmedBlock.Number = block.Header.Number
 	var txStatusCodes = block.Metadata.Metadata[common.BlockMetadataIndex_TRANSACTIONS_FILTER]
@@ -43,10 +48,7 @@ func FromFullBlock(block *common.Block) (trimmedBlock TrimmedBlock) {
 			Type:             common.HeaderType(channelHeader.Type),
 			TxValidationCode: peer.TxValidationCode(txStatusCodes[index]),
 		}
-		var chaincodeAction = ParseTransaction(payload).ChaincodeAction
-		if chaincodeAction != nil {
-			// TODO why filtered block can contain multiple chaincodeEvent
-		}
+		tx.Fill(ParseTransaction(payload))
 
 		trimmedBlock.TrimmedTransactions = append(trimmedBlock.TrimmedTransactions, tx)
 	}

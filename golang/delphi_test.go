@@ -7,6 +7,7 @@ import (
 	"github.com/davidkhala/fabric-common/golang/proto"
 	"github.com/davidkhala/goutils"
 	"github.com/hyperledger/fabric-protos-go-apiv2/discovery"
+	"github.com/hyperledger/fabric-protos-go-apiv2/peer"
 	"github.com/kortschak/utter"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -58,10 +59,22 @@ func TestEvent(t *testing.T) {
 		var txEvent = event.TransactionListener{
 			BlockEventer: blockEventer,
 		}
-		txEvent.WaitForTx("abc") // FIXME replace with known one
+		txEvent.WaitForTx("6cc51d00c5a65b037c467aa3b06db312653544155afcf2d70bc8212fe3c6df7e") // replace with known one
 		var seek = txEvent.GetSeekInfo()
 		var _crypto = LoadCryptoFrom(cryptoConfig_astri)
-		txEvent.SendRecv(seek.SignBy(channel, _crypto))
+		result, _ := txEvent.SendRecv(seek.SignBy(channel, _crypto))
+		assert.Equal(t, peer.TxValidationCode_VALID.String(), result)
+	})
+	t.Run("waitForTx: From full block", func(t *testing.T) {
+		var blockEventer = event.NewBlockEventer(eventer)
+		var txEvent = event.TransactionListener{
+			BlockEventer: blockEventer,
+		}
+		txEvent.WaitForTx("6cc51d00c5a65b037c467aa3b06db312653544155afcf2d70bc8212fe3c6df7e") // replace with known one
+		var seek = txEvent.GetSeekInfo()
+		var _crypto = LoadCryptoFrom(cryptoConfig_astri)
+		result, _ := txEvent.SendRecv(seek.SignBy(channel, _crypto))
+		assert.Equal(t, peer.TxValidationCode_VALID.String(), result)
 	})
 
 }
