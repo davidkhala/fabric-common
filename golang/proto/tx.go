@@ -6,6 +6,7 @@ import (
 	"github.com/davidkhala/protoutil"
 	"github.com/hyperledger/fabric-protos-go-apiv2/common"
 	"github.com/hyperledger/fabric-protos-go-apiv2/ledger/rwset"
+	"github.com/hyperledger/fabric-protos-go-apiv2/ledger/rwset/kvrwset"
 	"github.com/hyperledger/fabric-protos-go-apiv2/msp"
 	"github.com/hyperledger/fabric-protos-go-apiv2/peer"
 	"github.com/hyperledger/fabric-protos-go-apiv2/peer/lifecycle"
@@ -64,7 +65,6 @@ func ParseTransaction(txBody *common.Payload) (t Transaction) {
 			var fcn = string(args[0])
 			var remainArgs = args[1:]
 			var extension = chaincodeActionPayload.Action.ProposalResponsePayload.Extension
-
 			if cche.ChaincodeId.Name == LifecycleName {
 				goutils.AssertNil(chaincodeActionPayload.ChaincodeProposalPayload.TransientMap, "chaincode lifecycle operation should have nil transientMap")
 				goutils.AssertOK(chaincodeSpec.ChaincodeId.Name == LifecycleName, "ChaincodeSpec.ChaincodeId.Name != LifecycleName in _lifecycle transaction")
@@ -133,6 +133,15 @@ type ChaincodeAction struct {
 	Response *peer.Response
 
 	ChaincodeId *peer.ChaincodeID `protobuf:"bytes,4,opt,name=chaincode_id,json=chaincodeId,proto3" json:"chaincode_id,omitempty"`
+}
+
+func (c ChaincodeAction) GetRwsetList() (l []*kvrwset.KVRWSet) {
+	for _, nsReadWriteSet := range c.Results.NsRwset {
+		_rwset, err := protoutil.UnmarshalKVRWSet(nsReadWriteSet.Rwset)
+		goutils.PanicError(err)
+		l = append(l, _rwset)
+	}
+	return
 }
 
 // NewChaincodeActionPayload gets the underlying payload objects in a TransactionAction
