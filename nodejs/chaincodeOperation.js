@@ -104,13 +104,13 @@ export default class ChaincodeLifecycleOperation extends ChaincodeAction {
 	 *
 	 * @param name
 	 * @param sequence
-	 * @param PackageID
+	 * @param package_id
 	 * @param version
 	 * @param orderer
 	 * @param {number} [waitForConsensus] millisecond to sleep between retry and get raft leader elected
 	 * @return {Promise<*>}
 	 */
-	async approve({name, sequence, PackageID, version}, orderer, waitForConsensus) {
+	async approve({name, sequence, package_id, version}, orderer, waitForConsensus) {
 		version = version || ChaincodeLifecycleOperation._defaultVersion(sequence);
 		const {proposal} = this;
 		this.assign(proposal);
@@ -118,7 +118,14 @@ export default class ChaincodeLifecycleOperation extends ChaincodeAction {
 			name,
 			version,
 			sequence,
-		}, PackageID);
+		}, package_id);
+
+		if (result.noChange) {
+			this.logger.warn(result.responses.map(({response, peer}) => {
+				return `${peer}:${response.message}`;
+			}));
+			return;
+		}
 
 		const _commit = async () => {
 			const commitResult = await proposal.commit([orderer.committer]);
@@ -139,10 +146,8 @@ export default class ChaincodeLifecycleOperation extends ChaincodeAction {
 			CommitSuccess(commitResult);
 		};
 
-		proposal.setCommitResultAssert(null);
+		proposal.commitResultAssert = null;
 		await _commit();
-
-
 		const eventHub = this.newEventHub();
 		try {
 			const eventHubQuery = new EventHubQuery(eventHub, this.identityContext);
@@ -183,7 +188,10 @@ export default class ChaincodeLifecycleOperation extends ChaincodeAction {
 	async queryChaincodeDefinition(name) {
 		const {proposal} = this;
 		const result = await proposal.queryChaincodeDefinition(name);
-		return result.queryResults;
+		const {queryResults, notFound} = result;
+		if (!notFound) {
+			return queryResults;
+		}
 	}
 }
 

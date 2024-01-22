@@ -2,6 +2,7 @@ import Proposal from 'fabric-common/lib/Proposal.js';
 import Commit from 'fabric-common/lib/Commit.js';
 import UserBuilder from './user.js';
 import assert from 'assert';
+import {EndorseALL} from './resultInterceptors.js';
 
 const {calculateTransactionId} = UserBuilder;
 /**
@@ -49,14 +50,19 @@ export default class ProposalManager extends Proposal {
 	 * @param {ProposalResultHandler} assertFunction
 	 */
 	set resultHandler(assertFunction) {
-		assert.ok(typeof assertFunction === 'function');
-		this.assertProposalResult = assertFunction;
+		if (typeof assertFunction === 'undefined' || assertFunction === null) {
+			this.assertProposalResult = EndorseALL;
+		} else {
+			assert.ok(typeof assertFunction === 'function');
+			this.assertProposalResult = assertFunction;
+		}
+
 	}
 
 	/**
 	 * @param {CommitResultHandler} assertFunction
 	 */
-	setCommitResultAssert(assertFunction) {
+	set commitResultAssert(assertFunction) {
 		this.assertCommitResult = assertFunction;
 	}
 

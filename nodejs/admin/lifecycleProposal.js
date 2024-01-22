@@ -5,8 +5,7 @@ import {SystemChaincodeID} from 'khala-fabric-formatter/constants.js';
 import {BufferFrom} from 'khala-fabric-formatter/protobuf.js';
 import fs from 'fs';
 import {getResponses} from 'khala-fabric-formatter/proposalResponse.js';
-import {EndorseALL, CommitSuccess} from './resultInterceptors.js';
-import {match} from '@davidkhala/light/regx.js';
+import {CommitSuccess, EndorseALL} from './resultInterceptors.js';
 
 const {
 	InstallChaincode, QueryInstalledChaincodes, QueryInstalledChaincode, ApproveChaincodeDefinitionForMyOrg,
@@ -35,15 +34,38 @@ const skipIfInstalled = (result) => {
 	});
 };
 /**
- * @type ProposalResultHandler
+ * @return ProposalResultHandler
  */
-const skipIfNoChange = (result) => {
-	const pattern = /failed to invoke backing implementation of 'ApproveChaincodeDefinitionForMyOrg': attempted to redefine uncommitted sequence \(\d+\) for namespace diagnose with unchanged content/;
-
-	return EndorseALL(result, ({response}) => {
-		const {status, message} = response;
-		return status !== 500 || !match(message, pattern);
+const skipIfNoChange = (chaincodeID, sequence) => {
+	return (result) => EndorseALL(result, ({response}) => {
+		return !hasNoChange(response, chaincodeID, sequence);
 	});
+};
+
+export function hasNoChange(response, chaincodeID, sequence) {
+	const pattern = `failed to invoke backing implementation of 'ApproveChaincodeDefinitionForMyOrg': attempted to redefine uncommitted sequence (${sequence}) for namespace ${chaincodeID} with unchanged content`;
+	const {status, message, payload} = response;
+	return status === 500 && message === pattern && payload.length === 0;
+}
+
+export function hasNoDefinition(response, chaincodeID) {
+	const {status, message, payload} = response;
+	return status === 404 && message === `namespace ${chaincodeID} is not defined` && payload.length === 0;
+}
+
+/**
+ *
+ * @param {string} [chaincodeID]
+ * @return ProposalResultHandler
+ */
+const skipIfNoDefinition = (chaincodeID) => {
+	if (chaincodeID) {
+		return (result) => EndorseALL(result, ({response}) => {
+			return !hasNoDefinition(response, chaincodeID);
+		});
+	} else {
+		return EndorseALL;
+	}
 };
 
 export default class LifecycleProposal extends ProposalManager {
@@ -64,13 +86,10 @@ export default class LifecycleProposal extends ProposalManager {
 		 * @type {boolean}
 		 */
 		this.init_required = true;
-		this.resetResultHandler();
-		this.setCommitResultAssert(CommitSuccess);
+		this.resultHandler = null;
+		this.commitResultAssert = CommitSuccess;
 	}
 
-	resetResultHandler() {
-		this.resultHandler = EndorseALL;
-	}
 
 	/**
 	 * if default docker chaincode runtime is configured. the chaincode image is created during endorse
@@ -95,7 +114,7 @@ export default class LifecycleProposal extends ProposalManager {
 				package_id, label,
 			});
 		});
-		this.resetResultHandler();
+		this.resultHandler = null;
 		return result;
 	}
 
@@ -213,10 +232,14 @@ export default class LifecycleProposal extends ProposalManager {
 			fcn: ApproveChaincodeDefinitionForMyOrg,
 			args: [BufferFrom(approveChaincodeDefinitionForMyOrgArgs, ApproveChaincodeDefinitionForMyOrgArgs)],
 		};
-		this.resultHandler = skipIfNoChange;
+		this.resultHandler = skipIfNoChange(name, sequence);
 
 		const result = await this.send(buildProposalRequest);
-		this.resetResultHandler();
+		if (getResponses(result).every((response) => {
+			return hasNoChange(response, name, sequence);
+		})) {
+			result.noChange = true;
+		}
 		return result;
 	}
 
@@ -237,8 +260,7 @@ export default class LifecycleProposal extends ProposalManager {
 		};
 		const result = await this.send(buildProposalRequest);
 
-		const {queryResults} = result;
-		result.queryResults = queryResults.map(payload => CheckCommitReadinessResult.decode(payload).approvals);
+		result.queryResults = getResponses(result).map(({payload}) => CheckCommitReadinessResult.decode(payload).approvals);
 		return result;
 
 	}
@@ -280,15 +302,22 @@ export default class LifecycleProposal extends ProposalManager {
 		 * @type {BuildProposalRequest}
 		 */
 		const buildProposalRequest = {fcn, args};
+		this.resultHandler = skipIfNoDefinition(name);
 		const result = await this.send(buildProposalRequest);
-
-		const {queryResults} = result;
 		const singleChaincodeDefinitionAmend = (chaincodeDefinition) => {
 			chaincodeDefinition.validation_parameter = ApplicationPolicy.decode(chaincodeDefinition.validation_parameter);
 			return chaincodeDefinition;
 		};
-		const decodedQueryResults = queryResults.map(payload => {
 
+
+		const responses = getResponses(result);
+		if (responses.every((response) => {
+			return hasNoDefinition(response, name);
+		})) {
+			result.notFound = true;
+		}
+
+		result.queryResults = responses.map(({payload}) => {
 			if (name) {
 				const resultSingle = QueryChaincodeDefinitionResult.decode(payload);
 				resultSingle.sequence = resultSingle.sequence.toInt();
@@ -301,7 +330,7 @@ export default class LifecycleProposal extends ProposalManager {
 				});
 			}
 		});
-		result.queryResults = decodedQueryResults;
+
 
 		return result;
 	}
