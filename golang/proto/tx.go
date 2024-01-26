@@ -66,11 +66,16 @@ func ParseTransaction(txBody *common.Payload) (t Transaction) {
 			var remainArgs = args[1:]
 			var extension = chaincodeActionPayload.Action.ProposalResponsePayload.Extension
 			if cche.ChaincodeId.Name == LifecycleName {
-				goutils.AssertNil(chaincodeActionPayload.ChaincodeProposalPayload.TransientMap, "chaincode lifecycle operation should have nil transientMap")
-				goutils.AssertOK(chaincodeSpec.ChaincodeId.Name == LifecycleName, "ChaincodeSpec.ChaincodeId.Name != LifecycleName in _lifecycle transaction")
+				goutils.AssertNil(chaincodeActionPayload.TransientMap(), "chaincode lifecycle operation should have nil transientMap")
+				goutils.AssertOK(chaincodeActionPayload.Chaincode() == LifecycleName, "ChaincodeSpec.ChaincodeId.Name != LifecycleName in _lifecycle transaction")
 				goutils.AssertOK(chaincodeSpec.Type == peer.ChaincodeSpec_GOLANG, "chaincode lifecycle should be a golang chaincode")
 				goutils.AssertOK(extension.Response.Status == int32(common.Status_SUCCESS), "chaincode lifecycle tx should be status:200")
 				goutils.AssertNil(extension.Events.String(), "chaincode lifecycle should have no event")
+
+				for _, readWriteSet := range chaincodeActionPayload.ReadWriteSet() {
+					goutils.AssertNil(readWriteSet.Rwset.RangeQueriesInfo, "_lifecycle has nil RangeQueriesInfo")
+					goutils.AssertNil(readWriteSet.Rwset.MetadataWrites, "_lifecycle has nil RangeQueriesInfo")
+				}
 
 				switch fcn {
 				case ApproveFuncName:
@@ -93,6 +98,8 @@ func ParseTransaction(txBody *common.Payload) (t Transaction) {
 					panic("unknown function in lifecycle chaincode")
 				}
 
+			} else {
+				goutils.AssertOK(chaincodeSpec.ChaincodeId.Name != LifecycleName, "ChaincodeSpec.ChaincodeId.Name == LifecycleName in normal transaction")
 			}
 			t.ChaincodeActions = append(t.ChaincodeActions, chaincodeActionPayload)
 		}
@@ -108,6 +115,26 @@ type ChaincodeActionPayload struct {
 	ChaincodeProposalPayload ChaincodeProposalPayload
 	Action                   ChaincodeEndorsedAction
 }
+
+func (p ChaincodeActionPayload) TransientMap() map[string][]byte {
+	return p.ChaincodeProposalPayload.TransientMap
+}
+func (p ChaincodeActionPayload) ChaincodeType() string {
+	return p.ChaincodeProposalPayload.ChaincodeSpec.Type.String()
+}
+func (p ChaincodeActionPayload) Chaincode() string {
+	return p.ChaincodeProposalPayload.ChaincodeSpec.ChaincodeId.Name
+}
+func (p ChaincodeActionPayload) ReadWriteSet() []NsReadWriteSet {
+	return p.Action.ProposalResponsePayload.Extension.Results
+}
+func (p ChaincodeActionPayload) Event() *peer.ChaincodeEvent {
+	return p.Action.ProposalResponsePayload.Extension.Events
+}
+func (p ChaincodeActionPayload) ProposalResponse() *peer.Response {
+	return p.Action.ProposalResponsePayload.Extension.Response
+}
+
 type ChaincodeProposalPayload struct {
 	ChaincodeSpec *peer.ChaincodeSpec
 	TransientMap  map[string][]byte `protobuf:"bytes,2,rep,name=TransientMap,proto3" json:"TransientMap,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
@@ -125,23 +152,18 @@ type ProposalResponsePayload struct {
 }
 type ChaincodeAction struct {
 
-	// This field contains the read set and the write set produced by the
-	// chaincode executing this invocation.
-	Results *rwset.TxReadWriteSet
+	// This field contains the read set and the write set produced by the chaincode executing this invocation.
+	Results []NsReadWriteSet
 	Events  *peer.ChaincodeEvent
 	// This field contains the result of executing this invocation.
-	Response *peer.Response
-
-	ChaincodeId *peer.ChaincodeID `protobuf:"bytes,4,opt,name=chaincode_id,json=chaincodeId,proto3" json:"chaincode_id,omitempty"`
+	Response    *peer.Response
+	ChaincodeId *peer.ChaincodeID
 }
 
-func (c ChaincodeAction) GetRwsetList() (l []*kvrwset.KVRWSet) {
-	for _, nsReadWriteSet := range c.Results.NsRwset {
-		_rwset, err := protoutil.UnmarshalKVRWSet(nsReadWriteSet.Rwset)
-		goutils.PanicError(err)
-		l = append(l, _rwset)
-	}
-	return
+type NsReadWriteSet struct {
+	Namespace             string
+	Rwset                 *kvrwset.KVRWSet
+	CollectionHashedRwset []*rwset.CollectionHashedReadWriteSet
 }
 
 // NewChaincodeActionPayload gets the underlying payload objects in a TransactionAction
@@ -177,8 +199,18 @@ func NewChaincodeActionPayload(txActions *peer.TransactionAction) (r ChaincodeAc
 	goutils.PanicError(err)
 	rwSet, err := protoutil.UnmarshalTxReadWriteSet(chaincodeAction.Results)
 	goutils.PanicError(err)
+	var hyperSet []NsReadWriteSet
+	for _, nsReadWriteSet := range rwSet.NsRwset {
+		_rwset, err := protoutil.UnmarshalKVRWSet(nsReadWriteSet.Rwset)
+		goutils.PanicError(err)
+		hyperSet = append(hyperSet, NsReadWriteSet{
+			Namespace:             nsReadWriteSet.Namespace,
+			Rwset:                 _rwset,
+			CollectionHashedRwset: nsReadWriteSet.CollectionHashedRwset,
+		})
+	}
 	r.Action.ProposalResponsePayload.Extension = ChaincodeAction{
-		Results:     rwSet,
+		Results:     hyperSet,
 		Events:      chaincodeEvent,
 		Response:    chaincodeAction.Response,
 		ChaincodeId: chaincodeAction.ChaincodeId,
