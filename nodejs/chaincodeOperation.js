@@ -30,14 +30,17 @@ export default class ChaincodeLifecycleOperation extends ChaincodeAction {
 	}
 
 	/**
-	 * Install phase does not require `init_required` flag, neither this.channel as valid object
+	 * Install phase does not require `this.channel`
 	 * @param chaincodePackagePath
-	 * @param [requestTimeout]
-	 * @return {Promise<*>}
+	 * @param [packageId]
 	 */
-	async install(chaincodePackagePath, requestTimeout) {
+	async install(chaincodePackagePath, packageId) {
 		const {proposal} = this;
-		return await proposal.installChaincode(chaincodePackagePath, requestTimeout || 30000 * this.endorsers.length);
+		const result = await proposal.installChaincode(chaincodePackagePath, packageId, 30000 * this.endorsers.length);
+		if (result.installed) {
+			return;
+		}
+		return result;
 	}
 
 	setEndorsementPolicy(endorsementPolicy) {
@@ -80,8 +83,8 @@ export default class ChaincodeLifecycleOperation extends ChaincodeAction {
 		};
 	}
 
-	assign(lifecycleProposal) {
-		const {endorsementPolicy, collectionsConfig, init_required} = this;
+	assign(lifecycleProposal, init_required) {
+		const {endorsementPolicy, collectionsConfig} = this;
 		if (endorsementPolicy) {
 			const applicationPolicy = ChaincodeLifecycleOperation.applicationPolicyBuilder(endorsementPolicy);
 			lifecycleProposal.setValidationParameter(applicationPolicy); // if empty buffer is set. Apply default
@@ -96,7 +99,7 @@ export default class ChaincodeLifecycleOperation extends ChaincodeAction {
 			});
 			lifecycleProposal.setCollectionConfigPackage(collectionConfigPackage);
 		}
-		lifecycleProposal.init_required = init_required;
+		lifecycleProposal.init_required = !!init_required;
 
 	}
 
@@ -106,14 +109,15 @@ export default class ChaincodeLifecycleOperation extends ChaincodeAction {
 	 * @param sequence
 	 * @param package_id
 	 * @param version
+	 * @param init_required
 	 * @param orderer
 	 * @param {number} [waitForConsensus] millisecond to sleep between retry and get raft leader elected
 	 * @return {Promise<*>}
 	 */
-	async approve({name, sequence, package_id, version}, orderer, waitForConsensus) {
+	async approve({name, sequence, package_id, version, init_required}, orderer, waitForConsensus) {
 		version = version || ChaincodeLifecycleOperation._defaultVersion(sequence);
 		const {proposal} = this;
-		this.assign(proposal);
+		this.assign(proposal, init_required);
 		const result = await proposal.approveForMyOrg({
 			name,
 			version,
@@ -158,19 +162,18 @@ export default class ChaincodeLifecycleOperation extends ChaincodeAction {
 		return result;
 	}
 
-	async checkCommitReadiness({name, sequence, version}) {
-		version = version || ChaincodeLifecycleOperation._defaultVersion(sequence);
+	async checkCommitReadiness({name, sequence, version=ChaincodeLifecycleOperation._defaultVersion(sequence), init_required}) {
 
 		const {proposal} = this;
-		this.assign(proposal);
+		this.assign(proposal, init_required);
 		const result = await proposal.checkCommitReadiness({name, version, sequence});
 		return result.queryResults;
 	}
 
-	async commitChaincodeDefinition({name, sequence, version = ChaincodeLifecycleOperation._defaultVersion(sequence)}, orderer) {
+	async commitChaincodeDefinition({name, sequence, version = ChaincodeLifecycleOperation._defaultVersion(sequence), init_required}, orderer) {
 
 		const {proposal} = this;
-		this.assign(proposal);
+		this.assign(proposal, init_required);
 		const result = await proposal.commitChaincodeDefinition({name, version, sequence});
 		const commitResult = await proposal.commit([orderer.committer]);
 		this.logger.debug('commitChaincodeDefinition:commit', commitResult);

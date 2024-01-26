@@ -23,14 +23,27 @@ const {
 } = lifeCycleProtos;
 
 const {ApplicationPolicy, CollectionConfigPackage} = protosProtos;
+
+export function hasInstalled(response, packageId) {
+	const {status, message} = response;
+	let messageMatch;
+	const prefix = `failed to invoke backing implementation of 'InstallChaincode': chaincode already successfully installed`;
+	const pattern = `${prefix} (package ID '${packageId}')`;
+	if (packageId) {
+		messageMatch = message === pattern;
+	} else {
+		messageMatch = message.startsWith(prefix);
+	}
+
+	return status === 500 && messageMatch;
+}
+
 /**
- * @type ProposalResultHandler
+ * @return ProposalResultHandler
  */
-const skipIfInstalled = (result) => {
-	const prefix = 'failed to invoke backing implementation of \'InstallChaincode\': chaincode already successfully installed';
-	return EndorseALL(result, ({response}) => {
-		const {status, message} = response;
-		return status !== 500 || !message.startsWith(prefix);
+const skipIfInstalled = (packageId) => {
+	return (result) => EndorseALL(result, ({response}) => {
+		return !hasInstalled(response, packageId);
 	});
 };
 /**
@@ -94,10 +107,11 @@ export default class LifecycleProposal extends ProposalManager {
 	/**
 	 * if default docker chaincode runtime is configured. the chaincode image is created during endorse
 	 * @param {string} packageTarGz file absolute path
+	 * @param [packageId]
 	 * @param [requestTimeout]
 	 * @return {Promise<*>}
 	 */
-	async installChaincode(packageTarGz, requestTimeout) {
+	async installChaincode(packageTarGz, packageId, requestTimeout) {
 		const fileContent = fs.readFileSync(packageTarGz);
 		/**
 		 * @type {BuildProposalRequest}
@@ -106,14 +120,21 @@ export default class LifecycleProposal extends ProposalManager {
 			fcn: InstallChaincode,
 			args: [BufferFrom({chaincode_install_package: fileContent}, InstallChaincodeArgs)],
 		};
-		this.resultHandler = skipIfInstalled;
+		this.resultHandler = skipIfInstalled(packageId);
 		const result = await this.send(buildProposalRequest, {requestTimeout});
-		getResponses(result).forEach((response) => {
+
+		const responses = getResponses(result);
+		if (responses.every((response) => {
+			return hasInstalled(response, packageId);
+		})) {
+			result.installed = true;
+		}
+
+		result.queryResults = responses.map((response) => {
 			const {package_id, label} = InstallChaincodeResult.decode(response.payload);
-			Object.assign(response, {
-				package_id, label,
-			});
+			return {package_id, label};
 		});
+
 		this.resultHandler = null;
 		return result;
 	}
