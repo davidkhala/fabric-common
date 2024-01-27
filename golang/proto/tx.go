@@ -100,6 +100,10 @@ func ParseTransaction(txBody *common.Payload) (t Transaction) {
 
 			} else {
 				goutils.AssertOK(chaincodeSpec.ChaincodeId.Name != LifecycleName, "ChaincodeSpec.ChaincodeId.Name == LifecycleName in normal transaction")
+				// TODO WIP
+				for _, readWriteSet := range chaincodeActionPayload.ReadWriteSet() {
+					println(chaincodeActionPayload.Chaincode(), readWriteSet.Rwset.String())
+				}
 			}
 			t.ChaincodeActions = append(t.ChaincodeActions, chaincodeActionPayload)
 		}
