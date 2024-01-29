@@ -1,5 +1,22 @@
 const utf8Decoder = new TextDecoder();
 
+/**
+ * @typedef {Error} EndorseError
+ * @property {number} code
+ * @property {ErrorDetail[]} details
+ * @property {string} cause error stack
+ */
+/**
+ * @typedef {Object} ErrorDetail
+ * @property {string} address
+ * @property {string} message
+ * @property {MspId} mspId
+ */
+
+
+/**
+ *
+ */
 export default class Contract {
 	constructor(contract, subContractName) {
 		this.contract = contract;
@@ -16,6 +33,7 @@ export default class Contract {
 	 * @param {TransientMap} [transientMap]
 	 * @param {MspId[]} [endorsingOrganizations]
 	 * @returns {Promise<string>}
+	 * @throws EndorseError
 	 */
 	async evaluate(args, transientMap, endorsingOrganizations) {
 		const [name, ...params] = args;
@@ -38,6 +56,7 @@ export default class Contract {
 	 * @param {MspId[]} [endorsingOrganizations]
 	 * @param {boolean} [finalityRequired] default to true
 	 * @returns {Promise<string>}
+	 * @throws EndorseError
 	 */
 	async submit(args, transientMap, endorsingOrganizations, finalityRequired = true) {
 
