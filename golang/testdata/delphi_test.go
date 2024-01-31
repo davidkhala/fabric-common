@@ -133,11 +133,16 @@ func TestDiscover(t *testing.T) {
 	})
 }
 func TestQuery(t *testing.T) {
-	var _crypto = golang.LoadCryptoFrom(CryptoconfigIcdd)
+	var _cryptoICDD = golang.LoadCryptoFrom(CryptoconfigIcdd)
+	var _cryptoASTRI = golang.LoadCryptoFrom(CryptoconfigAstri)
 	var ctx = context.Background()
 	t.Run("ListChannelOnPeer", func(t *testing.T) {
-		var channels = golang.ListChannelOnPeer(ctx, Peer0Icdd.AsGRPCClient(), *_crypto)
+		var channels = golang.ListChannelOnPeer(ctx, Peer0Icdd.AsGRPCClient(), *_cryptoICDD)
 		assert.True(t, slices.Contains(channels, Channel))
+	})
+	t.Run("GetContractMetadata", func(t *testing.T) {
+		golang.GetContractMetadata(ctx, Peer0Icdd.AsGRPCClient(), *_cryptoASTRI, Channel, "contracts")
+
 	})
 }
 func TestFindKeyFilesOrPanic(t *testing.T) {

@@ -36,9 +36,7 @@ func LoadCryptoFrom(config CryptoConfig) *Crypto {
 	priv, err := GetPrivateKey(config.PrivKey)
 	goutils.PanicError(err)
 
-	cert, certBytes, err := GetCertificate(config.SignCert)
-
-	goutils.PanicError(err)
+	cert, certBytes := config.GetCertificate()
 
 	id := &msp.SerializedIdentity{
 		Mspid:   config.MSPID,

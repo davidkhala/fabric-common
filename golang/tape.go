@@ -10,7 +10,10 @@ import (
 	"encoding/asn1"
 	"encoding/pem"
 	"fmt"
+	"github.com/davidkhala/goutils"
+	util_crypto "github.com/davidkhala/goutils/crypto"
 	"github.com/davidkhala/protoutil/common/crypto"
+	"github.com/hyperledger/fabric-gateway/pkg/hash"
 	"github.com/hyperledger/fabric-protos-go-apiv2/common"
 	"github.com/pkg/errors"
 	"math/big"
@@ -112,11 +115,19 @@ type CryptoConfig struct {
 	TLSCACerts []string
 	//	TODO to cater ClientTlsCertHash
 }
+
+func (c CryptoConfig) GetCertificate() (*x509.Certificate, []byte) {
+	in, err := os.ReadFile(c.SignCert)
+	goutils.PanicError(err)
+
+	return util_crypto.ParseCertPemOrPanic(in), in
+}
+
 type Crypto struct {
 	Creator     []byte
 	PrivKey     *ecdsa.PrivateKey
 	SignCert    *x509.Certificate
-	Digest      func([]byte) []byte
+	digest      hash.Hash
 	mspID       string // cached as part of Creator
 	certificate []byte // cached as part of Creator
 }
@@ -125,19 +136,28 @@ func (c Crypto) MspID() string       { return c.mspID }
 func (c Crypto) Credentials() []byte { return c.certificate }
 
 func (c *Crypto) SetDefaultDigest() {
-	c.Digest = func(in []byte) []byte {
+	c.digest = func(in []byte) []byte {
 		h := sha256.New()
 		h.Write(in)
 		return h.Sum(nil)
 	}
 }
-
-type ECDSASignature struct {
-	R, S *big.Int
+func (c *Crypto) SetGatewayMode() {
+	c.digest = func(bytes []byte) []byte {
+		return bytes
+	}
 }
 
-func (c Crypto) Sign(msg []byte) ([]byte, error) {
-	ri, si, err := ecdsa.Sign(rand.Reader, c.PrivKey, c.Digest(msg))
+func (c *Crypto) SetDigest(digestFunc hash.Hash) {
+	c.digest = digestFunc
+}
+
+func (c Crypto) Digest(message []byte) []byte {
+	return c.digest(message)
+}
+
+func (c Crypto) Sign(message []byte) ([]byte, error) {
+	ri, si, err := ecdsa.Sign(rand.Reader, c.PrivKey, c.digest(message))
 	if err != nil {
 		return nil, err
 	}
@@ -148,6 +168,29 @@ func (c Crypto) Sign(msg []byte) ([]byte, error) {
 	}
 
 	return asn1.Marshal(ECDSASignature{ri, si})
+}
+func (c Crypto) Serialize() ([]byte, error) {
+	return c.Creator, nil
+}
+
+func (c Crypto) NewSignatureHeader() (*common.SignatureHeader, error) {
+	creator, err := c.Serialize()
+	if err != nil {
+		return nil, err
+	}
+	nonce, err := crypto.GetRandomNonce()
+	if err != nil {
+		return nil, err
+	}
+
+	return &common.SignatureHeader{
+		Creator: creator,
+		Nonce:   nonce,
+	}, nil
+}
+
+type ECDSASignature struct {
+	R, S *big.Int
 }
 
 var (
@@ -171,6 +214,7 @@ func IsLowS(k *ecdsa.PublicKey, s *big.Int) (bool, error) {
 
 	return s.Cmp(halfOrder) != 1, nil
 }
+
 func ToLowS(k *ecdsa.PublicKey, s *big.Int) (*big.Int, bool, error) {
 	lowS, err := IsLowS(k, s)
 	if err != nil {
@@ -186,36 +230,4 @@ func ToLowS(k *ecdsa.PublicKey, s *big.Int) (*big.Int, bool, error) {
 	}
 
 	return s, false, nil
-}
-
-func (c Crypto) Serialize() ([]byte, error) {
-	return c.Creator, nil
-}
-
-func (c Crypto) NewSignatureHeader() (*common.SignatureHeader, error) {
-	creator, err := c.Serialize()
-	if err != nil {
-		return nil, err
-	}
-	nonce, err := crypto.GetRandomNonce()
-	if err != nil {
-		return nil, err
-	}
-
-	return &common.SignatureHeader{
-		Creator: creator,
-		Nonce:   nonce,
-	}, nil
-}
-
-func GetCertificate(f string) (*x509.Certificate, []byte, error) {
-	in, err := os.ReadFile(f)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	block, _ := pem.Decode(in)
-
-	c, err := x509.ParseCertificate(block.Bytes)
-	return c, in, err
 }

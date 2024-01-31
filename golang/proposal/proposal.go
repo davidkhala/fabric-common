@@ -27,7 +27,6 @@ func WithType(t peer.ChaincodeSpec_Type) Option {
 	return func(spec *peer.ChaincodeSpec) {
 		spec.Type = t
 	}
-
 }
 
 func CreateProposal(creator []byte, channel, ccname string, args []string, transientMap map[string][]byte, options ...Option) (proposal *peer.Proposal, txid string, err error) {
@@ -46,10 +45,6 @@ func CreateProposal(creator []byte, channel, ccname string, args []string, trans
 
 	var invocation = &peer.ChaincodeInvocationSpec{ChaincodeSpec: spec}
 
-	prop, txid, err := protoutil.CreateChaincodeProposalWithTransient(common.HeaderType_ENDORSER_TRANSACTION, channel, invocation, creator, transientMap)
-	if err != nil {
-		return nil, "", err
-	}
-
-	return prop, txid, nil
+	proposal, txid, err = protoutil.CreateChaincodeProposalWithTransient(common.HeaderType_ENDORSER_TRANSACTION, channel, invocation, creator, transientMap)
+	return
 }
