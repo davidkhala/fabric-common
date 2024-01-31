@@ -6,11 +6,12 @@ require (
 	github.com/davidkhala/goutils v1.6.0
 	github.com/davidkhala/goutils/grpc v0.0.0
 	github.com/davidkhala/protoutil v0.0.2
-	github.com/hyperledger/fabric-protos-go-apiv2 v0.3.2
+	github.com/hyperledger/fabric-admin-sdk v0.0.1
+	github.com/hyperledger/fabric-protos-go-apiv2 v0.3.3
 	github.com/kortschak/utter v1.5.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.8.4
-	google.golang.org/grpc v1.60.1
+	google.golang.org/grpc v1.61.0
 	google.golang.org/protobuf v1.32.0
 )
 

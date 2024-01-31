@@ -108,11 +108,15 @@ type Peer struct {
 	Identity []byte
 }
 
+func (p *Peer) String() string {
+	return p.MembershipInfo.Endpoint
+}
+
 type StateInfo struct {
 	Timestamp *gossip.PeerTime
 	PkiId     []byte
-	// channel_MAC is an authentication code that proves that the peer that sent this message knows the name of the channel.
 
+	// Channel_MAC is an authentication code that proves that the peer that sent this message knows the name of the channel.
 	Channel_MAC  []byte
 	LedgerHeight uint64
 	LeftChannel  bool
@@ -122,7 +126,7 @@ type AliveMessage struct {
 	Endpoint string
 	PkiId    []byte
 
-	Timestamp *gossip.PeerTime `protobuf:"bytes,2,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	Timestamp *gossip.PeerTime
 }
 
 func (p *Peer) Init(raw *discovery.Peer, fromLocalPeer bool) {

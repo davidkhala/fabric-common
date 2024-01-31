@@ -45,13 +45,15 @@ func LoadCryptoFrom(config CryptoConfig) *Crypto {
 		IdBytes: certBytes,
 	}
 
-	idBytes, err := proto.Marshal(id)
+	creator, err := proto.Marshal(id)
 	goutils.PanicError(err)
 
 	_crypto := &Crypto{
-		Creator:  idBytes,
-		PrivKey:  priv,
-		SignCert: cert,
+		Creator:     creator,
+		PrivKey:     priv,
+		SignCert:    cert,
+		mspID:       config.MSPID,
+		certificate: certBytes,
 	}
 	_crypto.SetDefaultDigest()
 	return _crypto

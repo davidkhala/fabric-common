@@ -1,4 +1,4 @@
-package golang
+package proposal
 
 import (
 	"crypto/rand"
@@ -16,19 +16,35 @@ func GetRandomNonce() []byte {
 	return key
 }
 
-func CreateProposal(creator []byte, channel, ccname, version string, transientMap map[string][]byte, args ...string) (proposal *peer.Proposal, txid string, err error) {
+type Option = func(*peer.ChaincodeSpec)
+
+func WithVersion(version string) Option {
+	return func(spec *peer.ChaincodeSpec) {
+		spec.ChaincodeId.Version = version
+	}
+}
+func WithType(t peer.ChaincodeSpec_Type) Option {
+	return func(spec *peer.ChaincodeSpec) {
+		spec.Type = t
+	}
+
+}
+
+func CreateProposal(creator []byte, channel, ccname string, args []string, transientMap map[string][]byte, options ...Option) (proposal *peer.Proposal, txid string, err error) {
 	var argsInByte [][]byte
 	for _, arg := range args {
 		argsInByte = append(argsInByte, []byte(arg))
 	}
 
-	spec := &peer.ChaincodeSpec{
-		Type:        peer.ChaincodeSpec_GOLANG,
-		ChaincodeId: &peer.ChaincodeID{Name: ccname, Version: version},
+	var spec = &peer.ChaincodeSpec{
+		ChaincodeId: &peer.ChaincodeID{Name: ccname},
 		Input:       &peer.ChaincodeInput{Args: argsInByte},
 	}
+	for _, option := range options {
+		option(spec)
+	}
 
-	invocation := &peer.ChaincodeInvocationSpec{ChaincodeSpec: spec}
+	var invocation = &peer.ChaincodeInvocationSpec{ChaincodeSpec: spec}
 
 	prop, txid, err := protoutil.CreateChaincodeProposalWithTransient(common.HeaderType_ENDORSER_TRANSACTION, channel, invocation, creator, transientMap)
 	if err != nil {

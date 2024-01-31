@@ -1,7 +1,8 @@
-package golang
+package testdata
 
 import (
 	"context"
+	"github.com/davidkhala/fabric-common/golang"
 	"github.com/davidkhala/fabric-common/golang/discover"
 	"github.com/davidkhala/fabric-common/golang/event"
 	"github.com/davidkhala/fabric-common/golang/proto"
@@ -13,32 +14,18 @@ import (
 	"testing"
 )
 
-var peer0_icdd = Node{
-	Addr:      "localhost:8051",
-	TLSCARoot: goutils.HomeResolve("delphi-fabric/config/ca-crypto-config/peerOrganizations/icdd/tlsca/tlsca.icdd-cert.pem"),
-
-	SslTargetNameOverride: "peer0.icdd",
+func TestCryptoMaterial(t *testing.T) {
+	golang.LoadCryptoFrom(CryptoconfigAstri)
+	golang.LoadCryptoFrom(CryptoconfigIcdd)
 }
-var cryptoConfig_astri = CryptoConfig{
-	MSPID:    "astriMSP",
-	PrivKey:  FindKeyFilesOrPanic(goutils.HomeResolve("delphi-fabric/config/ca-crypto-config/peerOrganizations/astri.org/users/Admin@astri.org/msp/keystore"))[0],
-	SignCert: goutils.HomeResolve("delphi-fabric/config/ca-crypto-config/peerOrganizations/astri.org/users/Admin@astri.org/msp/signcerts/Admin@astri.org-cert.pem"),
-}
-var cryptoConfig_icdd = CryptoConfig{
-	MSPID:    "icddMSP",
-	PrivKey:  FindKeyFilesOrPanic(goutils.HomeResolve("delphi-fabric/config/ca-crypto-config/peerOrganizations/icdd/users/Admin@icdd/msp/keystore"))[0],
-	SignCert: goutils.HomeResolve("delphi-fabric/config/ca-crypto-config/peerOrganizations/icdd/users/Admin@icdd/msp/signcerts/Admin@icdd-cert.pem"),
-}
-var channel = "allchannel"
-
 func TestConnection(t *testing.T) {
-	peer0_icdd.AsGRPCClient()
-	println(string(goutils.ToJson(peer0_icdd)))
+	Peer0Icdd.AsGRPCClient()
+	println(string(goutils.ToJson(Peer0Icdd)))
 }
 func TestEvent(t *testing.T) {
 
-	var eventer = event.NewEventer(context.Background(), peer0_icdd.AsGRPCClient())
-	t.Run("reply", func(t *testing.T) { // TODO WIP
+	var eventer = event.NewEventer(context.Background(), Peer0Icdd.AsGRPCClient())
+	t.Run("replay", func(t *testing.T) { // TODO WIP
 		var blockEventer = event.NewBlockEventer(eventer, func(this event.DeliverResponseType, deliverResponses []event.DeliverResponseType) (bool, interface{}) {
 
 			var trimmedBlock = proto.FromFullBlock(this.Block)
@@ -50,9 +37,9 @@ func TestEvent(t *testing.T) {
 			return true, nil
 		})
 		var seek = event.SeekInfoFrom(event.SeekOldest, event.SeekNewest)
-		var _crypto = LoadCryptoFrom(cryptoConfig_astri)
+		var _crypto = golang.LoadCryptoFrom(CryptoconfigAstri)
 
-		blockEventer.SendRecv(seek.SignBy(channel, _crypto))
+		blockEventer.SendRecv(seek.SignBy(Channel, _crypto))
 	})
 	t.Run("waitForTx", func(t *testing.T) {
 		var blockEventer = event.NewSimpleBlockEventer(eventer)
@@ -61,8 +48,8 @@ func TestEvent(t *testing.T) {
 		}
 		txEvent.WaitForTx("6cc51d00c5a65b037c467aa3b06db312653544155afcf2d70bc8212fe3c6df7e") // replace with known one
 		var seek = txEvent.GetSeekInfo()
-		var _crypto = LoadCryptoFrom(cryptoConfig_astri)
-		result, _ := txEvent.SendRecv(seek.SignBy(channel, _crypto))
+		var _crypto = golang.LoadCryptoFrom(CryptoconfigAstri)
+		result, _ := txEvent.SendRecv(seek.SignBy(Channel, _crypto))
 		assert.Equal(t, peer.TxValidationCode_VALID.String(), result)
 	})
 	t.Run("waitForTx: From full block", func(t *testing.T) {
@@ -72,8 +59,8 @@ func TestEvent(t *testing.T) {
 		}
 		txEvent.WaitForTx("6cc51d00c5a65b037c467aa3b06db312653544155afcf2d70bc8212fe3c6df7e") // replace with known one
 		var seek = txEvent.GetSeekInfo()
-		var _crypto = LoadCryptoFrom(cryptoConfig_astri)
-		result, _ := txEvent.SendRecv(seek.SignBy(channel, _crypto))
+		var _crypto = golang.LoadCryptoFrom(CryptoconfigAstri)
+		result, _ := txEvent.SendRecv(seek.SignBy(Channel, _crypto))
 		assert.Equal(t, peer.TxValidationCode_VALID.String(), result)
 	})
 
@@ -84,11 +71,11 @@ func TestDiscover(t *testing.T) {
 	var client = discover.Client{
 		Context: context.Background(),
 	}
-	client.Init(peer0_icdd.AsGRPCClient()) // return client
-	var _crypto = LoadCryptoFrom(cryptoConfig_astri)
+	client.Init(Peer0Icdd.AsGRPCClient()) // return client
+	var _crypto = golang.LoadCryptoFrom(CryptoconfigAstri)
 
 	t.Run("configQuery", func(t *testing.T) {
-		var query = discover.ConfigQuery(channel)
+		var query = discover.ConfigQuery(Channel)
 
 		var responses = client.Request(_crypto, &query)
 
@@ -114,7 +101,7 @@ func TestDiscover(t *testing.T) {
 
 	})
 	t.Run("PeerMembershipQuery", func(t *testing.T) {
-		var query = discover.PeerMembershipQuery(channel, nil)
+		var query = discover.PeerMembershipQuery(Channel, nil)
 		var responses = client.Request(_crypto, &query)
 
 		for _, response := range responses {
@@ -124,24 +111,37 @@ func TestDiscover(t *testing.T) {
 	})
 	t.Run("LocalPeerQuery", func(t *testing.T) {
 		var query = discover.LocalPeerQuery()
-		var _crypto = LoadCryptoFrom(cryptoConfig_icdd)
+		var _crypto = golang.LoadCryptoFrom(CryptoconfigIcdd)
 		var responses = client.Request(_crypto, &query)
 
 		for _, response := range responses {
 			var result = response.(discover.Members)
-			result.GetPeersByOrg(true)
+			for mspID, peers := range result.GetPeersByOrg(true) {
+				for _, _peer := range peers {
+					println(mspID, _peer.String())
+				}
+			}
 		}
 	})
 	t.Run("ChaincodeQuery", func(t *testing.T) {
-		var query = discover.ChaincodeQuery(channel)
+		var query = discover.ChaincodeQuery(Channel)
 		var responses = client.Request(_crypto, &query)
 		for _, response := range responses {
 			utter.Dump(response)
 		}
 	})
-
+}
+func TestQuery(t *testing.T) {
+	var _crypto = golang.LoadCryptoFrom(CryptoconfigIcdd)
+	var ctx = context.Background()
+	t.Run("ListChannelOnPeer", func(t *testing.T) {
+		var channels = golang.ListChannelOnPeer(ctx, Peer0Icdd.AsGRPCClient(), *_crypto)
+		for _, channel := range channels {
+			println(channel)
+		}
+	})
 }
 func TestFindKeyFilesOrPanic(t *testing.T) {
 	var dirname = goutils.HomeResolve("delphi-fabric/config/ca-crypto-config/peerOrganizations/astri.org/users/Admin@astri.org/msp/keystore/")
-	utter.Dump(FindKeyFilesOrPanic(dirname))
+	utter.Dump(golang.FindKeyFilesOrPanic(dirname))
 }

@@ -4,13 +4,14 @@ import (
 	"github.com/davidkhala/goutils"
 	. "github.com/davidkhala/goutils/grpc"
 	"google.golang.org/grpc"
-	"io/ioutil"
+	"os"
 	"path"
 	"strings"
 )
 
 // ToAddress is a utility function to trim the GRPC protocol prefix as it is not needed by GO
-// if the GRPC protocol is not found, the url is returned unchanged
+//
+//	If the GRPC protocol is not found, the url is returned unchanged
 func ToAddress(url string) string {
 	if strings.HasPrefix(url, "grpc://") {
 		return strings.TrimPrefix(url, "grpc://")
@@ -32,7 +33,7 @@ func Ping(target string, params Params) (connect *grpc.ClientConn, err error) {
 }
 
 func FindKeyFilesOrPanic(dirname string) []string {
-	fileInfos, err := ioutil.ReadDir(dirname)
+	fileInfos, err := os.ReadDir(dirname)
 	goutils.PanicError(err)
 	var result []string
 	for _, fileInfo := range fileInfos {

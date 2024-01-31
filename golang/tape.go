@@ -1,4 +1,4 @@
-// tape.go is utils copied from tape project
+// TODO tape.go was utils copied from tape project, now we can write our own powered by goutil
 package golang
 
 import (
@@ -10,27 +10,25 @@ import (
 	"encoding/asn1"
 	"encoding/pem"
 	"fmt"
-	"github.com/davidkhala/protoutil"
 	"github.com/davidkhala/protoutil/common/crypto"
 	"github.com/hyperledger/fabric-protos-go-apiv2/common"
-	"github.com/hyperledger/fabric-protos-go-apiv2/peer"
 	"github.com/pkg/errors"
-	"io/ioutil"
 	"math/big"
+	"os"
 )
 
 type Node struct {
-	Addr                  string `yaml:"addr"`
-	TLSCACert             string `yaml:"tls_ca_cert"`
-	TLSCAKey              string `yaml:"tls_ca_key"`
-	TLSCARoot             string `yaml:"tls_ca_root"`
+	Addr                  string
+	TLSCACert             string
+	TLSCAKey              string
+	TLSCARoot             string
 	TLSCACertByte         []byte
 	TLSCAKeyByte          []byte
 	TLSCARootByte         []byte
 	SslTargetNameOverride string `json:"ssl-target-name-override"`
 }
 
-// DERToPrivateKey unmarshals a der to private key
+// DERToPrivateKey unmarshal a der to private key
 func DERToPrivateKey(der []byte) (key interface{}, err error) {
 
 	if key, err = x509.ParsePKCS1PrivateKey(der); err == nil {
@@ -53,7 +51,7 @@ func DERToPrivateKey(der []byte) (key interface{}, err error) {
 	return nil, errors.New("Invalid key type. The DER must contain an ecdsa.PrivateKey")
 }
 
-// PEMtoPrivateKey unmarshals a pem to private key
+// PEMtoPrivateKey unmarshal a pem to private key
 func PEMtoPrivateKey(raw []byte, pwd []byte) (interface{}, error) {
 	if len(raw) == 0 {
 		return nil, errors.New("Invalid PEM. It must be different from nil.")
@@ -89,7 +87,7 @@ func PEMtoPrivateKey(raw []byte, pwd []byte) (interface{}, error) {
 	return cert, err
 }
 func GetPrivateKey(f string) (*ecdsa.PrivateKey, error) {
-	in, err := ioutil.ReadFile(f)
+	in, err := os.ReadFile(f)
 	if err != nil {
 		return nil, err
 	}
@@ -115,14 +113,19 @@ type CryptoConfig struct {
 	//	TODO to cater ClientTlsCertHash
 }
 type Crypto struct {
-	Creator  []byte
-	PrivKey  *ecdsa.PrivateKey
-	SignCert *x509.Certificate
-	Digest   func([]byte) []byte
+	Creator     []byte
+	PrivKey     *ecdsa.PrivateKey
+	SignCert    *x509.Certificate
+	Digest      func([]byte) []byte
+	mspID       string // cached as part of Creator
+	certificate []byte // cached as part of Creator
 }
 
-func (s *Crypto) SetDefaultDigest() {
-	s.Digest = func(in []byte) []byte {
+func (c Crypto) MspID() string       { return c.mspID }
+func (c Crypto) Credentials() []byte { return c.certificate }
+
+func (c *Crypto) SetDefaultDigest() {
+	c.Digest = func(in []byte) []byte {
 		h := sha256.New()
 		h.Write(in)
 		return h.Sum(nil)
@@ -133,13 +136,13 @@ type ECDSASignature struct {
 	R, S *big.Int
 }
 
-func (s *Crypto) Sign(msg []byte) ([]byte, error) {
-	ri, si, err := ecdsa.Sign(rand.Reader, s.PrivKey, s.Digest(msg))
+func (c Crypto) Sign(msg []byte) ([]byte, error) {
+	ri, si, err := ecdsa.Sign(rand.Reader, c.PrivKey, c.Digest(msg))
 	if err != nil {
 		return nil, err
 	}
 
-	si, _, err = ToLowS(&s.PrivKey.PublicKey, si)
+	si, _, err = ToLowS(&c.PrivKey.PublicKey, si)
 	if err != nil {
 		return nil, err
 	}
@@ -185,12 +188,12 @@ func ToLowS(k *ecdsa.PublicKey, s *big.Int) (*big.Int, bool, error) {
 	return s, false, nil
 }
 
-func (s *Crypto) Serialize() ([]byte, error) {
-	return s.Creator, nil
+func (c Crypto) Serialize() ([]byte, error) {
+	return c.Creator, nil
 }
 
-func (s *Crypto) NewSignatureHeader() (*common.SignatureHeader, error) {
-	creator, err := s.Serialize()
+func (c Crypto) NewSignatureHeader() (*common.SignatureHeader, error) {
+	creator, err := c.Serialize()
 	if err != nil {
 		return nil, err
 	}
@@ -206,7 +209,7 @@ func (s *Crypto) NewSignatureHeader() (*common.SignatureHeader, error) {
 }
 
 func GetCertificate(f string) (*x509.Certificate, []byte, error) {
-	in, err := ioutil.ReadFile(f)
+	in, err := os.ReadFile(f)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -215,13 +218,4 @@ func GetCertificate(f string) (*x509.Certificate, []byte, error) {
 
 	c, err := x509.ParseCertificate(block.Bytes)
 	return c, in, err
-}
-func GetChaincodeHeaderExtension(hdr *common.Header) (*peer.ChaincodeHeaderExtension, error) {
-	chdr, err := protoutil.UnmarshalChannelHeader(hdr.ChannelHeader)
-	if err != nil {
-		return nil, err
-	}
-
-	chaincodeHdrExt, err := protoutil.UnmarshalChaincodeHeaderExtension(chdr.Extension)
-	return chaincodeHdrExt, errors.Wrap(err, "error unmarshalling ChaincodeHeaderExtension")
 }
