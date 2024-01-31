@@ -11,6 +11,7 @@ import (
 	"github.com/hyperledger/fabric-protos-go-apiv2/peer"
 	"github.com/kortschak/utter"
 	"github.com/stretchr/testify/assert"
+	"slices"
 	"testing"
 )
 
@@ -136,9 +137,7 @@ func TestQuery(t *testing.T) {
 	var ctx = context.Background()
 	t.Run("ListChannelOnPeer", func(t *testing.T) {
 		var channels = golang.ListChannelOnPeer(ctx, Peer0Icdd.AsGRPCClient(), *_crypto)
-		for _, channel := range channels {
-			println(channel)
-		}
+		assert.True(t, slices.Contains(channels, Channel))
 	})
 }
 func TestFindKeyFilesOrPanic(t *testing.T) {
