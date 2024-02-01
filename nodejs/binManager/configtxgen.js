@@ -29,12 +29,12 @@ export default class configtxgen extends BinManager {
 
 	viewBlock(blockFile) {
 		const {profile, configPath} = this;
-		this.exec(`-inspectBlock ${blockFile} -profile ${profile} -configPath ${configPath}`);
+		return this.exec(`-inspectBlock ${blockFile} -profile ${profile} -configPath ${configPath}`);
 	}
 
 	viewChannel(channelFile) {
 		const {profile, channelName, configPath} = this;
-		this.exec(`-inspectChannelCreateTx ${channelFile} -profile ${profile} -channelID ${channelName} -configPath ${configPath}`);
+		return this.exec(`-inspectChannelCreateTx ${channelFile} -profile ${profile} -channelID ${channelName} -configPath ${configPath}`);
 	}
 
 	get executable() {

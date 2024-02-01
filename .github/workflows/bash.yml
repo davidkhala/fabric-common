@@ -1,0 +1,13 @@
+name: bash
+
+on:
+  push:
+
+jobs:
+  hsm:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - run: ./install.sh softHSMInstall
+      name: setup bash
+    - run: ./bash/test/softHSM.sh

@@ -1,6 +1,6 @@
 import fabprotos from 'fabric-protos';
-import Policy from '../formatter/policy';
-import {BufferFrom} from '../formatter/protobuf';
+import Policy from '../formatter/policy.js';
+import {BufferFrom} from '../formatter/protobuf.js';
 import assert from 'assert';
 
 const protosProtos = fabprotos.protos;

@@ -25,6 +25,9 @@ class CMDManager {
 	}
 }
 
+/**
+ * @abstract
+ */
 export default class BinManager extends CMDManager {
 	/**
 	 *
@@ -61,10 +64,11 @@ export default class BinManager extends CMDManager {
 		this.logger.info(result);
 		return result;
 	}
-
 }
 
-
+/**
+ * @abstract
+ */
 export class DockerRun extends CMDManager {
 	/**
 	 *

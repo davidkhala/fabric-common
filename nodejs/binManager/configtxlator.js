@@ -131,7 +131,7 @@ export class Server extends BinManager {
 		const matched = await findProcess({port});
 		const process = matched[0];
 		if (process) {
-			killProcess(process.pid);
+			killProcess(process);
 		}
 	}
 }

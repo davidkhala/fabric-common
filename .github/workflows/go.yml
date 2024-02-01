@@ -1,0 +1,15 @@
+name: go
+on:
+  push:
+
+
+jobs:
+  test:
+    defaults:
+      run:
+        working-directory: golang
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@main
+      - run: go mod vendor
+      - run: go test ./...

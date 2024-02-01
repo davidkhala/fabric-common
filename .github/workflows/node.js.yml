@@ -2,29 +2,22 @@
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
 
 name: Node.js CI
-
 on:  push
 
 jobs:
 
-  build:
-
+  unit:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [12.x, 15.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v2
+    - uses: actions/checkout@main
+    - uses: actions/setup-node@main
       with:
-        node-version: ${{ matrix.node-version }}
+        check-latest: true
+        node-version: lts/*
     - run: ./install.sh fabricInstall -d -s
     - run: npm install
       working-directory: nodejs
-    - run: npm run lerna
-      working-directory: nodejs
     - run: npm test
       working-directory: nodejs
+      env:
+        binPath: ${{ github.workspace }}/bin/
