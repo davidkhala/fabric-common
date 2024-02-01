@@ -24,11 +24,17 @@ func TestQuery(t *testing.T) {
 	var _cryptoASTRI = golang.LoadCryptoFrom(CryptoconfigAstri)
 	var ctx = context.Background()
 	t.Run("ListChannelOnPeer", func(t *testing.T) {
-		var channels = golang.ListChannelOnPeer(ctx, Peer0Icdd.AsGRPCClient(), *_cryptoICDD)
+		var channels = golang.ListChannelOnPeer(ctx, Peer0Icdd.AsGRPCClient(), _cryptoICDD)
 		assert.True(t, slices.Contains(channels, Channel))
 	})
 	t.Run("GetContractMetadata", func(t *testing.T) {
-		golang.GetContractMetadata(ctx, Peer0Icdd.AsGRPCClient(), *_cryptoASTRI, Channel, "contracts")
+		_cryptoASTRI.GatewayMode()
+		var cm = golang.GetContractMetadata(ctx, Peer0Icdd.AsGRPCClient(), _cryptoASTRI, Channel, "contracts")
+		_cryptoASTRI.DefaultMode()
+
+		for _, tx := range cm.Contracts["SmartContract"].Transactions {
+			println(string(goutils.ToJson(tx)))
+		}
 
 	})
 }

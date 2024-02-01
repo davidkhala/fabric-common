@@ -53,6 +53,6 @@ func LoadCryptoFrom(config CryptoConfig) *Crypto {
 		mspID:       config.MSPID,
 		certificate: certBytes,
 	}
-	_crypto.SetDefaultDigest()
+	_crypto.DefaultMode()
 	return _crypto
 }

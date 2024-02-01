@@ -5,7 +5,6 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
-	"crypto/sha256"
 	"crypto/x509"
 	"encoding/asn1"
 	"encoding/pem"
@@ -124,39 +123,39 @@ func (c CryptoConfig) GetCertificate() (*x509.Certificate, []byte) {
 }
 
 type Crypto struct {
-	Creator     []byte
-	PrivKey     *ecdsa.PrivateKey
-	SignCert    *x509.Certificate
-	digest      hash.Hash
-	mspID       string // cached as part of Creator
-	certificate []byte // cached as part of Creator
+	Creator       []byte
+	PrivKey       *ecdsa.PrivateKey
+	SignCert      *x509.Certificate
+	digest        hash.Hash
+	mspID         string // cached as part of Creator
+	certificate   []byte // cached as part of Creator
+	gatewayDigest hash.Hash
 }
 
-func (c Crypto) MspID() string       { return c.mspID }
-func (c Crypto) Credentials() []byte { return c.certificate }
-
-func (c *Crypto) SetDefaultDigest() {
-	c.digest = func(in []byte) []byte {
-		h := sha256.New()
-		h.Write(in)
-		return h.Sum(nil)
+func (c *Crypto) Digest(message []byte) []byte {
+	if c.gatewayDigest != nil {
+		return c.gatewayDigest(message)
 	}
+	return c.digest(message)
 }
-func (c *Crypto) SetGatewayMode() {
-	c.digest = func(bytes []byte) []byte {
-		return bytes
-	}
+
+func (c *Crypto) MspID() string       { return c.mspID }
+func (c *Crypto) Credentials() []byte { return c.certificate }
+
+func (c *Crypto) DefaultMode() {
+	c.digest = hash.SHA256
+	c.gatewayDigest = nil
+}
+func (c *Crypto) GatewayMode() {
+	c.digest = hash.NONE
+	c.gatewayDigest = hash.SHA256
 }
 
 func (c *Crypto) SetDigest(digestFunc hash.Hash) {
 	c.digest = digestFunc
 }
 
-func (c Crypto) Digest(message []byte) []byte {
-	return c.digest(message)
-}
-
-func (c Crypto) Sign(message []byte) ([]byte, error) {
+func (c *Crypto) Sign(message []byte) ([]byte, error) {
 	ri, si, err := ecdsa.Sign(rand.Reader, c.PrivKey, c.digest(message))
 	if err != nil {
 		return nil, err
@@ -169,11 +168,11 @@ func (c Crypto) Sign(message []byte) ([]byte, error) {
 
 	return asn1.Marshal(ECDSASignature{ri, si})
 }
-func (c Crypto) Serialize() ([]byte, error) {
+func (c *Crypto) Serialize() ([]byte, error) {
 	return c.Creator, nil
 }
 
-func (c Crypto) NewSignatureHeader() (*common.SignatureHeader, error) {
+func (c *Crypto) NewSignatureHeader() (*common.SignatureHeader, error) {
 	creator, err := c.Serialize()
 	if err != nil {
 		return nil, err
