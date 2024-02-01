@@ -30,12 +30,15 @@ const viewBlockTest = async (blockProfile) => {
 };
 
 
-describe('configtxlator', () => {
-	it('configtxlatorRestart', async () => {
-		const server = new Server();
+describe('configtxlator', function () {
+	this.timeout(0)
+	const server = new Server();
+	it('server start', async () => {
 		await server.start();
-		await server.stop();
 	});
+	it('server stop', async ()=>{
+		await server.stop();
+	})
 });
 describe('configtxgen', () => {
 

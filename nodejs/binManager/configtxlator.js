@@ -1,10 +1,11 @@
 import fs from 'fs';
 import FormData from 'form-data';
-import {execDetach, execSync, killProcess} from '@davidkhala/light/devOps.js';
+import {execStream, execSync, killProcess} from '@davidkhala/light/devOps.js';
 import {createTmpFile} from '@davidkhala/nodeutils/tmp.js';
 import {findProcess} from '@davidkhala/nodeutils/devOps.js';
 import {axiosPromise} from '@davidkhala/axios/index.js';
 import BinManager from './binManager.js';
+
 // TODO how to use streaming buffer to exec
 export class configtxlator extends BinManager {
 	/**
@@ -124,13 +125,14 @@ export class Server extends BinManager {
 		};
 		const CMD = this._buildCMD(`start --hostname=${hostname} --port=${port} ${CORS.reduce(CORSReducer, '')}`);
 		this.logger.info('CMD', CMD);
-		execDetach(CMD);
+		execStream(CMD);
 	}
 
 	async stop(port = 7059) {
 		const matched = await findProcess({port});
 		const process = matched[0];
 		if (process) {
+			this.logger.info(`kill ${process}`);
 			killProcess(process);
 		}
 	}
