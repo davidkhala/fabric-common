@@ -15,7 +15,7 @@ func TestDiscover(t *testing.T) {
 	var client = discover.Client{
 		Context: context.Background(),
 	}
-	client.Init(Peer0Icdd.AsGRPCClient()) // return client
+	client.Init(Peer0Icdd.AsGRPCClientOrPanic()) // return client
 	var _crypto = golang.LoadCryptoFrom(CryptoconfigAstri)
 
 	t.Run("configQuery", func(t *testing.T) {

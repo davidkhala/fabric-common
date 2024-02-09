@@ -12,7 +12,7 @@ import (
 
 func TestEvent(t *testing.T) {
 
-	var eventer = event.NewEventer(context.Background(), Peer0Icdd.AsGRPCClient())
+	var eventer = event.NewEventer(context.Background(), Peer0Icdd.AsGRPCClientOrPanic())
 	t.Run("replay", func(t *testing.T) { // TODO WIP
 		var blockEventer = event.NewBlockEventer(eventer, func(this event.DeliverResponseType, deliverResponses []event.DeliverResponseType) (bool, interface{}) {
 

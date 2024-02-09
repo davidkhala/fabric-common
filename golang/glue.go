@@ -42,7 +42,10 @@ func (node Node) AsGRPCClient() (connect *grpc.ClientConn, httpErr *http.Error) 
 }
 func (node Node) AsGRPCClientOrPanic() *grpc.ClientConn {
 	connect, err := node.AsGRPCClient()
-	goutils.PanicError(err)
+	if err != nil {
+		panic(*err)
+	}
+
 	return connect
 }
 func LoadCryptoFrom(config CryptoConfig) *Crypto {
