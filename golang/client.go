@@ -31,6 +31,11 @@ func Ping(target string, params Params) (connect *grpc.ClientConn, err error) {
 	connect, err = grpc.Dial(ToAddress(target), opts...)
 	return
 }
+func PingOrPanic(target string, params Params) *grpc.ClientConn {
+	connect, err := Ping(target, params)
+	goutils.PanicError(err)
+	return connect
+}
 
 func FindKeyFilesOrPanic(dirname string) []string {
 	fileInfos, err := os.ReadDir(dirname)

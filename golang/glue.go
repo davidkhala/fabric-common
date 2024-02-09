@@ -1,25 +1,32 @@
 package golang
 
 import (
-	"crypto/x509"
 	"github.com/davidkhala/goutils"
 	"github.com/davidkhala/goutils/crypto"
 	. "github.com/davidkhala/goutils/grpc"
+	"github.com/davidkhala/goutils/http"
 	"github.com/hyperledger/fabric-protos-go-apiv2/msp"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
 )
 
-func (node Node) AsGRPCClient() (connect *grpc.ClientConn) {
+func (node Node) AsGRPCClient() (connect *grpc.ClientConn, httpErr *http.Error) {
 	var err error
-	var certificate *x509.Certificate
 	var tlsCARootCertBytes = node.TLSCARootByte
 	if tlsCARootCertBytes == nil {
 		tlsCARootCertBytes, err = goutils.ReadFile(node.TLSCARoot)
-		goutils.PanicError(err)
+
+		if err != nil {
+			*httpErr = http.BadRequest(err.Error())
+			return
+		}
 	}
 
-	certificate = crypto.ParseCertPemOrPanic(tlsCARootCertBytes)
+	certificate, err := crypto.ParseCertPem(tlsCARootCertBytes)
+	if err != nil {
+		*httpErr = http.BadRequest(err.Error())
+		return
+	}
 
 	var param = Params{
 		SslTargetNameOverride: node.SslTargetNameOverride,
@@ -27,9 +34,16 @@ func (node Node) AsGRPCClient() (connect *grpc.ClientConn) {
 		WaitForReady:          true,
 	}
 	connect, err = Ping(node.Addr, param)
-	goutils.PanicError(err)
+	if err != nil {
+		*httpErr = http.ServiceUnavailable(err.Error())
+		return
+	}
 	return
-
+}
+func (node Node) AsGRPCClientOrPanic() *grpc.ClientConn {
+	connect, err := node.AsGRPCClient()
+	goutils.PanicError(err)
+	return connect
 }
 func LoadCryptoFrom(config CryptoConfig) *Crypto {
 
