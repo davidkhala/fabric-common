@@ -10,22 +10,20 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func (node Node) AsGRPCClient() (connect *grpc.ClientConn, httpErr *http.Error) {
+func (node Node) AsGRPCClient() (*grpc.ClientConn, *http.Error) {
 	var err error
 	var tlsCARootCertBytes = node.TLSCARootByte
 	if tlsCARootCertBytes == nil {
 		tlsCARootCertBytes, err = goutils.ReadFile(node.TLSCARoot)
 
 		if err != nil {
-			*httpErr = http.BadRequest(err.Error())
-			return
+			return nil, http.BadRequest(err.Error())
 		}
 	}
 
 	certificate, err := crypto.ParseCertPem(tlsCARootCertBytes)
 	if err != nil {
-		*httpErr = http.BadRequest(err.Error())
-		return
+		return nil, http.BadRequest(err.Error())
 	}
 
 	var param = Params{
@@ -33,17 +31,16 @@ func (node Node) AsGRPCClient() (connect *grpc.ClientConn, httpErr *http.Error) 
 		Certificate:           certificate,
 		WaitForReady:          true,
 	}
-	connect, err = Ping(node.Addr, param)
+	connect, err := Ping(node.Addr, param)
 	if err != nil {
-		*httpErr = http.ServiceUnavailable(err.Error())
-		return
+		return nil, http.ServiceUnavailable(err.Error())
 	}
-	return
+	return connect, nil
 }
 func (node Node) AsGRPCClientOrPanic() *grpc.ClientConn {
 	connect, err := node.AsGRPCClient()
 	if err != nil {
-		panic(*err)
+		panic(err)
 	}
 
 	return connect

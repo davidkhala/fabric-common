@@ -21,8 +21,8 @@ github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSs
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/davidkhala/goutils v1.6.3 h1:Q4GGhVUNdUnsbVlcoaV3xeYB8kQlExyapHIN+/IOmwE=
-github.com/davidkhala/goutils v1.6.3/go.mod h1:q/XECZiDY67HvEu8PVKuC2uL2Ycuo9jJTh87J9la1MM=
+github.com/davidkhala/goutils v1.6.4 h1:MUL97QGTnQcRvHcCnyyhJLc4O1hht3CTbLl9q4/Y1EU=
+github.com/davidkhala/goutils v1.6.4/go.mod h1:q/XECZiDY67HvEu8PVKuC2uL2Ycuo9jJTh87J9la1MM=
 github.com/davidkhala/goutils/grpc v0.0.0 h1:YxXKE2GITtvB8Nwqj4v+kdgFRSc5hT1dl6Ds2BShlAw=
 github.com/davidkhala/goutils/grpc v0.0.0/go.mod h1:NDdLnCGFhFWYZCEF/bLfIHId6I+y2NQc0KZqrCGREwQ=
 github.com/davidkhala/protoutil v0.0.2 h1:iBymuTwAWw+unEulwGVDcFxzh6GOaC5A8INmWXDCYFE=
