@@ -1,0 +1,17 @@
+name: java
+# TODO WIP
+on: push
+
+
+jobs:
+  test:
+    defaults:
+      run:
+        working-directory: java
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@main
+      - uses: actions/setup-java@main
+        with:
+            java-version: '21'
+            distribution: 'liberica'
