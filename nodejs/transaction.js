@@ -21,7 +21,7 @@ export default class Transaction extends ChaincodeAction {
 
 		const proposal = new ProposalManager(this.identityContext, this.endorsers, chaincodeId, this.channel);
 		proposal.resultHandler = EndorseALL;
-		proposal.setCommitResultAssert(CommitSuccess);
+		proposal.commitResultAssert = CommitSuccess;
 		Object.assign(this, {logger, proposal});
 	}
 
