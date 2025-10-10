@@ -5,13 +5,6 @@ A way to compensate missing admin level node-sdk
 Code as document at current stage. Raise issue when you get confused. 
 
 
-## Design
-- This derives from 'khala-fabric-sdk-node-builder' design
-    - it depends on fabric-sdk components
-    - Object-oriented
-- channel operation: create, join, update
-- chaincode operation: install, Approve, commit
-
 ## TODO
 - `configDecoder.js`: work as javascript version of configtxlator
 - make good use of `fabric-common/lib/ServiceHandler.js`
